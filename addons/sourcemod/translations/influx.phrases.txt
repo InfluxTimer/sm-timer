@@ -1,0 +1,28 @@
+"Phrases"
+{
+	// General
+	"MUSTBERUNNING"
+	{
+		"en"			"You must be running!"
+	}
+	
+	// Pause
+	"NOTPAUSED"
+	{
+		"en"			"You aren't even paused!"
+	}
+    "CANTPAUSE_PRAC"
+	{
+		"en"			"You cannot pause a practising run!"
+	}
+	
+    // Practise
+	"MUSTBERUNNING_CP"
+	{
+		"en"			"You must be running to use checkpoints!"
+	}
+    "MUSTBEPRACTISING"
+	{
+		"en"			"You must be practising!"
+	}
+}

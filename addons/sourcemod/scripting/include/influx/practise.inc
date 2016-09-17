@@ -1,0 +1,35 @@
+#if defined _influx_practise_included
+    #endinput
+#endif
+#define _influx_practise_included
+
+
+#define INFLUX_LIB_PRACTISE      "influx_practise"
+
+
+native bool Influx_IsClientPractising( int client );
+
+native void Influx_StartPractising( int client );
+native void Influx_EndPractising( int client );
+
+
+public SharedPlugin __pl_influx_practise =
+{
+	name = INFLUX_LIB_PRACTISE,
+	file = INFLUX_LIB_PRACTISE...".smx",
+#if defined REQUIRE_PLUGIN
+	required = 1
+#else
+	required = 0
+#endif
+};
+
+#if !defined REQUIRE_PLUGIN
+public void __pl_influx_practise_SetNTVOptional()
+{
+    MarkNativeAsOptional( "Influx_IsClientPractising" );
+    
+    MarkNativeAsOptional( "Influx_StartPractising" );
+    MarkNativeAsOptional( "Influx_EndPractising" );
+}
+#endif
