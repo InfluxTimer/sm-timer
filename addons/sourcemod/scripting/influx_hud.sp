@@ -4,18 +4,11 @@
 #include <influx/core>
 #include <influx/hud>
 
-#include <msharedutil/arrayvec>
 #include <msharedutil/ents>
 
 
 #undef REQUIRE_PLUGIN
 #include <influx/help>
-#include <influx/recording>
-#include <influx/strafes>
-#include <influx/jumps>
-#include <influx/pause>
-#include <influx/practise>
-#include <influx/strfsync>
 
 
 
@@ -97,18 +90,6 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     
     CreateNative( "Influx_GetNextMenuTime", Native_GetNextMenuTime );
     CreateNative( "Influx_SetNextMenuTime", Native_SetNextMenuTime );
-}
-
-public int Native_GetSecondsFormat_Timer( Handle hPlugin, int numParams )
-{
-    SetNativeString( 1, g_szFormat_Timer, GetNativeCell( 2 ) );
-    return 1;
-}
-
-public int Native_GetSecondsFormat_Sidebar( Handle hPlugin, int numParams )
-{
-    SetNativeString( 1, g_szFormat_Sidebar, GetNativeCell( 2 ) );
-    return 1;
 }
 
 public void OnPluginStart()
@@ -221,37 +202,27 @@ public void OnClientCookiesCached( int client )
     }
 }
 
-public void E_ConVarChanged_Hint( ConVar convar, const char[] oldValue, const char[] newValue )
-{
-    KillTimer( g_hTimer_Hint );
-    StartHint();
-}
-
-public void E_ConVarChanged_KeyHint( ConVar convar, const char[] oldValue, const char[] newValue )
-{
-    KillTimer( g_hTimer_KeyHint );
-    StartKeyHint();
-}
-
-public void E_ConVarChanged_Menu( ConVar convar, const char[] oldValue, const char[] newValue )
-{
-    KillTimer( g_hTimer_Menu );
-    StartMenu();
-}
-
-public void E_ConVarChanged_NumDecimals_Timer( ConVar convar, const char[] oldValue, const char[] newValue )
-{
-    Inf_DecimalFormat( convar.IntValue, g_szFormat_Timer, sizeof( g_szFormat_Timer ) );
-}
-
-public void E_ConVarChanged_NumDecimals_Sidebar( ConVar convar, const char[] oldValue, const char[] newValue )
-{
-    Inf_DecimalFormat( convar.IntValue, g_szFormat_Sidebar, sizeof( g_szFormat_Sidebar ) );
-}
-
 public void Influx_OnRequestHelpCmds()
 {
     Influx_AddHelpCommand( "hud", "HUD option menu." );
+}
+
+stock int GetClientTarget( int client )
+{
+    if ( !IsPlayerAlive( client ) )
+    {
+        int target = GetClientObserverTarget( client );
+        
+        return (
+            IS_ENT_PLAYER( target )
+        &&  IsClientInGame( target )
+        &&  IsPlayerAlive( target )
+        &&  GetClientObserverMode( client ) != OBS_MODE_ROAMING ) ? target : 0;
+    }
+    else
+    {
+        return client;
+    }
 }
 
 stock void StartHint()
@@ -384,22 +355,32 @@ public Action T_DrawMenu( Handle hTimer )
     return Plugin_Continue;
 }
 
-stock int GetClientTarget( int client )
+public void E_ConVarChanged_Hint( ConVar convar, const char[] oldValue, const char[] newValue )
 {
-    if ( !IsPlayerAlive( client ) )
-    {
-        int target = GetClientObserverTarget( client );
-        
-        return (
-            IS_ENT_PLAYER( target )
-        &&  IsClientInGame( target )
-        &&  IsPlayerAlive( target )
-        &&  GetClientObserverMode( client ) != OBS_MODE_ROAMING ) ? target : 0;
-    }
-    else
-    {
-        return client;
-    }
+    KillTimer( g_hTimer_Hint );
+    StartHint();
+}
+
+public void E_ConVarChanged_KeyHint( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    KillTimer( g_hTimer_KeyHint );
+    StartKeyHint();
+}
+
+public void E_ConVarChanged_Menu( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    KillTimer( g_hTimer_Menu );
+    StartMenu();
+}
+
+public void E_ConVarChanged_NumDecimals_Timer( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    Inf_DecimalFormat( convar.IntValue, g_szFormat_Timer, sizeof( g_szFormat_Timer ) );
+}
+
+public void E_ConVarChanged_NumDecimals_Sidebar( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    Inf_DecimalFormat( convar.IntValue, g_szFormat_Sidebar, sizeof( g_szFormat_Sidebar ) );
 }
 
 public Action Cmd_Hud( int client, int args )
@@ -491,5 +472,17 @@ public int Native_SetNextMenuTime( Handle hPlugin, int nParms )
     PrintToServer( INF_DEBUG_PRE..."Set client %i menu time to %.1f", client, g_flNextMenuTime[client] );
 #endif
     
+    return 1;
+}
+
+public int Native_GetSecondsFormat_Timer( Handle hPlugin, int numParams )
+{
+    SetNativeString( 1, g_szFormat_Timer, GetNativeCell( 2 ) );
+    return 1;
+}
+
+public int Native_GetSecondsFormat_Sidebar( Handle hPlugin, int numParams )
+{
+    SetNativeString( 1, g_szFormat_Sidebar, GetNativeCell( 2 ) );
     return 1;
 }
