@@ -7,7 +7,6 @@ Check devlog.txt for current changes.
 
 **Things being worked on:**
 
-	- Custom colors w/ custom prefix
 	- Sync
 	- Checkpoints/stage zones
 
