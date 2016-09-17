@@ -28,7 +28,7 @@ stock bool DB_GetEscaped( char[] out, int len, const char[] def = "" )
     return true;
 }
 
-stock void DB_InitDatabase()
+stock void DB_Init()
 {
     char szError[128], szDriver[32];
     g_bIsMySQL = false;
@@ -156,14 +156,30 @@ stock void DB_InitRecords()
 
 stock void DB_InitClient( int client )
 {
+    DB_InitClient_Cb( client, Thrd_GetClientId );
+}
+
+stock void DB_InitClient_Cb( int client, SQLTCallback cb )
+{
+#if defined AUTH_BYNAME
+    decl String:szName[MAX_NAME_LENGTH];
+    if ( !GetClientName( client, szName, sizeof( szName ) ) ) return;
+    
+    
+    decl String:szQuery[256];
+    FormatEx( szQuery, sizeof( szQuery ), "SELECT uid FROM "...INF_TABLE_USERS..." WHERE name='%s'", szName );
+    
+    PrintToServer( INF_DEBUG_PRE..."Searching for name %s", szName );
+#else
     decl String:szSteam[64];
     if ( !Inf_GetClientSteam( client, szSteam, sizeof( szSteam ) ) ) return;
     
     
     decl String:szQuery[256];
     FormatEx( szQuery, sizeof( szQuery ), "SELECT uid FROM "...INF_TABLE_USERS..." WHERE steamid='%s'", szSteam );
+#endif
     
-    SQL_TQuery( g_hDB, Thrd_GetClientId, szQuery, GetClientUserId( client ), DBPrio_Low );
+    SQL_TQuery( g_hDB, cb, szQuery, GetClientUserId( client ), DBPrio_Low );
 }
 
 stock void DB_InitClientTimes( int client )
@@ -351,7 +367,7 @@ stock void DB_PrintRecords( int client, int uid = -1, int mapid = -1, int runid,
 
 stock void DB_PrintRecordInfo( int client, int uid, int mapid, int runid, int mode, int style )
 {
-    decl String:szQuery[700];
+    static char szQuery[700];
     
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT *,"...

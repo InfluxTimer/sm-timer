@@ -71,7 +71,7 @@ public void Thrd_GetClientId( Handle db, Handle res, const char[] szError, int c
     // This should never happen.
     if ( SQL_GetRowCount( res ) > 1 )
     {
-        char szSteam[64];
+        decl String:szSteam[64];
         Inf_GetClientSteam( client, szSteam, sizeof( szSteam ) );
         
         LogError( INF_CON_PRE..."Found multiple records with same Steam ID!!! (%N - %s)",
@@ -82,7 +82,7 @@ public void Thrd_GetClientId( Handle db, Handle res, const char[] szError, int c
     
     if ( !SQL_FetchRow( res ) )
     {
-        char szSteam[64];
+        decl String:szSteam[64];
         if ( !Inf_GetClientSteam( client, szSteam, sizeof( szSteam ) ) ) return;
         
         
@@ -109,14 +109,8 @@ public void Thrd_InsertNewUser( Handle db, Handle res, const char[] szError, int
         return;
     }
     
-    char szSteam[64];
-    if ( !Inf_GetClientSteam( client, szSteam, sizeof( szSteam ) ) ) return;
     
-    
-    decl String:szQuery[256];
-    FormatEx( szQuery, sizeof( szQuery ), "SELECT uid FROM "...INF_TABLE_USERS..." WHERE steamid='%s'", szSteam );
-    
-    SQL_TQuery( g_hDB, Thrd_GetClientNewId, szQuery, GetClientUserId( client ), DBPrio_High );
+    DB_InitClient_Cb( client, Thrd_GetClientNewId );
 }
 
 public void Thrd_GetClientNewId( Handle db, Handle res, const char[] szError, int client )
@@ -312,9 +306,6 @@ public void Thrd_PrintMaps( Handle db, Handle res, const char[] szError, int cli
     }
     
     
-    Influx_SetNextMenuTime( client, GetEngineTime() + 30.0 );
-    
-    
     Menu menu = new Menu( Hndlr_MapList );
     menu.SetTitle( "Maps\n " );
     
@@ -380,9 +371,6 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     int runid = data[3]; // Runid is always requested.
     int reqmode = data[4];
     int reqstyle = data[5];
-    
-    
-    Influx_SetNextMenuTime( client, GetEngineTime() + 30.0 );
     
     
     Menu menu = new Menu( Hndlr_RecordList );
@@ -671,9 +659,6 @@ public void Thrd_PrintRecordInfo( Handle db, Handle res, const char[] szError, i
     }
     
     
-    Influx_SetNextMenuTime( client, GetEngineTime() + 30.0 );
-    
-    
     Menu menu = new Menu( Hndlr_RecordInfo );
     
     menu.SetTitle( "%s%s%s - %s\n \n%s - %s\n \nTime: %s%s%s%s%s\n ",
@@ -738,9 +723,6 @@ public void Thrd_PrintDeleteRecords( Handle db, Handle res, const char[] szError
     int runid, numrecs;
     
     int num = 0;
-    
-    
-    Influx_SetNextMenuTime( client, GetEngineTime() + 30.0 );
     
     
     Menu menu = new Menu( Hndlr_DeleteRecords );

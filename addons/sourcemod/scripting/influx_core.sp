@@ -513,7 +513,7 @@ public void OnPluginStart()
     g_bLib_ColorChat = LibraryExists( INFLUX_LIB_COLORCHAT );
     
     
-    DB_InitDatabase();
+    DB_Init();
 }
 
 public void OnLibraryAdded( const char[] lib )
