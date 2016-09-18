@@ -13,6 +13,9 @@ native void Influx_StartPractising( int client );
 native void Influx_EndPractising( int client );
 
 
+#define IS_PRAC(%0,%1)      ( %0 && Influx_IsClientPractising(%1) )
+
+
 public SharedPlugin __pl_influx_practise =
 {
 	name = INFLUX_LIB_PRACTISE,

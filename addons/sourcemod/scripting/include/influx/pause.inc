@@ -14,6 +14,9 @@ native void Influx_ContinueClientRun( int client );
 native float Influx_GetClientPausedTime( int client );
 
 
+#define IS_PAUSED(%0,%1)      ( %0 && Influx_IsClientPaused(%1) )
+
+
 public SharedPlugin __pl_influx_pause =
 {
 	name = INFLUX_LIB_PAUSE,

@@ -484,7 +484,11 @@ stock int WriteZoneFile()
     }
     
     kv.Rewind();
-    kv.ExportToFile( szPath );
+    
+    if ( !kv.ExportToFile( szPath ) )
+    {
+        LogError( INF_CON_PRE..."Can't save zone file '%s'!!", szPath );
+    }
     
     delete kv;
     

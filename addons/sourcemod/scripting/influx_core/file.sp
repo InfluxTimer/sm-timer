@@ -127,6 +127,7 @@ stock int WriteMapFile()
     if ( len < 1 ) return 0;
     
     
+    // TODO: Change to .cfg instead of .ini?
     char szPath[PLATFORM_MAX_PATH];
     BuildPath( Path_SM, szPath, sizeof( szPath ), "influxruns/%s.ini", g_szCurrentMap );
     
@@ -174,7 +175,12 @@ stock int WriteMapFile()
     
     
     kv.Rewind();
-    kv.ExportToFile( szPath );
+    
+    if ( !kv.ExportToFile( szPath ) )
+    {
+        LogError( INF_CON_PRE..."Can't save run file '%s'!!", szPath );
+    }
+    
     
     delete kv;
     

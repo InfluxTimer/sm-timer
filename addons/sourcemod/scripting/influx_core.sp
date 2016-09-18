@@ -123,6 +123,7 @@ ConVar g_ConVar_AirAccelerate;
 ConVar g_ConVar_EnableBunnyhopping;
 
 ConVar g_ConVar_SaveRunsOnMapEnd;
+ConVar g_ConVar_SuppressMaxSpdMsg;
 ConVar g_ConVar_Admin_RemoveFlags;
 ConVar g_ConVar_Admin_ModifyRunFlags;
 ConVar g_ConVar_DefMode;
@@ -360,6 +361,9 @@ public void OnPluginStart()
     // CONVARS
     g_ConVar_SaveRunsOnMapEnd = CreateConVar( "influx_core_saveruns", "1", "Do we automatically save runs on map end?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
+    g_ConVar_SuppressMaxSpdMsg = CreateConVar( "influx_core_suppressmaxwepspdmsg", "0", "Suppress player max weapon speed warning messages?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    
+    
     g_ConVar_Admin_RemoveFlags = CreateConVar( "influx_core_removeflags", "z", "Required flags to remove records and runs." );
     g_ConVar_Admin_ModifyRunFlags = CreateConVar( "influx_core_modifyrunflags", "z", "Required flags to modify runs (tele pos, etc)." );
     
@@ -555,7 +559,7 @@ public void OnMapStart()
     g_hRuns.Clear();
     
     
-    if ( g_hFunc_GetPlayerMaxSpeed == null )
+    if ( g_hFunc_GetPlayerMaxSpeed == null && !g_ConVar_SuppressMaxSpdMsg.BoolValue )
     {
         Inf_Warning( 3, "Weapon speed check cannot be made! Players are free to cheat with weapon speeds." );
     }
@@ -687,56 +691,64 @@ public void E_PostThinkPost_Client( int client )
     if ( !IsPlayerAlive( client ) ) return;
     
     
+    // Check for cheating.
+    
     if ( g_iRunState[client] == STATE_RUNNING )
     {
-        if ( GetEntityMoveType( client ) == MOVETYPE_NOCLIP )
+        if ( GetEntityMoveType( client ) == MOVETYPE_NOCLIP && !IS_PAUSED( g_bLib_Pause, client ) && !IS_PRAC( g_bLib_Practise, client ) )
         {
-            if ((!g_bLib_Pause || !Influx_IsClientPaused( client ))
-            &&  (!g_bLib_Practise || !Influx_IsClientPractising( client )) )
-            {
-                InvalidateClientRun( client );
-            }
+            InvalidateClientRun( client );
         }
         
         
-        float maxspd = GetPlayerMaxSpeed( client );
-        
-        if ( maxspd != 0.0 && maxspd > g_cache_flMaxSpeed[client] )
+        CapWeaponSpeed( client );
+    }
+}
+
+stock void CapWeaponSpeed( int client )
+{
+    // Make sure players don't cheat with weapons going over 250-260, depending on their mode.
+    
+    if ( IS_PRAC( g_bLib_Practise, client ) || IS_PAUSED( g_bLib_Pause, client ) ) return;
+    
+    
+    float maxspd = GetPlayerMaxSpeed( client );
+    
+    if ( maxspd != 0.0 && maxspd > g_cache_flMaxSpeed[client] )
+    {
+        // HACK
+        if ( GetEntityFlags( client ) & FL_ONGROUND )
         {
-            // HACK
-            if ( GetEntityFlags( client ) & FL_ONGROUND )
-            {
-                decl Float:vel[3];
-                GetEntityVelocity( client, vel );
-                
-                float spd = SquareRoot( vel[0] * vel[0] + vel[1] * vel[1] + vel[2] * vel[2] );
-                
+            decl Float:vel[3];
+            GetEntityVelocity( client, vel );
+            
+            float spd = SquareRoot( vel[0] * vel[0] + vel[1] * vel[1] + vel[2] * vel[2] );
+            
 #define LIMIT_SPD       225.0
-                
-                if ( spd > LIMIT_SPD )
-                {
-                    for ( int i = 0; i < 3; i++ )
-                    {
-                        vel[i] = ( vel[i] / spd ) * LIMIT_SPD;
-                    }
-                    
-                    TeleportEntity( client, NULL_VECTOR, NULL_VECTOR, vel );
-                }
-            }
             
-            if ((GetEngineTime() - g_flLastValidWepSpd[client]) > 0.2 // We have the invalid weapon out for more than this.
-            &&  g_flNextWepSpdPrintTime[client] < GetEngineTime() )
+            if ( spd > LIMIT_SPD )
             {
-                Influx_PrintToChat( _, client, "Invalid weapon speed! Can be {TEAM}%.0f{CHATCLR} at most!", g_cache_flMaxSpeed[client] );
+                for ( int i = 0; i < 3; i++ )
+                {
+                    vel[i] = ( vel[i] / spd ) * LIMIT_SPD;
+                }
                 
-                g_flNextWepSpdPrintTime[client] = GetEngineTime() + 10.0;
+                TeleportEntity( client, NULL_VECTOR, NULL_VECTOR, vel );
             }
-            
         }
-        else
+        
+        if ((GetEngineTime() - g_flLastValidWepSpd[client]) > 0.2 // We have the invalid weapon out for more than this.
+        &&  g_flNextWepSpdPrintTime[client] < GetEngineTime() )
         {
-            g_flLastValidWepSpd[client] = GetEngineTime();
+            Influx_PrintToChat( _, client, "Invalid weapon speed! Can be {TEAM}%.0f{CHATCLR} at most!", g_cache_flMaxSpeed[client] );
+            
+            g_flNextWepSpdPrintTime[client] = GetEngineTime() + 10.0;
         }
+        
+    }
+    else
+    {
+        g_flLastValidWepSpd[client] = GetEngineTime();
     }
 }
 
@@ -1480,8 +1492,7 @@ stock bool ChangeTele( int client )
 {
     // Ignore if we're practising.
     // If we are paused at the same time, we have to get teleported.
-    if (g_bLib_Practise && Influx_IsClientPractising( client )
-    &&  (!g_bLib_Pause || !Influx_IsClientPaused( client )) ) return true;
+    if ( IS_PRAC( g_bLib_Practise, client ) && !IS_PAUSED( g_bLib_Pause, client ) ) return true;
     
     // We successfully teleported
     if ( TeleClientToStart_Safe( client, g_iRunId[client] ) ) return true;
