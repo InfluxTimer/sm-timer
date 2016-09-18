@@ -425,6 +425,17 @@ stock bool Inf_HandleCmdSpam( int client, float delay = 1.0, float &lasttime, bo
     return false;
 }
 
+stock void Inf_Warning( int num = 1, const char[] format, any ... )
+{
+    decl String:msg[512];
+    VFormat( msg, sizeof( msg ), format, 3 );
+    
+    Format( msg, sizeof( msg ), INF_CON_PRE..."WARNING: %s", msg );
+    
+    
+    for ( int i = 0; i < num; i++ ) PrintToServer( msg );
+}
+
 public SharedPlugin __pl_influx_core =
 {
     name = INFLUX_LIB_CORE,

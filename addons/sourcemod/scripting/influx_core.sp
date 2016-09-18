@@ -27,7 +27,6 @@
 //#define DEBUG_DB
 //#define DEBUG_DB_CBRECS
 //#define DEBUG_DB_MAPID
-//#define DEBUG_MENUTIME
 
 
 #define GAME_CONFIG_FILE      "influx.games"
@@ -162,6 +161,7 @@ int g_iDefStyle;
 #include "influx_core/cmds.sp"
 #include "influx_core/db.sp"
 #include "influx_core/events.sp"
+#include "influx_core/file.sp"
 #include "influx_core/menus.sp"
 #include "influx_core/menus_admin.sp"
 #include "influx_core/natives.sp"
@@ -299,59 +299,7 @@ public void OnPluginStart()
     g_hRunResFlags = new ArrayList( RUNRES_SIZE );
     
     
-    // GAME CONFIG
-    bool maxspeedfailed = true;
-    
-    
-    // Check if our config file exists. For some reason LoadGameConfigFile crashes the server.
-    char szPath[PLATFORM_MAX_PATH];
-    BuildPath( Path_SM, szPath, sizeof( szPath ), "gamedata/"...GAME_CONFIG_FILE...".txt" );
-    
-    if ( FileExists( szPath ) )
-    {
-        Handle config = LoadGameConfigFile( GAME_CONFIG_FILE );
-    
-    
-#define F_MAXSPD      "GetPlayerMaxSpeed"
-
-        if ( config != null )
-        {
-            StartPrepSDKCall( SDKCall_Player );
-            
-            if ( PrepSDKCall_SetFromConf( config, SDKConf_Virtual, F_MAXSPD ) )
-            {
-                PrepSDKCall_SetReturnInfo( SDKType_Float, SDKPass_Plain );
-                g_hFunc_GetPlayerMaxSpeed = EndPrepSDKCall();
-                
-                if ( g_hFunc_GetPlayerMaxSpeed == null )
-                {
-                    LogError( INF_CON_PRE..."Couldn't finalize SDKCall for "...F_MAXSPD..."!" );
-                }
-                else
-                {
-                    maxspeedfailed = false;
-                }
-            }
-            else
-            {
-                LogError( INF_CON_PRE..."Couldn't find "...F_MAXSPD..." offset from gamedata/"...GAME_CONFIG_FILE...".txt!" );
-            }
-        }
-        else
-        {
-            LogError( INF_CON_PRE..."Missing gamedata/"...GAME_CONFIG_FILE...".txt file! Please download the file." );
-        }
-        
-        delete config;
-    }
-    
-    if ( maxspeedfailed )
-    {
-        for ( int i = 0; i < 3; i++ )
-        {
-            PrintToServer( INF_CON_PRE..."Weapon speed check cannot be made! Players are free to cheat with weapon speeds." );
-        }
-    }
+    ReadGameConfig();
     
     
     // CONVAR CHANGES
@@ -607,6 +555,12 @@ public void OnMapStart()
     g_hRuns.Clear();
     
     
+    if ( g_hFunc_GetPlayerMaxSpeed == null )
+    {
+        Inf_Warning( 3, "Weapon speed check cannot be made! Players are free to cheat with weapon speeds." );
+    }
+    
+    
     GetCurrentMapSafe( g_szCurrentMap, sizeof( g_szCurrentMap ) );
     
     //g_bRunsLoaded = false;
@@ -616,8 +570,6 @@ public void OnMapStart()
     g_iCurMapId = 0;
     
     DB_InitMap();
-    
-    
     
     
     Call_StartForward( g_hForward_OnPreRunLoad );
@@ -642,6 +594,7 @@ public void OnMapEnd()
 
 public void OnConfigsExecuted()
 {
+    // HACK: These shouldn't be here, gotta move that gear up!
     ConVar cvar;
     
     
@@ -688,211 +641,17 @@ public void OnConfigsExecuted()
     }
 }
 
-stock void ReadMapFile()
-{
-    char szPath[PLATFORM_MAX_PATH];
-    BuildPath( Path_SM, szPath, sizeof( szPath ), INFLUX_RUNDIR );
-    
-    if ( !DirExistsEx( szPath ) ) return;
-    
-    
-    Format( szPath, sizeof( szPath ), "%s/%s.ini", szPath, g_szCurrentMap );
-    
-    
-    KeyValues kv = new KeyValues( "Runs" );
-    kv.ImportFromFile( szPath );
-    
-    if ( !kv.GotoFirstSubKey() )
-    {
-        delete kv;
-        return;
-    }
-    
-    
-    int data[RUN_SIZE];
-    
-    float telepos[3];
-    float teleyaw;
-    int runid;
-    
-    do
-    {
-        runid = kv.GetNum( "id", -1 );
-        if ( !VALID_RUN( runid ) )
-        {
-            LogError( INF_CON_PRE..."Found invalid run id %i! (0-%i)", runid, MAX_RUNS );
-            continue;
-        }
-        
-        if ( FindRunById( runid ) != -1 )
-        {
-            LogError( INF_CON_PRE..."Found duplicate run id %i!", runid );
-            continue;
-        }
-        
-        if ( !kv.GetSectionName( view_as<char>( data[RUN_NAME] ), MAX_RUN_NAME ) )
-        {
-            LogError( INF_CON_PRE..."Couldn't read run name!" );
-            continue;
-        }
-        
-        
-        data[RUN_ID] = runid;
-        
-        
-        data[RUN_RESFLAGS] = kv.GetNum( "resflags", 0 );
-        data[RUN_MODEFLAGS] = kv.GetNum( "modeflags", 0 );
-        
-        
-        kv.GetVector( "telepos", telepos, ORIGIN_VECTOR );
-        teleyaw = kv.GetFloat( "teleyaw", 0.0 );
-        
-        
-        CopyArray( telepos, data[RUN_TELEPOS], 3 );
-        data[RUN_TELEYAW] = view_as<int>( teleyaw );
-        
-        
-        Call_StartForward( g_hForward_OnRunLoad );
-        Call_PushCell( runid );
-        Call_PushCell( view_as<int>( kv ) );
-        Call_Finish();
-        
-        
-        g_hRuns.PushArray( data );
-    }
-    while ( kv.GotoNextKey() );
-    
-    delete kv;
-}
-
-stock int WriteMapFile()
-{
-    // Nothing to write.
-    int len = g_hRuns.Length;
-    if ( len < 1 ) return 0;
-    
-    
-    char szPath[PLATFORM_MAX_PATH];
-    BuildPath( Path_SM, szPath, sizeof( szPath ), "influxruns/%s.ini", g_szCurrentMap );
-    
-    
-    KeyValues kv = new KeyValues( "Runs" );
-    
-    
-    int num = 0;
-    
-    
-    decl data[RUN_SIZE];
-    float vec[3];
-    
-    
-    for ( int i = 0; i < len; i++ )
-    {
-        g_hRuns.GetArray( i, data );
-        
-        CopyArray( data[RUN_TELEPOS], vec, 3 );
-        
-        
-        kv.JumpToKey( view_as<char>( data[RUN_NAME] ), true );
-        
-        kv.SetNum( "id", data[RUN_ID] );
-        
-        
-        kv.SetNum( "resflags", data[RUN_RESFLAGS] );
-        kv.SetNum( "modeflags", data[RUN_MODEFLAGS] );
-        
-        
-        kv.SetVector( "telepos", vec );
-        kv.SetFloat( "teleyaw", view_as<float>( data[RUN_TELEYAW] ) );
-        
-        
-        Call_StartForward( g_hForward_OnRunSave );
-        Call_PushCell( data[RUN_ID] );
-        Call_PushCell( view_as<int>( kv ) );
-        Call_Finish();
-        
-        kv.GoBack();
-        
-        
-        ++num;
-    }
-    
-    
-    kv.Rewind();
-    kv.ExportToFile( szPath );
-    
-    delete kv;
-    
-    return num;
-}
-
 public void OnClientPutInServer( int client )
 {
-    g_flJoinTime[client] = GetEngineTime();
-    
-    
-    g_flNextMenuTime[client] = 0.0;
-    
-    
-    g_flLastRecPrintTime[client] = 0.0;
-    g_flNextWepSpdPrintTime[client] = 0.0;
-    g_flLastValidWepSpd[client] = 0.0;
-    
-    
-    g_flNextStyleGroundCheck[client] = 0.0;
-    
-    g_flFinishBest[client] = INVALID_RUN_TIME;
-    
-    
-    g_cache_flMaxSpeed[client] = g_ConVar_DefMaxWeaponSpeed.FloatValue;
-    
-    g_iClientId[client] = 0;
-    g_bCachedTimes[client] = false;
-    
-    g_iRunState[client] = STATE_NONE;
-    g_iRunStartTick[client] = -1;
-    
-    g_iRunId[client] = -1;
-    g_iModeId[client] = MODE_INVALID;
-    g_iStyleId[client] = STYLE_INVALID;
-    
-    
-    g_flFinishedTime[client] = INVALID_RUN_TIME;
+    ResetClient( client );
     
     
     if ( !IsFakeClient( client ) )
     {
-        int defmode = g_iDefMode;
-        int defstyle = g_iDefStyle;
-        
-        if ( FindModeById( defmode ) == -1 )
-        {
-            defmode = GetModeIdByIndex( 0 );
-            LogError( INF_CON_PRE..."Invalid default mode %i!", g_iDefMode );
-        }
-        
-        if ( FindStyleById( defstyle ) == -1 )
-        {
-            defstyle = g_hStyles.Get( 0, STYLE_ID );
-            LogError( INF_CON_PRE..."Invalid default style %i!", g_iDefStyle );
-        }
-        
-        SetClientMode( client, defmode, false, false, true );
-        SetClientStyle( client, defstyle, false, false );
+        InitClientModeStyle( client );
         
         
-        // Reset all times.
-        int mode, style;
-        for ( int run = 0; run < g_hRuns.Length; run++ )
-        {
-            for ( mode = 0; mode < MAX_MODES; mode++ )
-            {
-                for ( style = 0; style < MAX_STYLES; style++ )
-                {
-                    SetClientRunTime( run, client, mode, style, INVALID_RUN_TIME );
-                }
-            }
-        }
+        ResetAllClientTimes( client );
         
         
         UpdateClientCachedByIndex( client, -1 );
@@ -1890,6 +1649,78 @@ stock void InvalidateClientRun( int client )
         }
         
         g_iRunState[client] = STATE_NONE;
+    }
+}
+
+stock void ResetClient( int client )
+{
+    g_flJoinTime[client] = GetEngineTime();
+    
+    
+    g_flNextMenuTime[client] = 0.0;
+    
+    
+    g_flLastRecPrintTime[client] = 0.0;
+    g_flNextWepSpdPrintTime[client] = 0.0;
+    g_flLastValidWepSpd[client] = 0.0;
+    
+    
+    g_flNextStyleGroundCheck[client] = 0.0;
+    
+    g_flFinishBest[client] = INVALID_RUN_TIME;
+    
+    
+    g_cache_flMaxSpeed[client] = g_ConVar_DefMaxWeaponSpeed.FloatValue;
+    
+    g_iClientId[client] = 0;
+    g_bCachedTimes[client] = false;
+    
+    g_iRunState[client] = STATE_NONE;
+    g_iRunStartTick[client] = -1;
+    
+    g_iRunId[client] = -1;
+    g_iModeId[client] = MODE_INVALID;
+    g_iStyleId[client] = STYLE_INVALID;
+    
+    
+    g_flFinishedTime[client] = INVALID_RUN_TIME;
+}
+
+stock void InitClientModeStyle( int client )
+{
+    int defmode = g_iDefMode;
+    int defstyle = g_iDefStyle;
+    
+    if ( FindModeById( defmode ) == -1 )
+    {
+        defmode = GetModeIdByIndex( 0 );
+        LogError( INF_CON_PRE..."Invalid default mode %i!", g_iDefMode );
+    }
+    
+    if ( FindStyleById( defstyle ) == -1 )
+    {
+        defstyle = g_hStyles.Get( 0, STYLE_ID );
+        LogError( INF_CON_PRE..."Invalid default style %i!", g_iDefStyle );
+    }
+    
+    SetClientMode( client, defmode, false, false, true );
+    SetClientStyle( client, defstyle, false, false );
+}
+
+stock void ResetAllClientTimes( int client )
+{
+    // Messy but works.
+    decl mode, style;
+    
+    for ( int run = 0; run < g_hRuns.Length; run++ )
+    {
+        for ( mode = 0; mode < MAX_MODES; mode++ )
+        {
+            for ( style = 0; style < MAX_STYLES; style++ )
+            {
+                SetClientRunTime( run, client, mode, style, INVALID_RUN_TIME );
+            }
+        }
     }
 }
 

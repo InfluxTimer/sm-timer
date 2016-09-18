@@ -4,3 +4,10 @@ ADDED:
 - influx_disablesuicide-plugin
 - influx_zones_beams_custom-plugin which allows for custom beam settings
 - influx_colorchat-plugin for custom prefix and chat colors.
+
+FIXES:
+- influx_hud compiles (oops)
+
+CODE:
+- Added Inf_Warning stock to warn those silly people who can't get stuff to work.
+- Made code a bit neater.
