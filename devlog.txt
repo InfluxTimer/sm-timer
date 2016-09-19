@@ -5,9 +5,12 @@ ADDED:
 - influx_zones_beams_custom-plugin which allows for custom beam settings
 - influx_colorchat-plugin for custom prefix and chat colors.
 - Added influx_core_suppressmaxwepspdmsg-cvar
+- Replicate command sm_nc (sm_noclip)
 
 FIXES:
 - influx_hud compiles (oops)
+- Noclip messages are no longer spammed in the chat/console.
+- 'Noclip: ON' msg is no longer displayed when in practise mode.
 
 CODE:
 - Added Inf_Warning stock to warn those silly people who can't get stuff to work.

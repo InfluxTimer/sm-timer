@@ -35,10 +35,15 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
     // CMDS
-    RegConsoleCmd( "sm_noclip", Cmd_Noclip );
+    RegConsoleCmd( "sm_noclip", Cmd_Noclip_Override );
+    
+    RegConsoleCmd( "sm_nc", Cmd_Noclip );
     RegConsoleCmd( "sm_fly", Cmd_Noclip );
     
+    AddCommandListener( Lstnr_Noclip, "sm_noclip" );
     
+    
+    // LIBRARIES
     g_bLib_Practise = LibraryExists( INFLUX_LIB_PRACTISE );
     g_bLib_Pause = LibraryExists( INFLUX_LIB_PAUSE );
 }
@@ -60,26 +65,52 @@ public void Influx_RequestHelpCmds()
     Influx_AddHelpCommand( "noclip", "Noclip without admin powers." );
 }
 
-public Action Cmd_Noclip( int client, int args )
+public Action Lstnr_Noclip( int client, const char[] szCmd, int argc )
 {
-    if ( !client ) return Plugin_Handled;
-    
-    if ( args )
+    // Attempting to use the funcommands noclip command.
+    if ( argc )
     {
-        char szArg[32];
-        GetCmdArg( 0, szArg, sizeof( szArg ) );
-        
-        // Attempting to use the funcommands noclip command.
-        if ( StrEqual( szArg, "sm_noclip" ) )
-        {
-            return Plugin_Handled;
-        }
+        return Plugin_Continue;
     }
     
+    
+    if ( client )
+    {
+        HandleNoclip( client );
+    }
+    
+    return Plugin_Stop;
+}
+
+public Action Cmd_Noclip_Override( int client, int args )
+{
+    if ( args ) return Plugin_Continue;
+    
+    
+    if ( client )
+    {
+        HandleNoclip( client );
+    }
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_Noclip( int client, int args )
+{
+    if ( client )
+    {
+        HandleNoclip( client );
+    }
+    
+    return Plugin_Handled;
+}
+ 
+stock void HandleNoclip( int client )
+{
     if ( !IsPlayerAlive( client ) )
     {
         Influx_PrintToChat( _, client, "You must be alive to use this command!" );
-        return Plugin_Handled;
+        return;
     }
     
     
@@ -101,7 +132,10 @@ public Action Cmd_Noclip( int client, int args )
         bool handled = false;
         
         // First check if we can pause.
-        if ( shouldpause && g_bLib_Pause && !Influx_IsClientPaused( client ) )
+        if ( shouldpause
+        && g_bLib_Pause
+        && !Influx_IsClientPaused( client )
+        && !IS_PRAC( g_bLib_Practise, client ) )
         {
             Influx_PauseClientRun( client );
             
@@ -123,12 +157,10 @@ public Action Cmd_Noclip( int client, int args )
     
     // And finally, toggle the noclip!
     ToggleNoclip( client, print );
-    
-    return Plugin_Handled;
- }
- 
- stock void ToggleNoclip( int client, bool bPrint = false )
- {
+}
+
+stock void ToggleNoclip( int client, bool bPrint = false )
+{
     MoveType prevmove = GetEntityMoveType( client );
     
     SetEntityMoveType( client, ( prevmove == MOVETYPE_NOCLIP ) ? MOVETYPE_WALK : MOVETYPE_NOCLIP );
@@ -138,4 +170,4 @@ public Action Cmd_Noclip( int client, int args )
         Influx_PrintToChat( _, client, "Noclip: {TEAM}%s",
             ( prevmove == MOVETYPE_NOCLIP ) ? "OFF" : "ON" );
     }
- }
+}
