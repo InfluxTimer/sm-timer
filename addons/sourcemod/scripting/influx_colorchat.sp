@@ -95,6 +95,8 @@ public void OnPluginStart()
 public void OnMapStart()
 {
     g_hClrs.Clear();
+    g_nClrLen = -1;
+    
     
     AddColor( "TEAM", "\x03" );
     
