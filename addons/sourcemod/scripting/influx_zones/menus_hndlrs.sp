@@ -134,6 +134,7 @@ public int Hndlr_ZoneSettings( Menu menu, MenuAction action, int client, int ind
         izone = FindZoneById( zoneid );
     }
     
+    
     if ( izone != -1 )
     {
         Action res;
@@ -150,6 +151,10 @@ public int Hndlr_ZoneSettings( Menu menu, MenuAction action, int client, int ind
             Influx_PrintToChat( _, client, "Sorry, no settings can be set for this zone!" );
             Inf_OpenZoneMenu( client );
         }
+    }
+    else
+    {
+        Inf_OpenZoneMenu( client );
     }
     
     return 0;

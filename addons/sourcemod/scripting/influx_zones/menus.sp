@@ -273,10 +273,12 @@ public Action Cmd_EndZone( int client, int args )
         CorrectMinsMaxs( mins, maxs );
         
         
-        float dir[2];
-        for ( int i = 0; i < 2; i++ ) dir[i] = maxs[i] - mins[i];
+        float size[3];
+        for ( int i = 0; i < 3; i++ ) size[i] = maxs[i] - mins[i];
         
-        if ( SquareRoot( dir[0] * dir[0] + dir[1] * dir[1] ) > 1.0 )
+        float minsize = g_ConVar_MinSize.FloatValue;
+        
+        if ( size[0] >= minsize && size[1] >= minsize && size[2] >= minsize )
         {
             CreateZone( client, mins, maxs, g_iBuildingType[client] );
         }

@@ -51,6 +51,8 @@ ConVar g_ConVar_SaveZonesOnMapEnd;
 ConVar g_ConVar_Admin_ConfZonesFlags;
 ConVar g_ConVar_Admin_SaveZonesFlags;
 
+ConVar g_ConVar_MinSize;
+
 
 // FORWARDS
 Handle g_hForward_OnZoneSettings;
@@ -167,6 +169,10 @@ public void OnPluginStart()
     
     g_ConVar_Admin_ConfZonesFlags = CreateConVar( "influx_zones_configurezones", "z", "Required flags to configure zones." );
     g_ConVar_Admin_SaveZonesFlags = CreateConVar( "influx_zones_savezones", "z", "Required flags to save zones to a file." );
+    
+    
+    g_ConVar_MinSize = CreateConVar( "influx_zones_minzonesize", "4", "Minimum size of a zone in X, Y and Z.", FCVAR_NOTIFY, true, 1.0 );
+    
     
     AutoExecConfig( true, "zones", "influx" );
     
@@ -640,7 +646,6 @@ stock int CreateZoneEntityByIndex( int index )
     int ent = CreateTrigger( mins, maxs );
     if ( ent < 1 ) return -1;
     
-    
     g_hZones.Set( index, EntIndexToEntRef( ent ), ZONE_ENTREF );
     
     
@@ -719,7 +724,11 @@ stock void GetZoneMinsMaxsByIndex( int index, float mins_out[3], float maxs_out[
 
 stock void DeleteZoneWithClient( int client, int index )
 {
-    if ( index == -1 ) return;
+    if ( index <= -1 )
+    {
+        Influx_PrintToChat( _, client, "Couldn't find a zone!" );
+        return;
+    }
     
     
     decl String:szZone[MAX_ZONE_NAME];
