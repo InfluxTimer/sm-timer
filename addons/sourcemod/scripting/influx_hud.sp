@@ -391,9 +391,6 @@ public Action Cmd_Hud( int client, int args )
     if ( len < 1 ) return Plugin_Handled;
     
     
-    Influx_SetNextMenuTime( client, GetEngineTime() + 15.0 );
-    
-    
     Menu menu = new Menu( Hndlr_Settings );
     menu.SetTitle( "Settings:\n " );
     
