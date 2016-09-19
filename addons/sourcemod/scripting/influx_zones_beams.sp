@@ -321,7 +321,7 @@ public void Influx_OnZoneLoadPost( int zoneid, ZoneType_t zonetype, KeyValues kv
             _,
             kv.GetFloat( "beam_width", 0.0 ),
             kv.GetNum( "beam_framerate", -1 ),
-            kv.GetNum( "beam_speed", -1 ),
+            kv.GetNum( "beam_speed", 0 ),
             _,
             _,
             clr );
@@ -400,7 +400,7 @@ stock void InsertBeams( int zoneid,
                         int beammat = 0,
                         float width = 0.0,
                         int framerate = -1,
-                        int speed = -1,
+                        int speed = 0,
                         float offset = 0.0,
                         float offset_z = 0.0,
                         const int inclr[4] = { 0, 0, 0, 0 } )
@@ -429,7 +429,7 @@ stock void InsertBeams( int zoneid,
     
     if ( framerate < 0 ) framerate = DEF_FRAMERATE;
     
-    if ( speed == -1 ) speed = DEF_SPEED;
+    //if ( speed == -1 ) speed = DEF_SPEED;
     
     if ( clr[3] <= 0 ) Inf_GetZoneTypeDefColor( view_as<ZoneType_t>( zonetype ), clr );
     

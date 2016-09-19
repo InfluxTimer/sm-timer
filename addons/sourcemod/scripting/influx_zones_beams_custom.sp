@@ -114,10 +114,10 @@ stock void ReadBeamFile()
         }
         
         
-        decl String:szTex[128];
+        decl String:szTex[PLATFORM_MAX_PATH];
         kv.GetString( "texture", szTex, sizeof( szTex ), "" );
         
-        decl String:szMat[128];
+        decl String:szMat[PLATFORM_MAX_PATH];
         kv.GetString( "material", szMat, sizeof( szMat ), "" );
         
         
@@ -163,7 +163,7 @@ stock void ReadBeamFile()
         
         data[DEF_WIDTH] = view_as<int>( kv.GetFloat( "width", 0.0 ) );
         data[DEF_FRAMERATE] = kv.GetNum( "framerate", -1 );
-        data[DEF_SPEED] = kv.GetNum( "speed", -1 );
+        data[DEF_SPEED] = kv.GetNum( "speed", 0 );
         
         data[DEF_OFFSET] = view_as<int>( kv.GetFloat( "offset", 0.0 ) );
         data[DEF_OFFSET_Z] = view_as<int>( kv.GetFloat( "offset_z", 0.0 ) );
@@ -217,10 +217,10 @@ public Action Influx_OnBeamAdd( int zoneid, ZoneType_t zonetype, DisplayType_t &
         framerate = data[DEF_FRAMERATE];
     }
     
-    if ( speed == -1 )
-    {
-        speed = data[DEF_SPEED];
-    }
+    //if ( speed == -1 )
+    //{
+    speed = data[DEF_SPEED];
+    //}
     
     if ( offset == 0 )
     {
