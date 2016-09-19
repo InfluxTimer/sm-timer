@@ -9,11 +9,11 @@
 //#define DEBUG
 
 
-#define HEX_CHAR                '\x07'
+#define HEX_CHAR                    '\x07'
 
 
-#define DEF_PREFIX              "{GREY}[{PINK}"...INF_NAME..."{GREY}]"
-#define DEF_CHATCLR             "{WHITE}"
+#define DEF_PREFIX                  "{GREY}[{PINK}"...INF_NAME..."{GREY}]"
+#define DEF_CHATCLR                 "{WHITE}"
 
 
 
@@ -38,7 +38,7 @@ enum
 bool g_bIsCSGO;
 
 char g_szPrefix[64];
-char g_szChatClr[12];
+char g_szChatClr[64];
 
 
 ArrayList g_hClrs;
@@ -54,7 +54,7 @@ public Plugin myinfo =
     author = INF_AUTHOR,
     url = INF_URL,
     name = INF_NAME..." - Chat",
-    description = "",
+    description = "Allows custom chat prefix and colors.",
     version = INF_VERSION
 };
 
@@ -84,7 +84,10 @@ public void OnPluginStart()
     
     // CONVARS
     g_ConVar_Prefix = CreateConVar( "influx_colorchat_prefix", DEF_PREFIX, "Prefix for chat messages.", FCVAR_NOTIFY );
+    g_ConVar_Prefix.AddChangeHook( E_ConVarChanged_Prefix );
+    
     g_ConVar_ChatClr = CreateConVar( "influx_colorchat_chatcolor", DEF_CHATCLR, "Default chat color.", FCVAR_NOTIFY );
+    g_ConVar_ChatClr.AddChangeHook( E_ConVarChanged_ChatClr );
     
     AutoExecConfig( true, "colorchat", "influx" );
 }
@@ -93,55 +96,41 @@ public void OnMapStart()
 {
     g_hClrs.Clear();
     
-    AddColor( "DEF", "\x01" );
     AddColor( "TEAM", "\x03" );
-    AddColor( "DEFGREEN", "\x04" );
-    AddColor( "PINK", "C20095", "\x0E", true );
-    AddColor( "WHITE", "FFFFFF", "\x01", true );
-    AddColor( "GREY", "606060", "\x08", true );
-    AddColor( "LIGHTRED", "FF5A5A", "\x07", true );
+    
+    
+    AddColor( "RED", "FF0000", "\x02", true );
+    AddColor( "LIGHTRED", "FF5B5B", "\x07", true );
+    AddColor( "LIGHTERRED", "FF6A6A", "\x0F", true );
+    
+    AddColor( "GREEN", "00FF00", "\x04", true );
+    AddColor( "LIGHTGREEN", "C0FFC0", "\x05", true );
+    AddColor( "LIMEGREEN", "89FF00", "\x06", true );
+    
+    AddColor( "BLUE", "0000FF", "\x0C", true );
+    AddColor( "SKYBLUE", "00ABFF", "\x0B", true );
+    
     AddColor( "LIGHTYELLOW", "FFFF80", "\x09", true );
+    AddColor( "GOLD", "FFD700", "\x10", true );
+    
+    
+    AddColor( "WHITE", "FFFFFF", "\x01", true );
+    AddColor( "PINK", "C20095", "\x0E", true );
+    AddColor( "GREY", "606060", "\x08", true );
+    
+
+    
     
     DeterminePrefix();
     DetermineChatClr();
 }
 
-public int Native_Chat( Handle hPlugin, int nParms )
-{
-    int author = GetNativeCell( 1 );
-    
-    
-    int nClients = GetNativeCell( 3 );
-    
-    int[] clients = new int[nClients];
-    GetNativeArray( 2, clients, nClients );
-    
-    
-    decl String:buffer[512];
-    GetNativeString( 4, buffer, sizeof( buffer ) );
-    
-    
-    FormatColors( buffer, sizeof( buffer ) );
-    
-    
-    if ( !strlen( buffer ) )
-    {
-        return 0;
-    }
-    
-    // Do prefix?
-    if ( GetNativeCell( 5 ) )
-    {
-        Format( buffer, sizeof( buffer ), "%s %s%s", g_szPrefix, g_szChatClr, buffer );
-    }
-    
-    Inf_SendSayText2( author, clients, nClients, buffer );
-    
-    return 1;
-}
-
 stock void FormatColors( char[] sz, int len )
 {
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Formatting msg '%s'", sz );
+#endif
+    
     int start = 0;
     
     decl index, j;
@@ -220,7 +209,12 @@ stock void FormatColors( char[] sz, int len )
                 
                 colorlen = strlen( view_as<char>( color ) );
             }
-            
+#if defined DEBUG
+            else
+            {
+                PrintToServer( INF_DEBUG_PRE..."Couldn't find match for '%s'!", sz[posstart] );
+            }
+#endif
             
             sz[pos] = '\0';
             
@@ -253,7 +247,7 @@ stock int FindColorByName( const char[] clrname )
     {
         g_hClrs.GetString( i, name, sizeof( name ) );
         
-        if ( StrEqual( clrname, name ) )
+        if ( StrEqual( clrname, name, true ) )
         {
             return i;
         }
@@ -273,15 +267,9 @@ stock bool CheckNameLen( const char[] name )
     return true;
 }
 
-stock void AddColor( const char[] clrname, const char[] c, const char[] clrname_csgo = "", bool csgo_char = false )
+stock void AddColor( const char[] clrname, const char[] c, const char[] c_csgo = "", bool csgo_char = false )
 {
     if ( !CheckNameLen( clrname ) ) return;
-    
-    
-    if ( FindColorByName( clrname ) )
-    {
-        return;
-    }
     
     
     char color[CLR_COLOR_SIZE];
@@ -306,14 +294,11 @@ stock void AddColor( const char[] clrname, const char[] c, const char[] clrname_
     }
     
     
-    if ( clrname_csgo[0] != '\0' )
+    if ( c_csgo[0] != '\0' )
     {
-        if ( !CheckNameLen( clrname_csgo ) ) return;
-        
-        
         if ( !csgo_char )
         {
-            int index = FindColorByName( clrname_csgo );
+            int index = FindColorByName( c_csgo );
             
             if ( index != -1 )
             {
@@ -324,12 +309,12 @@ stock void AddColor( const char[] clrname, const char[] c, const char[] clrname_
             }
             else
             {
-                LogError( INF_CON_PRE..."Color '%s' does not exist!", clrname_csgo );
+                LogError( INF_CON_PRE..."Color '%s' does not exist!", c_csgo );
             }
         }
         else
         {
-            color_csgo[0] = clrname_csgo[0];
+            color_csgo[0] = c_csgo[0];
         }
     }
     
@@ -348,13 +333,28 @@ stock void AddColor( const char[] clrname, const char[] c, const char[] clrname_
     
     int data[CLR_SIZE];
     
+    int index = FindColorByName( clrname );
+    
     strcopy( view_as<char>( data[CLR_NAME] ), CLR_NAME_SIZE, clrname );
     strcopy( view_as<char>( data[CLR_COLOR] ), CLR_COLOR_SIZE, color );
     strcopy( view_as<char>( data[CLR_COLOR_CSGO] ), 4, color_csgo );
     
     
-    g_hClrs.PushArray( data );
-    g_nClrLen = g_hClrs.Length;
+    // Replace existing one.
+    if ( index != -1 )
+    {
+        g_hClrs.SetArray( index, data );
+    }
+    else // Add new one.
+    {
+        g_hClrs.PushArray( data );
+        g_nClrLen = g_hClrs.Length;
+    }
+    
+    
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."%s color %s ('%s', '%s')", ( index != -1 ) ? "Replaced" : "Added", clrname, color, color_csgo );
+#endif
 }
 
 stock bool IsHexColor( const char[] sz )
@@ -376,6 +376,10 @@ stock bool IsHexColor( const char[] sz )
 
 stock void DeterminePrefix()
 {
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Formatting chat prefix..." );
+#endif
+
     g_ConVar_Prefix.GetString( g_szPrefix, sizeof( g_szPrefix ) );
     
     
@@ -395,6 +399,10 @@ stock void DeterminePrefix()
 
 stock void DetermineChatClr()
 {
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Formatting chat color..." );
+#endif
+    
     g_ConVar_ChatClr.GetString( g_szChatClr, sizeof( g_szChatClr ) );
     
     
@@ -436,4 +444,49 @@ public Action Cmd_Test( int client, int args )
     }
     
     return Plugin_Handled;
+}
+
+public void E_ConVarChanged_Prefix( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    DeterminePrefix();
+}
+
+public void E_ConVarChanged_ChatClr( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    DetermineChatClr();
+}
+
+// NATIVES
+public int Native_Chat( Handle hPlugin, int nParms )
+{
+    int author = GetNativeCell( 1 );
+    
+    
+    int nClients = GetNativeCell( 3 );
+    
+    int[] clients = new int[nClients];
+    GetNativeArray( 2, clients, nClients );
+    
+    
+    decl String:buffer[512];
+    GetNativeString( 4, buffer, sizeof( buffer ) );
+    
+    
+    FormatColors( buffer, sizeof( buffer ) );
+    
+    
+    if ( buffer[0] == '\0' )
+    {
+        return 0;
+    }
+    
+    // Do prefix?
+    if ( GetNativeCell( 5 ) )
+    {
+        Format( buffer, sizeof( buffer ), "%s %s%s", g_szPrefix, g_szChatClr, buffer );
+    }
+    
+    Inf_SendSayText2( author, clients, nClients, buffer );
+    
+    return 1;
 }
