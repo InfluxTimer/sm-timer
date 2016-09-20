@@ -5,8 +5,8 @@
 
 
 
-//#define TEST
-//#define DEBUG
+#define TEST
+#define DEBUG
 
 
 #define HEX_CHAR                    '\x07'
@@ -37,7 +37,7 @@ enum
 
 bool g_bIsCSGO;
 
-char g_szPrefix[64];
+char g_szPrefix[128];
 char g_szChatClr[64];
 
 
@@ -101,24 +101,24 @@ public void OnMapStart()
     AddColor( "TEAM", "\x03" );
     
     
-    AddColor( "RED", "FF0000", "\x02", true );
-    AddColor( "LIGHTRED", "FF5B5B", "\x07", true );
-    AddColor( "LIGHTERRED", "FF6A6A", "\x0F", true );
+    AddColor( "RED", "FF0000", "\x02" );
+    AddColor( "LIGHTRED", "FF5B5B", "\x07" );
+    AddColor( "LIGHTERRED", "FF6A6A", "\x0F" );
     
-    AddColor( "GREEN", "00FF00", "\x04", true );
-    AddColor( "LIGHTGREEN", "C0FFC0", "\x05", true );
-    AddColor( "LIMEGREEN", "89FF00", "\x06", true );
+    AddColor( "GREEN", "\x04" );
+    AddColor( "LIGHTGREEN", "C0FFC0", "\x05" );
+    AddColor( "LIMEGREEN", "89FF00", "\x06" );
     
-    AddColor( "BLUE", "0000FF", "\x0C", true );
-    AddColor( "SKYBLUE", "00ABFF", "\x0B", true );
+    AddColor( "BLUE", "0000FF", "\x0C" );
+    AddColor( "SKYBLUE", "00ABFF", "\x0B" );
     
-    AddColor( "LIGHTYELLOW", "FFFF80", "\x09", true );
-    AddColor( "GOLD", "FFD700", "\x10", true );
+    AddColor( "LIGHTYELLOW", "FFFF80", "\x09" );
+    AddColor( "GOLD", "FFD700", "\x10" );
     
     
-    AddColor( "WHITE", "FFFFFF", "\x01", true );
-    AddColor( "PINK", "C20095", "\x0E", true );
-    AddColor( "GREY", "606060", "\x08", true );
+    AddColor( "WHITE", "FFFFFF", "\x01" );
+    AddColor( "PINK", "C20095", "\x0E" );
+    AddColor( "GREY", "606060", "\x08" );
     
 
     
@@ -155,20 +155,12 @@ stock void FormatColors( char[] sz, int len )
         
         endpos += posstart;
         
-        // {} was found.
-        /*if ( posstart == endpos )
-        {
-            start = endpos + 1;
-            continue;
-        }*/
         
         sz[endpos] = '\0';
         
 #if defined DEBUG
         PrintToServer( INF_DEBUG_PRE..."Found potential chat color '%s'", sz[posstart] );
 #endif
-        
-        colorlen = 0;
         
         
         // Want a hex color.
@@ -179,14 +171,16 @@ stock void FormatColors( char[] sz, int len )
                 sz[posstart] = HEX_CHAR;
                 
                 strcopy( view_as<char>( color ), CLR_COLOR_SIZE, sz[posstart] );
+                
+                colorlen = strlen( view_as<char>( color ) );// + 1;
             }
             // CS:GO doesn't support hex colors.
             else
             {
                 strcopy( view_as<char>( color ), CLR_COLOR_SIZE, "\x01" );
+                
+                colorlen = 1;
             }
-            
-            colorlen = strlen( view_as<char>( color ) );
         }
         else
         {
@@ -211,29 +205,33 @@ stock void FormatColors( char[] sz, int len )
                 
                 colorlen = strlen( view_as<char>( color ) );
             }
+            else
+            {
+                colorlen = 0;
+                
 #if defined DEBUG
-            else
-            {
                 PrintToServer( INF_DEBUG_PRE..."Couldn't find match for '%s'!", sz[posstart] );
-            }
 #endif
-            
-            sz[pos] = '\0';
-            
-            if ( colorlen )
-            {
-                Format( sz, len, "%s%s%s", sz, color, sz[endpos + 1] );
-                
-                start = pos + colorlen;
-            }
-            else
-            {
-                Format( sz, len, "%s%s", sz, sz[endpos + 1] );
-                
-                start = pos;
             }
         }
         
+        
+        sz[pos] = '\0';
+        
+        
+        if ( colorlen )
+        {
+            Format( sz, len, "%s%s%s", sz, color, sz[endpos + 1] );
+            
+            start = pos + colorlen;
+        }
+        else
+        {
+            Format( sz, len, "%s%s", sz, sz[endpos + 1] );
+            
+            start = pos + 1;
+        }
+
         
 #if defined DEBUG
         PrintToServer( INF_DEBUG_PRE..."String is now: '%s'", sz );
@@ -269,7 +267,7 @@ stock bool CheckNameLen( const char[] name )
     return true;
 }
 
-stock void AddColor( const char[] clrname, const char[] c, const char[] c_csgo = "", bool csgo_char = false )
+stock void AddColor( const char[] clrname, const char[] c, const char[] c_csgo = "" )
 {
     if ( !CheckNameLen( clrname ) ) return;
     
@@ -281,6 +279,8 @@ stock void AddColor( const char[] clrname, const char[] c, const char[] c_csgo =
     strcopy( color, sizeof( color ), c );
     
     int colorlen = strlen( color );
+    
+    
     if ( colorlen != 1 )
     {
         int offset = ( color[0] == HEX_CHAR ) ? 1 : 0;
@@ -298,29 +298,9 @@ stock void AddColor( const char[] clrname, const char[] c, const char[] c_csgo =
     
     if ( c_csgo[0] != '\0' )
     {
-        if ( !csgo_char )
-        {
-            int index = FindColorByName( c_csgo );
-            
-            if ( index != -1 )
-            {
-                int temp[1];
-                temp[0] = g_hClrs.Get( index, CLR_COLOR );
-                
-                strcopy( color_csgo, sizeof( color_csgo ), view_as<char>( temp ) );
-            }
-            else
-            {
-                LogError( INF_CON_PRE..."Color '%s' does not exist!", c_csgo );
-            }
-        }
-        else
-        {
-            color_csgo[0] = c_csgo[0];
-        }
+        color_csgo[0] = c_csgo[0];
     }
-    
-    if ( color_csgo[0] == '\0' )
+    else
     {
         if ( colorlen == 1 )
         {
@@ -382,17 +362,21 @@ stock void DeterminePrefix()
     PrintToServer( INF_DEBUG_PRE..."Formatting chat prefix..." );
 #endif
 
-    g_ConVar_Prefix.GetString( g_szPrefix, sizeof( g_szPrefix ) );
+    decl String:szPrefix[256];
+    g_ConVar_Prefix.GetString( szPrefix, sizeof( szPrefix ) );
     
     
     // Add CSGO fix.
     if ( g_bIsCSGO )
     {
-        Format( g_szPrefix, sizeof( g_szPrefix ), " \x01\x0B%s", g_szPrefix );
+        Format( szPrefix, sizeof( szPrefix ), " \x01\x0B%s", szPrefix );
     }
     
     
-    FormatColors( g_szPrefix, sizeof( g_szPrefix ) );
+    FormatColors( szPrefix, sizeof( szPrefix ) );
+    
+    
+    strcopy( g_szPrefix, sizeof( g_szPrefix ), szPrefix );
     
 #if defined DEBUG
     PrintToServer( INF_CON_PRE..."Prefix: '%s'", g_szPrefix );
@@ -405,21 +389,25 @@ stock void DetermineChatClr()
     PrintToServer( INF_DEBUG_PRE..."Formatting chat color..." );
 #endif
     
-    g_ConVar_ChatClr.GetString( g_szChatClr, sizeof( g_szChatClr ) );
+    decl String:szChatClr[256];
+    g_ConVar_ChatClr.GetString( szChatClr, sizeof( szChatClr ) );
     
     
-    FormatColors( g_szChatClr, sizeof( g_szChatClr ) );
+    FormatColors( szChatClr, sizeof( szChatClr ) );
     
-    int len = strlen( g_szChatClr );
+    int len = strlen( szChatClr );
     
-    if ( len >= 2 && g_szChatClr[0] != HEX_CHAR )
+    if ( len >= 2 && (szChatClr[0] != HEX_CHAR || g_bIsCSGO) )
     {
         LogError( INF_CON_PRE..."Chat color cannot be more than one color!" );
         return;
     }
     
     
-    AddColor( "CHATCLR", g_szChatClr );
+    AddColor( "CHATCLR", szChatClr );
+    
+    
+    strcopy( g_szChatClr, sizeof( g_szChatClr ), szChatClr );
     
 #if defined DEBUG
     PrintToServer( INF_CON_PRE..."Chat color: '%s'", g_szChatClr );
@@ -436,13 +424,15 @@ public Action Cmd_Test( int client, int args )
         
         FormatColors( szArg, sizeof( szArg ) );
         
-        Format( szArg, sizeof( szArg ), "%s %s%s", g_szPrefix, g_szChatClr, szArg );
-        
-        
-        decl clients[1];
-        clients[0] = client;
-        
-        Inf_SendSayText2( client, clients, sizeof( clients ), szArg );
+        if ( szArg[0] != '\0' )
+        {
+            Format( szArg, sizeof( szArg ), "%s %s%s", g_szPrefix, g_szChatClr, szArg );
+            
+            decl clients[1];
+            clients[0] = client;
+            
+            Inf_SendSayText2( client, clients, sizeof( clients ), szArg );
+        }
     }
     
     return Plugin_Handled;
