@@ -25,6 +25,7 @@
 //#define DEBUG_WEPSPD
 //#define DEBUG_PARSESEARCH
 //#define DEBUG_DB
+//#define DEBUG_DB_VER
 //#define DEBUG_DB_CBRECS
 //#define DEBUG_DB_MAPID
 

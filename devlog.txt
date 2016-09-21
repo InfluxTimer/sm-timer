@@ -17,3 +17,4 @@ CODE:
 - Made code a bit neater.
 - Removed useless Influx_SetNextMenuTime calls.
 - Fixed Influx_GetStyleShortName-native
+- We now track the database version in case we ever want to update it.

@@ -6,6 +6,36 @@ public void Thrd_Empty( Handle db, Handle res, const char[] szError, int client 
     }
 }
 
+public void Thrd_CheckVersion( Handle db, Handle res, const char[] szError, any data )
+{
+    if ( res == null )
+    {
+        Inf_DB_LogError( g_hDB, "getting database version" );
+        return;
+    }
+    
+    
+    if ( SQL_GetRowCount( res ) && SQL_FetchRow( res ) )
+    {
+        int version = SQL_FetchInt( res, 0 );
+        
+        DB_Update( version );
+    }
+#if defined DEBUG_DB_VER
+    else
+    {
+        PrintToServer( INF_DEBUG_PRE..."No database version found, adding new one." );
+    }
+#endif
+    
+    
+    // Update version in the database.
+    char szQuery[192];
+    FormatEx( szQuery, sizeof( szQuery ), "REPLACE INTO "...INF_TABLE_DBVER..." (id,version) VALUES (0,%i)", INF_DB_CURVERSION );
+    
+    SQL_TQuery( g_hDB, Thrd_Empty, szQuery, _, DBPrio_High );
+}
+
 public void Thrd_GetMapId( Handle db, Handle res, const char[] szError, any data )
 {
     if ( res == null )

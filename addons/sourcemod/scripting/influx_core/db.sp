@@ -12,6 +12,9 @@ bool g_bIsMySQL;
 #define PRINTREC_QUERY_LIMIT        20
 
 
+#define INF_DB_CURVERSION           1
+
+
 // Threaded callbacks
 #include "influx_core/db_cb.sp"
 
@@ -108,6 +111,32 @@ stock void DB_Init()
         "rectime REAL NOT NULL," ...
         "recdate DATE NOT NULL," ...
         "PRIMARY KEY(uid,mapid,runid,mode,style))", _, DBPrio_High );
+    
+    
+    
+    // Track our database's version since it'll become handy if we ever need to update the database structure.
+    SQL_TQuery( g_hDB, Thrd_Empty,
+        "CREATE TABLE IF NOT EXISTS "...INF_TABLE_DBVER..." (id INT NOT NULL UNIQUE, version INT NOT NULL)", _, DBPrio_High );
+    
+    
+    DB_CheckVersion();
+}
+
+stock void DB_CheckVersion()
+{
+    SQL_TQuery( g_hDB, Thrd_CheckVersion, "SELECT version FROM "...INF_TABLE_DBVER..." WHERE id=0", _, DBPrio_High );
+}
+
+stock bool DB_Update( int ver )
+{
+#if defined DEBUG_DB_VER
+    PrintToServer( INF_DEBUG_PRE..."Checking database version %i. Current: %i", ver, INF_DB_CURVERSION );
+#endif
+
+    if ( ver == INF_DB_CURVERSION ) return false;
+    
+    
+    return false;
 }
 
 stock void DB_InitMap()
