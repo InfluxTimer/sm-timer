@@ -147,7 +147,7 @@ public int Native_GetStyleShortName( Handle hPlugin, int nParms )
     }
     
     
-    GetStyleName( style, szStyle, sizeof( szStyle ) );
+    GetStyleShortName( style, szStyle, sizeof( szStyle ) );
     
     SetNativeString( 2, szStyle, len, true );
     
