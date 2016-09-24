@@ -380,12 +380,12 @@ public void Thrd_PrintMaps( Handle db, Handle res, const char[] szError, int cli
 
 public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, ArrayList array )
 {
-    decl data[6];
+    decl data[PCB_SIZE];
     
     array.GetArray( 0, data, sizeof( data ) );
     delete array;
     
-    int client = GetClientOfUserId( data[0] );
+    int client = GetClientOfUserId( data[PCB_USERID] );
     
     if ( !client ) return;
     
@@ -396,20 +396,42 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     }
     
     
-    int requid = data[1];
-    int reqmapid = data[2];
-    int runid = data[3]; // Runid is always requested.
-    int reqmode = data[4];
-    int reqstyle = data[5];
+    int requid = data[PCB_UID];
+    int reqmapid = data[PCB_MAPID];
+    int runid = data[PCB_RUNID]; // Runid is always requested.
+    int reqmode = data[PCB_MODE];
+    int reqstyle = data[PCB_STYLE];
+    int offset = data[PCB_OFFSET];
+    int totalrecords = data[PCB_TOTALRECORDS];
+    
+    
+    // This is the first query, this will be our number.
+    if ( !totalrecords )
+    {
+        totalrecords = SQL_GetRowCount( res );
+    }
+    
+    
+    int curpage = RoundToCeil( (PRINTREC_MENU_LIMIT * offset) / 7.0 ) + 1;
+    int lastpage = curpage + RoundToFloor( PRINTREC_MENU_LIMIT / 7.0 );
+    
+    
+    int totalpages = RoundToCeil( totalrecords / 7.0 );
+    
+    if ( lastpage > totalpages )
+    {
+        lastpage = totalpages;
+    }
+    
     
     
     Menu menu = new Menu( Hndlr_RecordList );
     
-    int numrecs = 0;
+    int numrecsprinted = 0;
     //decl recid;
     decl uid, mapid, modeid, styleid, rank;
     decl String:szTime[10];
-    decl String:szInfo[32];
+    decl String:szInfo[64];
     decl String:szMap[64];
     decl String:szName[64];
     decl String:szDisplay[128];
@@ -462,7 +484,19 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     }
     
     
-    while ( SQL_FetchRow( res ) )
+    
+    // We can go back to other pages. Display an option for it.
+    if ( curpage > 1 )
+    {
+        // Please note the 'l' at the start
+        FormatEx( szInfo, sizeof( szInfo ), "l%i_%i_%i_%i_%i_%i_%i", requid, reqmapid, runid, reqmode, reqstyle, offset, totalrecords );
+        
+        menu.AddItem( szInfo, "<< Last page" );
+    }
+    
+    
+    
+    while ( SQL_FetchRow( res ) && numrecsprinted < PRINTREC_MENU_LIMIT )
     {
         // Get the map name once.
         if ( szMap[0] == '\0' )
@@ -537,8 +571,20 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
 
         menu.AddItem( szInfo, szDisplay );
         
-        ++numrecs;
+        ++numrecsprinted;
     }
+    
+    
+    // We have more records to go, display a button to query the next set.
+    if ( numrecsprinted >= PRINTREC_MENU_LIMIT )
+    {
+        // Please note the 'n' at the start
+        FormatEx( szInfo, sizeof( szInfo ), "n%i_%i_%i_%i_%i_%i_%i", requid, reqmapid, runid, reqmode, reqstyle, offset, totalrecords );
+        
+        menu.AddItem( szInfo, ">> Next page" );
+    }
+    
+    
     
     if ( reqmode != -1 && ShouldModeDisplay( reqmode ) )
     {
@@ -562,7 +608,7 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     if ( szMap[0] == '\0' ) strcopy( szMap, sizeof( szMap ), "N/A" );
     
     
-    menu.SetTitle( "%s%sRecords | %s%s%s%s%s%s | %s\n \n----------------------------------------------\n ",
+    menu.SetTitle( "%s%sRecords | %s%s%s%s%s%s | %s\n \nPages: %i-%i/%i\n----------------------------------------------\n ",
         ( requid != -1 && szName[0] != '\0' ) ? szName : "",
         ( requid != -1 && szName[0] != '\0' ) ? "'s " : "",
         szRun,
@@ -571,9 +617,12 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
         szStyle,
         ( szMode[0] != '\0' ) ? " " : "",
         szMode,
-        szMap );
+        szMap,
+        curpage,
+        lastpage,
+        totalpages );
     
-    if ( !numrecs )
+    if ( !numrecsprinted )
     {
         menu.AddItem( "", "No records were found! :(", ITEMDRAW_DISABLED );
     }

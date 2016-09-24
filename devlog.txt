@@ -4,6 +4,7 @@ ADDED:
 - influx_disablesuicide-plugin
 - influx_zones_beams_custom-plugin which allows for custom beam settings
 - influx_colorchat-plugin for custom prefix and chat colors.
+- Ability to navigate through more records (added last/next page buttons to records menu)
 - Added influx_core_suppressmaxwepspdmsg-cvar
 - Replicate command sm_nc (sm_noclip)
 

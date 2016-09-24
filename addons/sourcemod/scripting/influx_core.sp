@@ -33,6 +33,40 @@
 #define GAME_CONFIG_FILE      "influx.games"
 
 
+
+
+
+// Print records CallBack (PCB)
+
+#define MAX_PCB_PLYNAME             32
+#define MAX_PCB_PLYNAME_CELL        MAX_PCB_PLYNAME / 4
+
+#define PCB_NUM_ELEMENTS            7 // This is for menu string parsing.
+
+enum
+{
+    PCB_USERID = 0,
+    
+    PCB_UID,
+    PCB_MAPID,
+    PCB_RUNID,
+    PCB_MODE,
+    PCB_STYLE,
+    PCB_OFFSET,
+    PCB_TOTALRECORDS,
+    
+    
+    // For now ignore player names
+    //PCB_PLYNAME[MAX_PCB_PLYNAME_CELL],
+    //PCB_MAPNAME[], // Map name is not necessary since we ALWAYS retrieve the map id.
+    
+    PCB_SIZE
+};
+
+
+
+
+
 // PLAYER STUFF
 int g_iRunId[INF_MAXPLAYERS];
 int g_iStyleId[INF_MAXPLAYERS];

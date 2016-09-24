@@ -9,10 +9,12 @@ bool g_bIsMySQL;
 
 #define MAX_DB_NAME_LENGTH          31 * 2 + 1 // 63
 
-#define PRINTREC_QUERY_LIMIT        20
+#define PRINTREC_QUERY_LIMIT        100
+#define PRINTREC_MENU_LIMIT         19 // Radio menus allow for 7 items per page (-2 for last and next page items)
 
 
 #define INF_DB_CURVERSION           1
+
 
 
 // Threaded callbacks
@@ -293,7 +295,17 @@ stock void DB_PrintMaps( int client )
     SQL_TQuery( g_hDB, Thrd_PrintMaps, szQuery, GetClientUserId( client ), DBPrio_Low );
 }
 
-stock void DB_PrintRecords( int client, int uid = -1, int mapid = -1, int runid, int mode = -1, int style = -1, const char[] szName = "", const char[] szMap = "" )
+stock void DB_PrintRecords(
+    int client,
+    int uid = -1,
+    int mapid = -1,
+    int runid,
+    int mode = -1,
+    int style = -1,
+    const char[] szName = "",
+    const char[] szMap = "",
+    int offset = 0,
+    int total_records = 0 )
 {
 #if defined DEBUG_DB
     PrintToServer( INF_DEBUG_PRE..."Printing records for %i (%i, %i, %i, %i, %i, '%s', '%s')",
@@ -381,15 +393,28 @@ stock void DB_PrintRecords( int client, int uid = -1, int mapid = -1, int runid,
     Format( szQuery, sizeof( szQuery ), "%s ORDER BY rectime LIMIT %i", szQuery, PRINTREC_QUERY_LIMIT );
     
     
-    decl data[6];
+    if ( offset > 0 )
+    {
+        Format( szQuery, sizeof( szQuery ), "%s OFFSET %i", szQuery, offset * PRINTREC_MENU_LIMIT );
+    }
+    
+    
+    decl data[PCB_SIZE];
     ArrayList array = new ArrayList( sizeof( data ) );
-    data[0] = GetClientUserId( client );
-    data[1] = uid;
-    data[2] = mapid;
-    data[3] = runid;
-    data[4] = mode;
-    data[5] = style;
+    data[PCB_USERID] = GetClientUserId( client );
+    data[PCB_UID] = uid;
+    data[PCB_MAPID] = mapid;
+    data[PCB_RUNID] = runid;
+    data[PCB_MODE] = mode;
+    data[PCB_STYLE] = style;
+    data[PCB_OFFSET] = offset;
+    data[PCB_TOTALRECORDS] = total_records;
+    
+    //strcopy( view_as<char>( data[PCB_PLYNAME] ), MAX_PCB_PLYNAME, szName );
+    
     array.PushArray( data );
+    
+    
     
     SQL_TQuery( g_hDB, Thrd_PrintRecords, szQuery, array, DBPrio_Low );
 }
