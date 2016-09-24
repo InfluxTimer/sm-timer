@@ -3,6 +3,8 @@
 #include <influx/core>
 #include <influx/hud>
 
+#include <msharedutil/misc>
+
 
 #undef REQUIRE_PLUGIN
 #include <influx/help>
@@ -232,6 +234,9 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
                 
                 Inf_FormatSeconds( time, szTemp2, sizeof( szTemp2 ), szSecFormat );
                 Influx_GetClientCurrentBestName( target, szTemp3, sizeof( szTemp3 ) );
+                
+                LimitString( szTemp3, sizeof( szTemp3 ), 8 );
+                
                 
                 FormatEx( szTemp, sizeof( szTemp ), "SR: %s (%s)", szTemp2, szTemp3 );
             }

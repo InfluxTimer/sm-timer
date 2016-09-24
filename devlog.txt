@@ -7,6 +7,9 @@ ADDED:
 - Added influx_core_suppressmaxwepspdmsg-cvar
 - Replicate command sm_nc (sm_noclip)
 
+CHANGES:
+- Sidebar player name is now truncated. (low res CS:GO users won't have half of their screen covered with the name)
+
 FIXES:
 - influx_hud compiles (oops)
 - Noclip messages are no longer spammed in the chat/console.
