@@ -56,8 +56,8 @@ public void OnPluginStart()
     
     if ( g_bIsCSGO )
     {
-        RegConsoleCmd( "sm_hpk", Cmd_Hpk );
-        RegConsoleCmd( "sm_hpk2000", Cmd_Hpk );
+        RegConsoleCmd( "sm_hkp", Cmd_Hpk );
+        RegConsoleCmd( "sm_hkp2000", Cmd_Hpk );
     }
 }
 
@@ -102,7 +102,7 @@ public Action Cmd_Scout( int client, int args )
 
 public Action Cmd_Hpk( int client, int args )
 {
-    GiveWeapon( client, "weapon_hpk2000", SLOT_SECONDARY );
+    GiveWeapon( client, "weapon_hkp2000", SLOT_SECONDARY );
     return Plugin_Handled;
 }
 
