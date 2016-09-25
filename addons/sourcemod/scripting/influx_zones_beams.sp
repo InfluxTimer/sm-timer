@@ -112,8 +112,8 @@ public void OnPluginStart()
     
     
     // CONVARS
-    g_ConVar_DrawInterval = CreateConVar( "influx_beams_drawinterval", "1.0", "Draw interval for zone beam draw updates.", FCVAR_NOTIFY );
-    HookConVarChange( g_ConVar_DrawInterval, E_ConVarChanged_DrawInterval );
+    g_ConVar_DrawInterval = CreateConVar( "influx_beams_drawinterval", "1.0", "Interval in seconds that zone beams get updated to players.", FCVAR_NOTIFY );
+    g_ConVar_DrawInterval.AddChangeHook( E_ConVarChanged_DrawInterval );
     
     AutoExecConfig( true, "beams", "influx" );
     
