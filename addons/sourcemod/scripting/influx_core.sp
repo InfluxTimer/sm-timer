@@ -841,6 +841,9 @@ stock bool TeleClientToStart_Safe( int client, int runid )
         LogError( INF_CON_PRE..."Couldn't teleport client %i to run %i or %i!", client, runid, def_target );
     }
     
+    
+    TeleClientToSpawn( client );
+    
     return false;
 }
 
@@ -865,6 +868,55 @@ stock bool TeleClientToStart( int client, int runid )
     return true;
 }
 
+stock bool TeleClientToSpawn( int client )
+{
+    char szSpawn[32];
+    FormatEx( szSpawn, sizeof( szSpawn ), "%s",
+        ( GetClientTeam( client ) == CS_TEAM_CT ) ? "info_player_counterterrorist" : "info_player_terrorist" );
+    
+    
+    int ent = FindEntityByClassname( -1, szSpawn );
+    
+    if ( ent != -1 )
+    {
+        float pos[3];
+        GetEntityOrigin( ent, pos );
+        
+        float ang[3];
+        GetEntPropVector( ent, Prop_Data, "m_angRotation", ang );
+        
+        
+        TeleportEntity( client, pos, ang, ORIGIN_VECTOR );
+        
+        return true;
+    }
+    
+    return false;
+}
+
+stock bool IsValidTeleLocation( const float pos[3] )
+{
+    float end[3];
+    end = pos;
+    
+    if ( TR_PointOutsideWorld( end ) ) return false;
+    
+    
+
+    
+    end[2] += 72.0;
+    
+    TR_TraceHullFilter( pos, end, PLYHULL_MINS, PLYHULL_MAXS_NOZ, MASK_PLAYERSOLID, TraceFilter_AnythingButThoseFilthyPlayersEww );
+    
+    
+    return ( !TR_DidHit() );
+}
+
+public bool TraceFilter_AnythingButThoseFilthyPlayersEww( int ent, int mask )
+{
+    return ( ent == 0 || ent > MaxClients );
+}
+
 stock void GetRunTelePos( int irun, float out[3] )
 {
     out[0] = g_hRuns.Get( irun, RUN_TELEPOS );
@@ -872,9 +924,42 @@ stock void GetRunTelePos( int irun, float out[3] )
     out[2] = g_hRuns.Get( irun, RUN_TELEPOS + 2 );
 }
 
+stock bool SetRunTelePos( int irun, const float pos[3], bool bForce = false )
+{
+    if ( irun == -1 ) return false;
+    
+    
+    if ( !IsValidTeleLocation( pos ) )
+    {
+        if ( bForce )
+        {
+            LogError( INF_CON_PRE..."Run's %i teleport destination is not valid! (%.1f, %.1f, %.1f)", GetRunIdByIndex( irun ), pos[0], pos[1], pos[2] );
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    for ( int i = 0; i < 3; i++ )
+    {
+        g_hRuns.Set( irun, pos[i], RUN_TELEPOS + i );
+    }
+    
+    return true;
+}
+
 stock float GetRunTeleYaw( int irun )
 {
     return view_as<float>( g_hRuns.Get( irun, RUN_TELEYAW ) );
+}
+
+stock void SetRunTeleYaw( int irun, float yaw )
+{
+    if ( irun == -1 ) return;
+    
+    
+    g_hRuns.Set( irun, yaw, RUN_TELEYAW );
 }
 
 // If we have only one choice, don't display.

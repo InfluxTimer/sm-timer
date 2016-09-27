@@ -270,17 +270,23 @@ public Action Cmd_Admin_SetTelePos( int client, int args )
         
         GetClientEyeAngles( client, ang );
         
+        float yaw = Inf_SnapTo( ang[1] );
         
+        bool success = SetRunTelePos( irun, vec );
         
-        for ( int i = 0; i < 3; i++ ) g_hRuns.Set( irun, vec[i], RUN_TELEPOS + i );
-        
-        g_hRuns.Set( irun, Inf_SnapTo( ang[1] ), RUN_TELEYAW );
-        
-        
-        char szRun[MAX_RUN_NAME];
-        GetRunNameByIndex( irun, szRun, sizeof( szRun ) );
-        
-        Influx_PrintToChat( _, client, "Updated run's {TEAM}%s{CHATCLR} teleport position and angle!", szRun );
+        if ( success )
+        {
+            SetRunTeleYaw( irun, yaw );
+            
+            char szRun[MAX_RUN_NAME];
+            GetRunNameByIndex( irun, szRun, sizeof( szRun ) );
+            
+            Influx_PrintToChat( _, client, "Updated run's {TEAM}%s{CHATCLR} teleport position and angle!", szRun );
+        }
+        else
+        {
+            Influx_PrintToChat( _, client, "That position isn't a valid teleport destination!" );
+        }
     }
     else
     {

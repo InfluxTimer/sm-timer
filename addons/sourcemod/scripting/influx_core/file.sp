@@ -103,17 +103,17 @@ stock void ReadMapFile()
         teleyaw = kv.GetFloat( "teleyaw", 0.0 );
         
         
-        CopyArray( telepos, data[RUN_TELEPOS], 3 );
-        data[RUN_TELEYAW] = view_as<int>( teleyaw );
-        
-        
         Call_StartForward( g_hForward_OnRunLoad );
         Call_PushCell( runid );
         Call_PushCell( view_as<int>( kv ) );
         Call_Finish();
         
         
-        g_hRuns.PushArray( data );
+        int irun = g_hRuns.PushArray( data );
+        
+        
+        SetRunTelePos( irun, telepos, true );
+        SetRunTeleYaw( irun, teleyaw );
     }
     while ( kv.GotoNextKey() );
     

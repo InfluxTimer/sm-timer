@@ -260,10 +260,18 @@ public int Native_AddRun( Handle hPlugin, int nParms )
         data[RUN_ID] = runid;
         strcopy( view_as<char>( data[RUN_NAME] ), MAX_RUN_NAME, szRun );
         
-        GetNativeArray( 3, data[RUN_TELEPOS], 3 );
-        data[RUN_TELEYAW] = view_as<int>( Inf_SnapTo( GetNativeCell( 4 ) ) );
         
-        g_hRuns.PushArray( data );
+        float pos[3];
+        GetNativeArray( 3, pos, 3 );
+        
+        float yaw = Inf_SnapTo( GetNativeCell( 4 ) );
+        
+        
+        int irun = g_hRuns.PushArray( data );
+        
+        
+        SetRunTelePos( irun, pos, true );
+        SetRunTeleYaw( irun, yaw );
         
         
         if ( GetNativeCell( 5 ) )

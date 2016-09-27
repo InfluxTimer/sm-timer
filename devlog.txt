@@ -10,6 +10,8 @@ ADDED:
 
 CHANGES:
 - Sidebar player name is now truncated. (low res CS:GO users won't have half of their screen covered with the name)
+- Influx will throw an error if run's teleport destination is invalid.
+- If no runs exist, restart commands (eg. sm_restart) will teleport player to spawn.
 
 FIXES:
 - influx_hud compiles (oops)
@@ -17,6 +19,7 @@ FIXES:
 - 'Noclip: ON' msg is no longer displayed when in practise mode.
 - You should now be able to give yourself an hkp2000
 - Setting run teleport destination and yaw through run menu should work correctly.
+- You can no longer set run teleport destination in solid.
 
 CODE:
 - Added Inf_Warning stock to warn those silly people who can't get stuff to work.
