@@ -52,7 +52,8 @@ public int Hndlr_RunSettings( Menu menu, MenuAction action, int client, int inde
     {
         case 'a' :
         {
-            FakeClientCommand( client, "sm_settelepos" );
+            // Pass the menu run id since our run id may be different.
+            FakeClientCommand( client, "sm_settelepos %i", runid );
             return 0;
         }
         default : // Result and mode flags

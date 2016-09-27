@@ -16,6 +16,7 @@ FIXES:
 - Noclip messages are no longer spammed in the chat/console.
 - 'Noclip: ON' msg is no longer displayed when in practise mode.
 - You should now be able to give yourself an hkp2000
+- Setting run teleport destination and yaw through run menu should work correctly.
 
 CODE:
 - Added Inf_Warning stock to warn those silly people who can't get stuff to work.
