@@ -420,10 +420,10 @@ public void OnPluginStart()
     
     
     // CONVARS
-    g_ConVar_ChatPrefix = CreateConVar( "influx_core_prefix", DEF_CHATPREFIX, "Prefix for chat messages.", FCVAR_NOTIFY );
+    g_ConVar_ChatPrefix = CreateConVar( "influx_chatprefix", DEF_CHATPREFIX, "Prefix for chat messages.", FCVAR_NOTIFY );
     g_ConVar_ChatPrefix.AddChangeHook( E_ConVarChanged_Prefix );
     
-    g_ConVar_ChatClr = CreateConVar( "influx_core_chatcolor", DEF_CHATCLR, "Default chat color.", FCVAR_NOTIFY );
+    g_ConVar_ChatClr = CreateConVar( "influx_chatcolor", DEF_CHATCLR, "Default chat color.", FCVAR_NOTIFY );
     g_ConVar_ChatClr.AddChangeHook( E_ConVarChanged_ChatClr );
     
     
