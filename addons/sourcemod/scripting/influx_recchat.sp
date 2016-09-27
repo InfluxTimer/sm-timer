@@ -195,7 +195,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     
     
     GetClientName( client, szName, sizeof( szName ) );
-    Inf_RemoveColors( szName, sizeof( szName ) );
+    Influx_RemoveChatColors( szName, sizeof( szName ) );
     
     Influx_PrintToChatEx( _, client, clients, nClients, "{TEAM}%s{CHATCLR} finished {TEAM}%s{CHATCLR} in %s!%s%s%s%s%s%s",
         szName,
