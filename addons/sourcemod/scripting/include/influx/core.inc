@@ -416,7 +416,7 @@ stock bool Inf_HandleCmdSpam( int client, float delay = 1.0, float &lasttime, bo
     if ( dif > 0.0 )
     {
         if ( bPrint )
-            Influx_PrintToChat( _, client, "Please wait {TEAM}%.1f{CHATCLR} seconds before using this command!", dif );
+            Influx_PrintToChat( _, client, "Please wait {MAINCLR1}%.1f{CHATCLR} seconds before using this command!", dif );
         
         return true;
     }

@@ -282,7 +282,7 @@ public int Native_AddRun( Handle hPlugin, int nParms )
         }
         
         
-        Influx_PrintToChatAll( _, 0, "{TEAM}%s{CHATCLR} has been created!", szRun );
+        Influx_PrintToChatAll( _, 0, "{MAINCLR1}%s{CHATCLR} has been created!", szRun );
         
         DetermineRuns();
         

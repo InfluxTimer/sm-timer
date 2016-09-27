@@ -95,7 +95,7 @@ public Action Cmd_SaveZones( int client, int args )
         
         if ( IS_ENT_PLAYER( client ) )
         {
-            Influx_PrintToChat( _, client, "Wrote {TEAM}%i{CHATCLR} zones to file!", num );
+            Influx_PrintToChat( _, client, "Wrote {MAINCLR1}%i{CHATCLR} zones to file!", num );
         }
         else
         {

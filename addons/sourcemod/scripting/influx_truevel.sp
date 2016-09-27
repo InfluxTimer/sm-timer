@@ -54,7 +54,7 @@ public Action Cmd_Truevel( int client, int args )
     g_bTruevel[client] = !g_bTruevel[client];
     
     
-    Influx_PrintToChat( _, client, "Truevel: {TEAM}%s{CHATCLR}!", g_bTruevel[client] ? "ON" : "OFF" );
+    Influx_PrintToChat( _, client, "Truevel: {MAINCLR1}%s{CHATCLR}!", g_bTruevel[client] ? "ON" : "OFF" );
     
     return Plugin_Handled;
 }

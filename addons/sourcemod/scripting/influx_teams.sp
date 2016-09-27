@@ -114,7 +114,7 @@ public Action Cmd_Spec( int client, int args )
                 {
                     SetClientObserverTarget( client, target );
                     
-                    Influx_PrintToChat( _, client, "You are now spectating {TEAM}%N{CHATCLR}!", target );
+                    Influx_PrintToChat( _, client, "You are now spectating {MAINCLR1}%N{CHATCLR}!", target );
                 }
                 
                 SetClientObserverMode( client, OBS_MODE_IN_EYE );

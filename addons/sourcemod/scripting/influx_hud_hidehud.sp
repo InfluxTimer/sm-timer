@@ -75,7 +75,7 @@ public Action Cmd_Timer( int client, int args )
     Influx_SetClientHideFlags( client, hideflags );
     
     
-    Influx_PrintToChat( _, client, "Your timer is now {TEAM}%s{CHATCLR}!", ( hideflags & HIDEFLAG_TIMER ) ? "hidden" : "visible" );
+    Influx_PrintToChat( _, client, "Your timer is now {MAINCLR1}%s{CHATCLR}!", ( hideflags & HIDEFLAG_TIMER ) ? "hidden" : "visible" );
     
     return Plugin_Handled;
 }
@@ -99,7 +99,7 @@ public Action Cmd_Sidebar( int client, int args )
     Influx_SetClientHideFlags( client, hideflags );
     
     
-    Influx_PrintToChat( _, client, "Your sidebar is now {TEAM}%s{CHATCLR}!", ( hideflags & HIDEFLAG_SIDEBAR ) ? "hidden" : "visible" );
+    Influx_PrintToChat( _, client, "Your sidebar is now {MAINCLR1}%s{CHATCLR}!", ( hideflags & HIDEFLAG_SIDEBAR ) ? "hidden" : "visible" );
     
     return Plugin_Handled;
 }

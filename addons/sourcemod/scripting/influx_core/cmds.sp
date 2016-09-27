@@ -4,7 +4,7 @@ public Action Cmd_Version( int client, int args )
 {
     if ( client )
     {
-        Influx_PrintToChat( _, client, "Server is running {TEAM}"...INF_NAME..."{CHATCLR} version {TEAM}"...INF_VERSION..."{CHATCLR}!" );
+        Influx_PrintToChat( _, client, "Server is running {MAINCLR1}"...INF_NAME..."{CHATCLR} version {MAINCLR1}"...INF_VERSION..."{CHATCLR}!" );
     }
     else
     {
@@ -281,7 +281,7 @@ public Action Cmd_Admin_SetTelePos( int client, int args )
             char szRun[MAX_RUN_NAME];
             GetRunNameByIndex( irun, szRun, sizeof( szRun ) );
             
-            Influx_PrintToChat( _, client, "Updated run's {TEAM}%s{CHATCLR} teleport position and angle!", szRun );
+            Influx_PrintToChat( _, client, "Updated run's {MAINCLR1}%s{CHATCLR} teleport position and angle!", szRun );
         }
         else
         {
@@ -290,7 +290,7 @@ public Action Cmd_Admin_SetTelePos( int client, int args )
     }
     else
     {
-        Influx_PrintToChat( _, client, "Run with an ID of {TEAM}%i{CHATCLR} does not exist!", runid );
+        Influx_PrintToChat( _, client, "Run with an ID of {MAINCLR1}%i{CHATCLR} does not exist!", runid );
     }
     
     return Plugin_Handled;
@@ -305,7 +305,7 @@ public Action Cmd_Admin_SaveRuns( int client, int args )
     
     if ( client )
     {
-        Influx_PrintToChat( _, client, "Wrote {TEAM}%i{CHATCLR} runs to file!", num );
+        Influx_PrintToChat( _, client, "Wrote {MAINCLR1}%i{CHATCLR} runs to file!", num );
     }
     else
     {
@@ -341,7 +341,7 @@ public Action Cmd_Admin_SetRunName( int client, int args )
         SetRunNameByIndex( index, szNew );
         
         
-        Influx_PrintToChatAll( _, client, "Run {TEAM}%s{CHATCLR} has been renamed to {TEAM}%s{CHATCLR}!", szOld, szNew );
+        Influx_PrintToChatAll( _, client, "Run {MAINCLR1}%s{CHATCLR} has been renamed to {MAINCLR1}%s{CHATCLR}!", szOld, szNew );
         
         
         if ( !client )
@@ -353,7 +353,7 @@ public Action Cmd_Admin_SetRunName( int client, int args )
     {
         if ( client )
         {
-            Influx_PrintToChat( _, client, "Run with an ID of {TEAM}%i{CHATCLR} does not exist!", runid );
+            Influx_PrintToChat( _, client, "Run with an ID of {MAINCLR1}%i{CHATCLR} does not exist!", runid );
         }
         else
         {
@@ -401,7 +401,7 @@ public Action Cmd_Admin_DeleteRun( int client, int args )
         
         if ( client )
         {
-            Influx_PrintToChat( _, client, "Run {TEAM}%s{CHATCLR} has been deleted!", szRun );
+            Influx_PrintToChat( _, client, "Run {MAINCLR1}%s{CHATCLR} has been deleted!", szRun );
         }
         else
         {
@@ -412,7 +412,7 @@ public Action Cmd_Admin_DeleteRun( int client, int args )
     {
         if ( client )
         {
-            Influx_PrintToChat( _, client, "Run with an ID of {TEAM}%i{CHATCLR} does not exist!", runid );
+            Influx_PrintToChat( _, client, "Run with an ID of {MAINCLR1}%i{CHATCLR} does not exist!", runid );
         }
         else
         {

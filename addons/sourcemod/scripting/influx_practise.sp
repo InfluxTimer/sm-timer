@@ -474,7 +474,7 @@ stock void StartPractising( int client )
     }
     
     
-    Influx_PrintToChat( _, client, "Practice mode: {TEAM}ON" );
+    Influx_PrintToChat( _, client, "Practice mode: {MAINCLR1}ON" );
 }
 
 stock void EndPractising( int client )
@@ -494,7 +494,7 @@ stock void EndPractising( int client )
         Influx_TeleportToStart( client, true );
     }
     
-    Influx_PrintToChat( _, client, "Practice mode: {TEAM}OFF" );
+    Influx_PrintToChat( _, client, "Practice mode: {MAINCLR1}OFF" );
 }
 
 public int Native_IsClientPractising( Handle hPlugin, int nParams )

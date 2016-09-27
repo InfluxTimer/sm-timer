@@ -340,11 +340,11 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
                 SetPosByIndex( itele, pos );
                 SetAngByIndex( itele, ang );
                 
-                Influx_PrintToChat( _, client, "Copying position and angles from entity {TEAM}%i{CHATCLR}!", closestent );
+                Influx_PrintToChat( _, client, "Copying position and angles from entity {MAINCLR1}%i{CHATCLR}!", closestent );
             }
             else
             {
-                Influx_PrintToChat( _, client, "Couldn't find a teleport destination within {TEAM}%.0f{CHATCLR} units!", DIST_TO_FIND );
+                Influx_PrintToChat( _, client, "Couldn't find a teleport destination within {MAINCLR1}%.0f{CHATCLR} units!", DIST_TO_FIND );
             }
         }
     }

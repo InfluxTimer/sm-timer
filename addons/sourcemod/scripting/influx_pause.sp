@@ -160,7 +160,7 @@ stock void PauseRun( int client )
     
     if ( g_flPauseLimit[client] > GetEngineTime() )
     {
-        Influx_PrintToChat( _, client, "You cannot pause so soon! Please wait {TEAM}%.1f{CHATCLR} seconds!", g_flPauseLimit[client] - GetEngineTime() );
+        Influx_PrintToChat( _, client, "You cannot pause so soon! Please wait {MAINCLR1}%.1f{CHATCLR} seconds!", g_flPauseLimit[client] - GetEngineTime() );
         return;
     }
     
@@ -196,7 +196,7 @@ stock void PauseRun( int client )
     GetClientAbsOrigin( client, g_vecContinuePos[client] );
     GetClientEyeAngles( client, g_vecContinueAng[client] );
     
-    Influx_PrintToChat( _, client, "Your run is now paused. Type {TEAM}!continue{CHATCLR} to resume." );
+    Influx_PrintToChat( _, client, "Your run is now paused. Type {MAINCLR1}!continue{CHATCLR} to resume." );
 }
 
 stock void ContinueRun( int client )

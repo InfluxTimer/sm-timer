@@ -797,7 +797,7 @@ stock void FinishPlayback()
         {
             if ( IsClientInGame( i ) && IsObservingTarget( i, g_iReplayBot ) )
             {
-                Influx_PrintToChat( _, i, "You can now request a replay by typing {TEAM}!replay{CHATCLR} in chat." );
+                Influx_PrintToChat( _, i, "You can now request a replay by typing {MAINCLR1}!replay{CHATCLR} in chat." );
             }
         }
     }
@@ -1009,7 +1009,7 @@ stock bool CanChangeReplay( int issuer = 0, bool bCanAdminOverride = true )
             }
             else
             {
-                Influx_PrintToChat( _, issuer, INF_CHAT_PRE..."Replay is being watched by {TEAM}%N{CHATCLR}. Please wait for the recording to finish.", g_iReplayRequester );
+                Influx_PrintToChat( _, issuer, INF_CHAT_PRE..."Replay is being watched by {MAINCLR1}%N{CHATCLR}. Please wait for the recording to finish.", g_iReplayRequester );
             }
         }
         

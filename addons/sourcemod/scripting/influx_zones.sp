@@ -530,7 +530,7 @@ stock void CheckZones( int issuer = 0 )
         
         if ( IS_ENT_PLAYER( issuer ) && IsClientInGame( issuer ) )
         {
-            Influx_PrintToChat( _, issuer, "Spawned {TEAM}%i{CHATCLR} zones!", num );
+            Influx_PrintToChat( _, issuer, "Spawned {MAINCLR1}%i{CHATCLR} zones!", num );
         }
     }
 }
@@ -577,7 +577,7 @@ stock bool StartToBuild( int client, ZoneType_t zonetype, const char[] name = ""
     }
     
     
-    Influx_PrintToChat( _, client, "Started building {TEAM}%s{CHATCLR}!", szName );
+    Influx_PrintToChat( _, client, "Started building {MAINCLR1}%s{CHATCLR}!", szName );
     
     return true;
 }
@@ -702,7 +702,7 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
     // Get name again in case it was updated.
     g_hZones.GetString( ourindex, szName, sizeof( szName ) );
     
-    Influx_PrintToChat( _, client, "Created zone {TEAM}%s{CHATCLR}!", szName );
+    Influx_PrintToChat( _, client, "Created zone {MAINCLR1}%s{CHATCLR}!", szName );
     
     
     // May be changed above.
@@ -736,11 +736,11 @@ stock void DeleteZoneWithClient( int client, int index )
     
     if ( DeleteZoneByIndex( index ) )
     {
-        Influx_PrintToChat( _, client, "Deleted {TEAM}%s{CHATCLR}!", szZone );
+        Influx_PrintToChat( _, client, "Deleted {MAINCLR1}%s{CHATCLR}!", szZone );
     }
     else
     {
-        Influx_PrintToChat( _, client, "Couldn't delete {TEAM}%s{CHATCLR}!", szZone );
+        Influx_PrintToChat( _, client, "Couldn't delete {MAINCLR1}%s{CHATCLR}!", szZone );
     }
 }
 

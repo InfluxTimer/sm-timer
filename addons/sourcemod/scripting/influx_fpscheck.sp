@@ -189,7 +189,7 @@ stock bool IsValidFps( int client, char[] msg, int msg_len )
             {
                 if ( g_flFps[client] < g_flTickRate )
                 {
-                    FormatEx( msg, msg_len, "Your FPS must be equal to or greater than {TEAM}%.0f{CHATCLR}!", g_flTickRate );
+                    FormatEx( msg, msg_len, "Your FPS must be equal to or greater than {MAINCLR1}%.0f{CHATCLR}!", g_flTickRate );
                     return false;
                 }
             }
@@ -197,7 +197,7 @@ stock bool IsValidFps( int client, char[] msg, int msg_len )
             {
                 if ( g_flFps[client] != 300.0 )
                 {
-                    strcopy( msg, msg_len, "Your FPS must be {TEAM}300{CHATCLR}!" );
+                    strcopy( msg, msg_len, "Your FPS must be {MAINCLR1}300{CHATCLR}!" );
                     return false;
                 }
             }
@@ -207,7 +207,7 @@ stock bool IsValidFps( int client, char[] msg, int msg_len )
     }
     /*else if ( g_iFpsVal[client] == FPSVAL_INVALID )
     {
-        FormatEx( msg, msg_len, "Your fps_max value of {TEAM}%.0f{CHATCLR} is invalid!", g_flFps[client] );
+        FormatEx( msg, msg_len, "Your fps_max value of {MAINCLR1}%.0f{CHATCLR} is invalid!", g_flFps[client] );
         return false;
     }
     else // Cheated

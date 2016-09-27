@@ -85,7 +85,7 @@ public Action Cmd_Viewmodel( int client, int args )
     SetDrawViewmodel( client, draw );
     
     
-    Influx_PrintToChat( _, client, "Your viewmodel is now {TEAM}%s{CHATCLR}!", draw ? "visible" : "hidden" );
+    Influx_PrintToChat( _, client, "Your viewmodel is now {MAINCLR1}%s{CHATCLR}!", draw ? "visible" : "hidden" );
     
     return Plugin_Handled;
 }

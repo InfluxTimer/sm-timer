@@ -99,7 +99,7 @@ public Action T_Show( Handle hTimer, int client )
 {
     if ( (client = GetClientOfUserId( client )) )
     {
-        Influx_PrintToChat( _, client, "Type {TEAM}!help{CHATCLR} to see a list of commands." );
+        Influx_PrintToChat( _, client, "Type {MAINCLR1}!help{CHATCLR} to see a list of commands." );
     }
 }
 

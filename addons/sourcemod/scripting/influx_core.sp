@@ -816,7 +816,7 @@ stock void CapWeaponSpeed( int client )
         if ((GetEngineTime() - g_flLastValidWepSpd[client]) > 0.2 // We have the invalid weapon out for more than this.
         &&  g_flNextWepSpdPrintTime[client] < GetEngineTime() )
         {
-            Influx_PrintToChat( _, client, "Invalid weapon speed! Can be {TEAM}%.0f{CHATCLR} at most!", g_cache_flMaxSpeed[client] );
+            Influx_PrintToChat( _, client, "Invalid weapon speed! Can be {MAINCLR1}%.0f{CHATCLR} at most!", g_cache_flMaxSpeed[client] );
             
             g_flNextWepSpdPrintTime[client] = GetEngineTime() + 10.0;
         }
@@ -1404,7 +1404,7 @@ stock void PrintValidModes( int client, int modeflags )
         {
             GetModeNameByIndex( i, mode, sizeof( mode ) );
             
-            Format( list, sizeof( list ), "%s%s{TEAM}%s{CHATCLR}",
+            Format( list, sizeof( list ), "%s%s{MAINCLR1}%s{CHATCLR}",
                 list,
                 ( list[0] != '\0' ) ? ", " : "",
                 mode );
@@ -1414,7 +1414,7 @@ stock void PrintValidModes( int client, int modeflags )
     // No modes were added to the list!
     if ( list[0] == '\0' )
     {
-        strcopy( list, sizeof( list ), "{TEAM}None{CHATCLR}!" );
+        strcopy( list, sizeof( list ), "{MAINCLR1}None{CHATCLR}!" );
     }
     
     Influx_PrintToChat( _, client, "Valid mode(s): %s", list );
@@ -1469,7 +1469,7 @@ stock bool SetClientRun( int client, int runid, bool bTele = true, bool bPrintTo
         
         if ( bPrintToChat )
         {
-            Influx_PrintToChat( _, client, "Your run is now {TEAM}%s{CHATCLR}!", sz );
+            Influx_PrintToChat( _, client, "Your run is now {MAINCLR1}%s{CHATCLR}!", sz );
         }
     }
     
@@ -1548,7 +1548,7 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
         char sz[MAX_MODE_NAME];
         GetModeNameByIndex( imode, sz, sizeof( sz ) );
         
-        Influx_PrintToChat( _, client, "Your mode is now {TEAM}%s{CHATCLR}!", sz );
+        Influx_PrintToChat( _, client, "Your mode is now {MAINCLR1}%s{CHATCLR}!", sz );
     }
     
     
@@ -1606,7 +1606,7 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
         char sz[MAX_STYLE_NAME];
         GetStyleNameByIndex( istyle, sz, sizeof( sz ) );
         
-        Influx_PrintToChat( _, client, "Your style is now {TEAM}%s{CHATCLR}!", sz );
+        Influx_PrintToChat( _, client, "Your style is now {MAINCLR1}%s{CHATCLR}!", sz );
     }
     
     g_iStyleId[client] = style;
@@ -1639,7 +1639,7 @@ stock bool IsClientModeValidForRun( int client, int imode, int irun, bool bPrint
             GetModeNameByIndex( imode, mode, sizeof( mode ) );
             GetRunNameByIndex( irun, run, sizeof( run ) );
             
-            Influx_PrintToChat( _, client, "Sorry, mode {TEAM}%s{CHATCLR} is not allowed in {TEAM}%s{CHATCLR}!", mode, run );
+            Influx_PrintToChat( _, client, "Sorry, mode {MAINCLR1}%s{CHATCLR} is not allowed in {MAINCLR1}%s{CHATCLR}!", mode, run );
         }
         
         return false;
