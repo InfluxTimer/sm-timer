@@ -140,7 +140,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
         Inf_FormatSeconds( dif, szForm, sizeof( szForm ), szFormSec );
         
         FormatEx( szRec, sizeof( szRec ), " {CHATCLR}({%s}%c%s{CHATCLR})",
-            isbest ? "LIGHTRED" : "DEFGREEN", // Is new best?
+            isbest ? "LIGHTRED" : "GREEN", // Is new best?
             c[0],
             szForm );
     }
