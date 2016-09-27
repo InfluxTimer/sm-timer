@@ -6,6 +6,7 @@ ADDED:
 - influx_colorchat-plugin for custom prefix and chat colors.
 - Ability to navigate through more records (added last/next page buttons to records menu)
 - Added influx_core_suppressmaxwepspdmsg-cvar
+- Added influx_zones_minzonesize-cvar
 - Replicate command sm_nc (sm_noclip)
 
 CHANGES:
@@ -14,6 +15,7 @@ CHANGES:
 - If no runs exist, restart commands (eg. sm_restart) will teleport player to spawn.
 
 FIXES:
+- You can no longer create flat zones.
 - influx_hud compiles (oops)
 - Noclip messages are no longer spammed in the chat/console.
 - 'Noclip: ON' msg is no longer displayed when in practise mode.
