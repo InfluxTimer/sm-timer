@@ -3,7 +3,8 @@
 ADDED:
 - influx_disablesuicide-plugin
 - influx_zones_beams_custom-plugin which allows for custom beam settings
-- influx_colorchat-plugin for custom prefix and chat colors.
+- Added influx_chatprefix-cvar to change chat prefix.
+- Added influx_chatcolor-cvar to change default chat color.
 - Ability to navigate through more records (added last/next page buttons to records menu)
 - Added influx_core_suppressmaxwepspdmsg-cvar
 - Added influx_zones_minzonesize-cvar
@@ -29,3 +30,4 @@ CODE:
 - Removed useless Influx_SetNextMenuTime calls.
 - Fixed Influx_GetStyleShortName-native
 - We now track the database version in case we ever want to update it.
+- Added Influx_RemoveChatColors-native (use instead of Inf_RemoveColors)
