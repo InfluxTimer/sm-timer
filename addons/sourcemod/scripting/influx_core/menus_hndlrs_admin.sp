@@ -170,7 +170,14 @@ public int Hndlr_DeleteRecords_Confirm( Menu menu, MenuAction action, int client
     int runid = StringToInt( szInfo );
     
     if ( runid > 0 )
+    {
         DB_DeleteMapRecords( client, g_iCurMapId, runid );
+        
+        
+        ResetAllRunTimes( runid );
+        
+        UpdateAllClientsCached( runid );
+    }
     
     return 0;
 }

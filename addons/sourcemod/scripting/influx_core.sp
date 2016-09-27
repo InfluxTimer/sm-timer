@@ -1698,7 +1698,7 @@ stock bool CanUserModifyRun( int client )
 }
 
 // TODO: Make sure this is called every time times change.
-stock void UpdateAllClientsCached( int runid, int mode, int style )
+stock void UpdateAllClientsCached( int runid, int mode = MODE_INVALID, int style = STYLE_INVALID )
 {
     int irun = FindRunById( runid );
     
@@ -1707,8 +1707,8 @@ stock void UpdateAllClientsCached( int runid, int mode, int style )
         if (IsClientInGame( i )
         &&  !IsFakeClient( i )
         &&  g_iRunId[i] == runid
-        &&  g_iModeId[i] == mode
-        &&  g_iStyleId[i] == style)
+        &&  (mode == MODE_INVALID || g_iModeId[i] == mode)
+        &&  (style == STYLE_INVALID || g_iStyleId[i] == style))
         {
             UpdateClientCachedByIndex( i, irun );
         }
@@ -1891,6 +1891,43 @@ stock void ResetAllClientTimes( int client )
             for ( style = 0; style < MAX_STYLES; style++ )
             {
                 SetClientRunTime( run, client, mode, style, INVALID_RUN_TIME );
+            }
+        }
+    }
+}
+
+stock void ResetAllRunTimes( int runid )
+{
+    int irun = FindRunById( runid );
+    if ( irun == -1 ) return;
+    
+    
+    decl mode, style;
+    decl i;
+    
+    int[] clients = new int[MaxClients];
+    int nClients = 0;
+    
+    for ( i = 1; i <= MaxClients; i++ )
+    {
+        if ( !IsClientInGame( i ) ) continue;
+        
+        if ( IsFakeClient( i ) ) continue;
+        
+        
+        clients[nClients++] = i;
+    }
+    
+    for ( mode = 0; mode < MAX_MODES; mode++ )
+    {
+        for ( style = 0; style < MAX_STYLES; style++ )
+        {
+            SetRunBestTime( irun, mode, style, INVALID_RUN_TIME );
+            
+            
+            for ( i = 0; i < nClients; i++ )
+            {
+                SetClientRunTime( irun, clients[i], mode, style, INVALID_RUN_TIME );
             }
         }
     }

@@ -23,6 +23,7 @@ FIXES:
 - You should now be able to give yourself an hkp2000
 - Setting run teleport destination and yaw through run menu should work correctly.
 - You can no longer set run teleport destination in solid.
+- Run records deletion now also updates the cached times. (no longer have to restart the map to take effect)
 
 CODE:
 - Added Inf_Warning stock to warn those silly people who can't get stuff to work.
