@@ -48,3 +48,13 @@ public void E_ConVarChanged_DefStyle( ConVar convar, const char[] oldValue, cons
     
     g_iDefStyle = value;
 }
+
+public void E_ConVarChanged_Prefix( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    DetermineChatPrefix();
+}
+
+public void E_ConVarChanged_ChatClr( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    DetermineChatClr();
+}

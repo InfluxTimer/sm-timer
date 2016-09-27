@@ -17,13 +17,14 @@
 #include <influx/zones_freestyle>
 #include <influx/runs_sql>
 #include <influx/hud>
-#include <influx/colorchat>
+//#include <influx/colorchat>
 
 
 //#define DEBUG
 //#define DEBUG_TIMER
 //#define DEBUG_WEPSPD
 //#define DEBUG_PARSESEARCH
+//#define DEBUG_COLORCHAT
 //#define DEBUG_DB
 //#define DEBUG_DB_VER
 //#define DEBUG_DB_CBRECS
@@ -32,6 +33,10 @@
 
 #define GAME_CONFIG_FILE      "influx.games"
 
+
+// Don't change these, change the cvars instead.
+#define DEF_CHATPREFIX              "{GREY}[{PINK}"...INF_NAME..."{GREY}]"
+#define DEF_CHATCLR                 "{WHITE}"
 
 
 
@@ -109,6 +114,14 @@ float g_flNextWepSpdPrintTime[INF_MAXPLAYERS];
 float g_flLastValidWepSpd[INF_MAXPLAYERS];
 
 
+// CHAT COLOR
+char g_szChatPrefix[128];
+char g_szChatClr[64];
+
+ArrayList g_hChatClrs;
+int g_nChatClrLen;
+
+
 
 ArrayList g_hRuns;
 ArrayList g_hModes;
@@ -157,6 +170,8 @@ Handle g_hFunc_GetPlayerMaxSpeed;
 ConVar g_ConVar_AirAccelerate;
 ConVar g_ConVar_EnableBunnyhopping;
 
+ConVar g_ConVar_ChatPrefix;
+ConVar g_ConVar_ChatClr;
 ConVar g_ConVar_SaveRunsOnMapEnd;
 ConVar g_ConVar_SuppressMaxSpdMsg;
 ConVar g_ConVar_Admin_RemoveFlags;
@@ -174,7 +189,6 @@ bool g_bLib_Practise;
 bool g_bLib_Zones_Fs;
 bool g_bLib_Runs_SQL;
 bool g_bLib_Hud;
-bool g_bLib_ColorChat;
 
 
 // MAP DATA
@@ -194,7 +208,13 @@ int g_iDefStyle;
 
 //bool g_bHasLoadedAllData;
 
+
+// MISC
+bool g_bIsCSGO;
+
+
 #include "influx_core/cmds.sp"
+#include "influx_core/colorchat.sp"
 #include "influx_core/db.sp"
 #include "influx_core/events.sp"
 #include "influx_core/file.sp"
@@ -248,9 +268,11 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_GetPostRunLoadForward", Native_GetPostRunLoadForward );
     
     
+    // In natives_chat.sp
     CreateNative( "Influx_PrintToChat", Native_PrintToChat );
     CreateNative( "Influx_PrintToChatAll", Native_PrintToChatAll );
     CreateNative( "Influx_PrintToChatEx", Native_PrintToChatEx );
+    CreateNative( "Influx_RemoveChatColors", Native_RemoveChatColors );
     
     
     CreateNative( "Influx_StartTimer", Native_StartTimer );
@@ -329,10 +351,14 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    g_bIsCSGO = ( GetEngineVersion() == Engine_CSGO );
+    
+    
     g_hRuns = new ArrayList( RUN_SIZE );
     g_hModes = new ArrayList( MODE_SIZE );
     g_hStyles = new ArrayList( STYLE_SIZE );
     g_hRunResFlags = new ArrayList( RUNRES_SIZE );
+    g_hChatClrs = new ArrayList( CLR_SIZE );
     
     
     ReadGameConfig();
@@ -394,6 +420,13 @@ public void OnPluginStart()
     
     
     // CONVARS
+    g_ConVar_ChatPrefix = CreateConVar( "influx_core_prefix", DEF_CHATPREFIX, "Prefix for chat messages.", FCVAR_NOTIFY );
+    g_ConVar_ChatPrefix.AddChangeHook( E_ConVarChanged_Prefix );
+    
+    g_ConVar_ChatClr = CreateConVar( "influx_core_chatcolor", DEF_CHATCLR, "Default chat color.", FCVAR_NOTIFY );
+    g_ConVar_ChatClr.AddChangeHook( E_ConVarChanged_ChatClr );
+    
+    
     g_ConVar_SaveRunsOnMapEnd = CreateConVar( "influx_core_saveruns", "1", "Do we automatically save runs on map end?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     g_ConVar_SuppressMaxSpdMsg = CreateConVar( "influx_core_suppressmaxwepspdmsg", "0", "Suppress player max weapon speed warning messages?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
@@ -487,6 +520,14 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_deleterun", Cmd_Admin_DeleteRun );
     
     
+#if defined TEST_COLORCHAT
+    RegAdminCmd( "sm_testchat", Cmd_TestColor, ADMFLAG_ROOT );
+    
+    RegAdminCmd( "sm_testchatremove", Cmd_TestColorRemove, ADMFLAG_ROOT );
+#endif
+    
+    
+    
     // EVENTS
     HookEvent( "player_spawn", E_PlayerSpawn );
     
@@ -497,7 +538,6 @@ public void OnPluginStart()
     g_bLib_Zones_Fs = LibraryExists( INFLUX_LIB_ZONES_FS );
     g_bLib_Runs_SQL = LibraryExists( INFLUX_LIB_RUNS_SQL );
     g_bLib_Hud = LibraryExists( INFLUX_LIB_HUD );
-    g_bLib_ColorChat = LibraryExists( INFLUX_LIB_COLORCHAT );
     
     
     DB_Init();
@@ -510,7 +550,6 @@ public void OnLibraryAdded( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = true;
     if ( StrEqual( lib, INFLUX_LIB_RUNS_SQL ) ) g_bLib_Runs_SQL = true;
     if ( StrEqual( lib, INFLUX_LIB_HUD ) ) g_bLib_Hud = true;
-    if ( StrEqual( lib, INFLUX_LIB_COLORCHAT ) ) g_bLib_ColorChat = true;
 }
 
 public void OnLibraryRemoved( const char[] lib )
@@ -520,7 +559,6 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = false;
     if ( StrEqual( lib, INFLUX_LIB_RUNS_SQL ) ) g_bLib_Runs_SQL = false;
     if ( StrEqual( lib, INFLUX_LIB_HUD ) ) g_bLib_Hud = false;
-    if ( StrEqual( lib, INFLUX_LIB_COLORCHAT ) ) g_bLib_ColorChat = false;
 }
 
 public void OnAllPluginsLoaded()
@@ -621,6 +659,9 @@ public void OnMapStart()
         Call_StartForward( g_hForward_OnPostRunLoad );
         Call_Finish();
     }
+    
+    
+    InitColors();
 }
 
 public void OnMapEnd()

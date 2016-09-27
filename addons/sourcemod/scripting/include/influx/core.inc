@@ -208,10 +208,10 @@ native ArrayList Influx_GetRunsArray();
 #define PRINTFLAGS_CHATMSG          ( 1 << 1 ) // Sent by client.
 
 // Use these if you want the correct prefix.
-// If chat module exists, this will be a wrapper to it.
 native void Influx_PrintToChat( int flags = 0, int client, const char[] format, any ... );
 native void Influx_PrintToChatAll( int flags = 0, int author, const char[] format, any ... );
 native void Influx_PrintToChatEx( int flags = 0, int author, const int[] clients, int nClients, const char[] format, any ... );
+native void Influx_RemoveChatColors( char[] sz, int len );
 
 
 

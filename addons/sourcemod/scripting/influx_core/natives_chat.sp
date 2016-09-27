@@ -1,29 +1,3 @@
-stock void SendDefault( int argpos, int author, int[] clients, int nClients, bool prefix )
-{
-    decl String:buffer[512];
-    
-    FormatNativeString(
-        0,
-        argpos,
-        argpos + 1,
-        sizeof( buffer ),
-        _,
-        buffer );
-    
-    
-    Inf_RemoveColors( buffer, sizeof( buffer ) );
-    
-    if ( !strlen( buffer ) ) return;
-    
-    
-    if ( prefix )
-    {
-        Format( buffer, sizeof( buffer ), INF_CHAT_PRE..."%s", buffer );
-    }
-    
-    Inf_SendSayText2( author, clients, nClients, buffer );
-}
-
 stock void SendPrint( int pos, int author, int[] clients, int nClients, bool prefix )
 {
     if ( !IS_ENT_PLAYER( author ) || !IsClientInGame( author ) )
@@ -31,24 +5,32 @@ stock void SendPrint( int pos, int author, int[] clients, int nClients, bool pre
         author = clients[0];
     }
     
-    if ( g_bLib_ColorChat )
+    
+    decl String:buffer[512];
+    
+    FormatNativeString(
+        0,
+        pos,
+        pos + 1,
+        sizeof( buffer ),
+        _,
+        buffer );
+    
+    FormatColors( buffer, sizeof( buffer ) );
+    
+    
+    // There's nothing to send!
+    if ( buffer[0] == '\0' ) return;
+    
+    
+    // Do prefix?
+    if ( prefix )
     {
-        decl String:buffer[512];
-        
-        FormatNativeString(
-            0,
-            pos,
-            pos + 1,
-            sizeof( buffer ),
-            _,
-            buffer );
-        
-        Influx_Chat( author, clients, nClients, buffer, prefix );
+        Format( buffer, sizeof( buffer ), "%s %s%s", g_szChatPrefix, g_szChatClr, buffer );
     }
-    else
-    {
-        SendDefault( pos, author, clients, nClients, prefix );
-    }
+    
+    
+    Inf_SendSayText2( author, clients, nClients, buffer );
 }
 
 public int Native_PrintToChat( Handle hPlugin, int nParms )
@@ -58,6 +40,9 @@ public int Native_PrintToChat( Handle hPlugin, int nParms )
     
     decl clients[1];
     clients[0] = client;
+    
+    
+    
     
     SendPrint( 3, client, clients, sizeof( clients ), ( flags & PRINTFLAGS_NOPREFIX ) ? false : true );
     
@@ -105,6 +90,22 @@ public int Native_PrintToChatAll( Handle hPlugin, int nParms )
     {
         SendPrint( 3, GetNativeCell( 2 ), clients, nClients, ( flags & PRINTFLAGS_NOPREFIX ) ? false : true );
     }
+    
+    return 1;
+}
+
+public int Native_RemoveChatColors( Handle hPlugin, int nParms )
+{
+    int len = GetNativeCell( 2 );
+    
+    char[] sz = new char[len];
+    
+    GetNativeString( 1, sz, len );
+    
+    RemoveColors( sz, len );
+    
+    
+    SetNativeString( 1, sz, len );
     
     return 1;
 }

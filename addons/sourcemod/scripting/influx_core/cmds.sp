@@ -422,3 +422,51 @@ public Action Cmd_Admin_DeleteRun( int client, int args )
     
     return Plugin_Handled;
 }
+
+public Action Cmd_TestColor( int client, int args )
+{
+    if ( args )
+    {
+        char szArg[512];
+        GetCmdArgString( szArg, sizeof( szArg ) );
+        StripQuotes( szArg );
+        
+        FormatColors( szArg, sizeof( szArg ) );
+        
+        if ( client && szArg[0] != '\0' )
+        {
+            Format( szArg, sizeof( szArg ), "%s %s%s", g_szChatPrefix, g_szChatClr, szArg );
+            
+            decl clients[1];
+            clients[0] = client;
+            
+            Inf_SendSayText2( client, clients, sizeof( clients ), szArg );
+        }
+    }
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_TestColorRemove( int client, int args )
+{
+    if ( args )
+    {
+        char szArg[512];
+        GetCmdArgString( szArg, sizeof( szArg ) );
+        StripQuotes( szArg );
+        
+        RemoveColors( szArg, sizeof( szArg ) );
+        
+        if ( client && szArg[0] != '\0' )
+        {
+            Format( szArg, sizeof( szArg ), "%s %s%s", g_szChatPrefix, g_szChatClr, szArg );
+            
+            decl clients[1];
+            clients[0] = client;
+            
+            Inf_SendSayText2( client, clients, sizeof( clients ), szArg );
+        }
+    }
+    
+    return Plugin_Handled;
+}

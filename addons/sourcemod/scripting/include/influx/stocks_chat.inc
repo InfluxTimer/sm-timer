@@ -16,7 +16,7 @@
 
 //#define MAX_SAYTEXT2_LENGTH     254
 
-
+/*
 stock void Inf_RemoveColors( char[] sz, int len )
 {
     int start = 0;
@@ -40,6 +40,7 @@ stock void Inf_RemoveColors( char[] sz, int len )
         start = pos;
     }
 }
+*/
 
 stock void Inf_SendSayText2( int author, int[] clients, int nClients, const char[] msg )
 {
