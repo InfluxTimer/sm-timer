@@ -37,6 +37,12 @@ public Action Standup_OnStatsEnable( int client, char[] szMsg, int msg_len )
 {
     if ( Influx_GetClientMode( client ) != MODE_SCROLL )
     {
+        Influx_SetClientMode( client, MODE_SCROLL );
+    }
+    
+    // Make sure we've set it.
+    if ( Influx_GetClientMode( client ) != MODE_SCROLL )
+    {
         strcopy( szMsg, msg_len, "Your mode must be Scroll to use longjump stats!" );
         return Plugin_Handled;
     }
