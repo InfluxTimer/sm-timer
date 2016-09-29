@@ -1934,14 +1934,22 @@ stock void InitClientModeStyle( int client )
     
     if ( FindModeById( defmode ) == -1 )
     {
-        defmode = GetModeIdByIndex( 0 );
-        LogError( INF_CON_PRE..."Invalid default mode %i!", g_iDefMode );
+        defmode = ( g_hModes.Length ) ? GetModeIdByIndex( 0 ) : MODE_INVALID;
+        
+        if ( g_hModes.Length )
+        {
+            LogError( INF_CON_PRE..."Invalid default mode %i!", g_iDefMode );
+        }
     }
     
     if ( FindStyleById( defstyle ) == -1 )
     {
-        defstyle = g_hStyles.Get( 0, STYLE_ID );
-        LogError( INF_CON_PRE..."Invalid default style %i!", g_iDefStyle );
+        defstyle = ( g_hStyles.Length ) ? GetStyleIdByIndex( 0 ) : STYLE_INVALID;
+        
+        if ( g_hStyles.Length )
+        {
+            LogError( INF_CON_PRE..."Invalid default style %i!", g_iDefStyle );
+        }
     }
     
     SetClientMode( client, defmode, false, false, true );
