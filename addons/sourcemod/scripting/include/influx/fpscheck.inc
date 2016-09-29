@@ -19,6 +19,7 @@ enum FpsVal_t
 forward void Influx_OnRequestFpsChecks();
 
 native void Influx_AddFpsCheck( int mode );
+native bool Influx_RemoveFpsCheck( int mode );
 
 
 public SharedPlugin __pl_influx_fpscheck =

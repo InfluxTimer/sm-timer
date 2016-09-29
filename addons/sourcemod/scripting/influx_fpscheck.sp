@@ -48,6 +48,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     
     // NATIVES
     CreateNative( "Influx_AddFpsCheck", Native_AddFpsCheck );
+    CreateNative( "Influx_RemoveFpsCheck", Native_RemoveFpsCheck );
 }
 
 public void OnPluginStart()
@@ -66,8 +67,9 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    g_hCheck.Clear();
+    //g_hCheck.Clear();
     
+    // TODO: Remove me.
     Call_StartForward( g_hForward_OnRequestFpsChecks );
     Call_Finish();
 }
@@ -250,6 +252,20 @@ public int Native_AddFpsCheck( Handle hPlugin, int nParms )
     
     
     g_hCheck.Push( mode );
+    
+    return 1;
+}
+
+public int Native_RemoveFpsCheck( Handle hPlugin, int nParms )
+{
+    int mode = GetNativeCell( 1 );
+    
+    int index = FindCheckByMode( mode );
+    
+    if ( index == -1 ) return 0;
+    
+    
+    g_hCheck.Erase( index );
     
     return 1;
 }
