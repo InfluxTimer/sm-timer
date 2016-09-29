@@ -21,12 +21,17 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_n", Cmd_Style_Normal, "" );
 }
 
-public void Influx_OnRequestStyles()
+public void OnAllPluginsLoaded()
 {
     if ( !Influx_AddStyle( STYLE_NORMAL, "Normal", "NRML", false ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add style!" );
     }
+}
+
+public void OnPluginEnd()
+{
+    Influx_RemoveStyle( STYLE_NORMAL );
 }
 
 public Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &value )

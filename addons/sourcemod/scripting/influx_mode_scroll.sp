@@ -56,17 +56,22 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_scrl", Cmd_Mode_Scroll, "" );
 }
 
-public void Influx_OnRequestFpsChecks()
-{
-    Influx_AddFpsCheck( MODE_SCROLL );
-}
-
-public void Influx_OnRequestModes()
+public void OnAllPluginsLoaded()
 {
     if ( !Influx_AddMode( MODE_SCROLL, "Scroll", "SCRL" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_SCROLL );
     }
+}
+
+public void OnPluginEnd()
+{
+    Influx_RemoveMode( MODE_SCROLL );
+}
+
+public void Influx_OnRequestFpsChecks()
+{
+    Influx_AddFpsCheck( MODE_SCROLL );
 }
 
 public Action Influx_OnClientModeChange( int client, int mode, int lastmode )

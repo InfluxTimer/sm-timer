@@ -33,12 +33,17 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_surfhsw", Cmd_Style_RHSW );
 }
 
-public void Influx_OnRequestStyles()
+public void OnAllPluginsLoaded()
 {
     if ( !Influx_AddStyle( STYLE_RHSW, "Real HSW", "RHSW" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add style!" );
     }
+}
+
+public void OnPluginEnd()
+{
+    Influx_RemoveStyle( STYLE_RHSW );
 }
 
 public void Influx_OnTimerStartPost( int client, int runid )

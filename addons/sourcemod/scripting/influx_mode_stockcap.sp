@@ -52,6 +52,19 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_stock", Cmd_Mode_StockCap, INF_NAME..." - Change your mode to stock cap." );
 }
 
+public void OnAllPluginsLoaded()
+{
+    if ( !Influx_AddMode( MODE_STOCKCAP, "Stock Cap", "STOCK" ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_STOCKCAP );
+    }
+}
+
+public void OnPluginEnd()
+{
+    Influx_RemoveMode( MODE_STOCKCAP );
+}
+
 public void OnClientDisconnect( int client )
 {
     UnhookThinks( client );
@@ -74,14 +87,6 @@ public Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &valu
 public void Influx_OnRequestFpsChecks()
 {
     Influx_AddFpsCheck( MODE_STOCKCAP );
-}
-
-public void Influx_OnRequestModes()
-{
-    if ( !Influx_AddMode( MODE_STOCKCAP, "Stock Cap", "STOCK" ) )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_STOCKCAP );
-    }
 }
 
 public Action Influx_OnClientModeChange( int client, int mode, int lastmode )

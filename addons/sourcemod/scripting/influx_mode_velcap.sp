@@ -68,6 +68,19 @@ public void OnPluginStart()
     g_bLib_Zones_Fs = LibraryExists( INFLUX_LIB_ZONES_FS );
 }
 
+public void OnAllPluginsLoaded()
+{
+    if ( !Influx_AddMode( MODE_VELCAP, "VelCap", "VELCAP" ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_VELCAP );
+    }
+}
+
+public void OnPluginEnd()
+{
+    Influx_RemoveMode( MODE_VELCAP );
+}
+
 public void OnLibraryAdded( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = true;
@@ -100,14 +113,6 @@ public Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &valu
     }
     
     return Plugin_Continue;
-}
-
-public void Influx_OnRequestModes()
-{
-    if ( !Influx_AddMode( MODE_VELCAP, "VelCap", "VELCAP" ) )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_VELCAP );
-    }
 }
 
 public Action Influx_OnClientModeChange( int client, int mode, int lastmode )

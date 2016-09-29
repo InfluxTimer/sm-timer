@@ -80,6 +80,19 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_toggleauto", Cmd_ToggleAuto, "" );
 }
 
+public void OnAllPluginsLoaded()
+{
+    if ( !Influx_AddMode( MODE_AUTO, "Autobhop", "AUTO", 260.0 ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_AUTO );
+    }
+}
+
+public void OnPluginEnd()
+{
+    Influx_RemoveMode( MODE_AUTO );
+}
+
 public void OnClientPutInServer( int client )
 {
     g_bWantsAuto[client] = true;
@@ -105,14 +118,6 @@ public Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &valu
     }
     
     return Plugin_Continue;
-}
-
-public void Influx_OnRequestModes()
-{
-    if ( !Influx_AddMode( MODE_AUTO, "Autobhop", "AUTO", 260.0 ) )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_AUTO );
-    }
 }
 
 public Action Influx_OnClientModeChange( int client, int mode, int lastmode )
