@@ -8,7 +8,8 @@ ADDED:
 - Ability to navigate through more records (added last/next page buttons to records menu)
 - Added influx_core_suppressmaxwepspdmsg-cvar
 - Added influx_zones_minzonesize-cvar
-- Replicate command sm_nc (sm_noclip)
+- Replicate commands sm_nc (sm_noclip), sm_rs (sm_restart)
+- Ability to reload style and mode plugins safely.
 
 CHANGES:
 - Sidebar player name is now truncated. (low res CS:GO users won't have half of their screen covered with the name)
@@ -24,6 +25,7 @@ FIXES:
 - Setting run teleport destination and yaw through run menu should work correctly.
 - You can no longer set run teleport destination in solid.
 - Run records deletion now also updates the cached times. (no longer have to restart the map to take effect)
+- You can no longer use modes or styles that are unloaded.
 
 CODE:
 - Added Inf_Warning stock to warn those silly people who can't get stuff to work.
@@ -32,4 +34,4 @@ CODE:
 - Fixed Influx_GetStyleShortName-native
 - We now track the database version in case we ever want to update it.
 - Added Influx_RemoveChatColors-native (use instead of Inf_RemoveColors)
-- Added Influx_RemoveMode/Style-natives
+- Added Influx_RemoveMode/Style/FpsCheck natives for proper unloading and late-loading
