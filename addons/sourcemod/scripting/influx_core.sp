@@ -378,9 +378,6 @@ public void OnPluginStart()
         SetFailState( INF_CON_PRE..."Couldn't find handle for sv_enablebunnyhopping!" );
     }
     
-    g_ConVar_AirAccelerate.Flags &= ~(FCVAR_NOTIFY | FCVAR_REPLICATED);
-    g_ConVar_EnableBunnyhopping.Flags &= ~(FCVAR_NOTIFY | FCVAR_REPLICATED);
-    
     
     // FORWARDS
     g_hForward_OnTimerStart = CreateGlobalForward( "Influx_OnTimerStart", ET_Hook, Param_Cell, Param_Cell, Param_String, Param_Cell );
@@ -566,8 +563,8 @@ public void OnLibraryRemoved( const char[] lib )
 
 public void OnAllPluginsLoaded()
 {
-    g_hModes.Clear();
-    g_hStyles.Clear();
+    //g_hModes.Clear();
+    //g_hStyles.Clear();
     g_hRunResFlags.Clear();
     
     
@@ -575,6 +572,7 @@ public void OnAllPluginsLoaded()
     
     
     // Request modes and styles.
+    // TODO: Remove these.
     Call_StartForward( g_hForward_OnRequestModes );
     Call_Finish();
     
@@ -584,7 +582,7 @@ public void OnAllPluginsLoaded()
     Call_StartForward( g_hForward_OnRequestResultFlags );
     Call_Finish();
     
-    
+    /*
     if ( !g_hStyles.Length )
     {
         SetFailState( INF_CON_PRE..."No styles were found!" );
@@ -599,6 +597,7 @@ public void OnAllPluginsLoaded()
         
         LogError( INF_CON_PRE..."No modes were found! Assuming scroll as default mode!!! Freeing sv_airaccelerate and sv_enablebunnyhopping." );
     }
+    */
 }
 
 public void Influx_RequestHelpCmds()
@@ -1061,6 +1060,10 @@ stock bool AddMode( int id, const char[] szName, const char[] szShortName, float
     
     g_hModes.PushArray( data );
     
+    
+    UpdateCvars();
+    
+    
     return true;
 }
 
@@ -1087,6 +1090,9 @@ stock bool RemoveMode( int id )
                 g_iModeId[i] = -1;
             }
         }
+        
+        
+        UpdateCvars();
         
         return true;
     }
@@ -2027,4 +2033,20 @@ stock int GetDefaultStyle()
     if ( g_hStyles.Length > 0 ) return GetStyleIdByIndex( 1 );
     
     return -1;
+}
+
+stock void UpdateCvars()
+{
+    // If we remove all modes, aa and enablebunnyhopping should be reset back to normal.
+    if ( !g_hModes || g_hModes.Length == 0 )
+    {
+        g_ConVar_AirAccelerate.Flags |= (FCVAR_NOTIFY | FCVAR_REPLICATED);
+        g_ConVar_EnableBunnyhopping.Flags |= (FCVAR_NOTIFY | FCVAR_REPLICATED);
+    }
+    // Let modes change these cvars.
+    else
+    {
+        g_ConVar_AirAccelerate.Flags &= ~(FCVAR_NOTIFY | FCVAR_REPLICATED);
+        g_ConVar_EnableBunnyhopping.Flags &= ~(FCVAR_NOTIFY | FCVAR_REPLICATED);
+    }
 }
