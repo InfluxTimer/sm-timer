@@ -2018,7 +2018,7 @@ stock int GetDefaultMode()
         return g_iDefMode;
     }
     
-    if ( g_hModes.Length > 0 ) return GetModeIdByIndex( 1 );
+    if ( g_hModes.Length > 0 ) return GetModeIdByIndex( 0 );
     
     return -1;
 }
@@ -2030,7 +2030,7 @@ stock int GetDefaultStyle()
         return g_iDefStyle;
     }
     
-    if ( g_hStyles.Length > 0 ) return GetStyleIdByIndex( 1 );
+    if ( g_hStyles.Length > 0 ) return GetStyleIdByIndex( 0 );
     
     return -1;
 }
