@@ -45,13 +45,13 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_spectator", Cmd_Spec );
     
     
-    // Override some of the restart commands. They should still be called even though returning Handled...
-    RegConsoleCmd( "sm_r", Cmd_Spawn );
-    RegConsoleCmd( "sm_re", Cmd_Spawn );
-    RegConsoleCmd( "sm_restart", Cmd_Spawn );
-    RegConsoleCmd( "sm_start", Cmd_Spawn );
-    RegConsoleCmd( "sm_spawn", Cmd_Spawn );
-    RegConsoleCmd( "sm_respawn", Cmd_Spawn );
+    AddCommandListener( Lstnr_Spawn, "sm_r" );
+    AddCommandListener( Lstnr_Spawn, "sm_re" );
+    AddCommandListener( Lstnr_Spawn, "sm_rs" );
+    AddCommandListener( Lstnr_Spawn, "sm_restart" );
+    AddCommandListener( Lstnr_Spawn, "sm_start" );
+    AddCommandListener( Lstnr_Spawn, "sm_spawn" );
+    AddCommandListener( Lstnr_Spawn, "sm_respawn" );
     
     
     // Blocked commands
@@ -125,14 +125,14 @@ public Action Cmd_Spec( int client, int args )
     return Plugin_Handled;
 }
 
-public Action Cmd_Spawn( int client, int args )
+public Action Lstnr_Spawn( int client, const char[] command, int argc )
 {
-    if ( !client ) return Plugin_Handled;
+    if ( client && IsClientInGame( client ) )
+    {
+        SpawnPlayer( client );
+    }
     
-    
-    SpawnPlayer( client );
-    
-    return Plugin_Handled;
+    return Plugin_Continue;
 }
 
 public Action Lstnr_JoinClass( int client, const char[] command, int argc )
