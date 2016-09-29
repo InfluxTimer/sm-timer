@@ -32,3 +32,4 @@ CODE:
 - Fixed Influx_GetStyleShortName-native
 - We now track the database version in case we ever want to update it.
 - Added Influx_RemoveChatColors-native (use instead of Inf_RemoveColors)
+- Added Influx_RemoveMode/Style-natives

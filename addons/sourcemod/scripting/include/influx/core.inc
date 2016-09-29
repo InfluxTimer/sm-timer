@@ -183,6 +183,9 @@ native bool Influx_AddRun( int id = -1, const char[] szName = "", const float ve
 native bool Influx_AddMode( int id, const char[] szName, const char[] szShortName, float flMaxSpeed = 0.0 );
 native bool Influx_AddStyle( int id, const char[] szName, const char[] szShortName, bDisplay = true );
 
+native bool Influx_RemoveMode( int id );
+native bool Influx_RemoveStyle( int id );
+
 
 native int Influx_FindRunById( int runid );
 native bool Influx_GetRunName( int runid, char[] out, int len );

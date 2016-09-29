@@ -345,6 +345,9 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     
     CreateNative( "Influx_AddResultFlag", Native_AddResultFlag );
     
+    CreateNative( "Influx_RemoveMode", Native_RemoveMode );
+    CreateNative( "Influx_RemoveStyle", Native_RemoveStyle );
+    
     
     return APLRes_Success;
 }
@@ -1061,6 +1064,36 @@ stock bool AddMode( int id, const char[] szName, const char[] szShortName, float
     return true;
 }
 
+stock bool RemoveMode( int id )
+{
+    int index = FindModeById( id );
+    
+    if ( index != -1 )
+    {
+        g_hModes.Erase( index );
+        
+        
+        // Reset clients with this mode.
+        int def_id = GetDefaultMode();
+        for ( int i = 1; i <= MaxClients; i++ )
+        {
+            if ( !IsClientInGame( i ) ) continue;
+            
+            if ( g_iModeId[i] != id ) continue;
+            
+            
+            if ( !SetClientMode( i, def_id ) )
+            {
+                g_iModeId[i] = -1;
+            }
+        }
+        
+        return true;
+    }
+    
+    return false;
+}
+
 stock bool AddStyle( int id, const char[] szName, const char[] szShortName, bool bDisplay = true )
 {
     // This style id is already taken!
@@ -1085,6 +1118,36 @@ stock bool AddStyle( int id, const char[] szName, const char[] szShortName, bool
     g_hStyles.PushArray( data );
     
     return true;
+}
+
+stock bool RemoveStyle( int id )
+{
+    int index = FindStyleById( id );
+    
+    if ( index != -1 )
+    {
+        g_hStyles.Erase( index );
+        
+        
+        // Reset clients with this style.
+        int def_id = GetDefaultStyle();
+        for ( int i = 1; i <= MaxClients; i++ )
+        {
+            if ( !IsClientInGame( i ) ) continue;
+            
+            if ( g_iStyleId[i] != id ) continue;
+            
+            
+            if ( !SetClientStyle( i, def_id ) )
+            {
+                g_iStyleId[i] = -1;
+            }
+        }
+        
+        return true;
+    }
+    
+    return false;
 }
 
 stock bool IsValidResultFlag( int flag )
@@ -1940,4 +2003,28 @@ stock void SearchType( const char[] sz, Search_t &type, int &value )
     Call_PushCellRef( view_as<int>( type ) );
     Call_PushCellRef( value );
     Call_Finish();
+}
+
+stock int GetDefaultMode()
+{
+    if ( FindModeById( g_iDefMode ) != -1 )
+    {
+        return g_iDefMode;
+    }
+    
+    if ( g_hModes.Length > 0 ) return GetModeIdByIndex( 1 );
+    
+    return -1;
+}
+
+stock int GetDefaultStyle()
+{
+    if ( FindModeById( g_iDefStyle ) != -1 )
+    {
+        return g_iDefStyle;
+    }
+    
+    if ( g_hStyles.Length > 0 ) return GetStyleIdByIndex( 1 );
+    
+    return -1;
 }

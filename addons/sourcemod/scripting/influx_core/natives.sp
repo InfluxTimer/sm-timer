@@ -304,6 +304,11 @@ public int Native_AddMode( Handle hPlugin, int nParms )
     return AddMode( GetNativeCell( 1 ), szName, szShortName, GetNativeCell( 4 ) );
 }
 
+public int Native_RemoveMode( Handle hPlugin, int nParms )
+{
+    return RemoveMode( GetNativeCell( 1 ) );
+}
+
 public int Native_AddStyle( Handle hPlugin, int nParms )
 {
     char szName[MAX_STYLE_NAME];
@@ -313,6 +318,11 @@ public int Native_AddStyle( Handle hPlugin, int nParms )
     GetNativeString( 3, szShortName, sizeof( szShortName ) );
     
     return AddStyle( GetNativeCell( 1 ), szName, szShortName, GetNativeCell( 4 ) );
+}
+
+public int Native_RemoveStyle( Handle hPlugin, int nParms )
+{
+    return RemoveStyle( GetNativeCell( 1 ) );
 }
 
 public int Native_AddResultFlag( Handle hPlugin, int nParms )
