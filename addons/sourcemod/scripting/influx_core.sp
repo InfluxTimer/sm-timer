@@ -1087,7 +1087,7 @@ stock bool RemoveMode( int id )
             
             if ( !SetClientMode( i, def_id ) )
             {
-                g_iModeId[i] = -1;
+                ResetClientMode( i );
             }
         }
         
@@ -1911,16 +1911,17 @@ stock void ResetClient( int client )
     g_flFinishBest[client] = INVALID_RUN_TIME;
     
     
-    g_cache_flMaxSpeed[client] = g_ConVar_DefMaxWeaponSpeed.FloatValue;
-    
     g_iClientId[client] = 0;
     g_bCachedTimes[client] = false;
     
     g_iRunState[client] = STATE_NONE;
     g_iRunStartTick[client] = -1;
     
+    
     g_iRunId[client] = -1;
-    g_iModeId[client] = MODE_INVALID;
+    
+    ResetClientMode( client );
+    
     g_iStyleId[client] = STYLE_INVALID;
     
     
@@ -2057,4 +2058,12 @@ stock void UpdateCvars()
         g_ConVar_AirAccelerate.Flags &= ~(FCVAR_NOTIFY | FCVAR_REPLICATED);
         g_ConVar_EnableBunnyhopping.Flags &= ~(FCVAR_NOTIFY | FCVAR_REPLICATED);
     }
+}
+
+// When invalidating player's mode, we need to update our cached max speed back to the default max speed.
+stock void ResetClientMode( int client )
+{
+    g_iModeId[client] = MODE_INVALID;
+    
+    g_cache_flMaxSpeed[client] = g_ConVar_DefMaxWeaponSpeed.FloatValue;
 }
