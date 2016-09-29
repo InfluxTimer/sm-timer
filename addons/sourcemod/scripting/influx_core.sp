@@ -472,6 +472,7 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_r", Cmd_Restart );
     RegConsoleCmd( "sm_re", Cmd_Restart );
+    RegConsoleCmd( "sm_rs", Cmd_Restart );
     RegConsoleCmd( "sm_restart", Cmd_Restart );
     RegConsoleCmd( "sm_start", Cmd_Restart );
     
