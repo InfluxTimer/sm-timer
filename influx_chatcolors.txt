@@ -1,0 +1,24 @@
+Remember to add them inside {}-characters. Eg {RED}
+CSS can have any color by using hex values. Eg #FF0000 for red. In practice {#FF0000}
+
+
+These colors are supported by both CSS and CS:GO
+
+TEAM
+RED
+LIGHTRED
+LIGHTERRED
+GREEN
+LIGHTGREEN
+LIMEGREEN
+BLUE
+SKYBLUE
+LIGHTYELLOW
+GOLD
+WHITE
+PINK
+GREY
+
+
+For plugin creators, use MAINCLR1 if you want to highlight text.
+Eg "Noclip: {MAINCLR1}ON"
