@@ -33,7 +33,6 @@
 
 #define GAME_CONFIG_FILE      "influx.games"
 
-
 // Don't change these, change the cvars instead.
 #define DEF_CHATPREFIX              "{GREY}[{PINK}"...INF_NAME..."{GREY}]"
 #define DEF_CHATCLR                 "{WHITE}"
@@ -172,6 +171,7 @@ ConVar g_ConVar_EnableBunnyhopping;
 
 ConVar g_ConVar_ChatPrefix;
 ConVar g_ConVar_ChatClr;
+ConVar g_ConVar_ChatMainClr1;
 ConVar g_ConVar_SaveRunsOnMapEnd;
 ConVar g_ConVar_SuppressMaxSpdMsg;
 ConVar g_ConVar_Admin_RemoveFlags;
@@ -425,6 +425,9 @@ public void OnPluginStart()
     
     g_ConVar_ChatClr = CreateConVar( "influx_chatcolor", DEF_CHATCLR, "Default chat color.", FCVAR_NOTIFY );
     g_ConVar_ChatClr.AddChangeHook( E_ConVarChanged_ChatClr );
+    
+    g_ConVar_ChatMainClr1 = CreateConVar( "influx_chatmainclr1", "{SKYBLUE}", "Override main color. This is used to highlight text. Eg Noclip: \"ON\"", FCVAR_NOTIFY );
+    g_ConVar_ChatMainClr1.AddChangeHook( E_ConVarChanged_ChatMainClr1 );
     
     
     g_ConVar_SaveRunsOnMapEnd = CreateConVar( "influx_core_saveruns", "1", "Do we automatically save runs on map end?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );

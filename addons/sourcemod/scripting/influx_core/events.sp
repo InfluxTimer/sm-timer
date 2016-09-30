@@ -58,3 +58,8 @@ public void E_ConVarChanged_ChatClr( ConVar convar, const char[] oldValue, const
 {
     DetermineChatClr();
 }
+
+public void E_ConVarChanged_ChatMainClr1( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    DetermineChatMainClr1();
+}

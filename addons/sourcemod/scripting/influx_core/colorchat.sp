@@ -48,15 +48,11 @@ stock void InitColors()
     AddColor( "GREY", "606060", "\x08" );
     
     
-    // Register these here.
-    AddColor( "MAINCLR1", "00ABFF", "\x0B" );
-    AddColor( "MAINCLR2", "FFD700", "\x10" );
-    
-
-    
     
     DetermineChatPrefix();
     DetermineChatClr();
+    DetermineChatMainClr1();
+    //DetermineChatMainClr2();
 }
 
 stock void RemoveColors( char[] sz, int len )
@@ -399,3 +395,27 @@ stock void DetermineChatClr()
     PrintToServer( INF_CON_PRE..."Chat color: '%s'", g_szChatClr );
 #endif
 }
+
+stock void DetermineChatMainClr1()
+{
+    char szClr[128];
+    g_ConVar_ChatMainClr1.GetString( szClr, sizeof( szClr ) );
+    
+    
+    FormatColors( szClr, sizeof( szClr ) );
+    
+    AddColor( "MAINCLR1", szClr );
+}
+
+/*
+stock void DetermineChatMainClr2()
+{
+    char szClr[128];
+    g_ConVar_ChatMainClr2.GetString( szClr, sizeof( szClr ) );
+    
+    
+    FormatColors( szClr, sizeof( szClr ) );
+    
+    AddColor( "MAINCLR2", szClr );
+}
+*/

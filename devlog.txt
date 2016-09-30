@@ -1,10 +1,15 @@
 1.0.4
 
+
+COMPATIBILITY:
+- Delete cfg/influx/core.cfg and cfg/influx/zones.cfg to generate new ones with latest cvars.
+
 ADDED:
 - influx_disablesuicide-plugin
 - influx_zones_beams_custom-plugin which allows for custom beam settings
 - Added influx_chatprefix-cvar to change chat prefix.
 - Added influx_chatcolor-cvar to change default chat color.
+- Added influx_chatmainclr1-cvar to change highlighting chat color.
 - Ability to navigate through more records (added last/next page buttons to records menu)
 - Added influx_core_suppressmaxwepspdmsg-cvar
 - Added influx_zones_minzonesize-cvar
