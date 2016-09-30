@@ -27,6 +27,7 @@ ConVar g_ConVar_VelCap;
 
 
 bool g_bLib_Zones_Fs;
+bool g_bLib_FpsCheck;
 
 
 public Plugin myinfo =
@@ -66,6 +67,7 @@ public void OnPluginStart()
     
     
     g_bLib_Zones_Fs = LibraryExists( INFLUX_LIB_ZONES_FS );
+    g_bLib_FpsCheck = LibraryExists( INFLUX_LIB_FPSCHECK );
 }
 
 public void OnAllPluginsLoaded()
@@ -74,21 +76,33 @@ public void OnAllPluginsLoaded()
     {
         SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_VELCAP );
     }
+    
+    if ( g_bLib_FpsCheck )
+    {
+        Influx_AddFpsCheck( MODE_VELCAP );
+    }
 }
 
 public void OnPluginEnd()
 {
     Influx_RemoveMode( MODE_VELCAP );
+    
+    if ( g_bLib_FpsCheck )
+    {
+        Influx_RemoveFpsCheck( MODE_VELCAP );
+    }
 }
 
 public void OnLibraryAdded( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = true;
+    if ( StrEqual( lib, INFLUX_LIB_FPSCHECK ) ) g_bLib_FpsCheck = true;
 }
 
 public void OnLibraryRemoved( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = false;
+    if ( StrEqual( lib, INFLUX_LIB_FPSCHECK ) ) g_bLib_FpsCheck = false;
 }
 
 public void Influx_OnRequestFpsChecks()

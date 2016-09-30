@@ -21,6 +21,9 @@ ConVar g_ConVar_AirAccelerate;
 ConVar g_ConVar_EnableBunnyhopping;
 
 
+bool g_bLib_FpsCheck;
+
+
 public Plugin myinfo =
 {
     author = INF_AUTHOR,
@@ -50,6 +53,9 @@ public void OnPluginStart()
     
     
     RegConsoleCmd( "sm_stock", Cmd_Mode_StockCap, INF_NAME..." - Change your mode to stock cap." );
+    
+    
+    g_bLib_FpsCheck = LibraryExists( INFLUX_LIB_FPSCHECK );
 }
 
 public void OnAllPluginsLoaded()
@@ -58,11 +64,28 @@ public void OnAllPluginsLoaded()
     {
         SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_STOCKCAP );
     }
+    
+    Influx_AddFpsCheck( MODE_STOCKCAP );
 }
 
 public void OnPluginEnd()
 {
     Influx_RemoveMode( MODE_STOCKCAP );
+    
+    if ( g_bLib_FpsCheck )
+    {
+        Influx_RemoveFpsCheck( MODE_STOCKCAP );
+    }
+}
+
+public void OnLibraryAdded( const char[] lib )
+{
+    if ( StrEqual( lib, INFLUX_LIB_FPSCHECK ) ) g_bLib_FpsCheck = true;
+}
+
+public void OnLibraryRemoved( const char[] lib )
+{
+    if ( StrEqual( lib, INFLUX_LIB_FPSCHECK ) ) g_bLib_FpsCheck = false;
 }
 
 public void OnClientDisconnect( int client )

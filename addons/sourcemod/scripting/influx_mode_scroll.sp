@@ -21,6 +21,9 @@ ConVar g_ConVar_EnableBunnyhopping;
 ConVar g_ConVar_Scroll_AirAccelerate;
 
 
+bool g_bLib_FpsCheck;
+
+
 public Plugin myinfo =
 {
     author = INF_AUTHOR,
@@ -54,6 +57,9 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_scroll", Cmd_Mode_Scroll, INF_NAME..." - Change your mode to Scroll." );
     RegConsoleCmd( "sm_scrll", Cmd_Mode_Scroll, "" );
     RegConsoleCmd( "sm_scrl", Cmd_Mode_Scroll, "" );
+    
+    
+    g_bLib_FpsCheck = LibraryExists( INFLUX_LIB_FPSCHECK );
 }
 
 public void OnAllPluginsLoaded()
@@ -62,11 +68,31 @@ public void OnAllPluginsLoaded()
     {
         SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_SCROLL );
     }
+    
+    if ( g_bLib_FpsCheck )
+    {
+        Influx_AddFpsCheck( MODE_SCROLL );
+    }
 }
 
 public void OnPluginEnd()
 {
     Influx_RemoveMode( MODE_SCROLL );
+    
+    if ( g_bLib_FpsCheck )
+    {
+        Influx_RemoveFpsCheck( MODE_SCROLL );
+    }
+}
+
+public void OnLibraryAdded( const char[] lib )
+{
+    if ( StrEqual( lib, INFLUX_LIB_FPSCHECK ) ) g_bLib_FpsCheck = true;
+}
+
+public void OnLibraryRemoved( const char[] lib )
+{
+    if ( StrEqual( lib, INFLUX_LIB_FPSCHECK ) ) g_bLib_FpsCheck = false;
 }
 
 public void Influx_OnRequestFpsChecks()
