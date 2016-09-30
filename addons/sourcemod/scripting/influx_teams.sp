@@ -40,9 +40,13 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    // CMDS
     RegConsoleCmd( "sm_spec", Cmd_Spec );
     RegConsoleCmd( "sm_spectate", Cmd_Spec );
     RegConsoleCmd( "sm_spectator", Cmd_Spec );
+    
+    RegConsoleCmd( "sm_spawn", Cmd_Spawn );
+    RegConsoleCmd( "sm_respawn", Cmd_Spawn );
     
     
     AddCommandListener( Lstnr_Spawn, "sm_r" );
@@ -50,8 +54,7 @@ public void OnPluginStart()
     AddCommandListener( Lstnr_Spawn, "sm_rs" );
     AddCommandListener( Lstnr_Spawn, "sm_restart" );
     AddCommandListener( Lstnr_Spawn, "sm_start" );
-    AddCommandListener( Lstnr_Spawn, "sm_spawn" );
-    AddCommandListener( Lstnr_Spawn, "sm_respawn" );
+    
     
     
     // Blocked commands
@@ -120,6 +123,16 @@ public Action Cmd_Spec( int client, int args )
                 SetClientObserverMode( client, OBS_MODE_IN_EYE );
             }
         }
+    }
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_Spawn( int client, int args )
+{
+    if ( client )
+    {
+        SpawnPlayer( client );
     }
     
     return Plugin_Handled;
