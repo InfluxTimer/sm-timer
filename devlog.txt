@@ -12,6 +12,7 @@ ADDED:
 - Added influx_chatmainclr1-cvar to change highlighting chat color.
 - Ability to navigate through more records (added last/next page buttons to records menu)
 - Added influx_core_suppressmaxwepspdmsg-cvar
+- Added influx_core_suppressmaxwepspdwarning-cvar
 - Added influx_zones_minzonesize-cvar
 - Replicate commands sm_nc (sm_noclip), sm_rs (sm_restart)
 - Ability to reload style and mode plugins safely.

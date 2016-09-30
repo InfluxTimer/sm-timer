@@ -173,6 +173,7 @@ ConVar g_ConVar_ChatPrefix;
 ConVar g_ConVar_ChatClr;
 ConVar g_ConVar_ChatMainClr1;
 ConVar g_ConVar_SaveRunsOnMapEnd;
+ConVar g_ConVar_SuppressMaxSpdWarning;
 ConVar g_ConVar_SuppressMaxSpdMsg;
 ConVar g_ConVar_Admin_RemoveFlags;
 ConVar g_ConVar_Admin_ModifyRunFlags;
@@ -432,7 +433,9 @@ public void OnPluginStart()
     
     g_ConVar_SaveRunsOnMapEnd = CreateConVar( "influx_core_saveruns", "1", "Do we automatically save runs on map end?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
-    g_ConVar_SuppressMaxSpdMsg = CreateConVar( "influx_core_suppressmaxwepspdmsg", "0", "Suppress player max weapon speed warning messages?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    
+    g_ConVar_SuppressMaxSpdMsg = CreateConVar( "influx_core_suppressmaxwepspdmsg", "0", "Suppress player max weapon speed message? (one printed to client)", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_SuppressMaxSpdWarning = CreateConVar( "influx_core_suppressmaxwepspdwarning", "0", "Suppress player max weapon speed warning? (one printed to console)", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
     g_ConVar_Admin_RemoveFlags = CreateConVar( "influx_core_removeflags", "z", "Required flags to remove records and runs." );
@@ -638,7 +641,7 @@ public void OnMapStart()
     g_hRuns.Clear();
     
     
-    if ( g_hFunc_GetPlayerMaxSpeed == null && !g_ConVar_SuppressMaxSpdMsg.BoolValue )
+    if ( g_hFunc_GetPlayerMaxSpeed == null && !g_ConVar_SuppressMaxSpdWarning.BoolValue )
     {
         Inf_Warning( 3, "Weapon speed check cannot be made! Players are free to cheat with weapon speeds." );
     }
@@ -819,7 +822,8 @@ stock void CapWeaponSpeed( int client )
             }
         }
         
-        if ((GetEngineTime() - g_flLastValidWepSpd[client]) > 0.2 // We have the invalid weapon out for more than this.
+        if (!g_ConVar_SuppressMaxSpdMsg.BoolValue
+        &&  (GetEngineTime() - g_flLastValidWepSpd[client]) > 0.2 // We have the invalid weapon out for more than this.
         &&  g_flNextWepSpdPrintTime[client] < GetEngineTime() )
         {
             Influx_PrintToChat( _, client, "Invalid weapon speed! Can be {MAINCLR1}%.0f{CHATCLR} at most!", g_cache_flMaxSpeed[client] );
