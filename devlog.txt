@@ -21,6 +21,7 @@ CHANGES:
 - Sidebar player name is now truncated. (low res CS:GO users won't have half of their screen covered with the name)
 - Influx will throw an error if run's teleport destination is invalid.
 - If no runs exist, restart commands (eg. sm_restart) will teleport player to spawn.
+- Continuing a paused run if dead will respawn the player.
 
 FIXES:
 - You can no longer create flat zones.

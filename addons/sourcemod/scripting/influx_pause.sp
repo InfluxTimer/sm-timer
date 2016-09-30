@@ -1,4 +1,5 @@
 #include <sourcemod>
+#include <cstrike>
 
 #include <influx/core>
 #include <influx/pause>
@@ -9,6 +10,7 @@
 #undef REQUIRE_PLUGIN
 #include <influx/help>
 #include <influx/practise>
+#include <influx/teams>
 
 
 float g_flPauseLimit[INF_MAXPLAYERS];
@@ -19,7 +21,9 @@ float g_vecContinueAng[INF_MAXPLAYERS][3];
 int g_nPauseTick[INF_MAXPLAYERS];
 bool g_bPaused[INF_MAXPLAYERS];
 
+
 bool g_bLib_Practise;
+bool g_bLib_Teams;
 
 
 ConVar g_ConVar_MaxPausesPerRun;
@@ -66,16 +70,19 @@ public void OnPluginStart()
     
     
     g_bLib_Practise = LibraryExists( INFLUX_LIB_PRACTISE );
+    g_bLib_Teams = LibraryExists( INFLUX_LIB_TEAMS );
 }
 
 public void OnLibraryAdded( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = true;
+    if ( StrEqual( lib, INFLUX_LIB_TEAMS ) ) g_bLib_Teams = true;
 }
 
 public void OnLibraryRemoved( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = false;
+    if ( StrEqual( lib, INFLUX_LIB_TEAMS ) ) g_bLib_Teams = false;
 }
 
 public void Influx_RequestHelpCmds()
@@ -202,6 +209,24 @@ stock void PauseRun( int client )
 stock void ContinueRun( int client )
 {
     if ( !g_bPaused[client] ) return;
+    
+    
+    // Spawn them if they are dead.
+    if ( GetClientTeam( client ) <= CS_TEAM_SPECTATOR )
+    {
+        int team = ( g_bLib_Teams ) ? Influx_GetPreferredTeam() : CS_TEAM_CT;
+        
+        ChangeClientTeam( client, team );
+    }
+    
+    if ( !IsPlayerAlive( client ) )
+    {
+        CS_RespawnPlayer( client );
+    }
+    
+    
+    // Spawning failed.
+    if ( !IsPlayerAlive( client ) ) return;
     
     
     g_bPaused[client] = false;
