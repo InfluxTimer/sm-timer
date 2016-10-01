@@ -7,8 +7,8 @@
 
 #include <msharedutil/ents>
 
-//#undef REQUIRE_PLUGIN
-//#include <influx/help>
+#undef REQUIRE_PLUGIN
+#include <influx/pause>
 
 
 //#define DEBUG
@@ -16,6 +16,9 @@
 
 int g_nSpawns_CT;
 int g_nSpawns_T;
+
+
+bool g_bLib_Pause;
 
 
 public Plugin myinfo =
@@ -65,6 +68,19 @@ public void OnPluginStart()
     }
     
     AddCommandListener( Lstnr_JoinTeam, "jointeam" );
+    
+    
+    g_bLib_Pause = LibraryExists( INFLUX_LIB_PAUSE );
+}
+
+public void OnLibraryAdded( const char[] lib )
+{
+    if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = true;
+}
+
+public void OnLibraryRemoved( const char[] lib )
+{
+    if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = false;
 }
 
 #if defined USE_LEVELINIT
@@ -83,6 +99,12 @@ public void OnMapStart()
 public Action Cmd_Spec( int client, int args )
 {
     if ( !client ) return Plugin_Handled;
+    
+    
+    if ( g_bLib_Pause && IsPlayerAlive( client ) && Influx_GetClientState( client ) == STATE_RUNNING )
+    {
+        Influx_PauseClientRun( client );
+    }
     
     
     ChangeClientTeam( client, CS_TEAM_SPECTATOR );

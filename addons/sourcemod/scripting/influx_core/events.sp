@@ -6,6 +6,10 @@ public void E_PlayerSpawn( Event event, const char[] szEvent, bool bImUselessWhy
     if ( GetClientTeam( client ) <= CS_TEAM_SPECTATOR || !IsPlayerAlive( client ) ) return;
     
     
+    // We're paused, don't teleport to start.
+    if ( g_bLib_Pause && Influx_IsClientPaused( client ) ) return;
+    
+    
     TeleClientToStart_Safe( client, g_iRunId[client] );
 }
 

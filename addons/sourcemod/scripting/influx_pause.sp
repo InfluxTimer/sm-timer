@@ -165,6 +165,20 @@ stock void PauseRun( int client )
     if ( g_bPaused[client] ) return;
     
     
+    if ( Influx_GetClientState( client ) != STATE_RUNNING )
+    {
+        Influx_PrintToChat( _, client, "%T", "MUSTBERUNNING", client );
+        return;
+    }
+    
+    
+    if ( !IsPlayerAlive( client ) )
+    {
+        Influx_PrintToChat( _, client, "You must be alive to pause!" );
+        return;
+    }
+    
+    
     if ( g_flPauseLimit[client] > GetEngineTime() )
     {
         Influx_PrintToChat( _, client, "You cannot pause so soon! Please wait {MAINCLR1}%.1f{CHATCLR} seconds!", g_flPauseLimit[client] - GetEngineTime() );
@@ -180,15 +194,14 @@ stock void PauseRun( int client )
         return;
     }
     
-    if ( maxpauses > 0 && g_nPauses[client] >= g_ConVar_MaxPausesPerRun.IntValue )
+    if ( maxpauses > 0 && g_nPauses[client] >= maxpauses )
     {
-        Influx_PrintToChat( _, client, "You cannot pause more than %i time(s) every run!", g_ConVar_MaxPausesPerRun.IntValue );
+        Influx_PrintToChat( _, client, "You cannot pause more than %i time(s) every run!", maxpauses );
         return;
     }
     
     if ( g_bLib_Practise && Influx_IsClientPractising( client ) )
     {
-        
         return;
     }
     
@@ -202,6 +215,9 @@ stock void PauseRun( int client )
     
     GetClientAbsOrigin( client, g_vecContinuePos[client] );
     GetClientEyeAngles( client, g_vecContinueAng[client] );
+    
+    g_vecContinueAng[client][2] = 0.0;
+    
     
     Influx_PrintToChat( _, client, "Your run is now paused. Type {MAINCLR1}!continue{CHATCLR} to resume." );
 }
@@ -229,12 +245,14 @@ stock void ContinueRun( int client )
     if ( !IsPlayerAlive( client ) ) return;
     
     
-    g_bPaused[client] = false;
-    
     if ( g_bLib_Practise )
     {
         Influx_EndPractising( client );
     }
+    
+    
+    g_bPaused[client] = false;
+    
     
     // Make sure to reset our noclip so our timer don't stop.
     if ( GetEntityMoveType( client ) == MOVETYPE_NOCLIP )

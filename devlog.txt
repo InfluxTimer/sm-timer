@@ -1,3 +1,14 @@
+1.0.4 Hotfix
+
+
+CHANGES:
+- Commands kill and sm_spec will now attempt to pause client's run.
+
+FIXES:
+- Multiple fixes to pausing.
+
+
+
 1.0.4
 
 
