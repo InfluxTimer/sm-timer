@@ -18,7 +18,7 @@ int g_nPauses[INF_MAXPLAYERS];
 
 float g_vecContinuePos[INF_MAXPLAYERS][3];
 float g_vecContinueAng[INF_MAXPLAYERS][3];
-int g_nPauseTick[INF_MAXPLAYERS];
+int g_nPausedTicks[INF_MAXPLAYERS];
 bool g_bPaused[INF_MAXPLAYERS];
 
 
@@ -211,7 +211,7 @@ stock void PauseRun( int client )
     g_bPaused[client] = true;
     
     
-    g_nPauseTick[client] = GetGameTickCount();
+    g_nPausedTicks[client] = GetGameTickCount() - Influx_GetClientStartTick( client );
     
     GetClientAbsOrigin( client, g_vecContinuePos[client] );
     GetClientEyeAngles( client, g_vecContinueAng[client] );
@@ -261,9 +261,7 @@ stock void ContinueRun( int client )
     }
     
     
-    Influx_SetClientStartTick(
-        client,
-        GetGameTickCount() - (g_nPauseTick[client] - Influx_GetClientStartTick( client )) );
+    Influx_SetClientStartTick( client, GetGameTickCount() - g_nPausedTicks[client] );
     
     TeleportEntity( client, g_vecContinuePos[client], g_vecContinueAng[client], ORIGIN_VECTOR );
     
@@ -305,5 +303,5 @@ public int Native_GetClientPausedTime( Handle hPlugin, int nParams )
     if ( !g_bPaused[client] ) return view_as<int>( INVALID_RUN_TIME );
     
     
-    return view_as<int>( TickCountToTime( g_nPauseTick[client] - Influx_GetClientStartTick( client ) ) );
+    return view_as<int>( TickCountToTime( g_nPausedTicks[client] ) );
 }
