@@ -1,3 +1,11 @@
+1.0.5
+
+
+ADDED:
+- influx_recrank-plugin to display record's rank in chat.
+
+
+
 1.0.4 Hotfix
 
 
