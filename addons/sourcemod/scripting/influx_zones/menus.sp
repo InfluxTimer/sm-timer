@@ -216,10 +216,10 @@ public Action Cmd_CreateZone( int client, int args )
             menu.AddItem( szInfo, "Teleport" );
         }
         
-        if ( g_bLib_Zones_Stage )
+        if ( g_bLib_Zones_CP )
         {
-            FormatEx( szInfo, sizeof( szInfo ), "%i", ZONETYPE_STAGE );
-            menu.AddItem( szInfo, "Stage" );
+            FormatEx( szInfo, sizeof( szInfo ), "%i", ZONETYPE_CP );
+            menu.AddItem( szInfo, "Checkpoint" );
         }
         
         menu.Display( client, MENU_TIME_FOREVER );

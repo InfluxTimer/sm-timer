@@ -15,6 +15,7 @@
 #include <influx/zones_freestyle>
 #include <influx/zones_block>
 #include <influx/zones_teleport>
+#include <influx/zones_checkpoint>
 #include <influx/zones_stage>
 #include <influx/help>
 
@@ -77,6 +78,7 @@ bool g_bLib_Zones_Fs;
 bool g_bLib_Zones_Block;
 bool g_bLib_Zones_Tele;
 bool g_bLib_Zones_Stage;
+bool g_bLib_Zones_CP;
 
 
 #include "influx_zones/menus.sp"
@@ -184,6 +186,7 @@ public void OnPluginStart()
     g_bLib_Zones_Block = LibraryExists( INFLUX_LIB_ZONES_BLOCK );
     g_bLib_Zones_Tele = LibraryExists( INFLUX_LIB_ZONES_TELE );
     g_bLib_Zones_Stage = LibraryExists( INFLUX_LIB_ZONES_STAGE );
+    g_bLib_Zones_CP = LibraryExists( INFLUX_LIB_ZONES_CP );
     
     
     g_hZones = new ArrayList( ZONE_SIZE );
@@ -197,6 +200,7 @@ public void OnLibraryAdded( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_ZONES_BLOCK ) ) g_bLib_Zones_Block = true;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_TELE ) ) g_bLib_Zones_Tele = true;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Zones_Stage = true;
+    if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_Zones_CP = true;
 }
 
 public void OnLibraryRemoved( const char[] lib )
@@ -207,6 +211,7 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_ZONES_BLOCK ) ) g_bLib_Zones_Block = false;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_TELE ) ) g_bLib_Zones_Tele = false;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Zones_Stage = false;
+    if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_Zones_CP = false;
 }
 
 public void Influx_RequestHelpCmds()
