@@ -2,6 +2,9 @@
 #include "influx_zones_checkpoint/db_cb.sp"
 
 
+#define CUR_DB_VERSION          1
+
+
 stock void FormatWhereClause( char[] sz, int len, int runid, int mode, int style, int cpnum )
 {
     if ( runid > 0 ) FormatEx( sz, len, " AND runid=%i", runid );
@@ -149,4 +152,35 @@ stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int
     }
     
     return true;
+}
+
+stock void DB_PrintCPTimes( int client, int uid, int mapid, int runid, int mode, int style )
+{
+    Handle db = Influx_GetDB();
+    if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
+    
+    
+    
+    decl String:szQuery[512];
+    
+    FormatEx( szQuery, sizeof( szQuery ),
+        "SELECT uid,mapid,runid,mode,style,cpnum,cptime,rectime," ...
+            "(SELECT cptime " ...
+                "FROM "...INF_TABLE_TIMES..." NATURAL JOIN "...INF_TABLE_CPTIMES..." WHERE mapid=_t.mapid AND runid=_t.runid AND mode=_t.mode AND style=_t.style " ...
+                "GROUP BY runid " ...
+                "ORDER BY MIN(rectime)" ...
+            ") AS srtime," ...
+            "(SELECT cptime " ...
+                "FROM "...INF_TABLE_CPTIMES..." WHERE mapid=_t.mapid AND runid=_t.runid AND mode=_t.mode AND style=_t.style " ...
+                "GROUP BY runid " ...
+                "ORDER BY MIN(cptime)" ...
+            ") AS besttime " ...
+        "FROM "...INF_TABLE_CPTIMES..." NATURAL JOIN "...INF_TABLE_TIMES..." AS _t WHERE uid=%i AND mapid=%i AND runid=%i AND mode=%i AND style=%i ORDER BY cpnum",
+        uid,
+        mapid,
+        runid,
+        mode,
+        style );
+    
+    SQL_TQuery( db, Thrd_PrintCPTimes, szQuery, GetClientUserId( client ), DBPrio_Low );
 }

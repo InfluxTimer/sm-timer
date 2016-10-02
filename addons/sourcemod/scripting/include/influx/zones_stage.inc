@@ -7,6 +7,14 @@
 #define INFLUX_LIB_ZONES_STAGE         "influx_zones_stage"
 
 
+native bool Influx_ShouldDisplayStages( int client );
+
+native int Influx_GetClientStage( int client );
+native int Influx_GetClientStageCount( int client );
+
+native int Influx_GetRunStageCount( int client );
+
+
 public SharedPlugin __pl_influx_zones_stage =
 {
     name = INFLUX_LIB_ZONES_STAGE,

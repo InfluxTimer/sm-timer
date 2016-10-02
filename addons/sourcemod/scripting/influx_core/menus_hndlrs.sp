@@ -205,23 +205,41 @@ public int Hndlr_RecordInfo( Menu oldmenu, MenuAction action, int client, int in
     MENU_HANDLE( oldmenu, action )
     
     
-    if ( !CanUserRemoveRecords( client ) )return 0;
-    
     
     char szInfo[32];
     if ( !GetMenuItem( oldmenu, index, szInfo, sizeof( szInfo ) ) ) return 0;
     
     
-    // Display confirmation menu.
-    Menu menu = new Menu( Hndlr_Delete_Confirm );
-    menu.SetTitle( "Sure you want to delete this record?\n " );
-    
-    menu.AddItem( szInfo, "Yes" );
-    menu.AddItem( "", "No" );
-    
-    menu.ExitButton = false;
-    
-    menu.Display( client, MENU_TIME_FOREVER );
+    switch ( szInfo[0] )
+    {
+        case 'c' : // We want checkpoint times.
+        {
+            int data[RECMENU_SIZE];
+            if ( !GetRecMenuData( szInfo[1], data ) ) return 0;
+            
+            
+            if ( g_bLib_Zones_CP )
+            {
+                Influx_PrintCPTimes( client, data[RECMENU_UID], data[RECMENU_MAPID], data[RECMENU_RUNID], data[RECMENU_MODE], data[RECMENU_STYLE] );
+            }
+        }
+        case 'd' : // We want to delete
+        {
+            if ( !CanUserRemoveRecords( client ) )return 0;
+            
+            
+            // Display confirmation menu.
+            Menu menu = new Menu( Hndlr_Delete_Confirm );
+            menu.SetTitle( "Sure you want to delete this record?\n " );
+            
+            menu.AddItem( szInfo[1], "Yes" );
+            menu.AddItem( "", "No" );
+            
+            menu.ExitButton = false;
+            
+            menu.Display( client, MENU_TIME_FOREVER );
+        }
+    }
     
     return 0;
 }

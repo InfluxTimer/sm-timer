@@ -14,6 +14,20 @@
 #define MAX_CP_NAME_CELL            MAX_CP_NAME / 4
 
 
+native void Influx_SaveClientCP( int client, int cpnum );
+native void Influx_AddCP( int runid, int cpnum, const char[] szName );
+
+// Engine time we last touched cp.
+native float Influx_GetClientLastCPTouch( int client );
+
+// Actual times.
+native float Influx_GetClientLastCPTime( int client );
+native float Influx_GetClientLastCPBestTime( int client );
+
+
+native void Influx_PrintCPTimes( int client, int uid, int mapid, int runid, int mode, int style );
+
+
 public SharedPlugin __pl_influx_zones_checkpoint =
 {
     name = INFLUX_LIB_ZONES_CP,

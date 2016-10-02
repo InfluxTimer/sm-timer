@@ -37,7 +37,7 @@ enum ZoneType_t
     ZONETYPE_BLOCK,
     ZONETYPE_TELE,
     ZONETYPE_CP,
-    //ZONETYPE_STAGE,
+    ZONETYPE_STAGE,
     
     ZONETYPE_MAX
 };
@@ -114,7 +114,7 @@ stock bool Inf_ZoneTypeToName( ZoneType_t type, char[] sz, int len )
         case ZONETYPE_BLOCK : strcopy( sz, len, "Block" );
         case ZONETYPE_TELE : strcopy( sz, len, "Teleport" );
         case ZONETYPE_CP : strcopy( sz, len, "Checkpoint" );
-        //case ZONETYPE_STAGE : strcopy( sz, len, "Stage" );
+        case ZONETYPE_STAGE : strcopy( sz, len, "Stage" );
         default :
         {
             strcopy( sz, len, "N/A" );
@@ -151,10 +151,10 @@ stock ZoneType_t Inf_ZoneNameToType( char[] sz )
     {
         return ZONETYPE_CP;
     }
-    /*else if ( StrEqual( sz, "stage", false ) )
+    else if ( StrEqual( sz, "stage", false ) )
     {
         return ZONETYPE_STAGE;
-    }*/
+    }
     
     return ZONETYPE_INVALID;
 }
@@ -169,7 +169,7 @@ stock void Inf_GetZoneTypeDefColor( ZoneType_t zonetype, int clr[4] )
         case ZONETYPE_BLOCK : clr = { 255, 128, 0, 255 };
         case ZONETYPE_TELE : clr = { 255, 255, 0, 255 };
         case ZONETYPE_CP : clr = { 255, 0, 255, 255 };
-        //case ZONETYPE_STAGE : clr = { 255, 0, 0, 255 };
+        case ZONETYPE_STAGE : clr = { 128, 255, 0, 255 };
         default : clr = { 255, 255, 255, 255 };
     }
 }

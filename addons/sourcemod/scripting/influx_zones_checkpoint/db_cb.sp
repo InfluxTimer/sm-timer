@@ -72,3 +72,108 @@ public void Thrd_Empty( Handle db, Handle res, const char[] szError, any data )
         Inf_DB_LogError( db, "inserting cp data" );
     }
 }
+
+public void Thrd_PrintCPTimes( Handle db, Handle res, const char[] szError, int client )
+{
+    if ( !(client = GetClientOfUserId( client )) ) return;
+    
+    
+    if ( res == null )
+    {
+        Inf_DB_LogError( db, "printing cp times to client", client, "Sorry, something went wrong." );
+        return;
+    }
+    
+    
+    decl String:szDisplay[128];
+    decl String:szForm[16];
+    decl String:szSR[64];
+    decl String:szCP[64];
+    int numrecs = 0;
+    
+    
+    Menu menu = new Menu( Hndlr_Empty );
+    
+    menu.SetTitle( "CP Times\n " );
+    
+    
+    while ( SQL_FetchRow( res ) )
+    {
+        int cpnum = SQL_FetchInt( res, 5 );
+        
+        float cptime = SQL_FetchFloat( res, 6 );
+        Inf_FormatSeconds( cptime, szForm, sizeof( szForm ) );
+        
+        
+        float srtime = SQL_FetchFloat( res, 8 );
+        
+        float cpbesttime = SQL_FetchFloat( res, 9 );
+        
+        
+        if ( cptime != srtime )
+        {
+            FormatSeconds( cptime, srtime, szSR, sizeof( szSR ) );
+            Format( szSR, sizeof( szSR ), "\n        SR: %s", szSR );
+        }
+        else
+        {
+            szSR[0] = '\0';
+        }
+        
+        if ( cptime != cpbesttime && cpbesttime != srtime )
+        {
+            FormatSeconds( cptime, cpbesttime, szCP, sizeof( szCP ) );
+            Format( szCP, sizeof( szCP ), "\n        SRCP: %s", szCP );
+        }
+        else
+        {
+            szCP[0] = '\0';
+        }
+        
+        
+        FormatEx( szDisplay, sizeof( szDisplay ), "CP %i | %s%s%s\n ",
+            cpnum,
+            szForm,
+            szSR,
+            szCP );
+        
+        menu.AddItem( "", szDisplay, ITEMDRAW_DISABLED );
+        
+        ++numrecs;
+    }
+    
+    if ( !numrecs )
+    {
+        menu.AddItem( "", "No checkpoint times found :(" );
+    }
+    
+    menu.Display( client, MENU_TIME_FOREVER );
+}
+
+stock void FormatSeconds( float time, float besttime, char[] sz, int len )
+{
+    float dif;
+    int pre;
+    
+    if ( time < besttime )
+    {
+        dif = besttime - time;
+        pre = '-';
+    }
+    else
+    {
+        dif = time - besttime;
+        pre = '+';
+    }
+    
+    Inf_FormatSeconds( dif, sz, len );
+    
+    Format( sz, len, "%c%s", pre, sz );
+}
+
+public int Hndlr_Empty( Menu menu, MenuAction action, int client, int index )
+{
+    MENU_HANDLE( menu, action )
+    
+    return 0;
+}

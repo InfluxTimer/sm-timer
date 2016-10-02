@@ -15,6 +15,8 @@
 #include <influx/practise>
 //#include <influx/strfsync>
 #include <influx/truevel>
+#include <influx/zones_stage>
+#include <influx/zones_checkpoint>
 
 
 // LIBRARIES
@@ -25,6 +27,8 @@ bool g_bLib_Practise;
 bool g_bLib_Recording;
 //bool g_bLib_StrfSync;
 bool g_bLib_Truevel;
+bool g_bLib_Stage;
+bool g_bLib_CP;
 
 
 public Plugin myinfo =
@@ -58,6 +62,8 @@ public void OnPluginStart()
     g_bLib_Recording = LibraryExists( INFLUX_LIB_RECORDING );
     //g_bLib_StrfSync = LibraryExists( INFLUX_LIB_STRFSYNC );
     g_bLib_Truevel = LibraryExists( INFLUX_LIB_TRUEVEL );
+    g_bLib_Stage = LibraryExists( INFLUX_LIB_ZONES_STAGE );
+    g_bLib_CP = LibraryExists( INFLUX_LIB_ZONES_CP );
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -69,6 +75,8 @@ public void OnLibraryAdded( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_RECORDING ) ) g_bLib_Recording = true;
     //if ( StrEqual( lib, INFLUX_LIB_STRFSYNC ) ) g_bLib_StrfSync = true;
     if ( StrEqual( lib, INFLUX_LIB_TRUEVEL ) ) g_bLib_Truevel = true;
+    if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Stage = true;
+    if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_CP = true;
 }
 
 public void OnLibraryRemoved( const char[] lib )
@@ -80,6 +88,8 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_RECORDING ) ) g_bLib_Recording = false;
     //if ( StrEqual( lib, INFLUX_LIB_STRFSYNC ) ) g_bLib_StrfSync = false;
     if ( StrEqual( lib, INFLUX_LIB_TRUEVEL ) ) g_bLib_Truevel = false;
+    if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Stage = false;
+    if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_CP = false;
 }
 
 public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
@@ -146,6 +156,47 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         {
             Influx_GetRunName( Influx_GetClientRunId( target ), szTemp, sizeof( szTemp ) );
             FormatEx( szMsg, sizeof( szMsg ), "In %s Start", szTemp );
+        }
+        
+        
+        if (g_bLib_CP
+        &&  (GetEngineTime() - Influx_GetClientLastCPTouch( target )) < 2.0 )
+        {
+            float rectime = Influx_GetClientLastCPBestTime( target );
+            
+            if ( rectime != INVALID_RUN_TIME )
+            {
+                float time = Influx_GetClientLastCPTime( target );
+                
+                
+                decl Float:dif;
+                decl pre;
+                
+                if ( rectime <= time )
+                {
+                    dif = time - rectime;
+                    pre = '+';
+                }
+                else
+                {
+                    dif = rectime - time;
+                    pre = '-';
+                }
+                
+                //decl String:szName[MAX_CP_NAME];
+                //Influx_GetClientLastCPName( client, szName, sizeof( szName ) );
+                
+                
+                decl String:form[16];
+                Inf_FormatSeconds( dif, form, sizeof( form ), szSecFormat );
+                
+                
+                Format( szMsg, sizeof( szMsg ), "%s%s(%c%s)",
+                    szMsg,
+                    NEWLINE_CHECK( szMsg ), 
+                    pre,
+                    form );
+            }
         }
         
         
@@ -230,6 +281,24 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
             Influx_GetRunName( Influx_GetClientRunId( target ), szTemp, sizeof( szTemp ) );
             FormatEx( szMsg, sizeof( szMsg ), "Run: %s", szTemp );
         }
+        
+        
+        if ( g_bLib_Stage && Influx_ShouldDisplayStages( client ) )
+        {
+            szTemp2[0] = '\0';
+            
+            FormatStages( target, szTemp2, sizeof( szTemp2 ) );
+            
+            if ( szTemp2[0] != '\0' )
+            {
+                Format( szMsg, sizeof( szMsg ), "%s%s%s",
+                    szMsg,
+                    NEWLINE_CHECK( szMsg ),
+                    szTemp2 );
+            }
+        }
+        
+        ADD_SEPARATOR( szMsg, "\n " );
         
         if ( !(hideflags & HIDEFLAG_MODENSTYLE) )
         {
@@ -331,6 +400,22 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
     }
     
     return Plugin_Stop;
+}
+
+stock void FormatStages( int client, char[] sz, int len )
+{
+    int stage = Influx_GetClientStage( client );
+    
+    int stages = Influx_GetClientStageCount( client );
+    
+    if ( stages < 1 )
+    {
+        FormatEx( sz, len, "Stage: Linear" );
+    }
+    else
+    {
+        FormatEx( sz, len, "Stage: %i/%i", stage, stages );
+    }
 }
 
 // Check if they want truevel.

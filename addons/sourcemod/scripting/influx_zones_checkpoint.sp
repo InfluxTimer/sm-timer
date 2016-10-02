@@ -62,11 +62,23 @@ ArrayList g_hCPZones;
 ArrayList g_hCPs;
 
 
+int g_iBuildingNum[INF_MAXPLAYERS];
+
+
 ArrayList g_hClientCP[INF_MAXPLAYERS];
 int g_iClientLatestCP[INF_MAXPLAYERS];
 
 
-int g_iBuildingNum[INF_MAXPLAYERS];
+// Cache for hud.
+float g_flLastTouch[INF_MAXPLAYERS];
+float g_flLastCPTime[INF_MAXPLAYERS];
+float g_flLastCPBestTime[INF_MAXPLAYERS];
+
+
+
+// CONVARS
+//ConVar g_ConVar_ReqCPs;
+
 
 
 #include "influx_zones_checkpoint/db.sp"
@@ -85,6 +97,16 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 {
     // LIBRARIES
     RegPluginLibrary( INFLUX_LIB_ZONES_CP );
+    
+    
+    CreateNative( "Influx_SaveClientCP", Native_SaveClientCP );
+    CreateNative( "Influx_AddCP", Native_AddCP );
+    
+    CreateNative( "Influx_PrintCPTimes", Native_PrintCPTimes );
+    
+    CreateNative( "Influx_GetClientLastCPTouch", Native_GetClientLastCPTouch );
+    CreateNative( "Influx_GetClientLastCPTime", Native_GetClientLastCPTime );
+    CreateNative( "Influx_GetClientLastCPBestTime", Native_GetClientLastCPBestTime );
 }
 
 public void OnPluginStart()
@@ -92,6 +114,10 @@ public void OnPluginStart()
     g_hCPs = new ArrayList( CP_SIZE );
     
     g_hCPZones = new ArrayList( CPZONE_SIZE );
+    
+    
+    // CONVARS
+    //g_ConVar_ReqCPs = CreateConVar( "influx_checkpoint_requirecps", "0", "In order to beat the map, player must activate all checkpoints?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 }
 
 public void OnAllPluginsLoaded()
@@ -107,6 +133,10 @@ public void OnClientPutInServer( int client )
     
     
     g_iClientLatestCP[client] = 0;
+    
+    g_flLastTouch[client] = 0.0;
+    g_flLastCPBestTime[client] = INVALID_RUN_TIME;
+    g_flLastCPTime[client] = INVALID_RUN_TIME;
     
     
     g_iBuildingNum[client] = 0;
@@ -438,7 +468,17 @@ public void E_StartTouchPost_CP( int ent, int activator )
     }
     
     
-    int cpnum = g_hCPZones.Get( zindex, CPZONE_NUM );
+    SaveClientCP( activator, g_hCPZones.Get( zindex, CPZONE_NUM ) );
+}
+
+stock void SaveClientCP( int client, int cpnum )
+{
+    if ( Influx_GetClientState( client ) != STATE_RUNNING ) return;
+    
+    
+    int runid = Influx_GetClientRunId( client );
+    if ( runid == -1 ) return;
+    
     
     int index = FindCPByNum( runid, cpnum );
     if ( index == -1 ) return;
@@ -451,10 +491,10 @@ public void E_StartTouchPost_CP( int ent, int activator )
     
     
     // Update our stage times if we haven't gone in here yet.
-    if ( !ShouldSaveCP( activator, cpnum ) ) return;
+    if ( !ShouldSaveCP( client, cpnum ) ) return;
     
     
-    float time = Influx_GetClientTime( activator );
+    float time = Influx_GetClientTime( client );
     
 #if defined DEBUG_ZONE
     PrintToServer( INF_DEBUG_PRE..."Inserting new client time %.3f", time );
@@ -464,44 +504,20 @@ public void E_StartTouchPost_CP( int ent, int activator )
     data[CCP_NUM] = cpnum;
     data[CCP_TIME] = view_as<int>( time );
     
-    g_hClientCP[activator].PushArray( data );
+    g_hClientCP[client].PushArray( data );
     
     
-    // Print time to client.
-    int mode = Influx_GetClientMode( activator );
-    int style = Influx_GetClientStyle( activator );
     
-    float rectime = GetBestTime( index, mode, style );
-    
-    if ( rectime != INVALID_RUN_TIME )
-    {
-        decl Float:dif;
-        decl pre;
-        
-        if ( rectime <= time )
-        {
-            dif = time - rectime;
-            pre = '+';
-        }
-        else
-        {
-            dif = rectime - time;
-            pre = '-';
-        }
-        
-        decl String:szName[MAX_CP_NAME];
-        
-        GetCPName( index, szName, sizeof( szName ) );
-        
-        
-        decl String:form[12];
-        Inf_FormatSeconds( dif, form, sizeof( form ) );
-        
-        PrintCenterText( activator, "%s: %c%s", szName, pre, form );
-    }
+    int mode = Influx_GetClientMode( client );
+    int style = Influx_GetClientStyle( client );
     
     
-    g_iClientLatestCP[activator] = cpnum;
+    g_iClientLatestCP[client] = cpnum;
+    
+    g_flLastCPTime[client] = time;
+    g_flLastCPBestTime[client] = GetBestTime( index, mode, style );
+    
+    g_flLastTouch[client] = GetEngineTime();
 }
 
 stock void StartToBuild( int client, int cpnum )
@@ -742,4 +758,63 @@ stock int FindClientCPByNum( int client, int num )
     }
 
     return -1;
+}
+
+// NATIVES
+public int Native_SaveClientCP( Handle hPlugin, int nParms )
+{
+    SaveClientCP( GetNativeCell( 1 ), GetNativeCell( 2 ) );
+    
+    return 1;
+}
+
+public int Native_AddCP( Handle hPlugin, int nParms )
+{
+    decl String:szName[MAX_CP_NAME];
+    
+    int runid = GetNativeCell( 1 );
+    int cpnum = GetNativeCell( 2 );
+    
+    GetNativeString( 3, szName, sizeof( szName ) );
+    
+    
+    AddCP( runid, cpnum, szName );
+    
+    return 1;
+}
+
+public int Native_PrintCPTimes( Handle hPlugin, int nParms )
+{
+    int client = GetNativeCell( 1 );
+    int uid = GetNativeCell( 2 );
+    int mapid = GetNativeCell( 3 );
+    int runid = GetNativeCell( 4 );
+    int mode = GetNativeCell( 5 );
+    int style = GetNativeCell( 6 );
+    
+    
+    DB_PrintCPTimes( client, uid, mapid, runid, mode, style );
+    
+    return 1;
+}
+
+public int Native_GetClientLastCPTouch( Handle hPlugin, int nParms )
+{
+    int client = GetNativeCell( 1 );
+    
+    return view_as<int>( g_flLastTouch[client] );
+}
+
+public int Native_GetClientLastCPTime( Handle hPlugin, int nParms )
+{
+    int client = GetNativeCell( 1 );
+    
+    return view_as<int>( g_flLastCPTime[client] );
+}
+
+public int Native_GetClientLastCPBestTime( Handle hPlugin, int nParms )
+{
+    int client = GetNativeCell( 1 );
+    
+    return view_as<int>( g_flLastCPBestTime[client] );
 }

@@ -754,28 +754,40 @@ public void Thrd_PrintRecordInfo( Handle db, Handle res, const char[] szError, i
         szAdd );
     
     
+    
+    SQL_FieldNameToNum( res, "uid", field );
+    int uid = SQL_FetchInt( res, field );
+    
+    SQL_FieldNameToNum( res, "mapid", field );
+    int mapid = SQL_FetchInt( res, field );
+    
+    SQL_FieldNameToNum( res, "runid", field );
+    int runid = SQL_FetchInt( res, field );
+
+    
+    // Note: first character will determine the action.
+    char szInfo[32];
+    FormatEx( szInfo, sizeof( szInfo ), "a%i_%i_%i_%i_%i",
+        //recid,
+        uid,
+        mapid,
+        runid,
+        mode,
+        style );
+
+    
+    
+    if ( g_bLib_Zones_CP )
+    {
+        szInfo[0] = 'c';
+        
+        menu.AddItem( szInfo, "CP Times" );
+    }
+    
+    
     if ( CanUserRemoveRecords( client ) )
     {
-        //SQL_FieldNameToNum( res, "recid", field );
-        //int recid = SQL_FetchInt( res, field );
-        
-        SQL_FieldNameToNum( res, "uid", field );
-        int uid = SQL_FetchInt( res, field );
-        
-        SQL_FieldNameToNum( res, "mapid", field );
-        int mapid = SQL_FetchInt( res, field );
-        
-        SQL_FieldNameToNum( res, "runid", field );
-        int runid = SQL_FetchInt( res, field );
-        
-        char szInfo[32];
-        FormatEx( szInfo, sizeof( szInfo ), "%i_%i_%i_%i_%i",
-            //recid,
-            uid,
-            mapid,
-            runid,
-            mode,
-            style );
+        szInfo[0] = 'd';
         
         menu.AddItem( szInfo, "Delete this record" );
     }
