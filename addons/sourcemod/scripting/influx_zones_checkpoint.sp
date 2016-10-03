@@ -12,6 +12,7 @@
 #define DEBUG_INSERTREC
 #define DEBUG_DB
 #define DEBUG_SETS
+#define DEBUG_CMD
 
 
 enum
@@ -118,6 +119,11 @@ public void OnPluginStart()
     
     // CONVARS
     //g_ConVar_ReqCPs = CreateConVar( "influx_checkpoint_requirecps", "0", "In order to beat the map, player must activate all checkpoints?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+
+    //CMDS
+#if defined DEBUG_CMD
+    RegAdminCmd( "sm_debugprintcps", Cmd_PrintCps, ADMFLAG_ROOT );
+#endif
 }
 
 public void OnAllPluginsLoaded()
@@ -144,17 +150,13 @@ public void OnClientPutInServer( int client )
 
 public void Influx_OnPreRunLoad()
 {
+    g_hCPZones.Clear();
     g_hCPs.Clear();
 }
 
 public void Influx_OnPostRecordsLoad()
 {
     DB_GetCPTimes();
-}
-
-public void Influx_OnPreZoneLoad()
-{
-    g_hCPZones.Clear();
 }
 
 public void Influx_OnTimerStartPost( int client, int runid )
@@ -294,7 +296,7 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     
     
     Menu menu = new Menu( Hndlr_CreateZone_SelectCPNum );
-    menu.SetTitle( "Which stage do you want to create?\nRun: %s\nCheckpoints: %i\n ",
+    menu.SetTitle( "Which checkpoint do you want to create?\nRun: %s\nCheckpoints: %i\n ",
         szRun,
         GetRunCPCount( runid ) );
     
@@ -473,6 +475,10 @@ public void E_StartTouchPost_CP( int ent, int activator )
 
 stock void SaveClientCP( int client, int cpnum )
 {
+#if defined DEBUG_ZONE
+    PrintToServer( INF_DEBUG_PRE..."Attempting to save client cp %i!", cpnum );
+#endif
+
     if ( Influx_GetClientState( client ) != STATE_RUNNING ) return;
     
     
@@ -758,6 +764,20 @@ stock int FindClientCPByNum( int client, int num )
     }
 
     return -1;
+}
+
+// CMDS
+public Action Cmd_PrintCps( int client, int args )
+{
+    int len = g_hCPs.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        PrintToServer( INF_DEBUG_PRE..."CP #%i | Run Id: %i",
+            g_hCPs.Get( i, CP_NUM ),
+            g_hCPs.Get( i, CP_RUN_ID ) );
+    }
+    
+    return Plugin_Handled;
 }
 
 // NATIVES

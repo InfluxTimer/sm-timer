@@ -222,6 +222,12 @@ public Action Cmd_CreateZone( int client, int args )
             menu.AddItem( szInfo, "Checkpoint" );
         }
         
+        if ( g_bLib_Zones_Stage )
+        {
+            FormatEx( szInfo, sizeof( szInfo ), "%i", ZONETYPE_STAGE );
+            menu.AddItem( szInfo, "Stage" );
+        }
+        
         menu.Display( client, MENU_TIME_FOREVER );
     }
     

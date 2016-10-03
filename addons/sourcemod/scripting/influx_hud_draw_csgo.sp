@@ -15,6 +15,8 @@
 #include <influx/practise>
 //#include <influx/strfsync>
 #include <influx/truevel>
+#include <influx/zones_stage>
+#include <influx/zones_checkpoint>
 
 
 //#define DEBUG
@@ -28,6 +30,8 @@ bool g_bLib_Practise;
 bool g_bLib_Recording;
 //bool g_bLib_StrfSync;
 bool g_bLib_Truevel;
+bool g_bLib_Stage;
+bool g_bLib_CP;
 
 
 public Plugin myinfo =
@@ -61,6 +65,8 @@ public void OnPluginStart()
     g_bLib_Recording = LibraryExists( INFLUX_LIB_RECORDING );
     //g_bLib_StrfSync = LibraryExists( INFLUX_LIB_STRFSYNC );
     g_bLib_Truevel = LibraryExists( INFLUX_LIB_TRUEVEL );
+    g_bLib_Stage = LibraryExists( INFLUX_LIB_ZONES_STAGE );
+    g_bLib_CP = LibraryExists( INFLUX_LIB_ZONES_CP );
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -71,6 +77,8 @@ public void OnLibraryAdded( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = true;
     if ( StrEqual( lib, INFLUX_LIB_RECORDING ) ) g_bLib_Recording = true;
     if ( StrEqual( lib, INFLUX_LIB_TRUEVEL ) ) g_bLib_Truevel = true;
+    if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Stage = true;
+    if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_CP = true;
 }
 
 public void OnLibraryRemoved( const char[] lib )
@@ -82,6 +90,8 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_RECORDING ) ) g_bLib_Recording = false;
     //if ( StrEqual( lib, INFLUX_LIB_STRFSYNC ) ) g_bLib_StrfSync = false;
     if ( StrEqual( lib, INFLUX_LIB_TRUEVEL ) ) g_bLib_Truevel = false;
+    if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Stage = false;
+    if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_CP = false;
 }
 
 public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
@@ -106,6 +116,15 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         
         if ( !(hideflags & HIDEFLAG_TIME) && state >= STATE_RUNNING )
         {
+            float cptime = INVALID_RUN_TIME;
+            
+            if (g_bLib_CP
+            &&  (GetEngineTime() - Influx_GetClientLastCPTouch( target )) < 2.0)
+            {
+                cptime = Influx_GetClientLastCPBestTime( target );
+            }
+            
+            
             if ( state == STATE_FINISHED )
             {
                 Inf_FormatSeconds( Influx_GetClientFinishedTime( target ), szTemp, sizeof( szTemp ), "%05.2f" );
@@ -115,6 +134,34 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
             {
                 Inf_FormatSeconds( Influx_GetClientPausedTime( target ), szTemp, sizeof( szTemp ), "%05.2f" );
                 FormatEx( szMsg, sizeof( szMsg ), "Time: %s", szTemp );
+            }
+            else if ( cptime != INVALID_RUN_TIME )
+            {
+                float time = Influx_GetClientLastCPTime( target );
+                
+                
+                decl Float:dif;
+                decl pre;
+                
+                if ( cptime <= time )
+                {
+                    dif = time - cptime;
+                    pre = '+';
+                }
+                else
+                {
+                    dif = cptime - time;
+                    pre = '-';
+                }
+                
+                //decl String:szName[MAX_CP_NAME];
+                //Influx_GetClientLastCPName( client, szName, sizeof( szName ) );
+                
+                
+                Inf_FormatSeconds( dif, szTemp2, sizeof( szTemp2 ), szSecFormat );
+                
+                
+                FormatEx( szMsg, sizeof( szMsg ), "CP: %c%s", pre, szTemp2 );
             }
             else
             {
@@ -202,10 +249,22 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         }
         
         
+        if ( g_bLib_Stage && Influx_ShouldDisplayStages( client ) )
+        {
+            int stages = Influx_GetClientStageCount( client );
+            
+            if ( stages < 1 )
+            {
+                strcopy( szTemp2, sizeof( szTemp2 ), "Linear" );
+            }
+            else
+            {
+                FormatEx( szTemp2, sizeof( szTemp2 ), "%i/%i", Influx_GetClientStage( client ), stages + 1 );
+            }
+            
+            FormatEx( szMsg, sizeof( szMsg ), "Stage: %s", szTemp2 );
+        }
         
-#if defined DEBUG
-        PrintToServer( INF_CON_PRE..."Drawing menu to client %i | target %i!", client, target );
-#endif
         
         if ( !(hideflags & HIDEFLAG_PB_TIME) && Influx_IsClientCached( target ) )
         {
@@ -221,7 +280,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
                 strcopy( szTemp, sizeof( szTemp ), "PB: N/A" );
             }
             
-            FormatEx( szMsg, sizeof( szMsg ), "%s", szTemp );
+            Format( szMsg, sizeof( szMsg ), "%s%s%s", szMsg, NEWLINE_CHECK( szMsg ), szTemp );
         }
         
         if ( !(hideflags & HIDEFLAG_WR_TIME) )

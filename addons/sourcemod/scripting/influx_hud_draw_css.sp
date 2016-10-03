@@ -285,17 +285,21 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         
         if ( g_bLib_Stage && Influx_ShouldDisplayStages( client ) )
         {
-            szTemp2[0] = '\0';
+            int stages = Influx_GetClientStageCount( client );
             
-            FormatStages( target, szTemp2, sizeof( szTemp2 ) );
-            
-            if ( szTemp2[0] != '\0' )
+            if ( stages < 1 )
             {
-                Format( szMsg, sizeof( szMsg ), "%s%s%s",
-                    szMsg,
-                    NEWLINE_CHECK( szMsg ),
-                    szTemp2 );
+                FormatEx( sz, len, "Stage: Linear" );
             }
+            else
+            {
+                FormatEx( sz, len, "Stage: %i/%i", Influx_GetClientStage( client ), stages + 1 );
+            }
+            
+            Format( szMsg, sizeof( szMsg ), "%s%s%s",
+                szMsg,
+                NEWLINE_CHECK( szMsg ),
+                szTemp2 );
         }
         
         ADD_SEPARATOR( szMsg, "\n " );
@@ -400,22 +404,6 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
     }
     
     return Plugin_Stop;
-}
-
-stock void FormatStages( int client, char[] sz, int len )
-{
-    int stage = Influx_GetClientStage( client );
-    
-    int stages = Influx_GetClientStageCount( client );
-    
-    if ( stages < 1 )
-    {
-        FormatEx( sz, len, "Stage: Linear" );
-    }
-    else
-    {
-        FormatEx( sz, len, "Stage: %i/%i", stage, stages );
-    }
 }
 
 // Check if they want truevel.
