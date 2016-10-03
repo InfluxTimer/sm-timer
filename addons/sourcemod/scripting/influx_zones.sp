@@ -36,6 +36,7 @@ float g_vecBuildingStart[INF_MAXPLAYERS][3];
 //int g_iBuildingZoneId[INF_MAXPLAYERS];
 //int g_iBuildingRunId[INF_MAXPLAYERS];
 int g_nBuildingGridSize[INF_MAXPLAYERS];
+char g_szBuildingName[INF_MAXPLAYERS][MAX_ZONE_NAME];
 
 
 
@@ -259,6 +260,7 @@ public void OnClientPutInServer( int client )
 {
     g_iBuildingType[client] = ZONETYPE_INVALID;
     g_nBuildingGridSize[client] = 8;
+    g_szBuildingName[client][0] = '\0';
     
     
     CheckZones();
@@ -570,14 +572,18 @@ stock bool StartToBuild( int client, ZoneType_t zonetype, const char[] name = ""
     CreateTimer( ZONE_BUILDDRAW_INTERVAL, T_DrawBuildBeams, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
     
     
-    char szName[64];
+    char szName[MAX_ZONE_NAME];
     
     if ( name[0] != '\0' )
     {
+        strcopy( g_szBuildingName[client], sizeof( g_szBuildingName[] ), name );
+        
         strcopy( szName, sizeof( szName ), name );
     }
     else
     {
+        g_szBuildingName[client][0] = '\0';
+        
         Inf_ZoneTypeToName( zonetype, szName, sizeof( szName ) );
     }
     
@@ -666,9 +672,17 @@ stock int CreateZoneEntityByIndex( int index )
 stock int CreateZone( int client, const float mins[3], const float maxs[3], ZoneType_t zonetype )
 {
     char szName[MAX_ZONE_NAME];
-    Inf_ZoneTypeToName( zonetype, szName, sizeof( szName ) );
     
-    Format( szName, sizeof( szName ), "%s #%i", szName, GetZoneTypeCount( zonetype ) + 1 );
+    if ( g_szBuildingName[client][0] == '\0' )
+    {
+        Inf_ZoneTypeToName( zonetype, szName, sizeof( szName ) );
+        
+        Format( szName, sizeof( szName ), "%s #%i", szName, GetZoneTypeCount( zonetype ) + 1 );
+    }
+    else
+    {
+        strcopy( szName, sizeof( szName ), g_szBuildingName[client] );
+    }
     
     
     // Find unused zone id.
@@ -693,7 +707,8 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
     
     strcopy( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME, szName );
     
-    int ourindex = g_hZones.PushArray( data );
+    g_hZones.PushArray( data );
+    
     
     Call_StartForward( g_hForward_OnZoneCreated );
     Call_PushCell( client );
@@ -705,16 +720,27 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
     g_iBuildingType[client] = ZONETYPE_INVALID;
     
     // Get name again in case it was updated.
-    g_hZones.GetString( ourindex, szName, sizeof( szName ) );
+    GetZoneName( zoneid, szName, sizeof( szName ) );
     
     Influx_PrintToChat( _, client, "Created zone {MAINCLR1}%s{CHATCLR}!", szName );
     
     
     // May be changed above.
-    return CreateZoneEntityByIndex( ourindex );
+    return CreateZoneEntity( zoneid );
 }
 
-//stock int GetZoneName
+stock void GetZoneName( int id, char[] sz, int len )
+{
+    GetZoneNameByIndex( FindZoneById( id ), sz, len );
+}
+
+stock void GetZoneNameByIndex( int index, char[] sz, int len )
+{
+    if ( index == -1 ) return;
+    
+    
+    g_hZones.GetString( index, sz, len );
+}
 
 stock void GetZoneMinsMaxsByIndex( int index, float mins_out[3], float maxs_out[3] )
 {
