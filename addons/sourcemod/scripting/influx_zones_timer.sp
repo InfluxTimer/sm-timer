@@ -55,6 +55,29 @@ public void OnClientPutInServer( int client )
     g_iBuildingRunId[client] = -1;
 }
 
+public Action Influx_OnSearchEnd( int runid, float pos[3] )
+{
+    int i = 0;
+    while ( (i = FindByRunId( runid, i )) != -1 )
+    {
+        if ( g_hTimer.Get( i, TIMER_ZONE_TYPE ) == ZONETYPE_END )
+        {
+            float mins[3];
+            float maxs[3];
+            
+            Influx_GetZoneMinsMaxs( g_hTimer.Get( i, TIMER_ZONE_ID ), mins, maxs );
+            
+            Inf_TelePosFromMinsMaxs( mins, maxs, pos );
+            
+            return Plugin_Stop;
+        }
+        
+        ++i;
+    }
+    
+    return Plugin_Continue;
+}
+
 public void Influx_OnPreRunLoad()
 {
     g_hTimer.Clear();
@@ -123,15 +146,15 @@ stock void CheckRuns()
             Influx_GetZoneMinsMaxs( g_hTimer.Get( istart, TIMER_ZONE_ID ), start_mins, start_maxs );
             Influx_GetZoneMinsMaxs( g_hTimer.Get( iend, TIMER_ZONE_ID ), end_mins, end_maxs );
             
-            FindTelePos( start_mins, start_maxs, vec );
             
-            // Yaw
             float yaw;
             
-            if ( !FindTeleYaw( start_mins, start_maxs, yaw ) )
+            if ( !Inf_FindTelePos( start_mins, start_maxs, vec, yaw ) )
             {
-                // No tele yaw was found, make our own.
-                yaw = MinsMaxsToYaw( start_mins, start_maxs, end_mins, end_maxs );
+                // No tele pos was found, make our own.
+                Inf_TelePosFromMinsMaxs( start_mins, start_maxs, vec );
+                
+                yaw = Inf_MinsMaxsToYaw( start_mins, start_maxs, end_mins, end_maxs );
             }
             
             if ( Influx_AddRun( runid, _, vec, yaw ) )
@@ -304,15 +327,16 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     Influx_GetZoneMinsMaxs( g_hTimer.Get( istart, TIMER_ZONE_ID ), start_mins, start_maxs );
     Influx_GetZoneMinsMaxs( g_hTimer.Get( iend, TIMER_ZONE_ID ), end_mins, end_maxs );
     
-    FindTelePos( start_mins, start_maxs, vec );
     
-    // Yaw
     float yaw;
     
-    if ( !FindTeleYaw( start_mins, start_maxs, yaw ) )
+    if ( !Inf_FindTelePos( start_mins, start_maxs, vec, yaw ) )
     {
-        // No tele yaw was found, make our own.
-        yaw = MinsMaxsToYaw( start_mins, start_maxs, end_mins, end_maxs );
+        // No tele pos was found, make our own.
+        Inf_TelePosFromMinsMaxs( start_mins, start_maxs, vec );
+        
+        
+        yaw = Inf_MinsMaxsToYaw( start_mins, start_maxs, end_mins, end_maxs );
     }
     
     
@@ -384,7 +408,9 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     menu.SetTitle( "Which run do you want to create '%s' for?\n ", szZone );
     
     
-    FormatEx( szInfo, sizeof( szInfo ), "-1_%i", zonetype );
+    int timerchar = TimerToChar( zonetype );
+    
+    FormatEx( szInfo, sizeof( szInfo ), "%c-1", timerchar );
     menu.AddItem( szInfo, "New Run" );
     
     
@@ -395,7 +421,7 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
         runid = runs.Get( i, RUN_ID );
         
         
-        FormatEx( szInfo, sizeof( szInfo ), "%i_%i", runid, zonetype );
+        FormatEx( szInfo, sizeof( szInfo ), "%c%i", timerchar, runid );
         FormatEx( szDisplay, sizeof( szDisplay ), "%s (ID: %i)", szRun, runid );
         
         menu.AddItem( szInfo, szDisplay );
@@ -404,18 +430,6 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     menu.Display( client, MENU_TIME_FOREVER );
     
     return Plugin_Stop;
-}
-
-stock void GetRunInfo( char[] szInfo, int &runid, ZoneType_t &zonetype )
-{
-    decl String:buffer[2][6];
-    if ( ExplodeString( szInfo, "_", buffer, sizeof( buffer ), sizeof( buffer[] ) ) != sizeof( buffer ) )
-    {
-        return;
-    }
-    
-    runid = StringToInt( buffer[0] );
-    zonetype = view_as<ZoneType_t>( StringToInt( buffer[1] ) );
 }
 
 public int Hndlr_CreateZone_SelectRun( Menu oldmenu, MenuAction action, int client, int index )
@@ -427,9 +441,8 @@ public int Hndlr_CreateZone_SelectRun( Menu oldmenu, MenuAction action, int clie
     if ( !GetMenuItem( oldmenu, index, szInfo, sizeof( szInfo ) ) ) return 0;
     
     
-    int runid = -1;
-    ZoneType_t zonetype = ZONETYPE_INVALID;
-    GetRunInfo( szInfo, runid, zonetype );
+    ZoneType_t zonetype = TimerCharToType( szInfo[0] );
+    int runid = StringToInt( szInfo[1] );
     
     if ( !Inf_IsZoneTypeTimer( zonetype ) ) return 0;
     
@@ -464,13 +477,15 @@ public int Hndlr_CreateZone_SelectRun( Menu oldmenu, MenuAction action, int clie
         Influx_GetZoneName( zoneid, szZone, sizeof( szZone ) );
         
         
+        int timerchar = TimerToChar( zonetype );
+        
         Menu menu = new Menu( Hndlr_CreateZone_SelectRun_Confirm );
         
         menu.SetTitle( "This zone already exists! %s (%s)\n ",
             szZone,
             szType );
         
-        FormatEx( szInfo, sizeof( szInfo ), "%i_%i", runid, zonetype );
+        FormatEx( szInfo, sizeof( szInfo ), "%c%i", timerchar, runid );
         
         menu.AddItem( szInfo, "Create a new instance (keep both) (multiple starts/ends)" );
         menu.AddItem( szInfo, "Replace existing one(s)\n " );
@@ -501,9 +516,8 @@ public int Hndlr_CreateZone_SelectRun_Confirm( Menu menu, MenuAction action, int
     if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
     
     
-    int runid = -1;
-    ZoneType_t zonetype = ZONETYPE_INVALID;
-    GetRunInfo( szInfo, runid, zonetype );
+    ZoneType_t zonetype = TimerCharToType( szInfo[0] );
+    int runid = StringToInt( szInfo[1] );
     
     
     bool bValidInfo = ( runid != -1 && Inf_IsZoneTypeTimer( zonetype ) && Influx_FindRunById( runid ) != -1 );
@@ -581,58 +595,6 @@ public void E_StartTouchPost_End( int ent, int activator )
     Influx_FinishTimer( activator, Inf_GetZoneProp( ent ) );
 }
 
-stock void FindTelePos( const float mins[3], const float maxs[3], float out[3] )
-{
-    // Trace down to get a valid player teleport destination.
-    float vec[3], end[3];
-    vec[0] = mins[0] + ( maxs[0] - mins[0] ) * 0.5;
-    vec[1] = mins[1] + ( maxs[1] - mins[1] ) * 0.5;
-    vec[2] = maxs[2] - 2.0;
-    
-    end = vec;
-    end[2] = mins[2];
-    
-    TR_TraceHull( vec, end, PLYHULL_MINS, PLYHULL_MAXS_NOZ, MASK_SOLID );
-    TR_GetEndPosition( end );
-    
-    vec[2] = end[2] + 2.0;
-    
-    out = vec;
-}
-
-stock bool FindTeleYaw( const float mins[3], const float maxs[3], float &yaw_out )
-{
-    float pos[3], ang[3];
-    
-    int ent = -1;
-    while ( (ent = FindEntityByClassname( ent, "info_teleport_destination" )) != -1 )
-    {
-        GetEntityOrigin( ent, pos );
-        
-        if ( IsInsideBounds( pos, mins, maxs ) )
-        {
-            GetEntPropVector( ent, Prop_Data, "m_angRotation", ang );
-            
-            yaw_out = ang[1];
-            
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-stock float MinsMaxsToYaw( const float start_mins[3], const float start_maxs[3], const float target_mins[3], const float target_maxs[3] )
-{
-    float dir[2];
-    for ( int j = 0; j < 2; j++ )
-    {
-        dir[j] = (target_mins[j] + ( target_maxs[j] - target_mins[j] ) * 0.5) - (start_mins[j] + ( start_maxs[j] - start_mins[j] ) * 0.5);
-    }
-    
-    return RadToDeg( ArcTangent2( dir[1], dir[0] ) );
-}
-
 stock int FindTimerById( int id )
 {
     int len = g_hTimer.Length;
@@ -662,4 +624,23 @@ stock int FindByRunId( int id, int startindex = 0 )
     }
     
     return -1;
+}
+
+stock int TimerToChar( ZoneType_t zonetype )
+{
+    return ( zonetype == ZONETYPE_START ) ? 's' : 'e';
+}
+
+stock ZoneType_t TimerCharToType( int c )
+{
+    if ( c == 's' )
+    {
+        return ZONETYPE_START;
+    }
+    else if ( c == 'end' )
+    {
+        return ZONETYPE_END;
+    }
+    
+    return ZONETYPE_INVALID;
 }

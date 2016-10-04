@@ -340,6 +340,10 @@ enum Search_t
 forward Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &value );
 
 
+// Searching for ending position.
+forward Action Influx_OnSearchEnd( int runid, float pos[3] );
+
+
 
 stock bool Inf_SDKHook( int entity, SDKHookType type, SDKHookCB callback )
 {
