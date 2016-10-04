@@ -637,7 +637,7 @@ stock ZoneType_t TimerCharToType( int c )
     {
         return ZONETYPE_START;
     }
-    else if ( c == 'end' )
+    else if ( c == 'e' )
     {
         return ZONETYPE_END;
     }
