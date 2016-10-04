@@ -242,13 +242,6 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
 {
-    if ( late )
-    {
-        strcopy( szError, error_len, INF_NAME..." cannot be loaded late!" );
-        return APLRes_Failure;
-    }
-    
-    
     EngineVersion eng = GetEngineVersion();
     
     if ( eng != Engine_CSS && eng != Engine_CSGO )
