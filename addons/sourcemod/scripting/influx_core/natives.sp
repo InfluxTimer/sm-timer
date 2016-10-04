@@ -383,6 +383,12 @@ public int Native_StartTimer( Handle hPlugin, int nParms )
     
     if ( IsFakeClient( client ) ) return;
     
+    // We need to be in the start zone to start the timer.
+    // This stops people from activating the timer when teleporting out of the start zone. (not leaving it legit)
+    // For other means of activating the timer (eg kz button), I'll have to figure something out.
+    if ( g_iRunState[client] != STATE_START ) return;
+    
+    
     
     int runid = GetNativeCell( 2 );
     
