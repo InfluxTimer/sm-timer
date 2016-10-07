@@ -29,5 +29,9 @@ public SharedPlugin __pl_influx_zones_stage =
 #if !defined REQUIRE_PLUGIN
 public void __pl_influx_zones_stage_SetNTVOptional()
 {
+    MarkNativeAsOptional( "Influx_GetClientStage" );
+    MarkNativeAsOptional( "Influx_GetClientStageCount" );
+    MarkNativeAsOptional( "Influx_GetRunStageCount" );
+    MarkNativeAsOptional( "Influx_ShouldDisplayStages" );
 }
 #endif

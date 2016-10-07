@@ -19,7 +19,6 @@ public void DB_Init()
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
     
     
-    // TODO: MySQL compatibility
     SQL_TQuery( db, Thrd_Empty,
         "CREATE TABLE IF NOT EXISTS "...INF_TABLE_CPTIMES..." (" ...
         "uid INT NOT NULL," ...
@@ -161,7 +160,8 @@ stock void DB_PrintCPTimes( int client, int uid, int mapid, int runid, int mode,
     
     
     
-    decl String:szQuery[800];
+    static char szQuery[800];
+    
     
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT uid,mapid,runid,mode,style,cpnum,cptime,rectime," ...

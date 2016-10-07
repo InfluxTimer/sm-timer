@@ -42,5 +42,11 @@ public SharedPlugin __pl_influx_zones_checkpoint =
 #if !defined REQUIRE_PLUGIN
 public void __pl_influx_zones_checkpoint_SetNTVOptional()
 {
+    MarkNativeAsOptional( "Influx_AddCP" );
+    MarkNativeAsOptional( "Influx_GetClientLastCPTouch" );
+    MarkNativeAsOptional( "Influx_GetClientLastCPTime" );
+    MarkNativeAsOptional( "Influx_GetClientLastCPBestTime" );
+    MarkNativeAsOptional( "Influx_PrintCPTimes" );
+    MarkNativeAsOptional( "Influx_SaveClientCP" );
 }
 #endif

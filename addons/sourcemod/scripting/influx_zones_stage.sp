@@ -34,6 +34,8 @@ int g_iBuildingNum[INF_MAXPLAYERS];
 
 
 ConVar g_ConVar_ActAsCP;
+ConVar g_ConVar_DisplayType;
+ConVar g_ConVar_DisplayOnlyMain;
 
 
 public Plugin myinfo =
@@ -68,6 +70,9 @@ public void OnPluginStart()
     
     // CONVARS
     g_ConVar_ActAsCP = CreateConVar( "influx_stage_actascp", "1", "Stage zones act as checkpoints if checkpoints module is loaded.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    
+    g_ConVar_DisplayType = CreateConVar( "influx_stage_displaytype", "2", "0 = Don't display stages, 1 = Display stages if non-linear, 2 = Display all stages", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
+    g_ConVar_DisplayOnlyMain = CreateConVar( "influx_stage_displayonlymain", "1", "", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 }
 
 public void OnClientPutInServer( int client )
@@ -467,13 +472,25 @@ stock int FindStageByNum( int runid, int num )
 // NATIVES
 public int Native_ShouldDisplayStages( Handle hPlugin, int nParms )
 {
+    if ( g_ConVar_DisplayType.IntValue == 0 ) return 0;
+    
+    
     int client = GetNativeCell( 1 );
     
     int runid = Influx_GetClientRunId( client );
-    if ( runid != MAIN_RUN_ID ) return 0;
     
     
-    return GetRunStageCount( runid ) > 0;
+    if ( g_ConVar_DisplayOnlyMain.BoolValue && runid != MAIN_RUN_ID ) return 0;
+    
+    
+    int count = GetRunStageCount( runid );
+    
+    if ( !count )
+    {
+        return ( g_ConVar_DisplayType.IntValue == 2 );
+    }
+    
+    return 1;
 }
 
 public int Native_GetClientStage( Handle hPlugin, int nParms )

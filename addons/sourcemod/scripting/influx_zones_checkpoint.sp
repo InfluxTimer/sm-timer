@@ -124,6 +124,11 @@ public void OnPluginStart()
 #if defined DEBUG_CMD
     RegAdminCmd( "sm_debugprintcps", Cmd_PrintCps, ADMFLAG_ROOT );
 #endif
+    
+    //RegConsoleCmd( "sm_cptimes", Cmd_PrintCpTimes );
+    //RegConsoleCmd( "sm_cptime", Cmd_PrintCpTimes );
+    //RegConsoleCmd( "sm_cpwr", Cmd_PrintCpTimes );
+    //RegConsoleCmd( "sm_cptop", Cmd_PrintCpTimes );
 }
 
 public void OnAllPluginsLoaded()
