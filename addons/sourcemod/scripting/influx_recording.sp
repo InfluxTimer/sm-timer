@@ -92,6 +92,8 @@ ConVar g_ConVar_WeaponAttack2;
 ConVar g_ConVar_MaxLength;
 ConVar g_ConVar_StartTime;
 ConVar g_ConVar_EndTime;
+ConVar g_ConVar_AutoPlayback;
+ConVar g_ConVar_Repeat;
 
 ConVar g_ConVar_Admin_ChangeReplayFlags;
 
@@ -152,6 +154,11 @@ public void OnPluginStart()
     
     g_ConVar_StartTime = CreateConVar( "influx_recording_startwait", "1.5", "How long we wait at the start before starting playback.", FCVAR_NOTIFY );
     g_ConVar_EndTime = CreateConVar( "influx_recording_endwait", "1.5", "How long we wait at the end before teleporting to start.", FCVAR_NOTIFY );
+    
+    g_ConVar_AutoPlayback = CreateConVar( "influx_recording_autoplayback", "1", "Will automatically play replays if players haven't selected one.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    
+    g_ConVar_Repeat = CreateConVar( "influx_recording_repeatplayback", "1", "If no new playback is set, do we keep repeating the same replay?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    
     
     g_ConVar_Admin_ChangeReplayFlags = CreateConVar( "influx_recording_changereplayflags", "z", "Required flags to change replay without limits." );
     
@@ -444,6 +451,9 @@ stock bool IsValidReplayBot()
 
 stock bool FindNewPlayback()
 {
+    if ( !g_ConVar_AutoPlayback.BoolValue ) return false;
+    
+    
     // I know, this is really messy.
     // Just leave it. JUST DON'T LOOK AT IT, ALRIGHT!
     
@@ -563,9 +573,17 @@ public Action T_PlaybackToStart( Handle hTimer, int client )
         {
             if ( !FindNewPlayback() )
             {
-                g_nCurRec[client] = PLAYBACK_START;
-                
-                CreateTimer( g_ConVar_StartTime.FloatValue, T_PlaybackStart, GetClientUserId( g_iReplayBot ), TIMER_FLAG_NO_MAPCHANGE );
+                // Couldn't find a new playback, repeat it if possible.
+                if ( g_ConVar_Repeat.BoolValue )
+                {
+                    g_nCurRec[client] = PLAYBACK_START;
+                    
+                    CreateTimer( g_ConVar_StartTime.FloatValue, T_PlaybackStart, GetClientUserId( g_iReplayBot ), TIMER_FLAG_NO_MAPCHANGE );
+                }
+                else
+                {
+                    ResetReplay();
+                }
             }
         }
     }
@@ -1025,10 +1043,10 @@ stock bool IsObservingTarget( int client, int target )
     return ( !IsPlayerAlive( client ) && GetClientObserverTarget( client ) == target && GetClientObserverMode( client ) != OBS_MODE_ROAMING );
 }
 
-stock void ObserveTarget( int client, int target )
+stock bool ObserveTarget( int client, int target )
 {
     // Can't spectate a dead player!
-    if ( !IsPlayerAlive( target ) ) return;
+    if ( !IsPlayerAlive( target ) ) return false;
     
     
     if ( IsPlayerAlive( client ) )
@@ -1037,12 +1055,14 @@ stock void ObserveTarget( int client, int target )
     }
     else if ( GetClientObserverTarget( client ) == target )
     {
-        return; // We're already spectating the target!
+        return true; // We're already spectating the target!
     }
     
     
     SetClientObserverMode( client, OBS_MODE_IN_EYE );
     SetClientObserverTarget( client, target );
+    
+    return true;
 }
 
 stock int FindRunRecById( int id )
@@ -1160,6 +1180,33 @@ stock bool CanUserChangeReplay( int client )
     int wantedflags = ReadFlagString( szFlags );
     
     return ( (GetUserFlagBits( client ) & wantedflags) == wantedflags );
+}
+
+stock void ResetReplay()
+{
+    // Try to teleport the bot to start.
+    if ( IsValidReplayBot() && g_hReplay != null && g_hReplay.Length > 0 )
+    {
+        float pos[3];
+        float angles[3];
+        
+        int data[REC_SIZE];
+        
+        g_hReplay.GetArray( 0, data );
+        
+        CopyArray( data[REC_POS], pos, 3 );
+        CopyArray( data[REC_ANG], angles, 2 );
+        
+        TeleportEntity( g_iReplayBot, pos, angles, ORIGIN_VECTOR );
+    }
+    
+    
+    g_hReplay = null;
+    
+    g_iReplayRunId = -1;
+    g_iReplayMode = -1;
+    g_iReplayStyle = -1;
+    g_flReplayTime = INVALID_RUN_TIME;
 }
 
 // NATIVES

@@ -11,7 +11,10 @@ public Action Cmd_Replay( int client, int args )
     
     
     
-    ObserveTarget( client, g_iReplayBot );
+    if ( !ObserveTarget( client, g_iReplayBot ) )
+    {
+        return Plugin_Handled;
+    }
     
     
     decl runid, irun, mode, style;
