@@ -186,6 +186,8 @@ ConVar g_ConVar_DefMaxWeaponSpeed;
 
 ConVar g_ConVar_LadderFreestyle;
 
+ConVar g_ConVar_TeleToStart;
+
 
 // LIBRARIES
 bool g_bLib_Pause;
@@ -451,6 +453,8 @@ public void OnPluginStart()
     
     g_ConVar_DefMaxWeaponSpeed = CreateConVar( "influx_default_maxwepspd", "250", "Default maximum weapon speed. Max weapon speed is controlled by modes.", FCVAR_NOTIFY, true, 0.0 );
     g_ConVar_LadderFreestyle = CreateConVar( "influx_ladderfreestyle", "1", "Whether to allow freestyle on ladders.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    
+    g_ConVar_TeleToStart = CreateConVar( "influx_teletostartonspawn", "1", "0 = Never teleport when spawning, 1 = Only teleport if no spawnpoints are found, 2 = Always teleport to start.", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
     
     
     AutoExecConfig( true, "core", "influx" );
@@ -2094,4 +2098,39 @@ stock bool SearchEnd( int runid, float pos[3] )
     
     
     return ( res != Plugin_Continue );
+}
+
+stock void TeleportOnSpawn( int client )
+{
+    if ( g_ConVar_TeleToStart.IntValue == 0 ) return;
+    
+    
+    // We're paused, don't teleport to start.
+    if ( g_bLib_Pause && Influx_IsClientPaused( client ) ) return;
+    
+    
+    
+    bool teleport = false;
+    
+    
+    if ( g_ConVar_TeleToStart.IntValue == 1 )
+    {
+        char szSpawn[32];
+        
+        if ( GetClientTeam( client ) == CS_TEAM_CT ) strcopy( szSpawn, sizeof( szSpawn ), "info_player_counterterrorist" );
+        else strcopy( szSpawn, sizeof( szSpawn ), "info_player_terrorist" );
+        
+        
+        teleport = ( FindEntityByClassname( -1, szSpawn ) == -1 );
+    }
+    else
+    {
+        teleport = true;
+    }
+    
+    
+    if ( teleport )
+    {
+        TeleClientToStart_Safe( client, g_iRunId[client] );
+    }
 }
