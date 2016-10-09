@@ -21,6 +21,9 @@
 //#define DEBUG_REPLAY
 
 
+#define DEF_REPLAYBOTNAME       "Replay Bot - !replay"
+
+
 enum
 {
     SLOT_PRIMARY = 0,
@@ -94,6 +97,7 @@ ConVar g_ConVar_StartTime;
 ConVar g_ConVar_EndTime;
 ConVar g_ConVar_AutoPlayback;
 ConVar g_ConVar_Repeat;
+ConVar g_ConVar_BotName;
 
 ConVar g_ConVar_Admin_ChangeReplayFlags;
 
@@ -159,6 +163,8 @@ public void OnPluginStart()
     
     g_ConVar_Repeat = CreateConVar( "influx_recording_repeatplayback", "1", "If no new playback is set, do we keep repeating the same replay?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
+    g_ConVar_BotName = CreateConVar( "influx_recording_botname", DEF_REPLAYBOTNAME, "Replay bot's name.", FCVAR_NOTIFY );
+    g_ConVar_BotName.AddChangeHook( E_CvarChange_BotName );
     
     g_ConVar_Admin_ChangeReplayFlags = CreateConVar( "influx_recording_changereplayflags", "z", "Required flags to change replay without limits." );
     
@@ -380,6 +386,11 @@ public void E_CvarChange_MaxLength( ConVar convar, const char[] oldval, const ch
     SetMaxRecordingLength( g_flTickrate );
 }
 
+public void E_CvarChange_BotName( ConVar convar, const char[] oldval, const char[] newval )
+{
+    SetBotName();
+}
+
 stock void SetMaxRecordingLength( float tickrate )
 {
     g_nMaxRecLength = g_ConVar_MaxLength.IntValue * 60 * RoundFloat( tickrate );
@@ -423,7 +434,9 @@ stock void SetReplayBot( int bot )
     g_bForcedReplay = false;
     g_iReplayRequester = -1;
     
-    SetClientInfo( bot, "name", "Replay Bot - !replay" );
+    
+    SetBotName();
+    
     
     CS_SetClientClanTag( bot, "NONE" );
     
@@ -1207,6 +1220,22 @@ stock void ResetReplay()
     g_iReplayMode = -1;
     g_iReplayStyle = -1;
     g_flReplayTime = INVALID_RUN_TIME;
+}
+
+stock void SetBotName()
+{
+    if ( !IsValidReplayBot() ) return;
+    
+    
+    char szName[MAX_NAME_LENGTH];
+    g_ConVar_BotName.GetString( szName, sizeof( szName ) );
+    
+    if ( szName[0] == '\0' )
+    {
+        strcopy( szName, sizeof( szName ), DEF_REPLAYBOTNAME );
+    }
+    
+    SetClientInfo( g_iReplayBot, "name", szName );
 }
 
 // NATIVES
