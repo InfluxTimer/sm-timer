@@ -916,8 +916,12 @@ stock bool TeleClientToStart( int client, int runid )
     if ( irun == -1 ) return false;
     
     
-    // Set to none just in case something terrible happens.
-    g_iRunState[client] = STATE_NONE;
+    // Only reset our run state if we're actually running.
+    // Prevents timer not working when leaving start zone if player got teleported to start while their state was start already.
+    if ( g_iRunState[client] == STATE_RUNNING )
+    {
+        g_iRunState[client] = STATE_NONE;
+    }
     
     float pos[3];
     GetRunTelePos( irun, pos );
