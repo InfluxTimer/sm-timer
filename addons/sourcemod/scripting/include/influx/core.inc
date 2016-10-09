@@ -164,15 +164,28 @@ enum
 native Handle Influx_GetDB();
 native bool Influx_IsMySQL();
 
-// When we've loaded our map id and records.
+
+// New if we inserted new record.
+forward void Influx_OnMapIdRetrieved( int mapid, bool bNew );
+
+
+// Will return 0 if map id hasn't been retrieved.
+native int Influx_GetCurrentMapId();
+
+
+
+// When we've retrieved our map id and records.
 forward void Influx_OnPostRecordsLoad();
 
 
 // Do we have client's times and user id?
 native bool Influx_IsClientCached( int client );
 
+
+// Will return 0 if it hasn't been retrieved.
+// NOTE: This is not engine's user id.
 native int Influx_GetClientId( int client );
-native int Influx_GetCurrentMapId();
+
 
 
 forward void Influx_OnRequestModes();
@@ -191,8 +204,11 @@ native int Influx_FindRunById( int runid );
 native bool Influx_GetRunName( int runid, char[] out, int len );
 
 
+// Runs haven't been read from file/db yet.
 // Called before anything is loaded. Good time to clear per-map dynamic arrays that rely on run ids. (eg. prespeed plugin)
 forward void Influx_OnPreRunLoad();
+
+// Runs array has been filled with all existing runs.
 forward void Influx_OnPostRunLoad();
 
 native Handle Influx_GetPostRunLoadForward();

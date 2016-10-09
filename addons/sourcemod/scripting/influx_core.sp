@@ -140,6 +140,7 @@ Handle g_hForward_OnTimerResetPost;
 Handle g_hForward_OnPreRunLoad;
 Handle g_hForward_OnPostRunLoad;
 
+Handle g_hForward_OnMapIdRetrieved;
 Handle g_hForward_OnPostRecordsLoad;
 
 Handle g_hForward_OnRunCreated;
@@ -388,6 +389,8 @@ public void OnPluginStart()
     
     g_hForward_OnTimerResetPost = CreateGlobalForward( "Influx_OnTimerResetPost", ET_Ignore, Param_Cell );
     
+    
+    g_hForward_OnMapIdRetrieved = CreateGlobalForward( "Influx_OnMapIdRetrieved", ET_Ignore, Param_Cell, Param_Cell );
     
     g_hForward_OnPostRecordsLoad = CreateGlobalForward( "Influx_OnPostRecordsLoad", ET_Ignore );
     

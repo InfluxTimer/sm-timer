@@ -49,6 +49,14 @@ public void Thrd_GetMapId( Handle db, Handle res, const char[] szError, any data
     {
         g_iCurMapId = SQL_FetchInt( res, 0 );
         
+        
+        // We've retrieved the map id!
+        Call_StartForward( g_hForward_OnMapIdRetrieved );
+        Call_PushCell( g_iCurMapId );
+        Call_PushCell( g_bNewMapId );
+        Call_Finish();
+        
+        
         DB_InitRecords();
     }
     else
