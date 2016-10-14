@@ -3,6 +3,18 @@
 
 ADDED:
 - influx_recrank-plugin to display record's rank in chat.
+- influx_zones_checkpoint-plugin for checkpoint times.
+- influx_zones_stage-plugin for stage displaying.
+- Cvars: influx_teletostartonspawn, influx_recording_botname, influx_recording_autoplayback, influx_recording_repeatplayback
+- Ability to teleport to run end. (sm_gotoend/sm_end)
+- Lag-compensated CS:GO autobhop.
+
+FIXES:
+- MySQL not displaying best times correctly.
+
+CODE:
+- Added native Influx_FormatChatColors
+- Added forward Influx_OnMapIdRetrieved
 
 
 
