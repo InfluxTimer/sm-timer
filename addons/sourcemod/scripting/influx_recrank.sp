@@ -119,6 +119,8 @@ public void Thrd_Display( Handle db, Handle res, const char[] szError, int clien
         return;
     }
     
+    if ( !SQL_FetchRow( res ) ) return;
+    
     
     client = GetClientOfUserId( client );
     if ( client < 1 ) return;
