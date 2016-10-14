@@ -274,6 +274,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_PrintToChatAll", Native_PrintToChatAll );
     CreateNative( "Influx_PrintToChatEx", Native_PrintToChatEx );
     CreateNative( "Influx_RemoveChatColors", Native_RemoveChatColors );
+    CreateNative( "Influx_FormatChatColors", Native_FormatChatColors );
     
     
     CreateNative( "Influx_StartTimer", Native_StartTimer );

@@ -109,3 +109,19 @@ public int Native_RemoveChatColors( Handle hPlugin, int nParms )
     
     return 1;
 }
+
+public int Native_FormatChatColors( Handle hPlugin, int nParms )
+{
+    int len = GetNativeCell( 2 );
+    
+    char[] sz = new char[len];
+    
+    GetNativeString( 1, sz, len );
+    
+    FormatColors( sz, len );
+    
+    
+    SetNativeString( 1, sz, len );
+    
+    return 1;
+}

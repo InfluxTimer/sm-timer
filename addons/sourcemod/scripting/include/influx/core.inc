@@ -224,13 +224,14 @@ native ArrayList Influx_GetRunsArray();
 
 
 #define PRINTFLAGS_NOPREFIX         ( 1 << 0 )
-#define PRINTFLAGS_CHATMSG          ( 1 << 1 ) // Sent by client.
+#define PRINTFLAGS_CHATMSG          ( 1 << 1 ) // Sent by client. Currently not used.
 
 // Use these if you want the correct prefix.
 native void Influx_PrintToChat( int flags = 0, int client, const char[] format, any ... );
 native void Influx_PrintToChatAll( int flags = 0, int author, const char[] format, any ... );
 native void Influx_PrintToChatEx( int flags = 0, int author, const int[] clients, int nClients, const char[] format, any ... );
 native void Influx_RemoveChatColors( char[] sz, int len );
+native void Influx_FormatChatColors( char[] sz, int len );
 
 
 
@@ -479,6 +480,7 @@ public void __pl_influx_core_SetNTVOptional()
     MarkNativeAsOptional( "Influx_AddStyle" );
     MarkNativeAsOptional( "Influx_FindRunById" );
     MarkNativeAsOptional( "Influx_FinishTimer" );
+    MarkNativeAsOptional( "Influx_FormatChatColors" );
     MarkNativeAsOptional( "Influx_GetClientCurrentBestName" );
     MarkNativeAsOptional( "Influx_GetClientCurrentBestTime" );
     MarkNativeAsOptional( "Influx_GetClientCurrentPB" );
