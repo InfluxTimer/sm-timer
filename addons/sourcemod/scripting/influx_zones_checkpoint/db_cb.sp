@@ -87,8 +87,9 @@ public void Thrd_PrintCPTimes( Handle db, Handle res, const char[] szError, int 
     
     decl String:szDisplay[128];
     decl String:szForm[16];
+    decl String:szAdd[32];
     decl String:szSR[64];
-    decl String:szCP[64];
+    decl String:szBest[64];
     int numrecs = 0;
     
     
@@ -107,35 +108,45 @@ public void Thrd_PrintCPTimes( Handle db, Handle res, const char[] szError, int 
         
         float srtime = SQL_FetchFloat( res, 8 );
         
-        float cpbesttime = SQL_FetchFloat( res, 9 );
+        float besttime = SQL_FetchFloat( res, 9 );
         
+        
+        szAdd[0] = '\0';
         
         if ( cptime != srtime )
         {
             FormatSeconds( cptime, srtime, szSR, sizeof( szSR ) );
-            Format( szSR, sizeof( szSR ), "\n        SR: %s", szSR );
+            Format( szSR, sizeof( szSR ), "\n        SR CP: %s", szSR );
         }
         else
         {
+            strcopy( szAdd, sizeof( szAdd ), " (SR)" );
             szSR[0] = '\0';
         }
         
-        if ( cptime != cpbesttime && cpbesttime != srtime )
+        if ( cptime != besttime && besttime != srtime )
         {
-            FormatSeconds( cptime, cpbesttime, szCP, sizeof( szCP ) );
-            Format( szCP, sizeof( szCP ), "\n        SRCP: %s", szCP );
+            FormatSeconds( cptime, besttime, szBest, sizeof( szBest ) );
+            Format( szBest, sizeof( szBest ), "\n        CP BEST: %s", szBest );
         }
         else
         {
-            szCP[0] = '\0';
+            szBest[0] = '\0';
         }
         
         
-        FormatEx( szDisplay, sizeof( szDisplay ), "CP %i | %s%s%s\n ",
+        if ( cptime == besttime )
+        {
+            Format( szAdd, sizeof( szAdd ), "%s (BEST)", szAdd );
+        }
+        
+        
+        FormatEx( szDisplay, sizeof( szDisplay ), "CP %i | %s%s%s%s\n ",
             cpnum,
             szForm,
+            szAdd,
             szSR,
-            szCP );
+            szBest );
         
         menu.AddItem( "", szDisplay, ITEMDRAW_DISABLED );
         
@@ -144,7 +155,7 @@ public void Thrd_PrintCPTimes( Handle db, Handle res, const char[] szError, int 
     
     if ( !numrecs )
     {
-        menu.AddItem( "", "No checkpoint times found :(" );
+        menu.AddItem( "", "No checkpoint times found :(", ITEMDRAW_DISABLED );
     }
     
     menu.Display( client, MENU_TIME_FOREVER );
@@ -169,6 +180,63 @@ stock void FormatSeconds( float time, float besttime, char[] sz, int len )
     Inf_FormatSeconds( dif, sz, len );
     
     Format( sz, len, "%c%s", pre, sz );
+}
+
+
+public void Thrd_PrintDeleteCpTimes( Handle db, Handle res, const char[] szError, int client )
+{
+    if ( !(client = GetClientOfUserId( client )) ) return;
+    
+    
+    if ( res == null )
+    {
+        Inf_DB_LogError( db, "printing cp deletion to client", client, "Sorry, something went wrong." );
+        return;
+    }
+    
+    
+    char szDisplay[64];
+    char szInfo[32];
+    
+    char szRun[MAX_RUN_NAME];
+    
+    int numrecs = 0;
+    
+    
+    char szMap[32];
+    GetCurrentMap( szMap, sizeof( szMap ) );
+    
+    
+    Menu menu = new Menu( Hndlr_DeleteRecords );
+    
+    menu.SetTitle( "Checkpoints - %s\n ", szMap );
+    
+    
+    while ( SQL_FetchRow( res ) )
+    {
+        int runid = SQL_FetchInt( res, 0 );
+        int cpnum = SQL_FetchInt( res, 1 );
+        
+        int count = SQL_FetchInt( res, 2 );
+        
+        
+        Influx_GetRunName( runid, szRun, sizeof( szRun ) );
+        
+        
+        FormatEx( szInfo, sizeof( szInfo ), "%i_%i_%i", runid, cpnum, count );
+        FormatEx( szDisplay, sizeof( szDisplay ), "%s CP %i (%i records)", szRun, cpnum, count );
+        
+        menu.AddItem( szInfo, szDisplay );
+        
+        ++numrecs;
+    }
+    
+    if ( !numrecs )
+    {
+        menu.AddItem( "", "No checkpoints found :(", ITEMDRAW_DISABLED );
+    }
+    
+    menu.Display( client, MENU_TIME_FOREVER );
 }
 
 public int Hndlr_Empty( Menu menu, MenuAction action, int client, int index )

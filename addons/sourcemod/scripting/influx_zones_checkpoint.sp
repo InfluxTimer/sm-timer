@@ -78,11 +78,14 @@ float g_flLastCPBestTime[INF_MAXPLAYERS];
 
 
 // CONVARS
+ConVar g_ConVar_Admin_DeleteFlags;
 //ConVar g_ConVar_ReqCPs;
 
 
 
 #include "influx_zones_checkpoint/db.sp"
+#include "influx_zones_checkpoint/menus_admin.sp"
+#include "influx_zones_checkpoint/menus_hndlrs_admin.sp"
 
 
 public Plugin myinfo =
@@ -118,17 +121,23 @@ public void OnPluginStart()
     
     
     // CONVARS
+    g_ConVar_Admin_DeleteFlags = CreateConVar( "influx_cp_deletetimes", "z", "Required flags to modify checkpoint times." );
+    
     //g_ConVar_ReqCPs = CreateConVar( "influx_checkpoint_requirecps", "0", "In order to beat the map, player must activate all checkpoints?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 
     //CMDS
 #if defined DEBUG_CMD
     RegAdminCmd( "sm_debugprintcps", Cmd_PrintCps, ADMFLAG_ROOT );
 #endif
-    
+
     //RegConsoleCmd( "sm_cptimes", Cmd_PrintCpTimes );
     //RegConsoleCmd( "sm_cptime", Cmd_PrintCpTimes );
     //RegConsoleCmd( "sm_cpwr", Cmd_PrintCpTimes );
     //RegConsoleCmd( "sm_cptop", Cmd_PrintCpTimes );
+    
+    
+    // MENUS
+    RegConsoleCmd( "sm_deletecptimes", Cmd_DeleteCpTimes );
 }
 
 public void OnAllPluginsLoaded()
@@ -159,7 +168,7 @@ public void Influx_OnPreRunLoad()
     g_hCPs.Clear();
 }
 
-public void Influx_OnPostRecordsLoad()
+public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
 {
     DB_GetCPTimes();
 }
@@ -757,6 +766,22 @@ stock void GetName( ArrayList stages, int index, int block, int mode, int style,
     }
 }*/
 
+stock void ResetCPTimes( int runid, int cpnum )
+{
+    int index = FindCPByNum( runid, cpnum );
+    if ( index == -1 ) return;
+    
+    
+    decl m, s;
+    
+    for ( m = 0; m < MAX_MODES; m++ )
+        for ( s = 0; s < MAX_STYLES; s++ )
+        {
+            SetBestTime( index, m, s, INVALID_RUN_TIME );
+            //SetBestName( index, m, s, "" );
+        }
+}
+
 stock int FindClientCPByNum( int client, int num )
 {
     int len = GetArrayLength_Safe( g_hClientCP[client] );
@@ -769,6 +794,19 @@ stock int FindClientCPByNum( int client, int num )
     }
 
     return -1;
+}
+
+stock bool CanUserModifyCPTimes( int client )
+{
+    if ( client == 0 ) return true;
+    
+    
+    decl String:szFlags[32];
+    g_ConVar_Admin_DeleteFlags.GetString( szFlags, sizeof( szFlags ) );
+    
+    int wantedflags = ReadFlagString( szFlags );
+    
+    return ( (GetUserFlagBits( client ) & wantedflags) == wantedflags );
 }
 
 // CMDS
