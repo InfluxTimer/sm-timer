@@ -4,6 +4,9 @@
 #include <influx/zones>
 #include <influx/zones_stage>
 
+#include <msharedutil/arrayvec>
+#include <msharedutil/ents>
+
 #undef REQUIRE_PLUGIN
 #include <influx/zones_checkpoint>
 
@@ -32,6 +35,9 @@ enum
     STAGE_RUN_ID = 0,
     
     STAGE_NUM,
+    
+    STAGE_TELEPOS[3],
+    STAGE_TELEYAW,
     
     STAGE_SIZE
 };
@@ -93,6 +99,18 @@ public void OnPluginStart()
     g_ConVar_DisplayOnlyMain = CreateConVar( "influx_stage_displayonlymain", "1", "", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
+    // CMDS
+#if defined DEBUG
+    RegAdminCmd( "sm_debugprintstages", Cmd_PrintStages, ADMFLAG_ROOT );
+    RegAdminCmd( "sm_debugprintstagezones", Cmd_PrintStageZones, ADMFLAG_ROOT );
+#endif
+    
+    RegAdminCmd( "sm_setstagetelepos", Cmd_SetStageTelePos, ADMFLAG_ROOT );
+    
+    RegConsoleCmd( "sm_stage", Cmd_StageSelect );
+    RegConsoleCmd( "sm_s", Cmd_StageSelect );
+    
+    
     // LIBRARIES
     g_bLib_Zones_CP = LibraryExists( INFLUX_LIB_ZONES_CP );
 }
@@ -143,9 +161,15 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     if ( stagenum < 2 ) return Plugin_Stop;
     
     
+    float pos[3];
+    kv.GetVector( "stage_telepos", pos, ORIGIN_VECTOR );
+    
+    float yaw = kv.GetFloat( "stage_teleyaw", 0.0 );
+    
+    
     AddStageZone( zoneid, runid, stagenum );
     
-    AddStage( runid, stagenum );
+    AddStage( runid, stagenum, pos, yaw );
     
     
     return Plugin_Handled;
@@ -160,9 +184,28 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
     if ( index == -1 ) return Plugin_Stop;
     
     
-    kv.SetNum( "run_id", g_hStageZones.Get( index, STAGEZONE_RUN_ID ) );
+    int runid = g_hStageZones.Get( index, STAGEZONE_RUN_ID );
     
-    kv.SetNum( "stage_num", g_hStageZones.Get( index, STAGEZONE_NUM ) );
+    int stagenum = g_hStageZones.Get( index, STAGEZONE_NUM );
+    
+    kv.SetNum( "run_id", runid );
+    
+    kv.SetNum( "stage_num", stagenum );
+    
+    
+    index = FindStageByNum( runid, stagenum );
+    
+    if ( index != -1 )
+    {
+        float pos[3];
+        GetStageTelePos( index, pos );
+        
+        float yaw = GetStageTeleYaw( index );
+        
+        
+        kv.SetVector( "stage_telepos", pos );
+        kv.SetFloat( "stage_teleyaw", yaw );
+    }
     
     return Plugin_Handled;
 }
@@ -180,9 +223,28 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     if ( stagenum < 2 ) return;
     
     
-    
     AddStageZone( zoneid, runid, stagenum );
-    AddStage( runid, stagenum );
+    
+    
+    if ( FindStageByNum( runid, stagenum ) == -1 )
+    {
+        float mins[3];
+        float maxs[3];
+        
+        Influx_GetZoneMinsMaxs( zoneid, mins, maxs );
+        
+        
+        float pos[3];
+        float yaw;
+        
+        if ( !Inf_FindTelePos( mins, maxs, pos, yaw ) )
+        {
+            Inf_TelePosFromMinsMaxs( mins, maxs, pos );
+            yaw = 0.0;
+        }
+        
+        AddStage( runid, stagenum, pos, yaw );
+    }
 }
 
 public void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent )
@@ -201,7 +263,7 @@ public void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent )
     SDKHook( ent, SDKHook_StartTouchPost, E_StartTouchPost_Stage );
     
     
-    Inf_SetZoneProp( ent, g_hStageZones.Get( index, STAGEZONE_ID ) );
+    Inf_SetZoneProp( ent, zoneid );
 }
 
 public void Influx_OnZoneDeleted( int zoneid, ZoneType_t zonetype )
@@ -489,7 +551,7 @@ stock void RemoveStageById( int zoneid )
     }
 }
 
-stock int AddStage( int runid, int stagenum )
+stock int AddStage( int runid, int stagenum, const float pos[3], float yaw )
 {
     int index;
     
@@ -502,8 +564,11 @@ stock int AddStage( int runid, int stagenum )
     data[STAGE_RUN_ID] = runid;
     data[STAGE_NUM] = stagenum;
     
-    index = g_hStageZones.PushArray( data );
+    index = g_hStages.PushArray( data );
     
+    
+    SetStageTelePos( index, pos );
+    SetStageTeleYaw( index, yaw );
     
     if ( g_bLib_Zones_CP && g_ConVar_ActAsCP.BoolValue )
     {
@@ -519,7 +584,7 @@ stock int AddStage( int runid, int stagenum )
 
 stock int FindStageZoneById( int id )
 {
-    int len = g_hStages.Length;
+    int len = g_hStageZones.Length;
     for ( int i = 0; i < len; i++ )
     {
         if ( g_hStageZones.Get( i, STAGEZONE_ID ) == id )
@@ -593,6 +658,231 @@ stock int FindStageZoneByNum( int runid, int num )
     }
     
     return -1;
+}
+
+stock void TeleportToStage( int client, int stagenum )
+{
+    int runid = Influx_GetClientRunId( client );
+    
+    int index = FindStageByNum( runid, stagenum );
+    
+    if ( index == -1 ) return;
+    
+    
+    float pos[3];
+    float ang[3];
+    
+    GetStageTelePos( index, pos );
+    
+    ang[1] = GetStageTeleYaw( index );
+    
+    
+    Influx_InvalidateClientRun( client );
+    
+    TeleportEntity( client, pos, ang, ORIGIN_VECTOR );
+}
+
+public Action Cmd_SetStageTelePos( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !args )
+    {
+        return Plugin_Handled;
+    }
+    
+    char szArg[16];
+    GetCmdArgString( szArg, sizeof( szArg ) );
+    
+    
+    int runid = Influx_GetClientRunId( client );
+    int stagenum = StringToInt( szArg );
+    
+    
+    int index = FindStageByNum( runid, stagenum );
+    
+    if ( index != -1 )
+    {
+        float pos[3];
+        float ang[3];
+        
+        GetClientAbsOrigin( client, pos );
+        GetClientEyeAngles( client, ang );
+        
+        SetStageTelePos( index, pos );
+        SetStageTeleYaw( index, ang[1] );
+        
+        
+        Influx_PrintToChat( _, client, "Set stage {MAINCLR1}%i{CHATCLR} tele position and yaw!", stagenum );
+    }
+    
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_StageSelect( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    
+    int stagenum = 1;
+    
+    
+    if ( !args )
+    {
+        char szDisplay[32];
+        char szInfo[32];
+        
+        int runid = Influx_GetClientRunId( client );
+        
+        int num = 0;
+        
+        int highest = 0;
+        
+        
+        Menu menu = new Menu( Hndlr_ChooseStage );
+    
+        menu.SetTitle( "Stages\n " );
+        
+        
+        int len = g_hStages.Length;
+        for ( int i = 0; i < len; i++ )
+        {
+            if ( g_hStages.Get( i, STAGE_RUN_ID ) != runid ) continue;
+            
+            
+            stagenum = g_hStages.Get( i, STAGE_NUM );
+            
+            if ( stagenum > highest )
+            {
+                highest = stagenum;
+            }
+        }
+        
+        if ( highest >= 2 )
+        {
+            menu.AddItem( "1", "Stage 1" );
+        }
+        
+        for ( int i = 2; i <= highest; i++ )
+        {
+            FormatEx( szInfo, sizeof( szInfo ), "%i", i );
+            FormatEx( szDisplay, sizeof( szDisplay ), "Stage %i", i );
+            
+            menu.AddItem( szInfo, szDisplay );
+            
+            ++num;
+        }
+        
+        if ( !num )
+        {
+            menu.AddItem( "", "No stages found :(", ITEMDRAW_DISABLED );
+        }
+        
+        menu.Display( client, MENU_TIME_FOREVER );
+        
+        return Plugin_Handled;
+    }
+    
+    
+    char szArg[16];
+    GetCmdArgString( szArg, sizeof( szArg ) );
+    
+    stagenum = StringToInt( szArg );
+    
+    
+    if ( stagenum > 1 )
+    {
+        TeleportToStage( client, stagenum );
+    }
+    else
+    {
+        Influx_TeleportToStart( client );
+    }
+    
+    return Plugin_Handled;
+}
+
+public int Hndlr_ChooseStage( Menu menu, MenuAction action, int client, int index )
+{
+    MENU_HANDLE( menu, action )
+    
+    
+    char szInfo[32];
+    if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
+    
+    
+    int stagenum = StringToInt( szInfo );
+    
+    if ( stagenum > 1 )
+    {
+        TeleportToStage( client, stagenum );
+    }
+    else
+    {
+        Influx_TeleportToStart( client );
+    }
+    
+    
+    return 0;
+}
+
+stock void GetStageTelePos( int index, float out[3] )
+{
+    if ( index == -1 ) return;
+    
+    
+    for ( int i = 0; i < 3; i++ )
+    {
+        out[i] = view_as<float>( g_hStages.Get( index, STAGE_TELEPOS + i ) );
+    }
+}
+
+stock void SetStageTelePos( int index, const float pos[3] )
+{
+    if ( index == -1 ) return;
+    
+    
+    for ( int i = 0; i < 3; i++ )
+    {
+        g_hStages.Set( index, pos[i], STAGE_TELEPOS + i );
+    }
+}
+
+stock float GetStageTeleYaw( int index )
+{
+    if ( index == -1 ) return 0.0;
+    
+    
+    return view_as<float>( g_hStages.Get( index, STAGE_TELEYAW ) );
+}
+
+stock void SetStageTeleYaw( int index, float yaw )
+{
+    if ( index == -1 ) return;
+    
+    
+    g_hStages.Set( index, yaw, STAGE_TELEYAW );
+}
+
+public Action Cmd_PrintStageZones( int client, int args )
+{
+    for ( int i = 0; i < g_hStageZones.Length; i++ )
+    {
+        PrintToServer( INF_DEBUG_PRE..."Stage Id: %i | Stage %i | Run Id: %i", g_hStageZones.Get( i, STAGEZONE_ID ), g_hStageZones.Get( i, STAGEZONE_NUM ), g_hStageZones.Get( i, STAGEZONE_RUN_ID ) );
+    }
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_PrintStages( int client, int args )
+{
+    for ( int i = 0; i < g_hStages.Length; i++ )
+    {
+        PrintToServer( INF_DEBUG_PRE..."Stage %i | Run Id: %i", g_hStages.Get( i, STAGE_NUM ), g_hStages.Get( i, STAGE_RUN_ID ) );
+    }
+    
+    return Plugin_Handled;
 }
 
 // NATIVES
