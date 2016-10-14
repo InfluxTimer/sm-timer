@@ -477,6 +477,7 @@ public void __pl_influx_core_SetNTVOptional()
 {
     MarkNativeAsOptional( "Influx_AddMode" );
     MarkNativeAsOptional( "Influx_AddRun" );
+    MarkNativeAsOptional( "Influx_AddResultFlag" );
     MarkNativeAsOptional( "Influx_AddStyle" );
     MarkNativeAsOptional( "Influx_FindRunById" );
     MarkNativeAsOptional( "Influx_FinishTimer" );
@@ -513,6 +514,7 @@ public void __pl_influx_core_SetNTVOptional()
     MarkNativeAsOptional( "Influx_PrintToChat" );
     MarkNativeAsOptional( "Influx_PrintToChatAll" );
     MarkNativeAsOptional( "Influx_PrintToChatEx" );
+    MarkNativeAsOptional( "Influx_RemoveChatColors" );
     MarkNativeAsOptional( "Influx_ResetTimer" );
     MarkNativeAsOptional( "Influx_SetClientMode" );
     MarkNativeAsOptional( "Influx_SetClientStartTick" );
