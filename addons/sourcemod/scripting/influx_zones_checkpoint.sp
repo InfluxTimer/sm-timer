@@ -517,11 +517,11 @@ stock void SaveClientCP( int client, int cpnum )
     
     
 #if defined DEBUG_ZONE
-    PrintToServer( INF_DEBUG_PRE..."Stage num is %i!", cpnum );
+    PrintToServer( INF_DEBUG_PRE..."CP num is %i!", cpnum );
 #endif
     
     
-    // Update our stage times if we haven't gone in here yet.
+    // Update our cp times if we haven't gone in here yet.
     if ( !ShouldSaveCP( client, cpnum ) ) return;
     
     
