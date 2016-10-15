@@ -253,13 +253,13 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         {
             int stages = Influx_GetClientStageCount( client );
             
-            if ( stages < 1 )
+            if ( stages < 2 )
             {
                 strcopy( szTemp2, sizeof( szTemp2 ), "Linear" );
             }
             else
             {
-                FormatEx( szTemp2, sizeof( szTemp2 ), "%i/%i", Influx_GetClientStage( client ), stages + 1 );
+                FormatEx( szTemp2, sizeof( szTemp2 ), "%i/%i", Influx_GetClientStage( client ), stages );
             }
             
             FormatEx( szMsg, sizeof( szMsg ), "Stage: %s", szTemp2 );

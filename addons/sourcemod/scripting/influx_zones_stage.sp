@@ -598,7 +598,8 @@ stock int FindStageZoneById( int id )
 
 stock int GetRunStageCount( int runid )
 {
-    int num = 0;
+    // There's always at least one stage, duh.
+    int num = 1;
     
     int len = g_hStages.Length;
     for ( int i = 0; i < len; i++ )
@@ -901,7 +902,7 @@ public int Native_ShouldDisplayStages( Handle hPlugin, int nParms )
     
     int count = GetRunStageCount( runid );
     
-    if ( !count )
+    if ( count < 2 )
     {
         return ( g_ConVar_DisplayType.IntValue == 2 );
     }
