@@ -14,6 +14,10 @@
 #define MAX_CP_NAME_CELL            MAX_CP_NAME / 4
 
 
+// Client has activated a checkpoint.
+forward void Influx_OnClientCPSavePost( int client, int cpnum );
+
+
 native void Influx_SaveClientCP( int client, int cpnum );
 native void Influx_AddCP( int runid, int cpnum, const char[] szName );
 

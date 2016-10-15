@@ -82,6 +82,10 @@ ConVar g_ConVar_Admin_DeleteFlags;
 //ConVar g_ConVar_ReqCPs;
 
 
+// FORWARDS
+Handle g_hForward_OnClientCPSavePost;
+
+
 
 #include "influx_zones_checkpoint/db.sp"
 #include "influx_zones_checkpoint/menus_admin.sp"
@@ -118,6 +122,10 @@ public void OnPluginStart()
     g_hCPs = new ArrayList( CP_SIZE );
     
     g_hCPZones = new ArrayList( CPZONE_SIZE );
+    
+    
+    // FORWARDS
+    g_hForward_OnClientCPSavePost = CreateGlobalForward( "Influx_OnClientCPSavePost", ET_Ignore, Param_Cell, Param_Cell );
     
     
     // CONVARS
@@ -484,7 +492,9 @@ public void E_StartTouchPost_CP( int ent, int activator )
     }
     
     
-    SaveClientCP( activator, g_hCPZones.Get( zindex, CPZONE_NUM ) );
+    int cpnum = g_hCPZones.Get( zindex, CPZONE_NUM );
+    
+    SaveClientCP( activator, cpnum );
 }
 
 stock void SaveClientCP( int client, int cpnum )
@@ -538,6 +548,12 @@ stock void SaveClientCP( int client, int cpnum )
     g_flLastCPBestTime[client] = GetBestTime( index, mode, style );
     
     g_flLastTouch[client] = GetEngineTime();
+    
+    
+    Call_StartForward( g_hForward_OnClientCPSavePost );
+    Call_PushCell( client );
+    Call_PushCell( cpnum );
+    Call_Finish();
 }
 
 stock void StartToBuild( int client, int cpnum )
