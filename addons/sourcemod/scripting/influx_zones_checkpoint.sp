@@ -112,6 +112,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     
     CreateNative( "Influx_PrintCPTimes", Native_PrintCPTimes );
     
+    CreateNative( "Influx_GetClientLastCP", Native_GetClientLastCP );
     CreateNative( "Influx_GetClientLastCPTouch", Native_GetClientLastCPTouch );
     CreateNative( "Influx_GetClientLastCPTime", Native_GetClientLastCPTime );
     CreateNative( "Influx_GetClientLastCPBestTime", Native_GetClientLastCPBestTime );
@@ -875,6 +876,13 @@ public int Native_PrintCPTimes( Handle hPlugin, int nParms )
     DB_PrintCPTimes( client, uid, mapid, runid, mode, style );
     
     return 1;
+}
+
+public int Native_GetClientLastCP( Handle hPlugin, int nParms )
+{
+    int client = GetNativeCell( 1 );
+    
+    return g_iClientLatestCP[client];
 }
 
 public int Native_GetClientLastCPTouch( Handle hPlugin, int nParms )

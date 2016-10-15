@@ -15,18 +15,26 @@
 
 
 // Client has activated a checkpoint.
+// Use natives below to access more info.
 forward void Influx_OnClientCPSavePost( int client, int cpnum );
 
 
-native void Influx_SaveClientCP( int client, int cpnum );
-native void Influx_AddCP( int runid, int cpnum, const char[] szName );
+// Will return 0 if client hasn't touched a checkpoint yet.
+native int Influx_GetClientLastCP( int client );
 
 // Engine time we last touched cp.
 native float Influx_GetClientLastCPTouch( int client );
 
 // Actual times.
 native float Influx_GetClientLastCPTime( int client );
-native float Influx_GetClientLastCPBestTime( int client );
+native float Influx_GetClientLastCPBestTime( int client ); // Currently the cp time from server record run.
+
+
+
+native void Influx_AddCP( int runid, int cpnum, const char[] szName );
+
+native void Influx_SaveClientCP( int client, int cpnum );
+
 
 
 native void Influx_PrintCPTimes( int client, int uid, int mapid, int runid, int mode, int style );
