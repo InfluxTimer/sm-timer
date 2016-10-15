@@ -331,13 +331,13 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     int cpnum;
     
     
-    int len = g_hCPZones.Length;
+    int len = g_hCPs.Length;
     for( int i = 0; i < len; i++ )
     {
         if ( g_hCPs.Get( i, CP_RUN_ID ) != runid ) continue;
         
         
-        cpnum = g_hCPZones.Get( i, CP_NUM );
+        cpnum = g_hCPs.Get( i, CP_NUM );
         
         if ( cpnum > highest )
         {
@@ -350,7 +350,7 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     
     // Add highest to the top.
     FormatEx( szInfo, sizeof( szInfo ), "%i", highest );
-    FormatEx( szDisplay, sizeof( szDisplay ), "New CP #%02i\n ", highest );
+    FormatEx( szDisplay, sizeof( szDisplay ), "New CP %i\n ", highest );
     
     menu.AddItem( szInfo, szDisplay );
     
@@ -362,7 +362,7 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     for ( int i = 1; i < highest; i++ )
     {
         FormatEx( szInfo, sizeof( szInfo ), "%i", i );
-        FormatEx( szDisplay, sizeof( szDisplay ), "CP %02i", i );
+        FormatEx( szDisplay, sizeof( szDisplay ), "CP %i", i );
         
         menu.AddItem( szInfo, szDisplay );
     }
@@ -389,7 +389,7 @@ public int Hndlr_CreateZone_SelectCPNum( Menu oldmenu, MenuAction action, int cl
     if ( cpnum < 1 ) return 0;
     
     
-    if ( FindCPByNum( runid, cpnum ) != -1 )
+    if ( FindCPZoneByNum( runid, cpnum ) != -1 )
     {
         Menu menu = new Menu( Hndlr_CreateZone_SelectMethod );
         
@@ -567,7 +567,7 @@ stock void StartToBuild( int client, int cpnum )
     
     Influx_GetRunName( Influx_GetClientRunId( client ), szRun, sizeof( szRun ) );
     
-    FormatEx( szName, sizeof( szName ), "%s CP %02i", szRun, cpnum );
+    FormatEx( szName, sizeof( szName ), "%s CP %i", szRun, cpnum );
     
     
     Influx_BuildZone( client, ZONETYPE_CP, szName );
@@ -611,6 +611,22 @@ stock int FindCPByNum( int runid, int num )
         if ( g_hCPs.Get( i, CP_RUN_ID ) != runid ) continue;
         
         if ( g_hCPs.Get( i, CP_NUM ) == num )
+        {
+            return i;
+        }
+    }
+    
+    return -1;
+}
+
+stock int FindCPZoneByNum( int runid, int num )
+{
+    int len = g_hCPZones.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( g_hCPZones.Get( i, CPZONE_RUN_ID ) != runid ) continue;
+        
+        if ( g_hCPZones.Get( i, CPZONE_NUM ) == num )
         {
             return i;
         }
