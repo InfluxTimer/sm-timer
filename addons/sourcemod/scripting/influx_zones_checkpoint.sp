@@ -571,6 +571,9 @@ stock void StartToBuild( int client, int cpnum )
     
     
     Influx_BuildZone( client, ZONETYPE_CP, szName );
+    
+    
+    Inf_OpenZoneMenu( client );
 }
 
 stock int GetRunCPCount( int runid )

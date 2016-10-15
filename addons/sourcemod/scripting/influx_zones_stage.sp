@@ -448,6 +448,9 @@ stock void StartToBuild( int client, int stagenum )
     
     
     Influx_BuildZone( client, ZONETYPE_STAGE, szName );
+    
+    
+    Inf_OpenZoneMenu( client );
 }
 
 public void E_StartTouchPost_Stage( int ent, int activator )
