@@ -49,7 +49,7 @@ public void Thrd_GetCPTimes( Handle db, Handle res, const char[] szError, any da
         //SQL_FetchString( res, 6, szName, sizeof( szName ) );
         
         
-        if ( (index = AddCP( runid, cpnum )) != -1 )
+        if ( (index = FindCPByNum( runid, cpnum )) != -1 )
         {
             SetBestTime( index, mode, style, time, uid );
             //SetBestName( index, mode, style, szName );
