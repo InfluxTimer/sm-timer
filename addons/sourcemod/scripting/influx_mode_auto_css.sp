@@ -97,10 +97,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddMode( MODE_AUTO, "Autobhop", "AUTO", 260.0 ) )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_AUTO );
-    }
+    AddMode();
 }
 
 public void OnPluginEnd()
@@ -116,6 +113,19 @@ public void OnClientPutInServer( int client )
 public void OnClientDisconnect( int client )
 {
     UnhookThinks( client );
+}
+
+public void Influx_OnRequestModes()
+{
+    AddMode();
+}
+
+stock void AddMode()
+{
+    if ( !Influx_AddMode( MODE_AUTO, "Autobhop", "AUTO", 260.0 ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_AUTO );
+    }
 }
 
 public Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &value )

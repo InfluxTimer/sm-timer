@@ -219,6 +219,7 @@ int g_iDefStyle;
 
 // MISC
 bool g_bIsCSGO;
+bool g_bLate;
 
 
 #include "influx_core/cmds.sp"
@@ -256,6 +257,9 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
         
         return APLRes_Failure;
     }
+    
+    
+    g_bLate = late;
     
     
     // LIBRARIES
@@ -561,6 +565,18 @@ public void OnPluginStart()
     
     
     DB_Init();
+    
+    
+    if ( g_bLate )
+    {
+        for ( int i = 1; i <= MaxClients; i++ )
+        {
+            if ( IsClientInGame( i ) )
+            {
+                ResetClient( i );
+            }
+        }
+    }
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -594,12 +610,14 @@ public void OnAllPluginsLoaded()
     
     
     // Request modes and styles.
-    // TODO: Remove these.
-    Call_StartForward( g_hForward_OnRequestModes );
-    Call_Finish();
-    
-    Call_StartForward( g_hForward_OnRequestStyles );
-    Call_Finish();
+    if ( g_bLate )
+    {
+        Call_StartForward( g_hForward_OnRequestModes );
+        Call_Finish();
+        
+        Call_StartForward( g_hForward_OnRequestStyles );
+        Call_Finish();
+    }
     
     Call_StartForward( g_hForward_OnRequestResultFlags );
     Call_Finish();
@@ -620,6 +638,25 @@ public void OnAllPluginsLoaded()
         LogError( INF_CON_PRE..."No modes were found! Assuming scroll as default mode!!! Freeing sv_airaccelerate and sv_enablebunnyhopping." );
     }
     */
+}
+
+public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
+{
+    if ( g_bLate )
+    {
+        for ( int i = 1; i <= MaxClients; i++ )
+        {
+            if ( IsClientInGame( i ) )
+            {
+                OnClientPutInServer( i );
+                
+                if ( IsClientAuthorized( i ) )
+                {
+                    OnClientPostAdminCheck( i );
+                }
+            }
+        }
+    }
 }
 
 public void Influx_RequestHelpCmds()

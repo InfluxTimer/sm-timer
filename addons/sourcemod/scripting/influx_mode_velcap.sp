@@ -72,10 +72,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddMode( MODE_VELCAP, "VelCap", "VELCAP" ) )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_VELCAP );
-    }
+    AddMode();
     
     if ( g_bLib_FpsCheck )
     {
@@ -103,6 +100,19 @@ public void OnLibraryRemoved( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = false;
     if ( StrEqual( lib, INFLUX_LIB_FPSCHECK ) ) g_bLib_FpsCheck = false;
+}
+
+public void Influx_OnRequestModes()
+{
+    AddMode();
+}
+
+stock void AddMode()
+{
+    if ( !Influx_AddMode( MODE_VELCAP, "VelCap", "VELCAP" ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_VELCAP );
+    }
 }
 
 public void Influx_OnRequestFpsChecks()

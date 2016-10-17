@@ -60,10 +60,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddMode( MODE_STOCKCAP, "Stock Cap", "STOCK" ) )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_STOCKCAP );
-    }
+    AddMode();
     
     Influx_AddFpsCheck( MODE_STOCKCAP );
 }
@@ -91,6 +88,19 @@ public void OnLibraryRemoved( const char[] lib )
 public void OnClientDisconnect( int client )
 {
     UnhookThinks( client );
+}
+
+public void Influx_OnRequestModes()
+{
+    AddMode();
+}
+
+stock void AddMode()
+{
+    if ( !Influx_AddMode( MODE_STOCKCAP, "Stock Cap", "STOCK" ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_STOCKCAP );
+    }
 }
 
 public Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &value )

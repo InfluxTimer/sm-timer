@@ -95,10 +95,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddMode( MODE_AUTO, "Autobhop", "AUTO", 260.0 ) )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_AUTO );
-    }
+    AddMode();
 }
 
 public void OnPluginEnd()
@@ -107,6 +104,19 @@ public void OnPluginEnd()
     
     
     g_ConVar_AutoBhop.Flags |= (FCVAR_REPLICATED | FCVAR_NOTIFY);
+}
+
+public void Influx_OnRequestModes()
+{
+    AddMode();
+}
+
+stock void AddMode()
+{
+    if ( !Influx_AddMode( MODE_AUTO, "Autobhop", "AUTO", 260.0 ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_AUTO );
+    }
 }
 
 public Action Influx_OnClientModeChange( int client, int mode, int lastmode )

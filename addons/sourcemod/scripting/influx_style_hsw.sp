@@ -36,6 +36,11 @@ public void OnPluginEnd()
     Influx_RemoveStyle( STYLE_HSW );
 }
 
+public void Influx_OnRequestStyles()
+{
+    OnAllPluginsLoaded();
+}
+
 public Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &value )
 {
     if (StrEqual( szArg, "hsw", false )

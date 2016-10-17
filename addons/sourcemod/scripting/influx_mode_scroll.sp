@@ -64,10 +64,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddMode( MODE_SCROLL, "Scroll", "SCRL" ) )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_SCROLL );
-    }
+    AddMode();
     
     if ( g_bLib_FpsCheck )
     {
@@ -93,6 +90,19 @@ public void OnLibraryAdded( const char[] lib )
 public void OnLibraryRemoved( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_FPSCHECK ) ) g_bLib_FpsCheck = false;
+}
+
+public void Influx_OnRequestModes()
+{
+    AddMode();
+}
+
+stock void AddMode()
+{
+    if ( !Influx_AddMode( MODE_SCROLL, "Scroll", "SCRL" ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_SCROLL );
+    }
 }
 
 public void Influx_OnRequestFpsChecks()

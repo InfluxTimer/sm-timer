@@ -35,6 +35,11 @@ public void OnPluginEnd()
     Influx_RemoveStyle( STYLE_W );
 }
 
+public void Influx_OnRequestStyles()
+{
+    OnAllPluginsLoaded();
+}
+
 public Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &value )
 {
     if (StrEqual( szArg, "w", false )

@@ -46,6 +46,11 @@ public void OnPluginEnd()
     Influx_RemoveStyle( STYLE_RHSW );
 }
 
+public void Influx_OnRequestStyles()
+{
+    OnAllPluginsLoaded();
+}
+
 public void Influx_OnTimerStartPost( int client, int runid )
 {
     g_iSide[client] = SIDE_NONE;
