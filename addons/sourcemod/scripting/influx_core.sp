@@ -791,11 +791,13 @@ public void OnClientPutInServer( int client )
     {
         InitClientModeStyle( client );
         
+        g_iRunId[client] = GetDefaultRun();
+        
         
         ResetAllClientTimes( client );
         
         
-        UpdateClientCachedByIndex( client, -1 );
+        UpdateClientCached( client );
         
         Inf_SDKHook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
     }
@@ -926,7 +928,7 @@ stock bool TeleClientToStart_Safe( int client, int runid )
 #endif
     
     // If we have no main run, teleport to any run then.
-    int def_target = MAIN_RUN_ID;
+    int def_target = GetDefaultRun();
     
     if ( runid == def_target && g_hRuns.Length > 0 )
     {
@@ -2082,6 +2084,18 @@ stock void SearchType( const char[] sz, Search_t &type, int &value )
     Call_PushCellRef( view_as<int>( type ) );
     Call_PushCellRef( value );
     Call_Finish();
+}
+
+stock int GetDefaultRun()
+{
+    if ( FindRunById( MAIN_RUN_ID ) != -1 )
+    {
+        return MAIN_RUN_ID;
+    }
+    
+    if ( g_hRuns.Length > 0 ) return GetRunIdByIndex( 0 );
+    
+    return -1;
 }
 
 stock int GetDefaultMode()
