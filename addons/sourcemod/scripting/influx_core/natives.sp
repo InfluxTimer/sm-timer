@@ -429,6 +429,9 @@ public int Native_StartTimer( Handle hPlugin, int nParms )
         
         Influx_PrintToChat( _, client, "%s", errormsg );
         
+        // Reset the run so the hud is updated.
+        g_iRunState[client] = STATE_NONE;
+        
         return;
     }
     
