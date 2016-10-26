@@ -707,10 +707,10 @@ public int Native_GetRunBestTime( Handle hPlugin, int nParms )
     int irun = FindRunById( GetNativeCell( 1 ) );
     if ( irun == -1 ) return 0;
     
-    int mode = FindRunById( GetNativeCell( 2 ) );
+    int mode = GetNativeCell( 2 );
     if ( !VALID_MODE( mode ) ) return 0;
     
-    int style = FindRunById( GetNativeCell( 3 ) );
+    int style = GetNativeCell( 3 );
     if ( !VALID_STYLE( style ) ) return 0;
     
     if ( nParms == 4 )
