@@ -218,7 +218,7 @@ stock void PauseRun( int client )
     
     g_vecContinueAng[client][2] = 0.0;
     
-    GetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client], 128 );
+    GetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client], sizeof( g_szPausedTargetName[] ) );
 
     Influx_PrintToChat( _, client, "Your run is now paused. Type {MAINCLR1}!continue{CHATCLR} to resume." );
 }
