@@ -86,6 +86,11 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_TEAMS ) ) g_bLib_Teams = false;
 }
 
+public void OnClientPutInServer( int client )
+{
+    g_bPaused[client] = false;
+}
+
 public void Influx_RequestHelpCmds()
 {
     Influx_AddHelpCommand( "pause", "Pause your run." );
