@@ -454,7 +454,7 @@ stock int WriteZoneFile()
         {
             if ( res == Plugin_Stop )
             {
-                LogError( INF_CON_PRE..."Couldn't save zone %i with type %i!", zoneid, zonetype );
+                LogError( INF_CON_PRE..."Couldn't save zone %s (id: %i) with type %i!", data[ZONE_NAME], zoneid, zonetype );
             }
             
             kv.DeleteThis();
@@ -496,12 +496,21 @@ stock int WriteZoneFile()
         ++num;
     }
     
-    kv.Rewind();
     
-    if ( !kv.ExportToFile( szPath ) )
+    if ( num )
     {
-        LogError( INF_CON_PRE..."Can't save zone file '%s'!!", szPath );
+        kv.Rewind();
+        
+        if ( !kv.ExportToFile( szPath ) )
+        {
+            LogError( INF_CON_PRE..."Can't save zone file '%s'!!", szPath );
+        }
     }
+    else
+    {
+        LogError( INF_CON_PRE..."No valid zones exist to save. Can't save zone file '%s'!", szPath );
+    }
+    
     
     delete kv;
     
