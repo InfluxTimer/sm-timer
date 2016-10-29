@@ -350,6 +350,9 @@ stock void ReadZoneFile()
         }
         
         
+        kv.GetSectionName( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME );
+        
+        
         // Ask other plugins what to load.
         Action res;
         
@@ -363,7 +366,7 @@ stock void ReadZoneFile()
         {
             if ( res == Plugin_Stop )
             {
-                LogError( INF_CON_PRE..."Couldn't load zone from file! (id: %i)", zoneid );
+                LogError( INF_CON_PRE..."Couldn't load zone %s with type %i from file! (id: %i)", data[ZONE_NAME], zonetype, zoneid );
             }
             
             continue;
@@ -383,10 +386,6 @@ stock void ReadZoneFile()
         
         CopyArray( mins, data[ZONE_MINS], 3 );
         CopyArray( maxs, data[ZONE_MAXS], 3 );
-        
-
-        
-        kv.GetSectionName( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME );
         
         
         CreateZoneEntityByIndex( g_hZones.PushArray( data ) );
