@@ -18,6 +18,7 @@ int g_nPauses[INF_MAXPLAYERS];
 
 float g_vecContinuePos[INF_MAXPLAYERS][3];
 float g_vecContinueAng[INF_MAXPLAYERS][3];
+char g_szPausedTargetName[INF_MAXPLAYERS][128];
 int g_nPausedTicks[INF_MAXPLAYERS];
 bool g_bPaused[INF_MAXPLAYERS];
 
@@ -163,8 +164,7 @@ public Action Cmd_Practise_Pause( int client, int args )
 stock void PauseRun( int client )
 {
     if ( g_bPaused[client] ) return;
-    
-    
+	
     if ( Influx_GetClientState( client ) != STATE_RUNNING )
     {
         Influx_PrintToChat( _, client, "%T", "MUSTBERUNNING", client );
@@ -218,7 +218,8 @@ stock void PauseRun( int client )
     
     g_vecContinueAng[client][2] = 0.0;
     
-    
+    GetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client], 128 );
+
     Influx_PrintToChat( _, client, "Your run is now paused. Type {MAINCLR1}!continue{CHATCLR} to resume." );
 }
 
@@ -268,7 +269,8 @@ stock void ContinueRun( int client )
     
     g_flPauseLimit[client] = GetEngineTime() + g_ConVar_Cooldown.FloatValue;
     
-    
+    SetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client] );
+
     Influx_PrintToChat( _, client, "Your run is no longer paused." );
 }
 
