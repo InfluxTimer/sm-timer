@@ -375,6 +375,8 @@ stock bool TeleportClientToCP( int client, int index )
     CopyArray( data[PRAC_ANG], ang, 2 );
     CopyArray( data[PRAC_VEL], vel, 3 );
     
+    ang[2] = 0.0; // Don't tilt me bro
+    
     
     // If we're not paused, change our time.
     if ( !g_bLib_Pause || !Influx_IsClientPaused( client ) )
