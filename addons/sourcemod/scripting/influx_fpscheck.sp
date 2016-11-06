@@ -189,7 +189,7 @@ stock bool IsValidFps( int client, char[] msg, int msg_len )
         {
             case 1 : // More or equal to tickrate.
             {
-                if ( g_flFps[client] < g_flTickRate )
+                if ( g_flFps[client] != 0.0 && g_flFps[client] < g_flTickRate )
                 {
                     FormatEx( msg, msg_len, "Your FPS must be equal to or greater than {MAINCLR1}%.0f{CHATCLR}!", g_flTickRate );
                     return false;
