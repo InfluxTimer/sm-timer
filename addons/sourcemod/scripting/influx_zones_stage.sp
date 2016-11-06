@@ -282,8 +282,11 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     
     int runid = Influx_GetClientRunId( client );
     
-    if ( runid == -1 ) return Plugin_Continue;
-    
+    if ( Influx_FindRunById( runid ) == -1 )
+    {
+        Influx_PrintToChat( _, client, "You must have a run to create stages for!" );
+        return Plugin_Continue;
+    }
     
     
     char szDisplay[32];
@@ -356,7 +359,7 @@ public int Hndlr_CreateZone_SelectStage( Menu oldmenu, MenuAction action, int cl
     
     
     int runid = Influx_GetClientRunId( client );
-    if ( runid < 1 ) return 0;
+    if ( Influx_FindRunById( runid ) == -1 ) return 0;
     
     
     int stagenum = StringToInt( szInfo );
@@ -395,7 +398,7 @@ public int Hndlr_CreateZone_SelectMethod( Menu oldmenu, MenuAction action, int c
     
     
     int runid = Influx_GetClientRunId( client );
-    if ( runid < 1 ) return 0;
+    if ( Influx_FindRunById( runid ) == -1 ) return 0;
     
     
     int stagenum = StringToInt( szInfo );
