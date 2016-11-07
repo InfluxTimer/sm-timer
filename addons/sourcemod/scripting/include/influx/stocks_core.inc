@@ -22,15 +22,32 @@ stock void Inf_FormatSeconds( float secs, char[] out, int len, const char[] secf
 {
     // "00:00.00"
     
-#define SECS2MINS(%0)    ( %0 * ( 1.0 / 60.0 ) )
+#define _SECS2MINS(%0)  ( %0 * ( 1.0 / 60.0 ) )
     
-    int mins = RoundToFloor( SECS2MINS( secs ) );
+    int mins = RoundToFloor( _SECS2MINS( secs ) );
+    int printmins = mins;
+    
     
     decl String:format[16];
-    FormatEx( format, sizeof( format ), "%%02i:%s", secform ); // %02i:%05.2f
+    
+    
+    decl String:hrs[4]; // 00:
+    hrs[0] = '\0';
+    
+    if ( mins >= 60 )
+    {
+        int h = RoundToFloor( _SECS2MINS( mins ) );
+        
+        FormatEx( hrs, sizeof( hrs ), "%02i:", h );
+        
+        printmins = mins - h * 60;
+    }
+    
+    
+    FormatEx( format, sizeof( format ), "%s%%02i:%s", hrs, secform ); // 00:%02i:%05.2f
     
     FormatEx( out, len, format,
-        mins,
+        printmins,
         secs - mins * 60.0 );
 }
 
