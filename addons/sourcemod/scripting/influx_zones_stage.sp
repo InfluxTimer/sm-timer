@@ -529,7 +529,7 @@ stock void RemoveStageById( int zoneid )
     index = FindStageZoneById( zoneid );
     if ( index == -1 )
     {
-        LogError( INF_CON_PRE..."Couldn't find stage zone with id %i!", zoneid )
+        LogError( INF_CON_PRE..."Couldn't find stage zone with id %i to delete!", zoneid );
         return;
     }
     
