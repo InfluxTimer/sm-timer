@@ -44,6 +44,24 @@ stock void Inf_DecimalFormat( int numdecimals, char[] sz, int len )
     FormatEx( sz, len, "%%0%i.%if", numzeros, numdecimals );
 }
 
+stock float Inf_GetTimeDif( float time, float compare_time, int &c )
+{
+    decl Float:dif;
+    
+    if ( time > compare_time )
+    {
+        dif = time - compare_time;
+        c = '+';
+    }
+    else
+    {
+        dif = compare_time - time;
+        c = '-';
+    }
+    
+    return dif;
+}
+
 stock float Inf_SnapTo( float f, int num = 15 )
 {
     int i = RoundFloat( f ) + ( num / 2 );
