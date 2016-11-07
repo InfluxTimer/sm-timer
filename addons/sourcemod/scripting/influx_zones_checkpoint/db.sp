@@ -5,12 +5,12 @@
 #define CUR_DB_VERSION          1
 
 
-stock void FormatWhereClause( char[] sz, int len, int runid, int mode, int style, int cpnum )
+stock void FormatWhereClause( char[] sz, int len, const char[] table, int runid, int mode, int style, int cpnum )
 {
-    if ( runid > 0 ) FormatEx( sz, len, " AND runid=%i", runid );
-    if ( VALID_MODE( mode ) ) Format( sz, len, "%s AND mode=%i", sz, mode );
-    if ( VALID_STYLE( style ) ) Format( sz, len, "%s AND style=%i", sz, style );
-    if ( cpnum > 0 ) Format( sz, len, "%s AND cpnum=%i", sz, cpnum );
+    if ( runid > 0 ) FormatEx( sz, len, " AND %srunid=%i", table, runid );
+    if ( VALID_MODE( mode ) ) Format( sz, len, "%s AND %smode=%i", sz, table, mode );
+    if ( VALID_STYLE( style ) ) Format( sz, len, "%s AND %sstyle=%i", sz, table, style );
+    if ( cpnum > 0 ) Format( sz, len, "%s AND %scpnum=%i", sz, table, cpnum );
 }
 
 public void DB_Init()
@@ -42,12 +42,14 @@ stock void DB_GetCPTimes( int runid = -1, int mode = -1, int style = -1, int cpn
     
     // Format where clause.
     decl String:szWhere[128];
+    
     szWhere[0] = '\0';
-    FormatWhereClause( szWhere, sizeof( szWhere ), runid, mode, style, cpnum ); 
+    FormatWhereClause( szWhere, sizeof( szWhere ), "_t.", runid, mode, style, cpnum );
     
     
-    // Base query.
-    decl String:szQuery[512];
+    decl String:szQuery[1024];
+    
+    // Get server record times.
     FormatEx( szQuery, sizeof( szQuery ), "SELECT " ...
         "_t.uid," ...
         "_t.runid," ...
@@ -67,7 +69,31 @@ stock void DB_GetCPTimes( int runid = -1, int mode = -1, int style = -1, int cpn
         mapid,
         szWhere );
     
-    SQL_TQuery( db, Thrd_GetCPTimes, szQuery, _, DBPrio_High );
+    SQL_TQuery( db, Thrd_GetCPSRTimes, szQuery, _, DBPrio_High );
+    
+    
+    // Get best times.
+    szWhere[0] = '\0';
+    FormatWhereClause( szWhere, sizeof( szWhere ), "", runid, mode, style, cpnum );
+    
+    FormatEx( szQuery, sizeof( szQuery ), "SELECT " ...
+        "uid," ...
+        "runid," ...
+        "mode," ...
+        "style," ...
+        "cpnum," ...
+        "cptime " ...
+        
+        "FROM "...INF_TABLE_CPTIMES..." AS _cp WHERE mapid=%i%s AND " ...
+        
+        "cptime=(SELECT MIN(cptime) FROM "...INF_TABLE_CPTIMES..." WHERE mapid=_cp.mapid AND runid=_cp.runid AND mode=_cp.mode AND style=_cp.style AND cpnum=_cp.cpnum) " ...
+        
+        "GROUP BY runid,mode,style,cpnum " ...
+        "ORDER BY runid,cpnum",
+        mapid,
+        szWhere );
+    
+    SQL_TQuery( db, Thrd_GetCPBestTimes, szQuery, _, DBPrio_High );
 }
 
 stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int flags )
@@ -94,14 +120,16 @@ stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int
     PrintToServer( INF_DEBUG_PRE..."Deleting old cp times..." );
 #endif
     
-    FormatEx( szQuery, sizeof( szQuery ), "DELETE FROM "...INF_TABLE_CPTIMES..." WHERE uid=%i AND mapid=%i AND runid=%i AND mode=%i AND style=%i",
+    // We only retrieve the times we have zones for so there is no reason to delete old times.
+    // Also you never know if the db disconnects/something goes wrong and the new times never get updated to db.
+    /*FormatEx( szQuery, sizeof( szQuery ), "DELETE FROM "...INF_TABLE_CPTIMES..." WHERE uid=%i AND mapid=%i AND runid=%i AND mode=%i AND style=%i",
         uid,
         mapid,
         runid,
         mode,
         style );
     
-    SQL_TQuery( db, Thrd_Update, szQuery, userid, DBPrio_High );
+    SQL_TQuery( db, Thrd_Update, szQuery, userid, DBPrio_High );*/
     
     
     
@@ -109,7 +137,7 @@ stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int
     decl Float:time;
     
     
-    bool bIsRecord = ( flags & RES_TIME_ISBEST || flags & RES_TIME_FIRSTREC )
+    bool bIsRecord = ( flags & RES_TIME_ISBEST || flags & RES_TIME_FIRSTREC );
     
     
     int len = g_hCPs.Length;
@@ -121,7 +149,6 @@ stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int
         cpnum = g_hCPs.Get( i, CP_NUM );
         
         // Get our time.
-        // If we never entered this cp, insert an empty record.
         int index = FindClientCPByNum( client, cpnum );
         if ( index != -1 )
         {
@@ -137,7 +164,7 @@ stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int
         PrintToServer( INF_DEBUG_PRE..."Inserting cp %i time %.3f", cpnum, time );
 #endif
         
-        FormatEx( szQuery, sizeof( szQuery ), "INSERT INTO "...INF_TABLE_CPTIMES..." (uid,mapid,runid,mode,style,cpnum,cptime) VALUES (%i,%i,%i,%i,%i,%i,%f)",
+        FormatEx( szQuery, sizeof( szQuery ), "REPLACE INTO "...INF_TABLE_CPTIMES..." (uid,mapid,runid,mode,style,cpnum,cptime) VALUES (%i,%i,%i,%i,%i,%i,%f)",
             uid,
             mapid,
             runid,
@@ -149,7 +176,14 @@ stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int
         SQL_TQuery( db, Thrd_Update, szQuery, userid, DBPrio_High );
         
         
+        // Update server record time.
         if ( bIsRecord )
+        {
+            SetRecordTime( i, mode, style, time, uid );
+        }
+        
+        // Update best time.
+        if ( time != INVALID_RUN_TIME && time < GetBestTime( i, mode, style ) )
         {
             SetBestTime( i, mode, style, time, uid );
         }

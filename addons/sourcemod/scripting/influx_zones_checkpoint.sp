@@ -8,11 +8,12 @@
 
 
 #define DEBUG_ADDS
-#define DEBUG_ZONE
+//#define DEBUG_ZONE
 #define DEBUG_INSERTREC
 #define DEBUG_DB
 #define DEBUG_SETS
 #define DEBUG_CMD
+#define DEBUG_INSERTCP
 
 
 enum
@@ -40,8 +41,8 @@ enum
     CP_BESTTIMES_UID[MAX_MODES * MAX_STYLES],
     //CP_BESTTIMES_NAME[MAX_MODES * MAX_STYLES * MAX_BEST_NAME_CELL],
     
-    //CP_RECTIMES[MAX_MODES * MAX_STYLES],
-    //CP_RECTIMES_UID[MAX_MODES * MAX_STYLES],
+    CP_RECTIMES[MAX_MODES * MAX_STYLES],
+    CP_RECTIMES_UID[MAX_MODES * MAX_STYLES],
     
     
     CP_SIZE
@@ -74,6 +75,7 @@ int g_iClientLatestCP[INF_MAXPLAYERS];
 float g_flLastTouch[INF_MAXPLAYERS];
 float g_flLastCPTime[INF_MAXPLAYERS];
 float g_flLastCPBestTime[INF_MAXPLAYERS];
+float g_flLastCPSRTime[INF_MAXPLAYERS];
 
 
 
@@ -116,6 +118,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_GetClientLastCPTouch", Native_GetClientLastCPTouch );
     CreateNative( "Influx_GetClientLastCPTime", Native_GetClientLastCPTime );
     CreateNative( "Influx_GetClientLastCPBestTime", Native_GetClientLastCPBestTime );
+    CreateNative( "Influx_GetClientLastCPSRTime", Native_GetClientLastCPSRTime );
 }
 
 public void OnPluginStart()
@@ -165,6 +168,7 @@ public void OnClientPutInServer( int client )
     
     g_flLastTouch[client] = 0.0;
     g_flLastCPBestTime[client] = INVALID_RUN_TIME;
+    g_flLastCPSRTime[client] = INVALID_RUN_TIME;
     g_flLastCPTime[client] = INVALID_RUN_TIME;
     
     
@@ -255,7 +259,7 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     
     
     int runid = Influx_GetClientRunId( client );
-    if ( runid < 1 ) return;
+    if ( Influx_FindRunById( runid ) == -1 ) return;
     
     
     int cpnum = g_iBuildingNum[client];
@@ -277,6 +281,39 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     
     
     AddCP( runid, cpnum );
+}
+
+public void Influx_OnZoneDeleted( int zoneid, ZoneType_t zonetype )
+{
+    if ( zonetype != ZONETYPE_CP ) return;
+    
+    
+    int index = FindCPById( zoneid );
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Couldn't find checkpoint zone with id %i to delete!", zoneid );
+        return;
+    }
+    
+    
+    int runid = g_hCPZones.Get( index, CPZONE_RUN_ID );
+    int cpnum = g_hCPZones.Get( index, CPZONE_NUM );
+    
+    
+    g_hCPZones.Erase( index );
+    
+    
+    // Check if any other cp zones exist with this run and num.
+    // If not, delete our cp.
+    if ( FindCPZoneByNum( runid, cpnum ) == -1 )
+    {
+        index = FindCPByNum( runid, cpnum );
+        
+        if ( index != -1 )
+        {
+            g_hCPs.Erase( index );
+        }
+    }
 }
 
 public void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent )
@@ -306,8 +343,11 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     
     int runid = Influx_GetClientRunId( client );
     
-    if ( runid == -1 ) return Plugin_Continue;
-    
+    if ( Influx_FindRunById( runid ) == -1 )
+    {
+        Influx_PrintToChat( _, client, "You must have a run to create checkpoints for!" );
+        return Plugin_Continue;
+    }
     
     
     char szDisplay[32];
@@ -382,7 +422,7 @@ public int Hndlr_CreateZone_SelectCPNum( Menu oldmenu, MenuAction action, int cl
     
     
     int runid = Influx_GetClientRunId( client );
-    if ( runid < 1 ) return 0;
+    if ( Influx_FindRunById( runid ) == -1 ) return 0;
     
     
     int cpnum = StringToInt( szInfo );
@@ -421,7 +461,7 @@ public int Hndlr_CreateZone_SelectMethod( Menu oldmenu, MenuAction action, int c
     
     
     int runid = Influx_GetClientRunId( client );
-    if ( runid < 1 ) return 0;
+    if ( Influx_FindRunById( runid ) == -1 ) return 0;
     
     
     int cpnum = StringToInt( szInfo );
@@ -447,13 +487,10 @@ public int Hndlr_CreateZone_SelectMethod( Menu oldmenu, MenuAction action, int c
                 int zoneid = g_hCPZones.Get( i, CPZONE_ID );
                 
                 
-                g_hCPZones.Erase( i );
+                Influx_DeleteZone( zoneid );
                 
                 --i;
                 len = g_hCPZones.Length;
-                
-                
-                Influx_DeleteZone( zoneid );
             }
             
             StartToBuild( client, cpnum );
@@ -473,7 +510,7 @@ public void E_StartTouchPost_CP( int ent, int activator )
     int zoneid = Inf_GetZoneProp( ent );
     
 #if defined DEBUG_ZONE
-    PrintToServer( INF_DEBUG_PRE..."Player %i hit cp %i (ent: %i)!", activator, zoneid, ent );
+    PrintToServer( INF_DEBUG_PRE..."Player %i hit cp with zone id %i (ent: %i)!", activator, zoneid, ent );
 #endif
     
     int zindex = FindCPById( zoneid );
@@ -500,7 +537,7 @@ public void E_StartTouchPost_CP( int ent, int activator )
 
 stock void SaveClientCP( int client, int cpnum )
 {
-#if defined DEBUG_ZONE
+#if defined DEBUG_INSERTCP
     PrintToServer( INF_DEBUG_PRE..."Attempting to save client cp %i!", cpnum );
 #endif
 
@@ -508,7 +545,7 @@ stock void SaveClientCP( int client, int cpnum )
     
     
     int runid = Influx_GetClientRunId( client );
-    if ( runid == -1 ) return;
+    if ( Influx_FindRunById( runid ) == -1 ) return;
     
     
     int index = FindCPByNum( runid, cpnum );
@@ -516,7 +553,7 @@ stock void SaveClientCP( int client, int cpnum )
     
     
     
-#if defined DEBUG_ZONE
+#if defined DEBUG_INSERTCP
     PrintToServer( INF_DEBUG_PRE..."CP num is %i!", cpnum );
 #endif
     
@@ -527,7 +564,7 @@ stock void SaveClientCP( int client, int cpnum )
     
     float time = Influx_GetClientTime( client );
     
-#if defined DEBUG_ZONE
+#if defined DEBUG_INSERTCP
     PrintToServer( INF_DEBUG_PRE..."Inserting new client time %.3f", time );
 #endif
     
@@ -547,6 +584,7 @@ stock void SaveClientCP( int client, int cpnum )
     
     g_flLastCPTime[client] = time;
     g_flLastCPBestTime[client] = GetBestTime( index, mode, style );
+    g_flLastCPSRTime[client] = GetRecordTime( index, mode, style );
     
     g_flLastTouch[client] = GetEngineTime();
     
@@ -659,7 +697,9 @@ stock bool ShouldSaveCP( int client, int cpnum )
 
 stock int AddCP( int runid, int cpnum, const char[] szName = "", bool bUpdateName = false )
 {
-    int index = FindCPByNum( runid, cpnum );
+    int index;
+    
+    index = FindCPByNum( runid, cpnum );
     if ( index != -1 )
     {
         // Update our name.
@@ -693,7 +733,17 @@ stock int AddCP( int runid, int cpnum, const char[] szName = "", bool bUpdateNam
     data[CP_NUM] = cpnum;
     data[CP_RUN_ID] = runid;
     
-    return g_hCPs.PushArray( data );
+    index = g_hCPs.PushArray( data );
+    
+    
+    // If we already have a map id, get times for this new cp.
+    //if ( Influx_GetCurrentMapId() > 1 )
+    //{
+    //    DB_GetCPTimes( runid, _, _, cpnum );
+    //}
+    
+    
+    return index;
 }
 
 stock void GetCPName( int index, char[] sz, int len )
@@ -725,12 +775,12 @@ stock void SetBestTime( int index, int mode, int style, float time, int uid = 0 
     g_hCPs.Set( index, uid, CP_BESTTIMES_UID + offset );
 }
 
-/*stock float GetRecordTime( ArrayList stages, int index, int mode, int style )
+stock float GetRecordTime( int index, int mode, int style )
 {
-    return view_as<float>( stages.Get( index, CP_RECTIMES + OFFSET_MODESTYLE( mode, style ) ) );
+    return view_as<float>( g_hCPs.Get( index, CP_RECTIMES + OFFSET_MODESTYLE( mode, style ) ) );
 }
 
-stock void SetRecordTime( ArrayList stages, int index, int mode, int style, float time, int uid = 0 )
+stock void SetRecordTime( int index, int mode, int style, float time, int uid = 0 )
 {
 #if defined DEBUG_SETS
     PrintToServer( INF_DEBUG_PRE..."Setting record time (%i, %i, %.3f, %i)", mode, style, time, uid );
@@ -738,9 +788,9 @@ stock void SetRecordTime( ArrayList stages, int index, int mode, int style, floa
     
     int offset = OFFSET_MODESTYLE( mode, style );
     
-    stages.Set( index, time, CP_RECTIMES + offset );
-    stages.Set( index, uid, CP_RECTIMES_UID + offset );
-}*/
+    g_hCPs.Set( index, time, CP_RECTIMES + offset );
+    g_hCPs.Set( index, uid, CP_RECTIMES_UID + offset );
+}
 
 /*stock void GetRunRecordName( ArrayList stages, int index, int mode, int style, char[] out, int len )
 {
@@ -813,6 +863,7 @@ stock void ResetCPTimes( int runid, int cpnum )
     for ( m = 0; m < MAX_MODES; m++ )
         for ( s = 0; s < MAX_STYLES; s++ )
         {
+            SetRecordTime( index, m, s, INVALID_RUN_TIME );
             SetBestTime( index, m, s, INVALID_RUN_TIME );
             //SetBestName( index, m, s, "" );
         }
@@ -923,4 +974,11 @@ public int Native_GetClientLastCPBestTime( Handle hPlugin, int nParms )
     int client = GetNativeCell( 1 );
     
     return view_as<int>( g_flLastCPBestTime[client] );
+}
+
+public int Native_GetClientLastCPSRTime( Handle hPlugin, int nParms )
+{
+    int client = GetNativeCell( 1 );
+    
+    return view_as<int>( g_flLastCPSRTime[client] );
 }
