@@ -122,25 +122,12 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
                 
                 if ( finishbest != INVALID_RUN_TIME )
                 {
-                    decl String:szTime[10];
+                    decl String:szTime[16];
+                    decl c;
                     
-                    decl Float:dif;
-                    decl String:c[1];
+                    Inf_FormatSeconds( Inf_GetTimeDif( time, finishbest, c ), szTime, sizeof( szTime ), "%05.2f" );
                     
-                    if ( time >= finishbest )
-                    {
-                        dif = time - finishbest;
-                        c[0] = '+';
-                    }
-                    else
-                    {
-                        dif = finishbest - time;
-                        c[0] = '-';
-                    }
-                    
-                    Inf_FormatSeconds( dif, szTime, sizeof( szTime ), "%05.2f" );
-                    
-                    Format( szMsg, sizeof( szMsg ), "%s\n(%c%s)", szMsg, c[0], szTime );
+                    Format( szMsg, sizeof( szMsg ), "%s\n(%c%s)", szMsg, c, szTime );
                 }
             }
             else if ( g_bLib_Pause && Influx_IsClientPaused( target ) )
@@ -162,39 +149,30 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         if (g_bLib_CP
         &&  (GetEngineTime() - Influx_GetClientLastCPTouch( target )) < 2.0 )
         {
-            float rectime = Influx_GetClientLastCPBestTime( target );
+            float rectime = Influx_GetClientLastCPSRTime( target );
+            
+            // Fallback to best time if no SR time is found.
+            if ( rectime == INVALID_RUN_TIME ) rectime = Influx_GetClientLastCPBestTime( target );
+            
             
             if ( rectime != INVALID_RUN_TIME )
             {
                 float time = Influx_GetClientLastCPTime( target );
                 
-                
-                decl Float:dif;
-                decl pre;
-                
-                if ( rectime <= time )
-                {
-                    dif = time - rectime;
-                    pre = '+';
-                }
-                else
-                {
-                    dif = rectime - time;
-                    pre = '-';
-                }
+                decl c;
                 
                 //decl String:szName[MAX_CP_NAME];
                 //Influx_GetClientLastCPName( client, szName, sizeof( szName ) );
                 
                 
                 decl String:form[16];
-                Inf_FormatSeconds( dif, form, sizeof( form ), szSecFormat );
+                Inf_FormatSeconds( Inf_GetTimeDif( time, rectime, c ), form, sizeof( form ), szSecFormat );
                 
                 
                 Format( szMsg, sizeof( szMsg ), "%s%s(%c%s)",
                     szMsg,
                     NEWLINE_CHECK( szMsg ), 
-                    pre,
+                    c,
                     form );
             }
         }

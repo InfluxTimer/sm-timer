@@ -121,7 +121,10 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
             if (g_bLib_CP
             &&  (GetEngineTime() - Influx_GetClientLastCPTouch( target )) < 2.0)
             {
-                cptime = Influx_GetClientLastCPBestTime( target );
+                cptime = Influx_GetClientLastCPSRTime( target );
+                
+                // Fallback to best time if no SR time is found.
+                if ( cptime == INVALID_RUN_TIME ) cptime = Influx_GetClientLastCPBestTime( target );
             }
             
             
@@ -139,29 +142,16 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
             {
                 float time = Influx_GetClientLastCPTime( target );
                 
-                
-                decl Float:dif;
-                decl pre;
-                
-                if ( cptime <= time )
-                {
-                    dif = time - cptime;
-                    pre = '+';
-                }
-                else
-                {
-                    dif = cptime - time;
-                    pre = '-';
-                }
+                decl c;
                 
                 //decl String:szName[MAX_CP_NAME];
                 //Influx_GetClientLastCPName( client, szName, sizeof( szName ) );
                 
                 
-                Inf_FormatSeconds( dif, szTemp2, sizeof( szTemp2 ), szSecFormat );
+                Inf_FormatSeconds( Inf_GetTimeDif( time, cptime, c ), szTemp2, sizeof( szTemp2 ), szSecFormat );
                 
                 
-                FormatEx( szMsg, sizeof( szMsg ), "CP: %c%s", pre, szTemp2 );
+                FormatEx( szMsg, sizeof( szMsg ), "CP: %c%s", c, szTemp2 );
             }
             else
             {

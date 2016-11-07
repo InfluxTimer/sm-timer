@@ -123,25 +123,13 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     
     if ( prev_best != INVALID_RUN_TIME )
     {
-        decl String:c[1];
-        decl Float:dif;
+        int c;
         
-        if ( time >= prev_best )
-        {
-            dif = time - prev_best;
-            c[0] = '+';
-        }
-        else
-        {
-            dif = prev_best - time;
-            c[0] = '-';
-        }
-        
-        Inf_FormatSeconds( dif, szForm, sizeof( szForm ), szFormSec );
+        Inf_FormatSeconds( Inf_GetTimeDif( time, prev_best, c ), szForm, sizeof( szForm ), szFormSec );
         
         FormatEx( szRec, sizeof( szRec ), " {CHATCLR}({%s}%c%s{CHATCLR})",
             isbest ? "LIGHTRED" : "GREEN", // Is new best?
-            c[0],
+            c,
             szForm );
     }
     else

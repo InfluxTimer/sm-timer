@@ -214,23 +214,13 @@ public void Thrd_PrintCPTimes( Handle db, Handle res, const char[] szError, int 
 
 stock void FormatSeconds( float time, float besttime, char[] sz, int len )
 {
-    float dif;
-    int pre;
+    int c;
+    float dif = Inf_GetTimeDif( time, besttime, c );
     
-    if ( time < besttime )
-    {
-        dif = besttime - time;
-        pre = '-';
-    }
-    else
-    {
-        dif = time - besttime;
-        pre = '+';
-    }
     
     Inf_FormatSeconds( dif, sz, len );
     
-    Format( sz, len, "%c%s", pre, sz );
+    Format( sz, len, "%c%s", c, sz );
 }
 
 
