@@ -37,5 +37,6 @@ public SharedPlugin __pl_influx_fpscheck =
 public void __pl_influx_fpscheck_SetNTVOptional()
 {
     MarkNativeAsOptional( "Influx_AddFpsCheck" );
+    MarkNativeAsOptional( "Influx_RemoveFpsCheck" );
 }
 #endif
