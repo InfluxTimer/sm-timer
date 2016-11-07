@@ -97,21 +97,3 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
         szSRDif,
         szBestTotal );
 }
-
-stock float Inf_GetTimeDif( float time, float compare_time, int &c )
-{
-    decl Float:dif;
-    
-    if ( time > compare_time )
-    {
-        dif = time - compare_time;
-        c = '+';
-    }
-    else
-    {
-        dif = compare_time - time;
-        c = '-';
-    }
-    
-    return dif;
-}
