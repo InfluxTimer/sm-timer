@@ -90,6 +90,7 @@ Handle g_hForward_OnClientCPSavePost;
 
 
 #include "influx_zones_checkpoint/db.sp"
+#include "influx_zones_checkpoint/menus.sp"
 #include "influx_zones_checkpoint/menus_admin.sp"
 #include "influx_zones_checkpoint/menus_hndlrs_admin.sp"
 
@@ -142,10 +143,12 @@ public void OnPluginStart()
     RegAdminCmd( "sm_debugprintcps", Cmd_PrintCps, ADMFLAG_ROOT );
 #endif
 
-    //RegConsoleCmd( "sm_cptimes", Cmd_PrintCpTimes );
-    //RegConsoleCmd( "sm_cptime", Cmd_PrintCpTimes );
-    //RegConsoleCmd( "sm_cpwr", Cmd_PrintCpTimes );
-    //RegConsoleCmd( "sm_cptop", Cmd_PrintCpTimes );
+    RegConsoleCmd( "sm_cptimes", Cmd_PrintCpTimes );
+    RegConsoleCmd( "sm_cptime", Cmd_PrintCpTimes );
+    RegConsoleCmd( "sm_cpwr", Cmd_PrintCpTimes );
+    RegConsoleCmd( "sm_cptop", Cmd_PrintCpTimes );
+    RegConsoleCmd( "sm_wrcp", Cmd_PrintCpTimes );
+    RegConsoleCmd( "sm_topcp", Cmd_PrintCpTimes );
     
     
     // MENUS

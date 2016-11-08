@@ -212,6 +212,71 @@ public void Thrd_PrintCPTimes( Handle db, Handle res, const char[] szError, int 
     menu.Display( client, MENU_TIME_FOREVER );
 }
 
+public void Thrd_PrintTopCPTimes( Handle db, Handle res, const char[] szError, int client )
+{
+    if ( !(client = GetClientOfUserId( client )) ) return;
+    
+    
+    if ( res == null )
+    {
+        Inf_DB_LogError( db, "printing top cp times to client", client, "Sorry, something went wrong." );
+        return;
+    }
+    
+    
+    decl String:szDisplay[128];
+    decl String:szSR[64];
+    decl String:szBest[64];
+    int numrecs = 0;
+    
+    
+    Menu menu = new Menu( Hndlr_Empty );
+    
+    menu.SetTitle( "Top CP Times\n " );
+    
+    
+    while ( SQL_FetchRow( res ) )
+    {
+        int cpnum = SQL_FetchInt( res, 0 );
+        
+        float srtime = SQL_FetchFloat( res, 1 );
+        
+        float besttime = SQL_FetchFloat( res, 2 );
+        
+        
+        Inf_FormatSeconds( srtime, szSR, sizeof( szSR ) );
+        Format( szSR, sizeof( szSR ), "\n        SR: %s", szSR );
+        
+        
+        if ( besttime != srtime )
+        {
+            Inf_FormatSeconds( besttime, szBest, sizeof( szBest ) );
+            Format( szBest, sizeof( szBest ), "\n        BEST: %s", szBest );
+        }
+        else
+        {
+            szBest[0] = '\0';
+        }
+        
+        
+        FormatEx( szDisplay, sizeof( szDisplay ), "CP %i%s%s\n ",
+            cpnum,
+            szSR,
+            szBest );
+        
+        menu.AddItem( "", szDisplay, ITEMDRAW_DISABLED );
+        
+        ++numrecs;
+    }
+    
+    if ( !numrecs )
+    {
+        menu.AddItem( "", "No checkpoint times found :(", ITEMDRAW_DISABLED );
+    }
+    
+    menu.Display( client, MENU_TIME_FOREVER );
+}
+
 stock void FormatSeconds( float time, float besttime, char[] sz, int len )
 {
     int c;
