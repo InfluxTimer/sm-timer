@@ -5,14 +5,19 @@ ADDED:
 - influx_recrank-plugin to display record's rank in chat.
 - influx_zones_checkpoint-plugin for checkpoint times.
 - influx_zones_stage-plugin for stage displaying.
+- influx_ac_leftright-plugin to block malicious +left/+right usage. Recommended to be disabled for surf server.
 - Cvars: influx_teletostartonspawn, influx_recording_botname, influx_recording_autoplayback, influx_recording_repeatplayback
 - Ability to teleport to run end. (sm_gotoend/sm_end)
 - Lag-compensated CS:GO autobhop.
 
 FIXES:
 - MySQL not displaying best times correctly.
+- Teleporting to a cp no longer change player's roll.
+- Unpausing will now also reset player's targetname. (tier4fusion)
+- Fps_max 0 not being a valid value (if more than server's tickrate).
 
 CODE:
+- Fixed Influx_GetRunBestTime-native
 - Added native Influx_FormatChatColors
 - Added forward Influx_OnMapIdRetrieved
 
