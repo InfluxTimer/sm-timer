@@ -140,6 +140,7 @@ Handle g_hForward_OnTimerResetPost;
 Handle g_hForward_OnPreRunLoad;
 Handle g_hForward_OnPostRunLoad;
 
+Handle g_hForward_OnClientIdRetrieved;
 Handle g_hForward_OnMapIdRetrieved;
 Handle g_hForward_OnPostRecordsLoad;
 
@@ -394,6 +395,8 @@ public void OnPluginStart()
     
     g_hForward_OnTimerResetPost = CreateGlobalForward( "Influx_OnTimerResetPost", ET_Ignore, Param_Cell );
     
+    
+    g_hForward_OnClientIdRetrieved = CreateGlobalForward( "Influx_OnClientIdRetrieved", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
     
     g_hForward_OnMapIdRetrieved = CreateGlobalForward( "Influx_OnMapIdRetrieved", ET_Ignore, Param_Cell, Param_Cell );
     
@@ -2191,5 +2194,19 @@ stock void TeleportOnSpawn( int client )
     if ( teleport )
     {
         TeleClientToStart_Safe( client, g_iRunId[client] );
+    }
+}
+
+stock void SetClientId( int client, int id, bool bNew = false, bool bForward = true )
+{
+    g_iClientId[client] = id;
+    
+    if ( bForward )
+    {
+        Call_StartForward( g_hForward_OnClientIdRetrieved );
+        Call_PushCell( client );
+        Call_PushCell( id );
+        Call_PushCell( bNew );
+        Call_Finish();
     }
 }

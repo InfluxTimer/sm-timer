@@ -166,6 +166,9 @@ native bool Influx_IsMySQL();
 
 
 // New if we inserted new record.
+forward void Influx_OnClientIdRetrieved( int client, int id, bool bNew );
+
+// New if we inserted new record.
 forward void Influx_OnMapIdRetrieved( int mapid, bool bNew );
 
 

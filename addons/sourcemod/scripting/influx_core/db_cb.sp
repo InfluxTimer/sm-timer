@@ -131,7 +131,7 @@ public void Thrd_GetClientId( Handle db, Handle res, const char[] szError, int c
     }
     else
     {
-        g_iClientId[client] = SQL_FetchInt( res, 0 );
+        SetClientId( client, SQL_FetchInt( res, 0 ) );
         
         DB_InitClientTimes( client );
     }
@@ -162,7 +162,8 @@ public void Thrd_GetClientNewId( Handle db, Handle res, const char[] szError, in
     }
     
     
-    g_iClientId[client] = SQL_FetchInt( res, 0 );
+    SetClientId( client, SQL_FetchInt( res, 0 ), true );
+    
     g_bCachedTimes[client] = true;
 }
 
