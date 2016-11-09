@@ -118,7 +118,7 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
     // Print if we have something to print!
     if ( szSR[0] != '\0' || szPB[0] != '\0' || szBest[0] != '\0' )
     {
-        Influx_PrintToChatEx( _, client, clients, nClients, "CP %i | %s%s%s",
+        Influx_PrintToChatEx( _, client, clients, nClients, "CP %i | %s%s%s%s%s",
             cpnum,
             szSR,
             ( szSR[0] && szPB[0] ) ? " | " : "",
