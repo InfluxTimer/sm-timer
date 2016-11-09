@@ -1,3 +1,11 @@
+public void Thrd_Empty( Handle db, Handle res, const char[] szError, int client )
+{
+    if ( res == null )
+    {
+        Inf_DB_LogError( db, "inserting cp data", client ? GetClientOfUserId( client ) : 0, "Something went wrong." );
+    }
+}
+
 public void Thrd_GetCPSRTimes( Handle db, Handle res, const char[] szError, any data )
 {
     if ( res == null )
@@ -11,25 +19,20 @@ public void Thrd_GetCPSRTimes( Handle db, Handle res, const char[] szError, any 
 #endif
     
     int lastrunid = -1;
+    int lastcpnum = -1;
+    
     int uid, runid, mode, style;
     int cpnum;
     float time;
     
-    int index;
+    int index = -1;
     
     while ( SQL_FetchRow( res ) )
     {
         if ( (runid = SQL_FetchInt( res, 1 )) != lastrunid )
         {
-            if ( Influx_FindRunById( runid ) == -1 )
-            {
-                lastrunid = runid;
-                continue;
-            }
+            if ( Influx_FindRunById( runid ) == -1 ) continue;
         }
-        
-        lastrunid = runid;
-        
         
         
         mode = SQL_FetchInt( res, 2 );
@@ -46,9 +49,13 @@ public void Thrd_GetCPSRTimes( Handle db, Handle res, const char[] szError, any 
         uid = SQL_FetchInt( res, 0 );
         
         
-        if ( (index = FindCPByNum( runid, cpnum )) != -1 )
+        if ((runid == lastrunid && cpnum == lastcpnum && index != -1)
+        ||  ((index = FindCPByNum( runid, cpnum )) != -1) )
         {
             SetRecordTime( index, mode, style, time, uid );
+            
+            lastrunid = runid;
+            lastcpnum = cpnum;
         }
     }
 }
@@ -171,17 +178,16 @@ public void Thrd_Update( Handle db, Handle res, const char[] szError, int client
     }
 }
 
-public void Thrd_Empty( Handle db, Handle res, const char[] szError, any data )
+public void Thrd_PrintCPTimes( Handle db, Handle res, const char[] szError, ArrayList array )
 {
-    if ( res == null )
-    {
-        Inf_DB_LogError( db, "inserting cp data" );
-    }
-}
-
-public void Thrd_PrintCPTimes( Handle db, Handle res, const char[] szError, int client )
-{
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    decl data[PCB_SIZE];
+    
+    array.GetArray( 0, data );
+    delete array;
+    
+    
+    int client = GetClientOfUserId( data[PCB_USERID] );
+    if ( !client ) return;
     
     
     if ( res == null )
@@ -199,7 +205,7 @@ public void Thrd_PrintCPTimes( Handle db, Handle res, const char[] szError, int 
     int numrecs = 0;
     
     
-    Menu menu = new Menu( Hndlr_Empty );
+    Menu menu = new Menu( Hndlr_DeleteClientRecords );
     
     menu.SetTitle( "CP Times\n " );
     
@@ -259,10 +265,22 @@ public void Thrd_PrintCPTimes( Handle db, Handle res, const char[] szError, int 
         ++numrecs;
     }
     
-    if ( !numrecs )
+    
+    if ( numrecs )
+    {
+        if ( CanUserModifyCPTimes( client ) )
+        {
+            decl String:szInfo[32];
+            FormatEx( szInfo, sizeof( szInfo ), "d%i_%i_%i_%i_%i", data[PCB_UID], data[PCB_MAPID], data[PCB_RUNID], data[PCB_MODE], data[PCB_STYLE] );
+            
+            menu.AddItem( szInfo, "Delete these records" );
+        }
+    }
+    else
     {
         menu.AddItem( "", "No checkpoint times found :(", ITEMDRAW_DISABLED );
     }
+    
     
     menu.Display( client, MENU_TIME_FOREVER );
 }

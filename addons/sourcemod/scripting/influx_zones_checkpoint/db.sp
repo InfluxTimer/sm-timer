@@ -1,3 +1,17 @@
+enum
+{
+    PCB_USERID = 0,
+    
+    PCB_UID,
+    PCB_MAPID,
+    PCB_RUNID,
+    PCB_MODE,
+    PCB_STYLE,
+    
+    PCB_SIZE
+};
+
+
 // Callbacks
 #include "influx_zones_checkpoint/db_cb.sp"
 
@@ -194,9 +208,9 @@ stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int
         }
         else
         {
-            //time = INVALID_RUN_TIME;
-            continue;
+            time = INVALID_RUN_TIME;
         }
+        
         
 #if defined DEBUG_INSERTREC
         PrintToServer( INF_DEBUG_PRE..."Inserting cp %i time %.3f", cpnum, time );
@@ -225,6 +239,8 @@ stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int
         {
             SetBestTime( i, mode, style, time, uid );
         }
+        
+        SetClientCPTime( i, client, mode, style, time );
     }
     
     return true;
@@ -265,7 +281,22 @@ stock void DB_PrintCPTimes( int client, int uid, int mapid, int runid, int mode,
         mode,
         style );
     
-    SQL_TQuery( db, Thrd_PrintCPTimes, szQuery, GetClientUserId( client ), DBPrio_Low );
+    
+    
+    ArrayList array = new ArrayList( PCB_SIZE );
+    
+    decl data[PCB_SIZE];
+    data[PCB_USERID] = GetClientUserId( client );
+    data[PCB_UID] = uid;
+    data[PCB_MAPID] = mapid;
+    data[PCB_RUNID] = runid;
+    data[PCB_MODE] = mode;
+    data[PCB_STYLE] = style;
+    
+    array.PushArray( data );
+    
+    
+    SQL_TQuery( db, Thrd_PrintCPTimes, szQuery, array, DBPrio_Low );
 }
 
 stock void DB_PrintTopCPTimes( int client, int mapid, int runid, int mode, int style )
@@ -319,19 +350,44 @@ stock void DB_PrintDeleteCPTimes( int client, int mapid )
     SQL_TQuery( db, Thrd_PrintDeleteCpTimes, szQuery, GetClientUserId( client ), DBPrio_Low );
 }
 
-stock void DB_DeleteCPTimes( int issuer, int mapid, int runid, int cpnum )
+stock void DB_DeleteCPRecords( int issuer, int mapid, int uid = -1, int runid = -1, int cpnum = -1, int mode = MODE_INVALID, int style = STYLE_INVALID )
 {
     Handle db = Influx_GetDB();
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
     
     
-    char szQuery[256];
+    if ( mapid < 1 ) return;
     
-    FormatEx( szQuery, sizeof( szQuery ),
-        "DELETE FROM "...INF_TABLE_CPTIMES..." WHERE mapid=%i AND runid=%i AND cpnum=%i",
-        mapid,
-        runid,
-        cpnum );
+    
+    char szQuery[512];
+    
+    FormatEx( szQuery, sizeof( szQuery ), "DELETE FROM "...INF_TABLE_TIMES..." WHERE mapid=%i", mapid );
+    
+    if ( uid > 0 )
+    {
+        Format( szQuery, sizeof( szQuery ), "%s AND uid=%i", szQuery, uid );
+    }
+    
+    if ( runid > 0 )
+    {
+        Format( szQuery, sizeof( szQuery ), "%s AND runid=%i", szQuery, runid );
+    }
+    
+    if ( cpnum > 0 )
+    {
+        Format( szQuery, sizeof( szQuery ), "%s AND cpnum=%i", szQuery, cpnum );
+    }
+    
+    if ( VALID_MODE( mode ) )
+    {
+        Format( szQuery, sizeof( szQuery ), "%s AND mode=%i", szQuery, mode );
+    }
+    
+    if ( VALID_STYLE( style ) )
+    {
+        Format( szQuery, sizeof( szQuery ), "%s AND style=%i", szQuery, style );
+    }
+    
     
     SQL_TQuery( db, Thrd_Empty, szQuery, issuer ? GetClientUserId( issuer ) : 0, DBPrio_High );
 }

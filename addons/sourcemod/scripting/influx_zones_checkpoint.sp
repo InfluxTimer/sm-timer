@@ -165,9 +165,15 @@ public void OnAllPluginsLoaded()
 
 public void OnClientPutInServer( int client )
 {
-    delete g_hClientCP[client];
-    
-    g_hClientCP[client] = new ArrayList( CCP_SIZE );
+    if ( !IsFakeClient( client ) )
+    {
+        delete g_hClientCP[client];
+        
+        g_hClientCP[client] = new ArrayList( CCP_SIZE );
+        
+        
+        ResetClientCPTimes( client );
+    }
     
     
     g_iClientLatestCP[client] = 0;
@@ -187,7 +193,7 @@ public void Influx_OnPreRunLoad()
     g_hCPs.Clear();
 }
 
-public void Influx_OnClientIdRetrieved( int client, int id, bool bNew )
+public void Influx_OnClientIdRetrieved( int client, int uid, bool bNew )
 {
     DB_InitClientCPTimes( client );
 }
@@ -197,9 +203,17 @@ public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
     DB_InitCPTimes();
 }
 
+public void Influx_OnRecordRemoved( int issuer, int uid, int mapid, int runid, int mode, int style )
+{
+    DB_DeleteCPRecords( issuer, mapid, uid, runid, _, mode, style );
+}
+
 public void Influx_OnTimerStartPost( int client, int runid )
 {
-    g_hClientCP[client].Clear();
+    if ( g_hClientCP[client] != null )
+    {
+        g_hClientCP[client].Clear();
+    }
     
     g_iClientLatestCP[client] = 0;
 }
@@ -253,7 +267,7 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
     if ( zonetype != ZONETYPE_CP ) return Plugin_Continue;
     
     
-    int index = FindCPById( zoneid );
+    int index = FindCPZoneById( zoneid );
     if ( index == -1 ) return Plugin_Stop;
     
     
@@ -299,7 +313,7 @@ public void Influx_OnZoneDeleted( int zoneid, ZoneType_t zonetype )
     if ( zonetype != ZONETYPE_CP ) return;
     
     
-    int index = FindCPById( zoneid );
+    int index = FindCPZoneById( zoneid );
     if ( index == -1 )
     {
         LogError( INF_CON_PRE..."Couldn't find checkpoint zone with id %i to delete!", zoneid );
@@ -332,7 +346,7 @@ public void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent )
     if ( zonetype != ZONETYPE_CP ) return;
     
     
-    int index = FindCPById( zoneid );
+    int index = FindCPZoneById( zoneid );
     if ( index == -1 ) return;
     
     
@@ -524,7 +538,7 @@ public void E_StartTouchPost_CP( int ent, int activator )
     PrintToServer( INF_DEBUG_PRE..."Player %i hit cp with zone id %i (ent: %i)!", activator, zoneid, ent );
 #endif
     
-    int zindex = FindCPById( zoneid );
+    int zindex = FindCPZoneById( zoneid );
     if ( zindex == -1 ) return;
     
     
@@ -642,7 +656,7 @@ stock int GetRunCPCount( int runid )
     return num;
 }
 
-stock int FindCPById( int id )
+stock int FindCPZoneById( int id )
 {
     int len = g_hCPZones.Length;
     for ( int i = 0; i < len; i++ )
@@ -664,6 +678,25 @@ stock int FindCPByNum( int runid, int num )
         if ( g_hCPs.Get( i, CP_RUN_ID ) != runid ) continue;
         
         if ( g_hCPs.Get( i, CP_NUM ) == num )
+        {
+            return i;
+        }
+    }
+    
+    return -1;
+}
+
+stock int FindCPByRunId( int runid, int startindex = -1 )
+{
+    ++startindex;
+    
+    if ( startindex < 0 ) startindex = 0;
+    
+    
+    int len = g_hCPs.Length;
+    for ( int i = startindex; i < len; i++ )
+    {
+        if ( g_hCPs.Get( i, CP_RUN_ID ) == runid )
         {
             return i;
         }
@@ -775,6 +808,11 @@ stock float GetBestTime( int index, int mode, int style )
     return view_as<float>( g_hCPs.Get( index, CP_BESTTIMES + OFFSET_MODESTYLE( mode, style ) ) );
 }
 
+stock int GetBestTimeId( int index, int mode, int style )
+{
+    return g_hCPs.Get( index, CP_BESTTIMES_UID + OFFSET_MODESTYLE( mode, style ) );
+}
+
 stock void SetBestTime( int index, int mode, int style, float time, int uid = 0 )
 {
 #if defined DEBUG_SETS
@@ -790,6 +828,11 @@ stock void SetBestTime( int index, int mode, int style, float time, int uid = 0 
 stock float GetRecordTime( int index, int mode, int style )
 {
     return view_as<float>( g_hCPs.Get( index, CP_RECTIMES + OFFSET_MODESTYLE( mode, style ) ) );
+}
+
+stock int GetRecordTimeId( int index, int mode, int style )
+{
+    return g_hCPs.Get( index, CP_RECTIMES_UID + OFFSET_MODESTYLE( mode, style ) );
 }
 
 stock void SetRecordTime( int index, int mode, int style, float time, int uid = 0 )
@@ -920,6 +963,56 @@ stock bool CanUserModifyCPTimes( int client )
     int wantedflags = ReadFlagString( szFlags );
     
     return ( (GetUserFlagBits( client ) & wantedflags) == wantedflags );
+}
+
+stock void ResetClientCPTimes( int client )
+{
+    decl i, j, k;
+    
+    int len = g_hCPs.Length;
+    for ( i = 0; i < len; i++ )
+        for ( j = 0; j < MAX_MODES; j++ )
+            for ( k = 0; k < MAX_STYLES; k++ )
+            {
+                SetClientCPTime( i, client, j, k, INVALID_RUN_TIME );
+            }
+}
+
+stock void ResetClientRunCPTimes( int client, int runid, int mode, int style )
+{
+    int index = -1;
+    
+    while ( (index = FindCPByRunId( runid, index )) != -1 )
+    {
+        SetClientCPTime( index, client, mode, style, INVALID_RUN_TIME );
+    }
+}
+
+stock bool ResetCPTimesByUId( int uid, int runid, int mode, int style )
+{
+    bool deleted = false;
+    
+    
+    int index = -1;
+    
+    while ( (index = FindCPByRunId( runid, index )) != -1 )
+    {
+        if ( GetBestTimeId( index, mode, style ) == uid )
+        {
+            SetBestTime( index, mode, style, INVALID_RUN_TIME, 0 );
+            
+            deleted = true;
+        }
+        
+        if ( GetRecordTimeId( index, mode, style ) == uid )
+        {
+            SetRecordTime( index, mode, style, INVALID_RUN_TIME, 0 );
+            
+            deleted = true;
+        }
+    }
+    
+    return deleted;
 }
 
 // CMDS
