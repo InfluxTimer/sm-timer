@@ -27,7 +27,7 @@ native float Influx_GetClientLastCPTouch( int client );
 
 // Actual times.
 native float Influx_GetClientLastCPBestTime( int client ); // Absolute best time for cp (usually same as SR)
-//native float Influx_GetClientLastCPPBTime( int client );
+native float Influx_GetClientLastCPPBTime( int client );
 native float Influx_GetClientLastCPSRTime( int client ); // Server record's time for cp
 native float Influx_GetClientLastCPTime( int client );
 
@@ -59,6 +59,7 @@ public void __pl_influx_zones_checkpoint_SetNTVOptional()
     MarkNativeAsOptional( "Influx_AddCP" );
     MarkNativeAsOptional( "Influx_GetClientLastCPTouch" );
     MarkNativeAsOptional( "Influx_GetClientLastCPBestTime" );
+    MarkNativeAsOptional( "Influx_GetClientLastCPPBTime" );
     MarkNativeAsOptional( "Influx_GetClientLastCPSRTime" );
     MarkNativeAsOptional( "Influx_GetClientLastCPTime" );
     MarkNativeAsOptional( "Influx_PrintCPTimes" );

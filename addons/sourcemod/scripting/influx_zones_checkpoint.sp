@@ -44,6 +44,7 @@ enum
     CP_RECTIMES[MAX_MODES * MAX_STYLES],
     CP_RECTIMES_UID[MAX_MODES * MAX_STYLES],
     
+    CP_CLIENTTIMES[MAX_MODES * MAX_STYLES * INF_MAXPLAYERS],
     
     CP_SIZE
 };
@@ -74,6 +75,7 @@ int g_iClientLatestCP[INF_MAXPLAYERS];
 // Cache for hud.
 float g_flLastTouch[INF_MAXPLAYERS];
 float g_flLastCPTime[INF_MAXPLAYERS];
+float g_flLastCPPBTime[INF_MAXPLAYERS];
 float g_flLastCPBestTime[INF_MAXPLAYERS];
 float g_flLastCPSRTime[INF_MAXPLAYERS];
 
@@ -118,6 +120,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_GetClientLastCP", Native_GetClientLastCP );
     CreateNative( "Influx_GetClientLastCPTouch", Native_GetClientLastCPTouch );
     CreateNative( "Influx_GetClientLastCPTime", Native_GetClientLastCPTime );
+    CreateNative( "Influx_GetClientLastCPPBTime", Native_GetClientLastCPPBTime );
     CreateNative( "Influx_GetClientLastCPBestTime", Native_GetClientLastCPBestTime );
     CreateNative( "Influx_GetClientLastCPSRTime", Native_GetClientLastCPSRTime );
 }
@@ -184,9 +187,14 @@ public void Influx_OnPreRunLoad()
     g_hCPs.Clear();
 }
 
+public void Influx_OnClientIdRetrieved( int client, int id, bool bNew )
+{
+    DB_InitClientCPTimes( client );
+}
+
 public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
 {
-    DB_GetCPTimes();
+    DB_InitCPTimes();
 }
 
 public void Influx_OnTimerStartPost( int client, int runid )
@@ -586,6 +594,7 @@ stock void SaveClientCP( int client, int cpnum )
     g_iClientLatestCP[client] = cpnum;
     
     g_flLastCPTime[client] = time;
+    g_flLastCPPBTime[client] = GetClientCPTime( index, client, mode, style );
     g_flLastCPBestTime[client] = GetBestTime( index, mode, style );
     g_flLastCPSRTime[client] = GetRecordTime( index, mode, style );
     
@@ -795,6 +804,20 @@ stock void SetRecordTime( int index, int mode, int style, float time, int uid = 
     g_hCPs.Set( index, uid, CP_RECTIMES_UID + offset );
 }
 
+stock float GetClientCPTime( int index, int client, int mode, int style )
+{
+    return g_hCPs.Get( index, CP_CLIENTTIMES + OFFSET_MODESTYLECLIENT( mode, style, client ) );
+}
+
+stock void SetClientCPTime( int index, int client, int mode, int style, float time )
+{
+#if defined DEBUG_SETS
+    PrintToServer( INF_DEBUG_PRE..."Setting client %i cp time (%i, %i, %.3f)", client, mode, style, time );
+#endif
+    
+    g_hCPs.Set( index, time, CP_CLIENTTIMES + OFFSET_MODESTYLECLIENT( mode, style, client ) );
+}
+
 /*stock void GetRunRecordName( ArrayList stages, int index, int mode, int style, char[] out, int len )
 {
     decl name[MAX_BEST_NAME_CELL];
@@ -970,6 +993,13 @@ public int Native_GetClientLastCPTime( Handle hPlugin, int nParms )
     int client = GetNativeCell( 1 );
     
     return view_as<int>( g_flLastCPTime[client] );
+}
+
+public int Native_GetClientLastCPPBTime( Handle hPlugin, int nParms )
+{
+    int client = GetNativeCell( 1 );
+    
+    return view_as<int>( g_flLastCPPBTime[client] );
 }
 
 public int Native_GetClientLastCPBestTime( Handle hPlugin, int nParms )

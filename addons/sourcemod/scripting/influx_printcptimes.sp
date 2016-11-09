@@ -53,47 +53,77 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
     if ( !nClients ) return;
     
     
+    
     float time = Influx_GetClientLastCPTime( client );
     
     float besttime = Influx_GetClientLastCPBestTime( client );
+    float pbtime = Influx_GetClientLastCPPBTime( client );
     float srtime = Influx_GetClientLastCPSRTime( client );
     
     
-    decl String:szSR[32];
-    decl String:szSRDif[32];
     
-    int c[2];
+    int c;
     
-    decl String:szBestTotal[128];
-    szBestTotal[0] = '\0';
+    decl String:szBest[128];
+    szBest[0] = '\0';
+    
+    decl String:szSR[128];
+    szSR[0] = '\0';
+    
+    decl String:szPB[128];
+    szPB[0] = '\0';
+    
+    decl String:szTime[32];
+    decl String:szTimeDif[32];
+
     
     
-    if ( besttime != srtime )
+    if ( srtime != INVALID_RUN_TIME )
     {
-        decl String:szBest[32];
-        decl String:szBestDif[32];
+        Inf_FormatSeconds( srtime, szTime, sizeof( szTime ) );
+        Inf_FormatSeconds( Inf_GetTimeDif( time, srtime, c ), szTimeDif, sizeof( szTimeDif ) );
         
-        Inf_FormatSeconds( besttime, szBest, sizeof( szBest ) );
+        FormatEx( szSR, sizeof( szSR ), "SR: {MAINCLR1}%s{CHATCLR} ({%s}%c%s{CHATCLR})",
+            szTime,
+            ( c == '-' ) ? "LIGHTRED" : "GREEN",
+            c,
+            szTimeDif );
+    }
+    
+    if ( pbtime != INVALID_RUN_TIME )
+    {
+        Inf_FormatSeconds( pbtime, szTime, sizeof( szTime ) );
+        Inf_FormatSeconds( Inf_GetTimeDif( time, pbtime, c ), szTimeDif, sizeof( szTimeDif ) );
         
-        Inf_FormatSeconds( Inf_GetTimeDif( time, besttime, c[0] ), szBestDif, sizeof( szBestDif ) );
-        Format( szBestDif, sizeof( szBestDif ), "{%s}%c%s{CHATCLR}", ( c[0] == '-' ) ? "LIGHTRED" : "GREEN",  c[0], szBestDif );
+        FormatEx( szPB, sizeof( szPB ), "PB: {MAINCLR1}%s{CHATCLR} ({%s}%c%s{CHATCLR})",
+            szTime,
+            ( c == '-' ) ? "LIGHTRED" : "GREEN",
+            c,
+            szTimeDif );
+    }
+    
+    if ( besttime != INVALID_RUN_TIME && besttime != srtime )
+    {
+        Inf_FormatSeconds( besttime, szTime, sizeof( szTime ) );
+        Inf_FormatSeconds( Inf_GetTimeDif( time, besttime, c ), szTimeDif, sizeof( szTimeDif ) );
         
-        FormatEx( szBestTotal, sizeof( szBestTotal ), ", {MAINCLR1}BEST: %s{CHATCLR} (%s)",
-            szBest,
-            szBestDif );
+        FormatEx( szBest, sizeof( szBest ), "BEST: {MAINCLR1}%s{CHATCLR} ({%s}%c%s{CHATCLR})",
+            szTime,
+            ( c == '-' ) ? "LIGHTRED" : "GREEN",
+            c,
+            szTimeDif );
     }
     
     
-    
-    Inf_FormatSeconds( srtime, szSR, sizeof( szSR ) );
-    
-    Inf_FormatSeconds( Inf_GetTimeDif( time, srtime, c[1] ), szSRDif, sizeof( szSRDif ) );
-    Format( szSRDif, sizeof( szSRDif ), "{%s}%c%s{CHATCLR}", ( c[1] == '-' ) ? "LIGHTRED" : "GREEN", c[1], szSRDif );
-    
-    
-    Influx_PrintToChatEx( _, client, clients, nClients, "CP %i | {MAINCLR1}SR: %s{CHATCLR} (%s)%s",
-        cpnum,
-        szSR,
-        szSRDif,
-        szBestTotal );
+    // Print if we have something to print!
+    if ( szSR[0] != '\0' || szPB[0] != '\0' || szBest[0] != '\0' )
+    {
+        Influx_PrintToChatEx( _, client, clients, nClients, "CP %i | %s%s%s",
+            cpnum,
+            szSR,
+            ( szSR[0] && szPB[0] ) ? " | " : "",
+            szPB,
+            ( (szSR[0] || szPB[0]) && szBest[0] ) ? " | " : "",
+            szBest );
+    }
 }
