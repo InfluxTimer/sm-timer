@@ -140,6 +140,7 @@ Handle g_hForward_OnTimerResetPost;
 Handle g_hForward_OnPreRunLoad;
 Handle g_hForward_OnPostRunLoad;
 
+Handle g_hForward_OnRecordRemoved;
 Handle g_hForward_OnClientIdRetrieved;
 Handle g_hForward_OnMapIdRetrieved;
 Handle g_hForward_OnPostRecordsLoad;
@@ -396,6 +397,8 @@ public void OnPluginStart()
     g_hForward_OnTimerResetPost = CreateGlobalForward( "Influx_OnTimerResetPost", ET_Ignore, Param_Cell );
     
     
+    g_hForward_OnRecordRemoved = CreateGlobalForward( "Influx_OnRecordRemoved", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+    
     g_hForward_OnClientIdRetrieved = CreateGlobalForward( "Influx_OnClientIdRetrieved", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
     
     g_hForward_OnMapIdRetrieved = CreateGlobalForward( "Influx_OnMapIdRetrieved", ET_Ignore, Param_Cell, Param_Cell );
@@ -641,6 +644,45 @@ public void OnAllPluginsLoaded()
         LogError( INF_CON_PRE..."No modes were found! Assuming scroll as default mode!!! Freeing sv_airaccelerate and sv_enablebunnyhopping." );
     }
     */
+}
+
+public void Influx_OnRecordRemoved( int issuer, int uid, int mapid, int runid, int mode, int style )
+{
+    if ( mapid != Influx_GetCurrentMapId() ) return;
+    
+    
+    int irun = FindRunById( runid );
+    if ( irun == -1 ) return;
+    
+    
+    bool bDeletedBest = false;
+    
+    
+    for ( int client = 1; client <= MaxClients; client++ )
+    {
+        if ( !IsClientInGame( client ) ) continue
+        
+        if ( IsFakeClient( client ) ) continue
+        
+        
+        if ( uid == -1 || g_iClientId[client] == uid )
+        {
+            bool res = RemoveClientTimes( client, irun, mode, style, true );
+            
+            if ( res )
+            {
+                bDeletedBest = true;
+            }
+        }
+        
+        break;
+    }
+    
+    
+    if ( bDeletedBest )
+    {
+        DB_InitRecords( runid, mode, style );
+    }
 }
 
 public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
@@ -2209,4 +2251,118 @@ stock void SetClientId( int client, int id, bool bNew = false, bool bForward = t
         Call_PushCell( bNew );
         Call_Finish();
     }
+}
+
+// Return true if deleted some best times.
+stock bool RemoveClientTimes( int client, int irun, int mode, int style, bool bPrintToChat = true )
+{
+    decl String:szRun[MAX_RUN_NAME];
+    GetRunNameByIndex( irun, szRun, sizeof( szRun ) );
+    
+    
+    bool deleted_best = false;
+    
+    int found = 0;
+    
+    
+    int uid = Influx_GetClientId( client );
+    
+    
+    // Delete client's all times.
+    if ( mode == MODE_INVALID && style == STYLE_INVALID )
+    {
+        decl j, k;
+        
+        for ( j = 0; j < MAX_MODES; j++ )
+            for ( k = 0; k < MAX_STYLES; k++ )
+            {
+                if ( GetClientRunTime( irun, client, j, k ) != INVALID_RUN_TIME ) ++found;
+                
+                
+                SetClientRunTime( irun, client, j, k, INVALID_RUN_TIME );
+                
+                if ( GetRunBestTimeId( irun, j, k ) == uid )
+                {
+                    SetRunBestTime( irun, j, k, INVALID_RUN_TIME );
+                    
+                    deleted_best = true;
+                }
+            }
+    }
+    else if ( VALID_MODE( mode ) && style == STYLE_INVALID )
+    {
+        decl j;
+        
+        
+        for ( j = 0; j < MAX_STYLES; j++ )
+        {
+            if ( GetClientRunTime( irun, client, mode, j ) != INVALID_RUN_TIME ) ++found;
+            
+            
+            SetClientRunTime( irun, client, mode, j, INVALID_RUN_TIME );
+            
+            
+            if ( GetRunBestTimeId( irun, mode, j ) == uid )
+            {
+                SetRunBestTime( irun, mode, j, INVALID_RUN_TIME );
+                
+                deleted_best = true;
+            }
+        }
+    }
+    else if ( mode == MODE_INVALID && VALID_STYLE( style ) )
+    {
+        decl j;
+        
+        for ( j = 0; j < MAX_MODES; j++ )
+        {
+            if ( GetClientRunTime( irun, client, j, style ) != INVALID_RUN_TIME ) ++found;
+            
+            
+            SetClientRunTime( irun, client, j, style, INVALID_RUN_TIME );
+            
+            
+            if ( GetRunBestTimeId( irun, j, style ) == uid )
+            {
+                SetRunBestTime( irun, j, style, INVALID_RUN_TIME );
+                
+                deleted_best = true;
+            }
+        }
+    }
+    else if ( VALID_MODE( mode ) && VALID_STYLE( style ) )
+    {
+        float time = GetClientRunTime( irun, client, mode, style );
+        
+        SetClientRunTime( irun, client, mode, style, INVALID_RUN_TIME );
+        
+        
+        if ( GetRunBestTimeId( irun, mode, style ) == uid )
+        {
+            SetRunBestTime( irun, mode, style, INVALID_RUN_TIME );
+            
+            deleted_best = true;
+        }
+        
+        
+        if ( time != INVALID_RUN_TIME )
+        {
+            char szTime[16];
+            Inf_FormatSeconds( time, szTime, sizeof( szTime ) );
+            
+            
+            Influx_PrintToChat( _, client, "Your {MAINCLR1}%s %s{CHATCLR} run has been deleted!", szRun, szTime );
+        }
+    }
+    
+    UpdateClientCachedByIndex( client, irun );
+    
+    
+    if ( found )
+    {
+        Influx_PrintToChat( _, client, "Your {MAINCLR1}%s{CHATCLR} runs has been deleted!", szRun );
+    }
+    
+    
+    return deleted_best;
 }

@@ -149,7 +149,7 @@ stock void DB_InitMap()
     SQL_TQuery( g_hDB, Thrd_GetMapId, szQuery, _, DBPrio_High );
 }
 
-stock void DB_InitRecords()
+stock void DB_InitRecords( int runid = -1, int mode = MODE_INVALID, int style = STYLE_INVALID )
 {
     if ( g_iCurMapId <= 0 )
     {
@@ -157,7 +157,14 @@ stock void DB_InitRecords()
     }
     
     
-
+    char szWhere[128];
+    szWhere[0] = 0;
+    
+    if ( runid > 0 ) FormatEx( szWhere, sizeof( szWhere ), " AND runid=%i", runid );
+    if ( VALID_MODE( mode ) ) Format( szWhere, sizeof( szWhere ), "%s AND mode=%i", szWhere, mode );
+    if ( VALID_STYLE( style ) ) Format( szWhere, sizeof( szWhere ), "%s AND style=%i", szWhere, style );
+    
+    
     
     char szQuery[512];
     FormatEx( szQuery, sizeof( szQuery ), "SELECT " ...
@@ -167,7 +174,7 @@ stock void DB_InitRecords()
         "style," ...
         "rectime," ...
         "name " ...
-        "FROM "...INF_TABLE_TIMES..." AS _t INNER JOIN "...INF_TABLE_USERS..." AS _u ON _t.uid=_u.uid WHERE mapid=%i " ...
+        "FROM "...INF_TABLE_TIMES..." AS _t INNER JOIN "...INF_TABLE_USERS..." AS _u ON _t.uid=_u.uid WHERE mapid=%i%s " ...
         
         "AND rectime=(SELECT " ...
             "MIN(rectime) " ...
@@ -176,7 +183,8 @@ stock void DB_InitRecords()
         
         "GROUP BY runid,mode,style " ...
         "ORDER BY runid",
-        g_iCurMapId );
+        g_iCurMapId,
+        szWhere );
     
     SQL_TQuery( g_hDB, Thrd_GetBestRecords, szQuery, _, DBPrio_High );
 }
@@ -433,93 +441,6 @@ stock void DB_PrintRecordInfo( int client, int uid, int mapid, int runid, int mo
     SQL_TQuery( g_hDB, Thrd_PrintRecordInfo, szQuery, GetClientUserId( client ), DBPrio_Low );
 }
 
-stock void DB_DeleteRecord( int issuer, int uid, int mapid, int runid, int mode, int style )
-{
-    decl String:szQuery[300];
-    
-    int irun = FindRunById( runid );
-    
-    
-    if ( irun != -1 && g_iCurMapId == mapid )
-    {
-        for ( int client = 1; client <= MaxClients; client++ )
-        {
-            if ( !IsClientInGame( client ) ) continue
-            
-            if ( IsFakeClient( client ) ) continue;
-            
-            if ( g_iClientId[client] != uid ) continue;
-            
-            
-            float prevtime = GetClientRunTime( irun, client, mode, style );
-            
-            if ( prevtime != INVALID_RUN_TIME )
-            {
-                SetClientRunTime( irun, client, mode, style, INVALID_RUN_TIME );
-                
-                decl String:szMode[MAX_MODE_NAME];
-                decl String:szStyle[MAX_STYLE_NAME];
-                decl String:szTime[10];
-                
-                Inf_FormatSeconds( prevtime, szTime, sizeof( szTime ) );
-                
-                GetModeName( mode, szMode, sizeof( szMode ) );
-                GetStyleName( style, szStyle, sizeof( szStyle ) );
-                
-                Influx_PrintToChat( _, client, "Your %s %s (%s) run has been deleted!", szStyle, szMode, szTime );
-                
-                if (runid == g_iRunId[client]
-                &&  mode == g_iModeId[client]
-                &&  style == g_iStyleId[client])
-                {
-                    UpdateClientCachedByIndex( client, irun );
-                }
-            }
-            
-            break;
-        }
-        
-        // Find new best.
-        if ( uid == GetRunBestTimeId( irun, mode, style ) )
-        {
-            FormatEx( szQuery, sizeof( szQuery ), "SELECT " ...
-                "_t.uid," ...
-                "runid," ...
-                "mode," ...
-                "style," ...
-                "rectime," ...
-                "name " ...
-                "FROM "...INF_TABLE_TIMES..." AS _t INNER JOIN "...INF_TABLE_USERS..." AS _u ON _t.uid=_u.uid " ...
-                "WHERE _t.uid!=%i AND mapid=%i AND runid=%i AND mode=%i AND style=%i " ...
-                "GROUP BY runid,mode,style " ...
-                "ORDER BY MIN(rectime)",
-                uid,
-                mapid,
-                runid,
-                mode,
-                style );
-            
-            SQL_TQuery( g_hDB, Thrd_GetBestRecords, szQuery, _, DBPrio_High );
-            
-            // Reset our time in the meantime.
-            // It is technically possible to get a record while we are waiting for the database to respond.
-            SetRunBestTime( irun, mode, style, INVALID_RUN_TIME );
-            
-            UpdateAllClientsCached( runid, mode, style );
-        }
-    }
-    
-    
-    FormatEx( szQuery, sizeof( szQuery ), "DELETE FROM "...INF_TABLE_TIMES..." WHERE uid=%i AND mapid=%i AND runid=%i AND mode=%i AND style=%i",
-        uid,
-        mapid,
-        runid,
-        mode,
-        style );
-    
-    SQL_TQuery( g_hDB, Thrd_Empty, szQuery, issuer ? GetClientUserId( issuer ) : 0, DBPrio_Low );
-}
-
 stock void DB_PrintDeleteRecords( int client, int mapid )
 {
     decl String:szQuery[256];
@@ -535,15 +456,45 @@ stock void DB_PrintDeleteRecords( int client, int mapid )
     SQL_TQuery( g_hDB, Thrd_PrintDeleteRecords, szQuery, GetClientUserId( client ), DBPrio_Low );
 }
 
-stock void DB_DeleteMapRecords( int issuer, int mapid, int runid = -1 )
+stock void DB_DeleteRecords( int issuer, int mapid, int uid = -1, int runid = -1, int mode = MODE_INVALID, int style = STYLE_INVALID )
 {
-    decl String:szQuery[256];
+    if ( mapid < 1 ) return;
+    
+    
+    char szQuery[512];
+    
     FormatEx( szQuery, sizeof( szQuery ), "DELETE FROM "...INF_TABLE_TIMES..." WHERE mapid=%i", mapid );
-        
-    if ( runid != -1 )
+    
+    if ( uid > 0 )
+    {
+        Format( szQuery, sizeof( szQuery ), "%s AND uid=%i", szQuery, uid );
+    }
+    
+    if ( runid > 0 )
     {
         Format( szQuery, sizeof( szQuery ), "%s AND runid=%i", szQuery, runid );
     }
     
-    SQL_TQuery( g_hDB, Thrd_Empty, szQuery, issuer ? GetClientUserId( issuer ) : 0, DBPrio_Low );
+    if ( VALID_MODE( mode ) )
+    {
+        Format( szQuery, sizeof( szQuery ), "%s AND mode=%i", szQuery, mode );
+    }
+    
+    if ( VALID_STYLE( style ) )
+    {
+        Format( szQuery, sizeof( szQuery ), "%s AND style=%i", szQuery, style );
+    }
+    
+    
+    SQL_TQuery( g_hDB, Thrd_Empty, szQuery, issuer ? GetClientUserId( issuer ) : 0, DBPrio_High );
+    
+    
+    Call_StartForward( g_hForward_OnRecordRemoved );
+    Call_PushCell( issuer );
+    Call_PushCell( uid );
+    Call_PushCell( mapid );
+    Call_PushCell( runid );
+    Call_PushCell( mode );
+    Call_PushCell( style );
+    Call_Finish();
 }

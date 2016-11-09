@@ -171,7 +171,7 @@ public int Hndlr_DeleteRecords_Confirm( Menu menu, MenuAction action, int client
     
     if ( runid > 0 )
     {
-        DB_DeleteMapRecords( client, g_iCurMapId, runid );
+        DB_DeleteRecords( client, g_iCurMapId, _, runid );
         
         
         ResetAllRunTimes( runid );

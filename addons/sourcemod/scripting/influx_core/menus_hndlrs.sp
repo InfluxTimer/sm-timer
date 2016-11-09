@@ -262,14 +262,12 @@ public int Hndlr_Delete_Confirm( Menu menu, MenuAction action, int client, int i
     if ( !GetRecMenuData( szInfo, data ) ) return 0;
     
     
-    DB_DeleteRecord(
-        client,
-        //data[RECMENU_RECID],
-        data[RECMENU_UID],
-        data[RECMENU_MAPID],
-        data[RECMENU_RUNID],
-        data[RECMENU_MODE],
-        data[RECMENU_STYLE] );
+    DB_DeleteRecords(   client,
+                        data[RECMENU_MAPID],
+                        data[RECMENU_UID],
+                        data[RECMENU_RUNID],
+                        data[RECMENU_MODE],
+                        data[RECMENU_STYLE] );
     
     return 0;
 }

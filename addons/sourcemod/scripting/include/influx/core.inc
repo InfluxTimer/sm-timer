@@ -165,8 +165,14 @@ native Handle Influx_GetDB();
 native bool Influx_IsMySQL();
 
 
+// Argument will be -1 if all of that class was removed.
+// Eg uid = 1337, runid = 3, mode = -1, style = -1 means user 1337's all run 3 records will be deleted.
+// It is not guaranteed whether any record get/set will work (eg Influx_GetClientCurrentPB) in this forward.
+forward void Influx_OnRecordRemoved( int issuer, int uid, int mapid, int runid, int mode, int style );
+
+
 // New if we inserted new record.
-forward void Influx_OnClientIdRetrieved( int client, int id, bool bNew );
+forward void Influx_OnClientIdRetrieved( int client, int uid, bool bNew );
 
 // New if we inserted new record.
 forward void Influx_OnMapIdRetrieved( int mapid, bool bNew );
