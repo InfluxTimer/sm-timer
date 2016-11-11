@@ -1,5 +1,8 @@
 1.0.5
 
+COMPATIBILITY:
+- Delete cfg/influx/core.cfg, cfg/influx/recording.cfg and cfg/influx/prespeed.cfg to generate new ones with latest cvars.
+- You need to run sm_updateinfluxdb command through server console.
 
 ADDED:
 - influx_recrank-plugin to display record's rank in chat.
@@ -11,6 +14,9 @@ ADDED:
 - Ability to teleport to run end. (sm_gotoend/sm_end)
 - Lag-compensated CS:GO autobhop.
 - Max jumps for prespeeding (influx_prespeed_maxjumps)
+
+CHANGES:
+- Player's join date is now recorded in database. If pre-existing records have none, furthest date from times is used (recdate).
 
 FIXES:
 - MySQL not displaying best times correctly.
