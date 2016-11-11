@@ -33,6 +33,8 @@
 
 #define GAME_CONFIG_FILE      "influx.games"
 
+#define INF_UPDATE_CMD          "sm_updateinfluxdb"
+
 // Don't change these, change the cvars instead.
 #define DEF_CHATPREFIX              "{GREY}[{PINK}"...INF_NAME..."{GREY}]"
 #define DEF_CHATCLR                 "{WHITE}"
@@ -223,6 +225,7 @@ int g_iDefStyle;
 // MISC
 bool g_bIsCSGO;
 bool g_bLate;
+int g_iCurDBVersion;
 
 
 #include "influx_core/cmds.sp"
@@ -546,6 +549,9 @@ public void OnPluginStart()
     
     
     // ADMIN CMDS
+    RegAdminCmd( INF_UPDATE_CMD, Cmd_UpdateDB, ADMFLAG_ROOT );
+    
+    
     RegConsoleCmd( "sm_saveruns", Cmd_Admin_SaveRuns );
     
     RegConsoleCmd( "sm_setrunname", Cmd_Admin_SetRunName );

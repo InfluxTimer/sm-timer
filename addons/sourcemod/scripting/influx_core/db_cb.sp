@@ -17,21 +17,24 @@ public void Thrd_CheckVersion( Handle db, Handle res, const char[] szError, any 
     
     if ( SQL_GetRowCount( res ) && SQL_FetchRow( res ) )
     {
-        int version = SQL_FetchInt( res, 0 );
+        g_iCurDBVersion = SQL_FetchInt( res, 0 );
         
-        DB_Update( version );
+        if ( g_iCurDBVersion < INF_DB_CURVERSION )
+        {
+            Inf_Warning( 6, "Your database is outdated, please run the command 'sm_updateinfluxdb' through server console! (Current version: %i | Should be: %i)", g_iCurDBVersion, INF_DB_CURVERSION );
+        }
+        
+        return;
     }
-#if defined DEBUG_DB_VER
-    else
-    {
-        PrintToServer( INF_DEBUG_PRE..."No database version found, adding new one." );
-    }
-#endif
     
+    
+#if defined DEBUG_DB_VER
+    PrintToServer( INF_DEBUG_PRE..."No database version found, adding new one." );
+#endif
     
     // Update version in the database.
     char szQuery[192];
-    FormatEx( szQuery, sizeof( szQuery ), "REPLACE INTO "...INF_TABLE_DBVER..." (id,version) VALUES (0,%i)", INF_DB_CURVERSION );
+    FormatEx( szQuery, sizeof( szQuery ), "INSERT INTO "...INF_TABLE_DBVER..." (id,version) VALUES (0,%i)", INF_DB_CURVERSION );
     
     SQL_TQuery( g_hDB, Thrd_Empty, szQuery, _, DBPrio_High );
 }
@@ -125,7 +128,7 @@ public void Thrd_GetClientId( Handle db, Handle res, const char[] szError, int c
         
         
         decl String:szQuery[128];
-        FormatEx( szQuery, sizeof( szQuery ), "INSERT INTO "...INF_TABLE_USERS..." (steamid) VALUES ('%s')", szSteam );
+        FormatEx( szQuery, sizeof( szQuery ), "INSERT INTO "...INF_TABLE_USERS..." (steamid,joindate) VALUES ('%s',CURRENT_DATE)", szSteam );
         
         SQL_TQuery( g_hDB, Thrd_InsertNewUser, szQuery, GetClientUserId( client ), DBPrio_High );
     }

@@ -1,5 +1,15 @@
 #include "influx_core/parsesearch.sp"
 
+public Action Cmd_UpdateDB( int client, int args )
+{
+    if ( !client )
+    {
+        DB_Update( g_iCurDBVersion );
+    }
+    
+    return Plugin_Handled;
+}
+
 public Action Cmd_Version( int client, int args )
 {
     if ( client )

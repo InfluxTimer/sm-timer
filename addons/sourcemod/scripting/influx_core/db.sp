@@ -13,7 +13,7 @@ bool g_bIsMySQL;
 #define PRINTREC_MENU_LIMIT         19 // Radio menus allow for 7 items per page (-2 for last and next page items)
 
 
-#define INF_DB_CURVERSION           1
+#define INF_DB_CURVERSION           2
 
 
 
@@ -21,11 +21,40 @@ bool g_bIsMySQL;
 #include "influx_core/db_cb.sp"
 
 
+
+#define QUERY_CREATETABLE_USERS         "CREATE TABLE IF NOT EXISTS "...INF_TABLE_USERS..." (\
+                                        uid INTEGER PRIMARY KEY,\
+                                        steamid VARCHAR(63) NOT NULL UNIQUE,\
+                                        name VARCHAR(62) DEFAULT 'N/A',\
+                                        joindate DATE NOT NULL)"
+                                    
+#define QUERY_CREATETABLE_USERS_MYSQL   "CREATE TABLE IF NOT EXISTS "...INF_TABLE_USERS..." (\
+                                        uid INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,\
+                                        steamid VARCHAR(63) NOT NULL UNIQUE,\
+                                        name VARCHAR(62) DEFAULT 'N/A',\
+                                        joindate DATE NOT NULL)"
+
+
 stock bool DB_GetEscaped( char[] out, int len, const char[] def = "" )
 {
     if ( !SQL_EscapeString( g_hDB, out, out, len ) )
     {
         strcopy( out, len, def );
+        
+        return false;
+    }
+    
+    return true;
+}
+
+stock bool DB_UpdateQuery( int ver, const char[] szQuery )
+{
+    if ( !SQL_FastQuery( g_hDB, szQuery ) )
+    {
+        char szError[256];
+        SQL_GetError( g_hDB, szError, sizeof( szError ) );
+        
+        LogError( INF_CON_PRE..."Couldn't update database from version %i to %i! Error: %s", ver, INF_DB_CURVERSION, szError );
         
         return false;
     }
@@ -75,11 +104,7 @@ stock void DB_Init()
     
     if ( g_bIsMySQL )
     {
-        SQL_TQuery( g_hDB, Thrd_Empty,
-            "CREATE TABLE IF NOT EXISTS "...INF_TABLE_USERS..." (" ...
-            "uid INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY," ... // Only change
-            "steamid VARCHAR(63) NOT NULL UNIQUE," ...
-            "name VARCHAR(62) DEFAULT 'N/A')", _, DBPrio_High );
+        SQL_TQuery( g_hDB, Thrd_Empty, QUERY_CREATETABLE_USERS_MYSQL, _, DBPrio_High );
         
         SQL_TQuery( g_hDB, Thrd_Empty,
             "CREATE TABLE IF NOT EXISTS "...INF_TABLE_MAPS..." (" ...
@@ -90,11 +115,7 @@ stock void DB_Init()
     {
         // NOTE: Must be INTEGER PRIMARY KEY.
         // https://www.sqlite.org/autoinc.html
-        SQL_TQuery( g_hDB, Thrd_Empty,
-            "CREATE TABLE IF NOT EXISTS "...INF_TABLE_USERS..." (" ...
-            "uid INTEGER PRIMARY KEY," ...
-            "steamid VARCHAR(63) NOT NULL UNIQUE," ...
-            "name VARCHAR(62) DEFAULT 'N/A')", _, DBPrio_High );
+        SQL_TQuery( g_hDB, Thrd_Empty, QUERY_CREATETABLE_USERS, _, DBPrio_High );
         
         SQL_TQuery( g_hDB, Thrd_Empty,
             "CREATE TABLE IF NOT EXISTS "...INF_TABLE_MAPS..." (" ...
@@ -129,14 +150,81 @@ stock void DB_CheckVersion()
     SQL_TQuery( g_hDB, Thrd_CheckVersion, "SELECT version FROM "...INF_TABLE_DBVER..." WHERE id=0", _, DBPrio_High );
 }
 
-stock bool DB_Update( int ver )
+stock void DB_Update( int ver )
 {
 #if defined DEBUG_DB_VER
     PrintToServer( INF_DEBUG_PRE..."Checking database version %i. Current: %i", ver, INF_DB_CURVERSION );
 #endif
 
-    if ( ver == INF_DB_CURVERSION ) return false;
+    if ( ver >= INF_DB_CURVERSION )
+    {
+        PrintToServer( INF_CON_PRE..."Your database is already up-to-date!" );
+        return;
+    }
     
+    
+    
+    SQL_LockDatabase( g_hDB );
+    
+    bool successful = DB_PerformUpdateQueries( ver );
+    
+    SQL_UnlockDatabase( g_hDB );
+    
+    
+    if ( successful )
+    {
+        PrintToServer( INF_CON_PRE..."Successfully updated database!" );
+    }
+    else
+    {
+        PrintToServer( INF_CON_PRE..."Something went wrong!" );
+    }
+}
+
+stock bool DB_PerformUpdateQueries( int ver )
+{
+    char szQuery[1024];
+    char szTempTable[64];
+    
+    
+    if ( ver == 1 )
+    {
+        FormatEx( szTempTable, sizeof( szTempTable ), "_"...INF_TABLE_USERS..."%i", ver );
+        
+        
+        FormatEx( szQuery, sizeof( szQuery ), "ALTER TABLE "...INF_TABLE_USERS..." RENAME TO %s", szTempTable );
+        if ( !DB_UpdateQuery( ver, szQuery ) ) return false;
+        
+        
+        PrintToServer( INF_CON_PRE..."Renamed old users table to %s. If everything goes smoothly you may want to delete it to free resources.", szTempTable );
+        
+        
+        if ( !DB_UpdateQuery( ver, g_bIsMySQL ? QUERY_CREATETABLE_USERS_MYSQL : QUERY_CREATETABLE_USERS ) ) return false;
+        
+        
+        PrintToServer( INF_CON_PRE..."Created new version of users table." );
+        
+        
+        
+        FormatEx( szQuery, sizeof( szQuery ),
+            "INSERT INTO "...INF_TABLE_USERS..." (uid,steamid,name,joindate) SELECT uid,steamid,name,(SELECT COALESCE(MIN(recdate),CURRENT_DATE) FROM "...INF_TABLE_TIMES..." WHERE uid=_u.uid) FROM %s AS _u",
+            szTempTable );
+            
+        if ( !DB_UpdateQuery( ver, szQuery ) ) return false;
+        
+        
+        PrintToServer( INF_CON_PRE..."Inserted all data from %s to new users table", szTempTable );
+        
+        
+        FormatEx( szQuery, sizeof( szQuery ), "REPLACE INTO "...INF_TABLE_DBVER..." (id,version) VALUES (0,%i)", INF_DB_CURVERSION );
+        if ( !DB_UpdateQuery( ver, szQuery ) ) return false;
+        
+        
+        PrintToServer( INF_CON_PRE..."Updated db version.", szTempTable );
+        
+        
+        return true;
+    }
     
     return false;
 }
