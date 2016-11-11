@@ -115,7 +115,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_SaveClientCP", Native_SaveClientCP );
     CreateNative( "Influx_AddCP", Native_AddCP );
     
-    CreateNative( "Influx_PrintCPTimes", Native_PrintCPTimes );
+    //CreateNative( "Influx_PrintCPTimes", Native_PrintCPTimes );
     
     CreateNative( "Influx_GetClientLastCP", Native_GetClientLastCP );
     CreateNative( "Influx_GetClientLastCPTouch", Native_GetClientLastCPTouch );
@@ -206,6 +206,42 @@ public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
 public void Influx_OnRecordRemoved( int issuer, int uid, int mapid, int runid, int mode, int style )
 {
     DB_DeleteCPRecords( issuer, mapid, uid, runid, _, mode, style );
+}
+
+public void Influx_OnPrintRecordInfo( int client, Handle dbres, ArrayList itemlist, Menu menu, int uid, int mapid, int runid, int mode, int style )
+{
+    decl String:szInfo[64];
+    
+    FormatEx( szInfo, sizeof( szInfo ), "cp%i_%i_%i_%i_%i", uid, mapid, runid, mode, style );
+    
+    menu.AddItem( szInfo, "Checkpoint Records" );
+}
+
+public Action Influx_OnRecordInfoButtonPressed( int client, const char[] szInfo )
+{
+    if (szInfo[0] == 'c'
+    &&  szInfo[1] == 'p')
+    {
+        decl String:buffer[5][12];
+        if ( ExplodeString( szInfo[2], "_", buffer, sizeof( buffer ), sizeof( buffer[] ) ) != sizeof( buffer ) )
+        {
+            return Plugin_Stop;
+        }
+        
+        
+        int uid = StringToInt( buffer[0] );
+        int mapid = StringToInt( buffer[1] );
+        int runid = StringToInt( buffer[2] );
+        int mode = StringToInt( buffer[3] );
+        int style = StringToInt( buffer[4] );
+        
+        
+        DB_PrintCPTimes( client, uid, mapid, runid, mode, style );
+        
+        return Plugin_Stop;
+    }
+    
+    return Plugin_Continue;
 }
 
 public void Influx_OnTimerStartPost( int client, int runid )
@@ -1052,7 +1088,7 @@ public int Native_AddCP( Handle hPlugin, int nParms )
     return 1;
 }
 
-public int Native_PrintCPTimes( Handle hPlugin, int nParms )
+/*public int Native_PrintCPTimes( Handle hPlugin, int nParms )
 {
     int client = GetNativeCell( 1 );
     int uid = GetNativeCell( 2 );
@@ -1065,7 +1101,7 @@ public int Native_PrintCPTimes( Handle hPlugin, int nParms )
     DB_PrintCPTimes( client, uid, mapid, runid, mode, style );
     
     return 1;
-}
+}*/
 
 public int Native_GetClientLastCP( Handle hPlugin, int nParms )
 {

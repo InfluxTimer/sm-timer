@@ -39,7 +39,7 @@ native void Influx_SaveClientCP( int client, int cpnum );
 
 
 
-native void Influx_PrintCPTimes( int client, int uid, int mapid, int runid, int mode, int style );
+//native void Influx_PrintCPTimes( int client, int uid, int mapid, int runid, int mode, int style );
 
 
 public SharedPlugin __pl_influx_zones_checkpoint =
@@ -62,7 +62,7 @@ public void __pl_influx_zones_checkpoint_SetNTVOptional()
     MarkNativeAsOptional( "Influx_GetClientLastCPPBTime" );
     MarkNativeAsOptional( "Influx_GetClientLastCPSRTime" );
     MarkNativeAsOptional( "Influx_GetClientLastCPTime" );
-    MarkNativeAsOptional( "Influx_PrintCPTimes" );
+    //MarkNativeAsOptional( "Influx_PrintCPTimes" );
     MarkNativeAsOptional( "Influx_SaveClientCP" );
 }
 #endif

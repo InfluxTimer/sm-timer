@@ -660,12 +660,59 @@ public void Thrd_PrintRecordInfo( Handle db, Handle res, const char[] szError, i
     decl String:szAdd[256];
     decl String:szMode[MAX_MODE_NAME];
     decl String:szStyle[MAX_STYLE_NAME];
+    decl String:szItem[64];
     
     decl field;
     
     
-    SQL_FieldNameToNum( res, "mode", field );
+    if ( !SQL_FieldNameToNum( res, "uid", field ) ) return;
+    int uid = SQL_FetchInt( res, field );
+    
+    if ( !SQL_FieldNameToNum( res, "mapid", field ) ) return;
+    int mapid = SQL_FetchInt( res, field );
+    
+    if ( !SQL_FieldNameToNum( res, "runid", field ) ) return;
+    int runid = SQL_FetchInt( res, field );
+    
+    if ( !SQL_FieldNameToNum( res, "mode", field ) ) return;
     int mode = SQL_FetchInt( res, field );
+    
+    if ( !SQL_FieldNameToNum( res, "style", field ) ) return;
+    int style = SQL_FetchInt( res, field );
+    
+    
+    Menu menu = new Menu( Hndlr_RecordInfo );
+    
+    
+    // Call our forward.
+    ArrayList itemlist = new ArrayList( 64 / 4 );
+    
+    Call_StartForward( g_hForward_OnPrintRecordInfo );
+    Call_PushCell( client );
+    Call_PushCell( res );
+    Call_PushCell( itemlist );
+    Call_PushCell( menu );
+    Call_PushCell( uid );
+    Call_PushCell( mapid );
+    Call_PushCell( runid );
+    Call_PushCell( mode );
+    Call_PushCell( style );
+    Call_Finish();
+    
+    
+    szAdd[0] = '\0';
+    
+    // Print the item list.
+    for ( int i = 0; i < itemlist.Length; i++ )
+    {
+        itemlist.GetString( i, szItem, sizeof( szItem ) );
+        
+        Format( szAdd, sizeof( szAdd ), "%s\n%s", szAdd, szItem );
+    }
+    
+    delete itemlist;
+    
+    
     
     if ( ShouldModeDisplay( mode ) )
     {
@@ -676,9 +723,6 @@ public void Thrd_PrintRecordInfo( Handle db, Handle res, const char[] szError, i
         szMode[0] = '\0';
     }
     
-    
-    SQL_FieldNameToNum( res, "style", field );
-    int style = SQL_FetchInt( res, field );
     
     if ( ShouldStyleDisplay( style ) )
     {
@@ -722,32 +766,7 @@ public void Thrd_PrintRecordInfo( Handle db, Handle res, const char[] szError, i
     SQL_FetchString( res, field, szDate, sizeof( szDate ) );
     ReplaceString( szDate, sizeof( szDate ), "-", "." );
     
-    szAdd[0] = '\0';
-    if ( SQL_FieldNameToNum( res, "strf_num", field ) )
-    {
-        int numstrfs = SQL_FetchInt( res, field );
-        
-        if ( numstrfs >= 0 )
-        {
-            FormatEx( szAdd, sizeof( szAdd ), "Strafes: %i", numstrfs );
-        }
-    }
     
-    if ( SQL_FieldNameToNum( res, "jump_num", field ) )
-    {
-        int numjumps = SQL_FetchInt( res, field );
-        
-        if ( numjumps >= 0 )
-        {
-            Format( szAdd, sizeof( szAdd ), "%s%sJumps: %i",
-                szAdd,
-                ( szAdd[0] != '\0' ) ? "\n" : "",
-                numjumps );
-        }
-    }
-    
-    
-    Menu menu = new Menu( Hndlr_RecordInfo );
     
     menu.SetTitle( "%s%s%s - %s\n \n%s - %s\n \nTime: %s%s%s%s%s\n ",
         szStyle,
@@ -764,39 +783,15 @@ public void Thrd_PrintRecordInfo( Handle db, Handle res, const char[] szError, i
     
     
     
-    SQL_FieldNameToNum( res, "uid", field );
-    int uid = SQL_FetchInt( res, field );
-    
-    SQL_FieldNameToNum( res, "mapid", field );
-    int mapid = SQL_FetchInt( res, field );
-    
-    SQL_FieldNameToNum( res, "runid", field );
-    int runid = SQL_FetchInt( res, field );
 
     
-    // Note: first character will determine the action.
-    char szInfo[32];
-    FormatEx( szInfo, sizeof( szInfo ), "a%i_%i_%i_%i_%i",
-        //recid,
-        uid,
-        mapid,
-        runid,
-        mode,
-        style );
-
-    
-    
-    if ( g_bLib_Zones_CP )
-    {
-        szInfo[0] = 'c';
-        
-        menu.AddItem( szInfo, "CP Times" );
-    }
     
     
     if ( CanUserRemoveRecords( client ) )
     {
-        szInfo[0] = 'd';
+        // Note: first character will determine the action.
+        decl String:szInfo[64];
+        FormatEx( szInfo, sizeof( szInfo ), "d%i_%i_%i_%i_%i", uid, mapid, runid, mode, style );
         
         menu.AddItem( szInfo, "Delete this record" );
     }

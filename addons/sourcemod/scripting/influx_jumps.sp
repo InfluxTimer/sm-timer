@@ -65,6 +65,23 @@ public void OnAllPluginsLoaded()
 
 public void Thrd_Empty( Handle db, Handle res, const char[] szError, any data ) {}
 
+public void Influx_OnPrintRecordInfo( int client, Handle dbres, ArrayList itemlist, Menu menu, int uid, int mapid, int runid, int mode, int style )
+{
+    decl field;
+    if ( SQL_FieldNameToNum( dbres, "jump_num", field ) )
+    {
+        int numjumps = SQL_FetchInt( dbres, field );
+        
+        if ( numjumps >= 0 )
+        {
+            decl String:szItem[64];
+            FormatEx( szItem, sizeof( szItem ), "Jumps: %i", numjumps );
+            
+            itemlist.PushString( szItem );
+        }
+    }
+}
+
 public void Influx_OnTimerStartPost( int client, int runid )
 {
     g_nNumJumps[client] = 0;

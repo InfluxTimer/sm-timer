@@ -73,6 +73,23 @@ public void OnAllPluginsLoaded()
 public void Thrd_Empty( Handle db, Handle res, const char[] szError, any data ) {}
 
 
+public void Influx_OnPrintRecordInfo( int client, Handle dbres, ArrayList itemlist, Menu menu, int uid, int mapid, int runid, int mode, int style )
+{
+    decl field;
+    if ( SQL_FieldNameToNum( dbres, "strf_num", field ) )
+    {
+        int numstrfs = SQL_FetchInt( dbres, field );
+        
+        if ( numstrfs >= 0 )
+        {
+            decl String:szItem[64];
+            FormatEx( szItem, sizeof( szItem ), "Strafes: %i", numstrfs );
+            
+            itemlist.PushString( szItem );
+        }
+    }
+}
+
 public void Influx_OnTimerStartPost( int client, int runid )
 {
     g_nNumStrfs[client] = 0;

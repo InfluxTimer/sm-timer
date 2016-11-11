@@ -15,7 +15,6 @@
 #include <influx/pause>
 #include <influx/practise>
 #include <influx/zones_freestyle>
-#include <influx/zones_checkpoint>
 #include <influx/runs_sql>
 #include <influx/hud>
 //#include <influx/colorchat>
@@ -140,6 +139,9 @@ Handle g_hForward_OnTimerResetPost;
 Handle g_hForward_OnPreRunLoad;
 Handle g_hForward_OnPostRunLoad;
 
+Handle g_hForward_OnPrintRecordInfo;
+Handle g_hForward_OnRecordInfoButtonPressed;
+
 Handle g_hForward_OnRecordRemoved;
 Handle g_hForward_OnClientIdRetrieved;
 Handle g_hForward_OnMapIdRetrieved;
@@ -196,7 +198,6 @@ ConVar g_ConVar_TeleToStart;
 bool g_bLib_Pause;
 bool g_bLib_Practise;
 bool g_bLib_Zones_Fs;
-bool g_bLib_Zones_CP;
 bool g_bLib_Runs_SQL;
 bool g_bLib_Hud;
 
@@ -397,6 +398,11 @@ public void OnPluginStart()
     g_hForward_OnTimerResetPost = CreateGlobalForward( "Influx_OnTimerResetPost", ET_Ignore, Param_Cell );
     
     
+    
+    g_hForward_OnPrintRecordInfo = CreateGlobalForward( "Influx_OnPrintRecordInfo", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
+    g_hForward_OnRecordInfoButtonPressed = CreateGlobalForward( "Influx_OnRecordInfoButtonPressed", ET_Hook, Param_Cell, Param_String );
+    
+    
     g_hForward_OnRecordRemoved = CreateGlobalForward( "Influx_OnRecordRemoved", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
     
     g_hForward_OnClientIdRetrieved = CreateGlobalForward( "Influx_OnClientIdRetrieved", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
@@ -565,7 +571,6 @@ public void OnPluginStart()
     g_bLib_Pause = LibraryExists( INFLUX_LIB_PAUSE );
     g_bLib_Practise = LibraryExists( INFLUX_LIB_PRACTISE );
     g_bLib_Zones_Fs = LibraryExists( INFLUX_LIB_ZONES_FS );
-    g_bLib_Zones_CP = LibraryExists( INFLUX_LIB_ZONES_CP );
     g_bLib_Runs_SQL = LibraryExists( INFLUX_LIB_RUNS_SQL );
     g_bLib_Hud = LibraryExists( INFLUX_LIB_HUD );
     
@@ -590,7 +595,6 @@ public void OnLibraryAdded( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = true;
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = true;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = true;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_Zones_CP = true;
     if ( StrEqual( lib, INFLUX_LIB_RUNS_SQL ) ) g_bLib_Runs_SQL = true;
     if ( StrEqual( lib, INFLUX_LIB_HUD ) ) g_bLib_Hud = true;
 }
@@ -600,7 +604,6 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = false;
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = false;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = false;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_Zones_CP = false;
     if ( StrEqual( lib, INFLUX_LIB_RUNS_SQL ) ) g_bLib_Runs_SQL = false;
     if ( StrEqual( lib, INFLUX_LIB_HUD ) ) g_bLib_Hud = false;
 }
