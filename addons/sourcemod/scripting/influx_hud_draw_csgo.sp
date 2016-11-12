@@ -265,7 +265,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
             int rank = Influx_GetClientCurrentMapRank( target );
             int numrecs = Influx_GetClientCurrentMapRankCount( target );
             
-            if ( rank > 0 && numrecs > 0 )
+            if ( numrecs > 0 )
             {
                 if ( rank > 0 )
                 {

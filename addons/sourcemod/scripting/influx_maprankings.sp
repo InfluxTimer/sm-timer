@@ -22,7 +22,7 @@ enum
 ArrayList g_hRunRanks;
 
 
-bool g_bCached[INF_MAXPLAYERS];
+//bool g_bCached[INF_MAXPLAYERS];
 int g_nCurrentRank[INF_MAXPLAYERS];
 int g_nCurrentRankCount[INF_MAXPLAYERS];
 
@@ -61,7 +61,7 @@ public void OnPluginStart()
 
 public void OnClientPutInServer( int client )
 {
-    g_bCached[client] = false;
+    //g_bCached[client] = false;
     
     g_nCurrentRank[client] = 0;
     g_nCurrentRankCount[client] = 0;
@@ -316,12 +316,7 @@ public void Thrd_InitClientRanks( Handle db, Handle res, const char[] szError, i
     }
     
     
-    if ( g_bCached[client] )
-    {
-        Influx_OnClientStatusChanged( client );
-    }
-    
-    g_bCached[client] = true;
+    Influx_OnClientStatusChanged( client );
 }
 
 stock void FormatWhereClause( char[] clause, int len, int runid, int mode, int style )
