@@ -4,7 +4,7 @@
 #include <influx/maprankings>
 
 
-#define DEBUG_DB
+//#define DEBUG_DB
 
 
 enum
@@ -15,7 +15,7 @@ enum
     RANK_PLYRANKS[MAX_STYLES * MAX_MODES * INF_MAXPLAYERS],
     
     RANK_SIZE
-}
+};
 
 
 

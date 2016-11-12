@@ -11,9 +11,9 @@
 #include <influx/zones_checkpoint>
 
 
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_ZONE
-#define DEBUG_ZONE_ENTER
+//#define DEBUG_ZONE_ENTER
 
 
 enum
@@ -633,6 +633,23 @@ stock int GetRunStageZoneCount( int runid )
     }
     
     return num;
+}
+
+stock int FindStageById( int runid, int startindex = -1 )
+{
+    ++startindex;
+    if ( startindex < 0 ) startindex = 0;
+    
+    int len = g_hStages.Length;
+    for ( int i = startindex; i < len; i++ )
+    {
+        if ( g_hStages.Get( i, STAGE_RUN_ID ) == runid )
+        {
+            return i;
+        }
+    }
+    
+    return -1;
 }
 
 stock int FindStageByNum( int runid, int num )

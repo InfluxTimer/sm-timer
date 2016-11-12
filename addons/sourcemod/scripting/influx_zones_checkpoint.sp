@@ -7,13 +7,13 @@
 #include <influx/zones_checkpoint>
 
 
-#define DEBUG_ADDS
+//#define DEBUG_ADDS
 //#define DEBUG_ZONE
-#define DEBUG_INSERTREC
-#define DEBUG_DB
-#define DEBUG_SETS
-#define DEBUG_CMD
-#define DEBUG_INSERTCP
+//#define DEBUG_INSERTREC
+//#define DEBUG_DB
+//#define DEBUG_SETS
+//#define DEBUG_CMD
+//#define DEBUG_INSERTCP
 
 
 enum
