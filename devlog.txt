@@ -1,7 +1,7 @@
 1.0.5
 
 COMPATIBILITY:
-- Delete cfg/influx/core.cfg, cfg/influx/recording.cfg and cfg/influx/prespeed.cfg to generate new ones with latest cvars.
+- Delete cfg/influx/core.cfg, cfg/influx/recording.cfg, cfg/influx/prespeed.cfg and cfg/influx/zones.cfg to generate new ones with latest cvars.
 - You need to run sm_updateinfluxdb command through server console.
 
 ADDED:
@@ -14,6 +14,7 @@ ADDED:
 - Ability to teleport to run end. (sm_gotoend/sm_end)
 - Lag-compensated CS:GO autobhop.
 - Max jumps for prespeeding (influx_prespeed_maxjumps)
+- "Crosshair" zone building with a bunch of new cvars.
 
 CHANGES:
 - Player's join date is now recorded in database. If pre-existing records have none, furthest date from times is used (recdate).
