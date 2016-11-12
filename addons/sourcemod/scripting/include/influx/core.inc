@@ -335,6 +335,9 @@ native int Influx_GetClientStyle( int client );
 native bool Influx_SetClientStyle( int client, int style );
 
 
+// When client's run, mode or style has changed.
+forward void Influx_OnClientStatusChanged( int client );
+
 forward Action Influx_OnClientModeChange( int client, int mode, int lastmode );
 forward void Influx_OnClientModeChangePost( int client, int mode );
 forward Action Influx_OnClientStyleChange( int client, int style, int laststyle );

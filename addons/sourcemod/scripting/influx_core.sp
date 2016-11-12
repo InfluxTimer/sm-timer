@@ -154,6 +154,8 @@ Handle g_hForward_OnRunDeleted;
 Handle g_hForward_OnRunLoad;
 Handle g_hForward_OnRunSave;
 
+Handle g_hForward_OnClientStatusChanged;
+
 Handle g_hForward_OnClientModeChange;
 Handle g_hForward_OnClientModeChangePost;
 Handle g_hForward_OnClientStyleChange;
@@ -425,6 +427,9 @@ public void OnPluginStart()
     
     
     
+    g_hForward_OnClientStatusChanged = CreateGlobalForward( "Influx_OnClientStatusChanged", ET_Ignore, Param_Cell );
+    
+    
     g_hForward_OnClientModeChange = CreateGlobalForward( "Influx_OnClientModeChange", ET_Event, Param_Cell, Param_Cell, Param_Cell );
     g_hForward_OnClientModeChangePost = CreateGlobalForward( "Influx_OnClientModeChangePost", ET_Ignore, Param_Cell, Param_Cell );
     
@@ -653,6 +658,11 @@ public void OnAllPluginsLoaded()
         LogError( INF_CON_PRE..."No modes were found! Assuming scroll as default mode!!! Freeing sv_airaccelerate and sv_enablebunnyhopping." );
     }
     */
+}
+
+public void Influx_OnClientStatusChanged( int client )
+{
+    UpdateClientCached( client );
 }
 
 public void Influx_OnRecordRemoved( int issuer, int uid, int mapid, int runid, int mode, int style )
@@ -1647,6 +1657,8 @@ stock bool SetClientRun( int client, int runid, bool bTele = true, bool bPrintTo
     int lastrun = g_iRunId[client];
     g_iRunId[client] = runid;
     
+    SendStatusChanged( client );
+    
     
     if ( lastrun != runid )
     {
@@ -1662,7 +1674,11 @@ stock bool SetClientRun( int client, int runid, bool bTele = true, bool bPrintTo
         }
     }
     
-    UpdateClientCachedByIndex( client, irun );
+    
+    if ( runid != lastrun )
+    {
+        SendStatusChanged( client );
+    }
     
     return true;
 }
@@ -1744,6 +1760,7 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
     g_iModeId[client] = mode;
     
     
+    
     g_cache_flMaxSpeed[client] = GetModeMaxspeedByIndex( imode );
 #if defined DEBUG
     PrintToServer( INF_DEBUG_PRE..."Set client %i max speed to %.1f", client, g_cache_flMaxSpeed[client] );
@@ -1755,7 +1772,10 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
     Call_Finish();
     
     
-    UpdateClientCached( client );
+    if ( mode != lastmode )
+    {
+        SendStatusChanged( client );
+    }
     
     return true;
 }
@@ -1807,7 +1827,10 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
     Call_Finish();
     
     
-    UpdateClientCached( client );
+    if ( style != laststyle )
+    {
+        SendStatusChanged( client );
+    }
     
     return true;
 }
@@ -2260,6 +2283,13 @@ stock void SetClientId( int client, int id, bool bNew = false, bool bForward = t
         Call_PushCell( bNew );
         Call_Finish();
     }
+}
+
+stock void SendStatusChanged( int client )
+{
+    Call_StartForward( g_hForward_OnClientStatusChanged );
+    Call_PushCell( client );
+    Call_Finish();
 }
 
 // Return true if deleted some best times.
