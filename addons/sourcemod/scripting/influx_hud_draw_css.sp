@@ -17,6 +17,7 @@
 #include <influx/truevel>
 #include <influx/zones_stage>
 #include <influx/zones_checkpoint>
+#include <influx/maprankings>
 
 
 // LIBRARIES
@@ -29,6 +30,7 @@ bool g_bLib_Recording;
 bool g_bLib_Truevel;
 bool g_bLib_Stage;
 bool g_bLib_CP;
+bool g_bLib_MapRanks;
 
 
 public Plugin myinfo =
@@ -64,6 +66,7 @@ public void OnPluginStart()
     g_bLib_Truevel = LibraryExists( INFLUX_LIB_TRUEVEL );
     g_bLib_Stage = LibraryExists( INFLUX_LIB_ZONES_STAGE );
     g_bLib_CP = LibraryExists( INFLUX_LIB_ZONES_CP );
+    g_bLib_MapRanks = LibraryExists( INFLUX_LIB_MAPRANKS );
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -77,6 +80,7 @@ public void OnLibraryAdded( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_TRUEVEL ) ) g_bLib_Truevel = true;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Stage = true;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_CP = true;
+    if ( StrEqual( lib, INFLUX_LIB_MAPRANKS ) ) g_bLib_MapRanks = true;
 }
 
 public void OnLibraryRemoved( const char[] lib )
@@ -90,6 +94,7 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_TRUEVEL ) ) g_bLib_Truevel = false;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Stage = false;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_CP = false;
+    if ( StrEqual( lib, INFLUX_LIB_MAPRANKS ) ) g_bLib_MapRanks = false;
 }
 
 public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
@@ -263,7 +268,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         
         if ( g_bLib_Stage && Influx_ShouldDisplayStages( client ) )
         {
-            int stages = Influx_GetClientStageCount( client );
+            int stages = Influx_GetClientStageCount( target );
             
             if ( stages < 2 )
             {
@@ -271,13 +276,31 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
             }
             else
             {
-                FormatEx( szTemp2, sizeof( szTemp2 ), "Stage: %i/%i", Influx_GetClientStage( client ), stages );
+                FormatEx( szTemp2, sizeof( szTemp2 ), "Stage: %i/%i", Influx_GetClientStage( target ), stages );
             }
             
             Format( szMsg, sizeof( szMsg ), "%s%s%s",
                 szMsg,
                 NEWLINE_CHECK( szMsg ),
                 szTemp2 );
+        }
+        
+        if ( g_bLib_MapRanks )
+        {
+            int rank = Influx_GetClientCurrentMapRank( target );
+            int numrecs = Influx_GetClientCurrentMapRankCount( target );
+            
+            if ( numrecs > 0 )
+            {
+                if ( rank > 0 )
+                {
+                    Format( szMsg, sizeof( szMsg ), "%s%sRank: %i/%i", szMsg, NEWLINE_CHECK( szMsg ), rank, numrecs );
+                }
+                else
+                {
+                    Format( szMsg, sizeof( szMsg ), "%s%sRank: ?/%i", szMsg, NEWLINE_CHECK( szMsg ), numrecs );
+                }
+            }
         }
         
         ADD_SEPARATOR( szMsg, "\n " );
