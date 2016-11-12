@@ -184,6 +184,9 @@ public Action Cmd_CreateZone( int client, int args )
     }
     else
     {
+        StartShowBuild( client );
+        
+        
         Menu menu = new Menu( Hndlr_CreateZone );
         menu.SetTitle( "Zone Creation\n " );
         
@@ -264,16 +267,29 @@ public Action Cmd_EndZone( int client, int args )
         float mins[3], maxs[3];
         
         mins = g_vecBuildingStart[client];
-        GetClientAbsOrigin( client, maxs );
+        
+        
+        if ( g_ConVar_CrosshairBuild.BoolValue )
+        {
+            GetEyeTrace( client, maxs );
+        }
+        else
+        {
+            GetClientAbsOrigin( client, maxs );
+        }
+        
         
         SnapToGrid( maxs, g_nBuildingGridSize[client], 2 );
         
         RoundVector( mins );
         RoundVector( maxs );
         
-        if ( FloatAbs( maxs[2] - mins[2] ) < 4.0 )
+        if ( g_ConVar_HeightGrace.FloatValue != 0.0 )
         {
-            maxs[2] += 128.0;
+            if ( FloatAbs( maxs[2] - mins[2] ) < g_ConVar_HeightGrace.FloatValue )
+            {
+                maxs[2] = mins[2] + g_ConVar_DefZoneHeight.FloatValue;
+            }
         }
 
         CorrectMinsMaxs( mins, maxs );

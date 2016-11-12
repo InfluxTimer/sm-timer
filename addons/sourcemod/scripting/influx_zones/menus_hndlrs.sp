@@ -33,7 +33,21 @@ public int Hndlr_ZoneMain( Menu menu, MenuAction action, int client, int index )
 
 public int Hndlr_CreateZone( Menu menu, MenuAction action, int client, int index )
 {
-    MENU_HANDLE( menu, action )
+    if ( action == MenuAction_Cancel )
+    {
+        g_bBuildStart[client] = false;
+        return 0;
+    }
+    else if ( action == MenuAction_End )
+    {
+        delete menu;
+        return 0;
+    }
+    
+    if ( action != MenuAction_Select ) return 0;
+    
+    
+    g_bBuildStart[client] = false;
     
     
     if ( !CanUserModifyZones( client ) ) return 0;

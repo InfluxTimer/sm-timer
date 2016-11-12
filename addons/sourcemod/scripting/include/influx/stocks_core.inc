@@ -81,9 +81,16 @@ stock float Inf_GetTimeDif( float time, float compare_time, int &c )
 
 stock float Inf_SnapTo( float f, int num = 15 )
 {
-    int i = RoundFloat( f ) + ( num / 2 );
+    int i = RoundFloat( f );
     
-    return float( i - ( i % num ) );
+    int res = i - ( i % num );
+    
+    
+    int dif = i - res;
+    if ( dif >= (num / 2) ) res += num;
+    else if ( dif <= (-num / 2) ) res -= num;
+    
+    return float( res );
 }
 
 stock void Inf_TelePosFromMinsMaxs( const float mins[3], const float maxs[3], float out[3] )

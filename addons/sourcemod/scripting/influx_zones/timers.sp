@@ -2,6 +2,7 @@
 
 #define CLR4_WHITE                  { 255, 255, 255, 255 }
 
+
 public Action T_DrawBuildBeams( Handle hTimer, int client )
 {
     if ( !IsClientInGame( client ) )
@@ -21,11 +22,24 @@ public Action T_DrawBuildBeams( Handle hTimer, int client )
     p1 = g_vecBuildingStart[client];
     p1[2] += 1.0;
     
-    GetClientAbsOrigin( client, p7 );
     
-    if ( FloatAbs( p1[2] - p7[2] ) < 4.0 )
+    if ( g_ConVar_CrosshairBuild.BoolValue )
     {
-        p7[2] += 128.0;
+        HandleTraceDist( client );
+        GetEyeTrace( client, p7 );
+    }
+    else
+    {
+        GetClientAbsOrigin( client, p7 );
+    }
+    
+    
+    if ( g_ConVar_HeightGrace.FloatValue != 0.0 )
+    {
+        if ( FloatAbs( p1[2] - p7[2] ) < g_ConVar_HeightGrace.FloatValue )
+        {
+            p7[2] += g_ConVar_DefZoneHeight.FloatValue;
+        }
     }
     
     SnapToGrid( p7, g_nBuildingGridSize[client], 2 );
@@ -78,4 +92,49 @@ public Action T_DrawBuildBeams( Handle hTimer, int client )
     TE_SendToAll( 0.0 );
     
     return Plugin_Continue;
+}
+
+public Action T_DrawBuildStart( Handle hTimer, int client )
+{
+    if ( !IsClientInGame( client ) )
+    {
+        g_iBuildingType[client] = ZONETYPE_INVALID;
+        return Plugin_Stop;
+    }
+    
+    if ( g_iBuildingType[client] != ZONETYPE_INVALID )
+    {
+        return Plugin_Stop;
+    }
+    
+    if ( !g_bBuildStart[client] )
+    {
+        return Plugin_Stop;
+    }
+    
+    
+
+    decl Float:pos[3];
+    if ( g_ConVar_CrosshairBuild.BoolValue )
+    {
+        HandleTraceDist( client );
+        
+        GetEyeTrace( client, pos );
+    }
+    else
+    {
+        GetClientAbsOrigin( client, pos );
+    }
+    
+    SnapToGrid( pos, g_nBuildingGridSize[client], 2 );
+    
+    DrawBuildSprite( pos );
+    
+    return Plugin_Continue;
+}
+
+stock void DrawBuildSprite( const float pos[3] )
+{
+    TE_SetupGlowSprite( pos, g_iBuildSprite, ZONE_BUILDDRAW_INTERVAL, g_ConVar_SpriteSize.FloatValue, 255 );
+    TE_SendToAll( 0.0 );
 }

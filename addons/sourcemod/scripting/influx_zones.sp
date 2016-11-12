@@ -24,11 +24,15 @@
 #define DEBUG_CHECKZONES
 
 #define BUILD_MAT                   "materials/sprites/laserbeam.vmt"
+#define BUILD_SPRITE_MAT            "materials/sprites/glow01.vmt"
 
 
 #define ZONE_BUILDDRAW_INTERVAL     0.1
 
-
+#define BUILD_DEF_DIST              512.0
+#define BUILD_MAXDIST               2048.0
+#define BUILD_MINDIST               64.0
+#define BUILD_DIST_RATE             32.0
 
 
 ZoneType_t g_iBuildingType[INF_MAXPLAYERS];
@@ -37,6 +41,8 @@ float g_vecBuildingStart[INF_MAXPLAYERS][3];
 //int g_iBuildingRunId[INF_MAXPLAYERS];
 int g_nBuildingGridSize[INF_MAXPLAYERS];
 char g_szBuildingName[INF_MAXPLAYERS][MAX_ZONE_NAME];
+bool g_bBuildStart[INF_MAXPLAYERS];
+float g_flBuildDist[INF_MAXPLAYERS];
 
 
 
@@ -45,6 +51,7 @@ ArrayList g_hZones;
 //int g_nNewZoneId;
 
 int g_iBuildBeamMat;
+int g_iBuildSprite;
 
 
 // CONVARS
@@ -54,6 +61,11 @@ ConVar g_ConVar_Admin_ConfZonesFlags;
 ConVar g_ConVar_Admin_SaveZonesFlags;
 
 ConVar g_ConVar_MinSize;
+ConVar g_ConVar_HeightGrace;
+ConVar g_ConVar_DefZoneHeight;
+
+ConVar g_ConVar_CrosshairBuild;
+ConVar g_ConVar_SpriteSize;
 
 
 // FORWARDS
@@ -175,6 +187,11 @@ public void OnPluginStart()
     
     
     g_ConVar_MinSize = CreateConVar( "influx_zones_minzonesize", "4", "Minimum size of a zone in X, Y and Z.", FCVAR_NOTIFY, true, 1.0 );
+    g_ConVar_HeightGrace = CreateConVar( "influx_zones_heightgrace", "4", "If zone height is smaller than this, use default zone height. 0 = disable", FCVAR_NOTIFY, true, 0.0 );
+    g_ConVar_DefZoneHeight = CreateConVar( "influx_zones_defzoneheight", "128", "Default zone height to use.", FCVAR_NOTIFY, true, 0.0 );
+    
+    g_ConVar_CrosshairBuild = CreateConVar( "influx_zones_crosshairbuild", "1", "Use crosshair to build instead of your position.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_SpriteSize = CreateConVar( "influx_zones_buildspritesize", "0.2", "Size of the sprite when lining the start of the zone.", FCVAR_NOTIFY, true, 0.0 );
     
     
     AutoExecConfig( true, "zones", "influx" );
@@ -234,6 +251,11 @@ public void Influx_OnPreRunLoad()
         SetFailState( INF_CON_PRE..."Couldn't precache building beam material '%s'!", BUILD_MAT );
     }
     
+    if ( !(g_iBuildSprite = PrecacheModel( BUILD_SPRITE_MAT )) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't precache building sprite material '%s'!", BUILD_SPRITE_MAT );
+    }
+    
     
     g_hZones.Clear();
 }
@@ -261,6 +283,8 @@ public void OnClientPutInServer( int client )
     g_iBuildingType[client] = ZONETYPE_INVALID;
     g_nBuildingGridSize[client] = 8;
     g_szBuildingName[client][0] = '\0';
+    g_bBuildStart[client] = false;
+    g_flBuildDist[client] = BUILD_DEF_DIST;
     
     
     CheckZones();
@@ -562,7 +586,7 @@ stock void SnapToGrid( float vec[3], int grid, int axis = 2 )
     
     for ( int i = 0; i < axis; i++ )
     {
-        vec[i] = vec[i] - ( RoundFloat( vec[i] ) % grid );
+        vec[i] = Inf_SnapTo( vec[i], grid );
     }
 }
 
@@ -573,8 +597,22 @@ stock bool StartToBuild( int client, ZoneType_t zonetype, const char[] name = ""
     
     g_iBuildingType[client] = zonetype;
     
-    GetClientAbsOrigin( client, g_vecBuildingStart[client] );
-    RoundVector( g_vecBuildingStart[client] );
+    float pos[3];
+    
+    if ( g_ConVar_CrosshairBuild.BoolValue )
+    {
+        GetEyeTrace( client, pos );
+    }
+    else
+    {
+        GetClientAbsOrigin( client, pos );
+    }
+    
+    SnapToGrid( pos, g_nBuildingGridSize[client], 2 );
+    RoundVector( pos );
+    
+    
+    g_vecBuildingStart[client] = pos;
     
     
     CreateTimer( ZONE_BUILDDRAW_INTERVAL, T_DrawBuildBeams, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
@@ -879,4 +917,63 @@ stock bool CanUserSaveZones( int client )
     int wantedflags = ReadFlagString( szFlags );
     
     return ( (GetUserFlagBits( client ) & wantedflags) == wantedflags );
+}
+
+stock void StartShowBuild( int client )
+{
+    if ( g_bBuildStart[client] )
+    {
+        g_bBuildStart[client] = false;
+        return;
+    }
+    
+    
+    CreateTimer( ZONE_BUILDDRAW_INTERVAL, T_DrawBuildStart, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+    
+    g_bBuildStart[client] = true;
+}
+
+stock void GetEyeTrace( int client, float pos[3] )
+{
+    decl Float:temp[3];
+    
+    GetClientEyePosition( client, pos );
+    GetClientEyeAngles( client, temp );
+    
+    GetAngleVectors( temp, temp, NULL_VECTOR, NULL_VECTOR );
+    
+    for ( int i = 0; i < 3; i++ ) temp[i] = pos[i] + temp[i] * g_flBuildDist[client];
+    
+    TR_TraceRayFilter( pos, temp, MASK_SOLID, RayType_EndPoint, TraceFilter_Build );
+    
+    TR_GetEndPosition( pos );
+}
+
+public bool TraceFilter_Build( int ent, int mask )
+{
+    return ( ent == 0 || ent > MaxClients );
+}
+
+stock void HandleTraceDist( int client )
+{
+    // Poor man's version.
+    int buttons = GetEntProp( client, Prop_Data, "m_nOldButtons" );
+    
+    if ( buttons & IN_ATTACK )
+    {
+        g_flBuildDist[client] += BUILD_DIST_RATE;
+    }
+    else if ( buttons & IN_ATTACK2 )
+    {
+        g_flBuildDist[client] -= BUILD_DIST_RATE;
+    }
+    
+    if ( g_flBuildDist[client] > BUILD_MAXDIST )
+    {
+        g_flBuildDist[client] = BUILD_MAXDIST;
+    }
+    else if ( g_flBuildDist[client] < BUILD_MINDIST )
+    {
+        g_flBuildDist[client] = BUILD_MINDIST;
+    }
 }
