@@ -50,11 +50,15 @@ enum
 };
 
 
-ArrayList g_hModes;
+ArrayList g_hBlocks;
 
 float g_flNextMsg[INF_MAXPLAYERS];
 
 int g_iBlock[INF_MAXPLAYERS];
+
+
+PunishType_t g_iDefPunishType;
+ConVar g_ConVar_PunishType;
 
 
 // LIBRARIES
@@ -79,7 +83,18 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hModes = new ArrayList( BLOCK_SIZE );
+    g_hBlocks = new ArrayList( BLOCK_SIZE );
+    
+    
+    // CONVARS
+    g_ConVar_PunishType = CreateConVar( "influx_zones_block_punishtype", "push", "Default punish type for block zones. (push, teletostart, disabletimer)", FCVAR_NOTIFY );
+    g_ConVar_PunishType.AddChangeHook( E_ConVarChanged_PunishType );
+    
+    
+    AutoExecConfig( true, "zones_block", "influx" );
+    
+    
+    SetDefPunish();
     
     
     // MENUS
@@ -115,7 +130,7 @@ public void OnClientPutInServer( int client )
 
 public void Influx_OnPreRunLoad()
 {
-    g_hModes.Clear();
+    g_hBlocks.Clear();
 }
 
 public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
@@ -131,22 +146,21 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     data[BLOCK_ALLOWPRAC] = kv.GetNum( "allowpracticemode", 1 );
     
     
-    decl String:szPunish[32];
-    kv.GetString( "punishtype", szPunish, sizeof( szPunish ), "push" );
+    char szPunish[32];
+    kv.GetString( "punishtype", szPunish, sizeof( szPunish ), "" );
     
     PunishType_t punishtype = PunishNameToType( szPunish );
     
-    if ( punishtype == PUNISH_INVALID )
+    if ( szPunish[0] && punishtype == PUNISH_INVALID )
     {
         LogError( INF_CON_PRE..."Invalid punish type '%s'!", szPunish );
-        punishtype = PUNISH_PUSH;
     }
     
     data[BLOCK_PUNISHTYPE] = view_as<int>( punishtype );
     
     //data[BLOCK_ENTREF] = INVALID_ENT_REFERENCE;
     
-    g_hModes.PushArray( data );
+    g_hBlocks.PushArray( data );
     
     return Plugin_Handled;
 }
@@ -161,15 +175,22 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     
     decl data[BLOCK_SIZE];
-    g_hModes.GetArray( index, data );
+    g_hBlocks.GetArray( index, data );
     
     if ( data[BLOCK_RUNFLAGS] ) kv.SetNum( "runflags", data[BLOCK_RUNFLAGS] );
     if ( data[BLOCK_ALLOWPRAC] ) kv.SetNum( "allowpracticemode", data[BLOCK_ALLOWPRAC] );
     
     
-    decl String:szPunish[32];
-    PunishTypeToName( view_as<PunishType_t>( data[BLOCK_PUNISHTYPE] ), szPunish, sizeof( szPunish ) );
-    kv.SetString( "punishtype", szPunish );
+    PunishType_t type = view_as<PunishType_t>( data[BLOCK_PUNISHTYPE] );
+    
+    if ( type != PUNISH_INVALID )
+    {
+        char szPunish[32];
+        if ( PunishTypeToName( type, szPunish, sizeof( szPunish ) ) )
+        {
+            kv.SetString( "punishtype", szPunish );
+        }
+    }
     
     
     return Plugin_Handled;
@@ -183,15 +204,31 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     int data[BLOCK_SIZE];
     data[BLOCK_ZONE_ID] = zoneid;
     data[BLOCK_ALLOWPRAC] = 1;
-    data[BLOCK_PUNISHTYPE] = view_as<int>( PUNISH_PUSH );
+    data[BLOCK_PUNISHTYPE] = view_as<int>( PUNISH_INVALID );
     
-    g_hModes.PushArray( data );
+    g_hBlocks.PushArray( data );
     
     
     if ( g_bLib_Zones_Beams )
     {
         Influx_SetZoneBeamDisplayType( zoneid, DISPLAYTYPE_BEAMS_FULL );
     }
+}
+
+public void Influx_OnZoneDeleted( int zoneid, ZoneType_t zonetype )
+{
+    if ( zonetype != ZONETYPE_BLOCK ) return;
+    
+    
+    int index = FindBlockById( zoneid );
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Couldn't find block zone with id %i to delete!", zoneid );
+        return;
+    }
+    
+    
+    g_hBlocks.Erase( index );
 }
 
 public void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent )
@@ -250,26 +287,32 @@ public Action Cmd_ZoneSettings( int client, int args )
     
     
     int id;
-    decl String:szName[MAX_RUN_NAME];
+    decl String:szName[64];
     decl String:szDisplay[64];
     decl String:szInfo[32];
     
     
     // Practice mode
     FormatEx( szDisplay, sizeof( szDisplay ), "Allow Practice Mode: %s",
-        ( g_hModes.Get( index, BLOCK_ALLOWPRAC ) ) ? "Yes" : "No" );
+        ( g_hBlocks.Get( index, BLOCK_ALLOWPRAC ) ) ? "Yes" : "No" );
     FormatEx( szInfo, sizeof( szInfo ), "%i_%i_%i", zoneid, FLAGTYPE_ALLOWPRAC, 0 );
     
     menu.AddItem( szInfo, szDisplay );
     
     
     // Punish type
-    switch ( g_hModes.Get( index, BLOCK_PUNISHTYPE ) )
+    PunishType_t punish = view_as<PunishType_t>( g_hBlocks.Get( index, BLOCK_PUNISHTYPE ) );
+    
+    if ( punish == PUNISH_INVALID )
     {
-        case PUNISH_TELETOSTART : strcopy( szName, sizeof( szName ), "Teleport to start" );
-        case PUNISH_DISABLETIMER : strcopy( szName, sizeof( szName ), "Disable timer" );
-        default : strcopy( szName, sizeof( szName ), "Push away" );
+        PunishTypeToNameEx( g_iDefPunishType, szName, sizeof( szName ) );
+        Format( szName, sizeof( szName ), "Use default (%s)", szName );
     }
+    else
+    {
+        PunishTypeToNameEx( punish, szName, sizeof( szName ) );
+    }
+    
     
     FormatEx( szDisplay, sizeof( szDisplay ), "Punish type: %s\n ", szName );
     FormatEx( szInfo, sizeof( szInfo ), "%i_%i_%i", zoneid, FLAGTYPE_PUNISHTYPE, 0 );
@@ -278,7 +321,7 @@ public Action Cmd_ZoneSettings( int client, int args )
     
     
     // Run flags.
-    int flags = g_hModes.Get( index, BLOCK_RUNFLAGS );
+    int flags = g_hBlocks.Get( index, BLOCK_RUNFLAGS );
     for ( int i = 0; i < runslen; i++ )
     {
         id = runs.Get( i, RUN_ID );
@@ -326,33 +369,33 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
             // Toggle our flag.
             int ourflag = ( 1 << id );
             
-            int flags = g_hModes.Get( izone, BLOCK_RUNFLAGS );
+            int flags = g_hBlocks.Get( izone, BLOCK_RUNFLAGS );
             
             if ( flags & ourflag )
             {
-                g_hModes.Set( izone, flags & ~ourflag, BLOCK_RUNFLAGS );
+                g_hBlocks.Set( izone, flags & ~ourflag, BLOCK_RUNFLAGS );
             }
             else
             {
-                g_hModes.Set( izone, flags | ourflag, BLOCK_RUNFLAGS );
+                g_hBlocks.Set( izone, flags | ourflag, BLOCK_RUNFLAGS );
             }
         }
         else if ( type == FLAGTYPE_PUNISHTYPE )
         {
-            PunishType_t punishtype = view_as<PunishType_t>( g_hModes.Get( izone, BLOCK_PUNISHTYPE ) + 1 );
+            PunishType_t punishtype = view_as<PunishType_t>( g_hBlocks.Get( izone, BLOCK_PUNISHTYPE ) + 1 );
             
-            if ( punishtype <= PUNISH_INVALID || punishtype >= PUNISH_MAX )
+            if ( punishtype < PUNISH_INVALID || punishtype >= PUNISH_MAX )
             {
-                punishtype = PUNISH_PUSH;
+                punishtype = PUNISH_INVALID;
             }
             
-            g_hModes.Set( izone, punishtype, BLOCK_PUNISHTYPE );
+            g_hBlocks.Set( izone, punishtype, BLOCK_PUNISHTYPE );
         }
         else
         {
-            bool allow = !g_hModes.Get( izone, BLOCK_ALLOWPRAC );
+            bool allow = !g_hBlocks.Get( izone, BLOCK_ALLOWPRAC );
             
-            g_hModes.Set( izone, allow, BLOCK_ALLOWPRAC );
+            g_hBlocks.Set( izone, allow, BLOCK_ALLOWPRAC );
         }
         
         FakeClientCommand( client, "sm_zonesettings_block %i", zoneid );
@@ -363,6 +406,11 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
     }
     
     return 0;
+}
+
+public void E_ConVarChanged_PunishType( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    SetDefPunish();
 }
 
 public void E_StartTouchPost_Block( int ent, int activator )
@@ -384,10 +432,10 @@ public void E_StartTouchPost_Block( int ent, int activator )
     }
     
     // Is this run blocked?
-    if ( runid > 0 && !(g_hModes.Get( index, BLOCK_RUNFLAGS ) & (1 << runid)) )
+    if ( runid > 0 && !(g_hBlocks.Get( index, BLOCK_RUNFLAGS ) & (1 << runid)) )
     {
         // Allow practice mode.
-        if ( g_hModes.Get( index, BLOCK_ALLOWPRAC ) &&
+        if ( g_hBlocks.Get( index, BLOCK_ALLOWPRAC ) &&
         (
             (g_bLib_Practise && Influx_IsClientPractising( activator ))
         ||  (g_bLib_Pause && Influx_IsClientPaused( activator ))
@@ -397,7 +445,7 @@ public void E_StartTouchPost_Block( int ent, int activator )
             return;
         }
         
-        Punish( g_hModes.Get( index, BLOCK_PUNISHTYPE ), activator, ent );
+        Punish( view_as<PunishType_t>( g_hBlocks.Get( index, BLOCK_PUNISHTYPE ) ), activator, ent );
         
         g_iBlock[activator] = ent;
     }
@@ -428,13 +476,18 @@ public void E_TouchPost_Block( int ent, int activator )
         if ( index == -1 ) return;
         
         
-        Punish( g_hModes.Get( index, BLOCK_PUNISHTYPE ), activator, ent );
+        Punish( g_hBlocks.Get( index, BLOCK_PUNISHTYPE ), activator, ent );
     }
 }
 
-stock void Punish( int punishtype, int client, int ent )
+stock void Punish( PunishType_t punishtype, int client, int ent )
 {
     bool print = true;
+    
+    if ( punishtype == PUNISH_INVALID )
+    {
+        punishtype = g_iDefPunishType;
+    }
     
     switch ( punishtype )
     {
@@ -488,6 +541,14 @@ stock void Punish( int punishtype, int client, int ent )
     }
 }
 
+stock void SetDefPunish()
+{
+    char szName[32];
+    g_ConVar_PunishType.GetString( szName, sizeof( szName ) );
+    
+    g_iDefPunishType = PunishNameToType( szName );
+}
+
 stock PunishType_t PunishNameToType( const char[] sz )
 {
     if ( StrEqual( sz, "push", false ) )
@@ -506,6 +567,16 @@ stock PunishType_t PunishNameToType( const char[] sz )
     }
     
     return PUNISH_INVALID;
+}
+
+stock void PunishTypeToNameEx( PunishType_t type, char[] sz, int len )
+{
+    switch ( type )
+    {
+        case PUNISH_TELETOSTART : strcopy( sz, len, "Teleport to start" );
+        case PUNISH_DISABLETIMER : strcopy( sz, len, "Disable timer" );
+        default : strcopy( sz, len, "Push away" );
+    }
 }
 
 stock bool PunishTypeToName( PunishType_t type, char[] sz, int len )
@@ -527,12 +598,12 @@ stock bool PunishTypeToName( PunishType_t type, char[] sz, int len )
 
 stock int FindBlockById( int id )
 {
-    int len = g_hModes.Length;
+    int len = g_hBlocks.Length;
     if ( len > 0 )
     {
         for ( int i = 0; i < len; i++ )
         {
-            if ( g_hModes.Get( i, BLOCK_ZONE_ID ) == id )
+            if ( g_hBlocks.Get( i, BLOCK_ZONE_ID ) == id )
             {
                 return i;
             }
