@@ -92,6 +92,20 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
         {
             DB_InitNumRecs( runid, mode, style );
         }
+        
+        // Update all other players as well.
+        for ( int i = 1; i <= MaxClients; i++ )
+        {
+            if ( i != client && IsClientInGame( i ) && !IsFakeClient( i ) )
+            {
+                if (Influx_GetClientRunId( i ) == runid
+                &&  Influx_GetClientMode( i ) == mode
+                &&  Influx_GetClientStyle( i ) == style)
+                {
+                    DB_InitClientRanks( i, runid, mode, style );
+                }
+            }
+        }
     }
 }
 
@@ -173,6 +187,7 @@ stock void DB_InitNumRecs( int runid = -1, int mode = MODE_INVALID, int style = 
     
     SQL_TQuery( db, Thrd_InitNumRecs, szQuery, _, DBPrio_Low );
 }
+
 stock void DB_InitClientRanks( int client, int runid = -1, int mode = MODE_INVALID, int style = STYLE_INVALID )
 {
     Handle db = Influx_GetDB();
