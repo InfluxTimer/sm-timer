@@ -213,17 +213,13 @@ public SharedPlugin __pl_influx_zones =
 #if !defined REQUIRE_PLUGIN
 public void __pl_influx_zones_SetNTVOptional()
 {
-    MarkNativeAsOptional( "Influx_FindZoneById" );
-    
-    MarkNativeAsOptional( "Influx_CanUserModifyZones" );
-    
-    MarkNativeAsOptional( "Influx_GetZoneName" );
-    MarkNativeAsOptional( "Influx_SetZoneName" );
-    
-    MarkNativeAsOptional( "Influx_GetZoneMinsMaxs" );
-    
-    MarkNativeAsOptional( "Influx_DeleteZone" );
-    
     MarkNativeAsOptional( "Influx_BuildZone" );
+    MarkNativeAsOptional( "Influx_CanUserModifyZones" );
+    MarkNativeAsOptional( "Influx_DeleteZone" );
+    MarkNativeAsOptional( "Influx_FindZoneById" );
+    MarkNativeAsOptional( "Influx_GetZoneMinsMaxs" );
+    MarkNativeAsOptional( "Influx_GetZoneName" );
+    MarkNativeAsOptional( "Influx_GetZonesArray" );
+    MarkNativeAsOptional( "Influx_SetZoneName" );
 }
 #endif

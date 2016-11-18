@@ -39,7 +39,7 @@ forward Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype );
 
 
 
-#define HIDEFLAG_TIMER             	( 1 << 0 )
+#define HIDEFLAG_TIMER              ( 1 << 0 )
 #define HIDEFLAG_SIDEBAR            ( 1 << 1 ) // CSS = KeyHint, CSGO = Menu
 #define HIDEFLAG_TIME               ( 1 << 2 )
 #define HIDEFLAG_SPEED              ( 1 << 3 )
@@ -103,7 +103,7 @@ public void __pl_influx_hud_SetNTVOptional()
     MarkNativeAsOptional( "Influx_SetClientHideFlags" );
     
     MarkNativeAsOptional( "Influx_AddHUDMenuCmd" );
-	
+    
     MarkNativeAsOptional( "Influx_GetNextMenuTime" );
     MarkNativeAsOptional( "Influx_SetNextMenuTime" );
 }

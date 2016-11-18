@@ -540,6 +540,8 @@ public void __pl_influx_core_SetNTVOptional()
     MarkNativeAsOptional( "Influx_PrintToChatAll" );
     MarkNativeAsOptional( "Influx_PrintToChatEx" );
     MarkNativeAsOptional( "Influx_RemoveChatColors" );
+    MarkNativeAsOptional( "Influx_RemoveMode" );
+    MarkNativeAsOptional( "Influx_RemoveStyle" );
     MarkNativeAsOptional( "Influx_ResetTimer" );
     MarkNativeAsOptional( "Influx_SetClientMode" );
     MarkNativeAsOptional( "Influx_SetClientStartTick" );

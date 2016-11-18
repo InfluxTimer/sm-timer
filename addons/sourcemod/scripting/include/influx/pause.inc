@@ -19,12 +19,12 @@ native float Influx_GetClientPausedTime( int client );
 
 public SharedPlugin __pl_influx_pause =
 {
-	name = INFLUX_LIB_PAUSE,
-	file = INFLUX_LIB_PAUSE...".smx",
+    name = INFLUX_LIB_PAUSE,
+    file = INFLUX_LIB_PAUSE...".smx",
 #if defined REQUIRE_PLUGIN
-	required = 1
+    required = 1
 #else
-	required = 0
+    required = 0
 #endif
 };
 

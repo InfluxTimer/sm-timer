@@ -18,12 +18,12 @@ native void Influx_EndPractising( int client );
 
 public SharedPlugin __pl_influx_practise =
 {
-	name = INFLUX_LIB_PRACTISE,
-	file = INFLUX_LIB_PRACTISE...".smx",
+    name = INFLUX_LIB_PRACTISE,
+    file = INFLUX_LIB_PRACTISE...".smx",
 #if defined REQUIRE_PLUGIN
-	required = 1
+    required = 1
 #else
-	required = 0
+    required = 0
 #endif
 };
 
