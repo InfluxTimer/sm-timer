@@ -732,8 +732,11 @@ stock void TeleportToStage( int client, int stagenum )
     
     int index = FindStageByNum( runid, stagenum );
     
-    if ( index == -1 ) return;
-    
+    if ( index == -1 )
+    {
+        Influx_PrintToChat( _, client, "Stage {MAINCLR1}%i{CHATCLR} does not exist!", stagenum );
+        return;
+    }
     
     float pos[3];
     float ang[3];
@@ -752,17 +755,19 @@ public Action Cmd_SetStageTelePos( int client, int args )
 {
     if ( !client ) return Plugin_Handled;
     
-    if ( !args )
-    {
-        return Plugin_Handled;
-    }
     
-    char szArg[16];
-    GetCmdArgString( szArg, sizeof( szArg ) );
+    int stagenum = g_iStage[client];
+    
+    if ( args )
+    {
+        char szArg[16];
+        GetCmdArgString( szArg, sizeof( szArg ) );
+        
+        stagenum = StringToInt( szArg );
+    }
     
     
     int runid = Influx_GetClientRunId( client );
-    int stagenum = StringToInt( szArg );
     
     
     int index = FindStageByNum( runid, stagenum );
@@ -781,7 +786,10 @@ public Action Cmd_SetStageTelePos( int client, int args )
         
         Influx_PrintToChat( _, client, "Set stage {MAINCLR1}%i{CHATCLR} tele position and yaw!", stagenum );
     }
-    
+    else
+    {
+        Influx_PrintToChat( _, client, "Stage {MAINCLR1}%i{CHATCLR} doesn't exist!", stagenum );
+    }
     
     return Plugin_Handled;
 }
@@ -832,6 +840,9 @@ public Action Cmd_StageSelect( int client, int args )
         
         for ( int i = 2; i <= highest; i++ )
         {
+            if ( FindStageByNum( runid, i ) == -1 ) continue;
+            
+            
             FormatEx( szInfo, sizeof( szInfo ), "%i", i );
             FormatEx( szDisplay, sizeof( szDisplay ), "Stage %i", i );
             
