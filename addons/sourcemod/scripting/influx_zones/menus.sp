@@ -1,7 +1,7 @@
 #define TYPE_MODE               0
 #define TYPE_STYLE              1
 
-#define ZONE_MENU_FORMAT        "Name (Type) (Zone Id)"
+#define ZONE_MENU_FORMAT        "Name [Type] [Zone Id]"
 
 #include "influx_zones/menus_hndlrs.sp"
 
@@ -40,7 +40,7 @@ stock int FillZoneMenu( Menu menu, bool bShowTimerZones = true, bool bShowContro
             
             uid = g_hZones.Get( i, ZONE_ID );
             
-            FormatEx( szDisplay, sizeof( szDisplay ), "%s (%s) (%i)",
+            FormatEx( szDisplay, sizeof( szDisplay ), "%s [%s] [%i]",
                 szZone,
                 szType,
                 uid );
@@ -71,7 +71,7 @@ stock int FillZoneMenu( Menu menu, bool bShowTimerZones = true, bool bShowContro
             
             uid = g_hZones.Get( i, ZONE_ID );
             
-            FormatEx( szDisplay, sizeof( szDisplay ), "%s (%s) (%i)",
+            FormatEx( szDisplay, sizeof( szDisplay ), "%s [%s] [%i]",
                 szZone,
                 szType,
                 uid );

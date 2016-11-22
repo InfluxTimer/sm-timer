@@ -273,12 +273,9 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     int ourindex = g_hTimer.PushArray( data );
     
     
-    
-    // We're just updating a run zone.
-    if ( runid != -1 && Influx_FindRunById( runid ) != -1 )
+    // We already have this run.
+    if ( Influx_FindRunById( runid ) != -1 )
     {
-        // Make sure we name the zone correctly. (Main, Bonus, etc.)
-        NameZone( zoneid, zonetype, runid );
         return;
     }
     
@@ -497,11 +494,7 @@ public int Hndlr_CreateZone_SelectRun( Menu oldmenu, MenuAction action, int clie
     }
     else // Start to create otherwise.
     {
-        g_iBuildingRunId[client] = runid;
-        
-        Influx_BuildZone( client, zonetype );
-        
-        Inf_OpenZoneMenu( client );
+        StartToBuild( client, zonetype, runid );
     }
     
     return 0;
@@ -528,8 +521,7 @@ public int Hndlr_CreateZone_SelectRun_Confirm( Menu menu, MenuAction action, int
         {
             if ( bValidInfo )
             {
-                Influx_BuildZone( client, zonetype );
-                g_iBuildingRunId[client] = runid;
+                StartToBuild( client, zonetype, runid );
             }
         }
         case 1 : // Replace existing ones.
@@ -554,8 +546,7 @@ public int Hndlr_CreateZone_SelectRun_Confirm( Menu menu, MenuAction action, int
                     }
                 }
                 
-                Influx_BuildZone( client, zonetype );
-                g_iBuildingRunId[client] = runid;
+                StartToBuild( client, zonetype, runid );
             }
         }
     }
@@ -563,6 +554,29 @@ public int Hndlr_CreateZone_SelectRun_Confirm( Menu menu, MenuAction action, int
     Inf_OpenZoneMenu( client );
     
     return 0;
+}
+
+stock void StartToBuild( int client, ZoneType_t zonetype, int runid = -1 )
+{
+    g_iBuildingRunId[client] = runid;
+    
+    
+    char szName[MAX_ZONE_NAME];
+    
+    Inf_ZoneTypeToName( zonetype, szName, sizeof( szName ) );
+    
+    if ( Influx_FindRunById( runid ) != -1 )
+    {
+        char szRun[MAX_RUN_NAME];
+        Influx_GetRunName( runid, szRun, sizeof( szRun ) );
+        
+        Format( szName, sizeof( szName ), "%s %s", szRun, szName );
+    }
+    
+    
+    Influx_BuildZone( client, zonetype, szName );
+    
+    Inf_OpenZoneMenu( client );
 }
 
 public void E_StartTouchPost_Start( int ent, int activator )

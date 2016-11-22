@@ -730,6 +730,14 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
         strcopy( szName, sizeof( szName ), g_szBuildingName[client] );
     }
     
+    // Make sure our name isn't already taken.
+    int num = GetZoneNameCount( szName );
+    if ( num )
+    {
+        Format( szName, sizeof( szName ), "%s (%i)", szName, num + 1 );
+    }
+    
+    
     
     // Find unused zone id.
     int zoneid = 1;
@@ -777,6 +785,26 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
     
     // May be changed above.
     return CreateZoneEntity( zoneid );
+}
+
+stock int GetZoneNameCount( const char[] szName )
+{
+    int num = 0;
+    
+    char szComp[32];
+    
+    int len = g_hZones.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        GetZoneNameByIndex( i, szComp, sizeof( szComp ) )
+        
+        if ( StrEqual( szName, szComp ) )
+        {
+            ++num;
+        }
+    }
+    
+    return num;
 }
 
 stock void GetZoneName( int id, char[] sz, int len )
