@@ -733,12 +733,16 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
     
     // Find unused zone id.
     int zoneid = 1;
-    for ( int i = 0; i < g_hZones.Length; i++ )
+    for ( int i = 0; i < g_hZones.Length; )
     {
         if ( g_hZones.Get( i, ZONE_ID ) == zoneid )
         {
             ++zoneid;
             i = 0;
+        }
+        else
+        {
+            ++i;
         }
     }
     
