@@ -8,6 +8,7 @@
 #include <msharedutil/ents>
 
 #undef REQUIRE_PLUGIN
+#include <influx/help>
 #include <influx/zones_checkpoint>
 
 
@@ -48,7 +49,7 @@ ArrayList g_hStageZones;
 
 
 int g_iStage[INF_MAXPLAYERS];
-//int g_cache_nStages[INF_MAXPLAYERS];
+int g_nStages[INF_MAXPLAYERS];
 
 int g_iBuildingNum[INF_MAXPLAYERS];
 
@@ -93,10 +94,13 @@ public void OnPluginStart()
     
     
     // CONVARS
-    g_ConVar_ActAsCP = CreateConVar( "influx_stage_actascp", "1", "Stage zones act as checkpoints if checkpoints module is loaded.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_ActAsCP = CreateConVar( "influx_zones_stage_actascp", "1", "Stage zones act as checkpoints if checkpoints module is loaded.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
-    g_ConVar_DisplayType = CreateConVar( "influx_stage_displaytype", "2", "0 = Don't display stages, 1 = Display stages if non-linear, 2 = Display all stages", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
-    g_ConVar_DisplayOnlyMain = CreateConVar( "influx_stage_displayonlymain", "1", "", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_DisplayType = CreateConVar( "influx_zones_stage_displaytype", "2", "0 = Don't display stages, 1 = Display stages if non-linear, 2 = Display all stages", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
+    g_ConVar_DisplayOnlyMain = CreateConVar( "influx_zones_stage_displayonlymain", "1", "Only display stage count if player's run is main.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    
+    
+    AutoExecConfig( true, "zones_stage", "influx" );
     
     
     // CMDS
@@ -125,10 +129,15 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_Zones_CP = false;
 }
 
+public void Influx_RequestHelpCmds()
+{
+    Influx_AddHelpCommand( "setstagetelepos <num>", "Set stage teleport position.", true );
+}
+
 public void OnClientPutInServer( int client )
 {
     g_iStage[client] = 1;
-    //g_cache_nStages[client] = 0;
+    g_nStages[client] = 0;
     
     g_iBuildingNum[client] = 0;
 }
@@ -141,6 +150,11 @@ public void Influx_OnTimerStartPost( int client, int runid )
 public void Influx_OnTimerResetPost( int client )
 {
     g_iStage[client] = 1;
+}
+
+public void Influx_OnClientStatusChanged( int client )
+{
+    g_nStages[client] = GetRunStageCount( Influx_GetClientRunId( client ) );
 }
 
 public void Influx_OnPreRunLoad()
@@ -423,11 +437,11 @@ public int Hndlr_CreateZone_SelectMethod( Menu oldmenu, MenuAction action, int c
                 
                 int zoneid = g_hStageZones.Get( i, STAGEZONE_ID );
                 
-                Influx_DeleteZone( zoneid );
-                
-                
-                --i;
-                len = g_hStageZones.Length;
+                if ( Influx_DeleteZone( zoneid ) || RemoveStageById( zoneid ) )
+                {
+                    --i;
+                    len = g_hStageZones.Length;
+                }
             }
             
             StartToBuild( client, stagenum );
@@ -517,7 +531,7 @@ stock int AddStageZone( int zoneid, int runid, int stagenum )
     return g_hStageZones.PushArray( data );
 }
 
-stock void RemoveStageById( int zoneid )
+stock bool RemoveStageById( int zoneid )
 {
 #if defined DEBUG
     PrintToServer( INF_DEBUG_PRE..."Removing stage with id %i!", zoneid );
@@ -530,7 +544,7 @@ stock void RemoveStageById( int zoneid )
     if ( index == -1 )
     {
         LogError( INF_CON_PRE..."Couldn't find stage zone with id %i to delete!", zoneid );
-        return;
+        return false;
     }
     
     
@@ -553,8 +567,13 @@ stock void RemoveStageById( int zoneid )
             PrintToServer( INF_DEBUG_PRE..."Removing stage (Run id: %i | Stage num: %i)", runid, stagenum );
 #endif
             g_hStages.Erase( index );
+            
+            
+            UpdateClients( runid, stagenum );
         }
     }
+    
+    return true;
 }
 
 stock int AddStage( int runid, int stagenum, const float pos[3], float yaw )
@@ -585,7 +604,26 @@ stock int AddStage( int runid, int stagenum, const float pos[3], float yaw )
         Influx_AddCP( runid, stagenum - 1, szName );
     }
     
+    UpdateClients();
+    
     return index;
+}
+
+// When stage has been added/removed.
+stock void UpdateClients( int removedrunid = 0, int removedstagenum = 0 )
+{
+    for ( int i = 1; i <= MaxClients; i++ )
+    {
+        if ( IsClientInGame( i ) && !IsFakeClient( i ) )
+        {
+            Influx_OnClientStatusChanged( i );
+            
+            if ( Influx_GetClientRunId( i ) == removedrunid && g_iStage[i] == removedstagenum )
+            {
+                --g_iStage[i];
+            }
+        }
+    }
 }
 
 stock int FindStageZoneById( int id )
@@ -923,9 +961,7 @@ public int Native_ShouldDisplayStages( Handle hPlugin, int nParms )
     if ( g_ConVar_DisplayOnlyMain.BoolValue && runid != MAIN_RUN_ID ) return 0;
     
     
-    int count = GetRunStageCount( runid );
-    
-    if ( count < 2 )
+    if ( g_nStages[client] < 2 )
     {
         return ( g_ConVar_DisplayType.IntValue == 2 );
     }
@@ -944,7 +980,7 @@ public int Native_GetClientStageCount( Handle hPlugin, int nParms )
 {
     int client = GetNativeCell( 1 );
     
-    return GetRunStageCount( Influx_GetClientRunId( client ) );
+    return g_nStages[client];
 }
 
 public int Native_GetRunStageCount( Handle hPlugin, int nParms )
