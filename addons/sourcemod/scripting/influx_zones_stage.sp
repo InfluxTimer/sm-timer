@@ -145,11 +145,15 @@ public void OnClientPutInServer( int client )
 public void Influx_OnTimerStartPost( int client, int runid )
 {
     g_iStage[client] = 1;
+    
+    Influx_OnClientStatusChanged( client );
 }
 
 public void Influx_OnTimerResetPost( int client )
 {
     g_iStage[client] = 1;
+    
+    Influx_OnClientStatusChanged( client );
 }
 
 public void Influx_OnClientStatusChanged( int client )

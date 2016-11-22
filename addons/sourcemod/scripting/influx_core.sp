@@ -855,7 +855,9 @@ public void OnClientPutInServer( int client )
     {
         InitClientModeStyle( client );
         
-        g_iRunId[client] = GetDefaultRun();
+        // Send status update to other plugins.
+        g_iRunId[client] = -1; // We didn't have a run before this.
+        SetClientRun( client, GetDefaultRun(), false, false );
         
         
         ResetAllClientTimes( client );
@@ -1657,7 +1659,6 @@ stock bool SetClientRun( int client, int runid, bool bTele = true, bool bPrintTo
     int lastrun = g_iRunId[client];
     g_iRunId[client] = runid;
     
-    SendStatusChanged( client );
     
     
     if ( lastrun != runid )
