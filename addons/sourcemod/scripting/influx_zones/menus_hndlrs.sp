@@ -173,3 +173,38 @@ public int Hndlr_ZoneSettings( Menu menu, MenuAction action, int client, int ind
     
     return 0;
 }
+
+public int Hndlr_ZoneTele( Menu menu, MenuAction action, int client, int index )
+{
+    MENU_HANDLE( menu, action )
+    
+    
+    if ( !CanUserModifyZones( client ) ) return 0;
+    
+    
+    char szInfo[16];
+    if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
+    
+    
+    int izone = FindZoneById( StringToInt( szInfo[1] ) );
+    
+    if ( izone != -1 )
+    {
+        float pos[3];
+        float mins[3], maxs[3];
+        GetZoneMinsMaxsByIndex( izone, mins, maxs );
+        
+        Inf_TelePosFromMinsMaxs( mins, maxs, pos );
+        
+        
+        Influx_InvalidateClientRun( client );
+        
+        TeleportEntity( client, pos, NULL_VECTOR, NULL_VECTOR );
+    }
+    else
+    {
+        Inf_OpenZoneMenu( client );
+    }
+    
+    return 0;
+}

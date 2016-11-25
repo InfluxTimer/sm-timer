@@ -177,6 +177,7 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_deletezone", Cmd_DeleteZone );
     //RegConsoleCmd( "sm_beamsettings", Cmd_BeamSettings );
     RegConsoleCmd( "sm_zonesettings", Cmd_ZoneSettings );
+    RegConsoleCmd( "sm_teletozone", Cmd_ZoneTele );
     
     
     // CONVARS
@@ -798,7 +799,7 @@ stock int GetZoneNameCount( const char[] szName )
     {
         GetZoneNameByIndex( i, szComp, sizeof( szComp ) )
         
-        if ( StrEqual( szName, szComp ) )
+        if ( StrContains( szName, szComp, false ) == 0 )
         {
             ++num;
         }

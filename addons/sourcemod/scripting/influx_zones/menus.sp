@@ -6,7 +6,7 @@
 #include "influx_zones/menus_hndlrs.sp"
 
 
-stock int FillZoneMenu( Menu menu, bool bShowTimerZones = true, bool bShowControlZones = true )
+stock int FillZoneMenu( Menu menu, bool bShowTimerZones = true, bool bShowControlZones = true, bool bZoneYouAreIn = true )
 {
     int num_items = 0;
     
@@ -20,7 +20,10 @@ stock int FillZoneMenu( Menu menu, bool bShowTimerZones = true, bool bShowContro
     int uid;
     
     
-    menu.AddItem( "_", "Zone You Are In" );
+    if ( bZoneYouAreIn )
+    {
+        menu.AddItem( "_", "Zone You Are In" );
+    }
     
     if ( bShowTimerZones )
     {
@@ -137,6 +140,7 @@ public Action Cmd_ZoneMain( int client, int args )
     
     
     menu.AddItem( "sm_zonesettings", "Zone Settings",   ( !bBuilding && bHaveZones )        ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
+    menu.AddItem( "sm_teletozone", "Teleport To A Zone",   ( bHaveZones )                   ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
     
     if ( g_bLib_Zones_Beams )
     {
@@ -327,7 +331,7 @@ public Action Cmd_DeleteZone( int client, int args )
     Menu menu = new Menu( Hndlr_DeleteZone );
     menu.SetTitle( "Zone Deletion\n"...ZONE_MENU_FORMAT..."\n " );
     
-    int items = FillZoneMenu( menu, true, true );
+    int items = FillZoneMenu( menu );
     
     if ( !items )
     {
@@ -352,6 +356,30 @@ public Action Cmd_ZoneSettings( int client, int args )
     menu.SetTitle( "Zone Settings\n"...ZONE_MENU_FORMAT..."\n " );
     
     int items = FillZoneMenu( menu, false, true );
+    
+    if ( !items )
+    {
+        delete menu;
+        return Plugin_Handled;
+    }
+    
+    
+    menu.Display( client, MENU_TIME_FOREVER );
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_ZoneTele( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !CanUserModifyZones( client ) ) return Plugin_Handled;
+    
+    
+    Menu menu = new Menu( Hndlr_ZoneTele );
+    menu.SetTitle( "Teleport To A Zone\n"...ZONE_MENU_FORMAT..."\n " );
+    
+    int items = FillZoneMenu( menu, true, true, false );
     
     if ( !items )
     {
