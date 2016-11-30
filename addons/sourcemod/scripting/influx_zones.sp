@@ -27,6 +27,10 @@
 #define BUILD_SPRITE_MAT            "materials/sprites/glow01.vmt"
 
 
+// Exists for both CSS and CS:GO
+#define MAGIC_BRUSH_MODEL       "models/props/cs_office/vending_machine.mdl"
+
+
 #define ZONE_BUILDDRAW_INTERVAL     0.1
 
 #define BUILD_DEF_DIST              512.0
@@ -701,7 +705,7 @@ stock int CreateZoneEntityByIndex( int index )
     float mins[3], maxs[3];
     GetZoneMinsMaxsByIndex( index, mins, maxs );
     
-    int ent = CreateTrigger( mins, maxs );
+    int ent = CreateTriggerEnt( mins, maxs );
     if ( ent < 1 ) return -1;
     
     g_hZones.Set( index, EntIndexToEntRef( ent ), ZONE_ENTREF );
@@ -1009,4 +1013,67 @@ stock void HandleTraceDist( int client )
     {
         g_flBuildDist[client] = BUILD_MINDIST;
     }
+}
+
+stock int CreateTriggerEnt( const float mins[3], const float maxs[3] )
+{
+    int ent = CreateEntityByName( "trigger_multiple" );
+    
+    if ( ent < 1 )
+    {
+        LogError( INF_CON_PRE..."Couldn't create trigger entity!" );
+        return -1;
+    }
+    
+    
+    DispatchKeyValue( ent, "wait", "0" );
+    
+#define SF_CLIENTS  1
+#define SF_NOBOTS   4096
+    
+    char szSpawn[16];
+    FormatEx( szSpawn, sizeof( szSpawn ), "%i", SF_CLIENTS | SF_NOBOTS );
+    DispatchKeyValue( ent, "spawnflags", szSpawn ); 
+    
+    if ( !DispatchSpawn( ent ) )
+    {
+        LogError( INF_CON_PRE..."Couldn't spawn trigger entity!" );
+        return -1;
+    }
+    
+    
+    float origin[3], newmins[3], newmaxs[3];
+    
+    ActivateEntity( ent );
+    
+    
+    SetEntityModel( ent, MAGIC_BRUSH_MODEL );
+    
+    
+#define EF_NODRAW   32
+    
+    SetEntProp( ent, Prop_Send, "m_fEffects", EF_NODRAW );
+    
+    
+    newmaxs[0] = ( maxs[0] - mins[0] ) * 0.5;
+    newmaxs[1] = ( maxs[1] - mins[1] ) * 0.5;
+    newmaxs[2] = ( maxs[2] - mins[2] ) * 0.5;
+    
+    origin[0] = mins[0] + newmaxs[0];
+    origin[1] = mins[1] + newmaxs[1];
+    origin[2] = mins[2] + newmaxs[2];
+    
+    
+    TeleportEntity( ent, origin, NULL_VECTOR, NULL_VECTOR );
+    
+    
+    newmins[0] = -newmaxs[0];
+    newmins[1] = -newmaxs[1];
+    newmins[2] = -newmaxs[2];
+    
+    SetEntPropVector( ent, Prop_Send, "m_vecMins", newmins );
+    SetEntPropVector( ent, Prop_Send, "m_vecMaxs", newmaxs );
+    SetEntProp( ent, Prop_Send, "m_nSolidType", 2 ); // Essential! Use bounding box instead of model's bsp(?) for input.
+    
+    return ent;
 }
