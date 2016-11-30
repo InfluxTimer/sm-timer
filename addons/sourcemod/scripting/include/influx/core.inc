@@ -12,6 +12,8 @@
 #include <influx/stocks_core>
 #include <influx/stocks_chat>
 
+#include <msharedutil/ents>
+
 
 #define INFLUX_LIB_CORE         "influx_core"
 
@@ -381,6 +383,14 @@ enum Search_t
 // Look at mode/style plugins for an example.
 forward Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &value );
 
+// Call above. Used in Inf_ParseSearchArg stock.
+native Search_t Influx_SearchType( const char[] szArg, int &value );
+
+
+// Tries to match given string with map name regex.
+native bool Influx_IsValidMapName( const char[] szMap );
+
+
 
 // Searching for ending position.
 forward Action Influx_OnSearchEnd( int runid, float pos[3] );
@@ -486,6 +496,181 @@ stock void Inf_Warning( int num = 1, const char[] format, any ... )
     for ( int i = 0; i < num; i++ ) PrintToServer( msg );
 }
 
+stock void Inf_ParseArgs( int args, int maxargs, int &uid, int &mapid, int &runid, int &mode, int &style, char[] szPlayerName, int player_len, char[] szMap, int map_len )
+{
+    if ( args < 1 ) return;
+    
+    
+    // We don't want too many arguments being parsed.
+    if ( args > maxargs ) args = maxargs;
+    
+    
+    
+    decl String:szArg[64];
+    
+    for ( int i = 1; i <= args; i++ )
+    {
+        GetCmdArg( i, szArg, sizeof( szArg ) );
+        StripQuotes( szArg );
+        
+        if ( szArg[0] == 0 ) continue;
+        
+        
+        int value = 0;
+        Search_t search = Inf_ParseSearchArg( szArg, value );
+        
+        switch ( search )
+        {
+            case SEARCH_MAPID : mapid = value;
+            case SEARCH_UID : uid = value;
+            case SEARCH_RUNID : runid = value;
+            case SEARCH_MODE : mode = value;
+            case SEARCH_STYLE : style = value;
+            case SEARCH_MAPNAME : strcopy( szMap, map_len, szArg[value] );
+            case SEARCH_PLAYERNAME : strcopy( szPlayerName, player_len, szArg[value] );
+        }
+    }
+}
+
+stock Search_t Inf_ParseSearchArg( const char[] szArg, int &value )
+{
+    decl tempval;
+    
+    
+    if ( strncmp( szArg, "mapid=", 6, false ) == 0 )
+    {
+        tempval = StringToInt( szArg[6] );
+        
+        if ( tempval <= 0 )
+        {
+            return SEARCH_INVALID;
+        }
+        
+        value = tempval;
+        return SEARCH_MAPID;
+    }
+    else if ( strncmp( szArg, "runid=", 6, false ) == 0 )
+    {
+        tempval = StringToInt( szArg[6] );
+        
+        if ( tempval <= 0 )
+        {
+            return SEARCH_INVALID;
+        }
+        
+        value = tempval;
+        return SEARCH_RUNID;
+    }
+    else if ( strncmp( szArg, "map=", 4, false ) == 0 )
+    {
+        if ( strlen( szArg ) > 4 && Influx_IsValidMapName( szArg[4] ) )
+        {
+            value = 4;
+            
+            return SEARCH_MAPNAME;
+        }
+        
+        return SEARCH_INVALID;
+    }
+    else if ( strncmp( szArg, "name=", 5, false ) == 0 )
+    {
+        if ( strlen( szArg ) > 5 )
+        {
+            value = 5;
+            
+            return SEARCH_PLAYERNAME;
+        }
+        
+        return SEARCH_INVALID;
+    }
+    
+    // If nothing specific is found and it's a number, make it a run id.
+    tempval = StringToInt( szArg );
+    
+    if ( tempval > 0 )
+    {
+        value = tempval;
+        return SEARCH_RUNID;
+    }
+    
+    // Attempt to find a name.
+    int targets[1];
+    char szTemp[1];
+    bool bUseless;
+    if (ProcessTargetString(
+        szArg,
+        0,
+        targets,
+        sizeof( targets ),
+        COMMAND_FILTER_NO_MULTI | COMMAND_FILTER_NO_BOTS,
+        szTemp,
+        sizeof( szTemp ),
+        bUseless ))
+    {
+        int client = targets[0];
+        
+        if ( IS_ENT_PLAYER( client ) && IsClientInGame( client ) && Influx_GetClientId( client ) > 0 )
+        {
+            value = Influx_GetClientId( client );
+            return SEARCH_UID;
+        }
+    }
+    
+    
+    // Check for map names.
+    if ( Influx_IsValidMapName( szArg ) )
+    {
+        value = 0;
+        return SEARCH_MAPNAME;
+    }
+    
+    
+    // Still didn't find anything. Ask other plugins for an answer.
+    value = 0;
+    
+    Search_t search = Influx_SearchType( szArg, value );
+    
+    if ( search != SEARCH_INVALID )
+    {
+        return search;
+    }
+    
+    
+    return SEARCH_INVALID;
+}
+
+// Returns client's run id but checks if the player is spectating somebody, if so use that run id.
+// If no valid run id is found, return main run id.
+// Used when parsing cmd arguments (eg sm_wr)
+stock int Inf_GetClientRunIdParse( int client )
+{
+    if ( !IsPlayerAlive( client ) && GetClientObserverMode( client ) != OBS_MODE_ROAMING )
+    {
+        int target = GetClientObserverTarget( client );
+        
+        if ( IS_ENT_PLAYER( target ) && IsClientInGame( target ) && IsPlayerAlive( target ) )
+        {
+            int runid = Influx_GetClientRunId( target );
+            
+            if ( Influx_FindRunById( runid ) != -1 )
+            {
+                return runid;
+            }
+        }
+    }
+    
+    int myrunid = Influx_GetClientRunId( client );
+    
+    if ( Influx_FindRunById( myrunid ) != -1 )
+    {
+        return myrunid;
+    }
+    
+    
+    return MAIN_RUN_ID;
+}
+
+
 public SharedPlugin __pl_influx_core =
 {
     name = INFLUX_LIB_CORE,
@@ -536,6 +721,7 @@ public void __pl_influx_core_SetNTVOptional()
     MarkNativeAsOptional( "Influx_InvalidateClientRun" );
     MarkNativeAsOptional( "Influx_IsClientCached" );
     MarkNativeAsOptional( "Influx_IsMySQL" );
+    MarkNativeAsOptional( "Influx_IsValidMapName" );
     MarkNativeAsOptional( "Influx_PrintToChat" );
     MarkNativeAsOptional( "Influx_PrintToChatAll" );
     MarkNativeAsOptional( "Influx_PrintToChatEx" );
@@ -543,6 +729,7 @@ public void __pl_influx_core_SetNTVOptional()
     MarkNativeAsOptional( "Influx_RemoveMode" );
     MarkNativeAsOptional( "Influx_RemoveStyle" );
     MarkNativeAsOptional( "Influx_ResetTimer" );
+    MarkNativeAsOptional( "Influx_SearchType" );
     MarkNativeAsOptional( "Influx_SetClientMode" );
     MarkNativeAsOptional( "Influx_SetClientStartTick" );
     MarkNativeAsOptional( "Influx_SetClientState" );
