@@ -458,8 +458,11 @@ stock void DB_PrintRecords(
 #if defined DEBUG_DB
             PrintToServer( INF_DEBUG_PRE..."Searching for a player name: %s", szSearch );
 #endif
-            // AND uid=(SELECT uid FROM "...INF_TABLE_USERS..." WHERE name LIKE '%%%s%%' ESCAPE '\\' LIMIT 1)
-            Format( szQuery, sizeof( szQuery ), "%s AND name LIKE '%%%s%%' ESCAPE '\\'", szQuery, szSearch );
+            
+            Format( szQuery, sizeof( szQuery ), "%s AND name LIKE '%%%s%%' ESCAPE '%s'",
+                szQuery,
+                szSearch,
+                g_bIsMySQL ? "\\\\" : "\\" );
         }
     }
     
@@ -478,7 +481,11 @@ stock void DB_PrintRecords(
 #if defined DEBUG_DB
             PrintToServer( INF_DEBUG_PRE..."Searching for a map name: %s", szSearch );
 #endif
-            Format( szQuery, sizeof( szQuery ), "%s AND mapid=(SELECT mapid FROM "...INF_TABLE_MAPS..." WHERE mapname LIKE '%%%s%%' ESCAPE '\\' LIMIT 1)", szQuery, szSearch );
+            Format( szQuery, sizeof( szQuery ), "%s AND _t.mapid=(SELECT mapid FROM "...INF_TABLE_MAPS..." WHERE mapname LIKE '%%%s%%' ESCAPE '%s' LIMIT 1)",
+                szQuery,
+                szSearch,
+                g_bIsMySQL ? "\\\\" : "\\" );
+                // MySQL escapes them.
         }
     }
     

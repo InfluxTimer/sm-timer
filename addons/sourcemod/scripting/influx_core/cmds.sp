@@ -1,5 +1,3 @@
-#include "influx_core/parsesearch.sp"
-
 public Action Cmd_UpdateDB( int client, int args )
 {
     if ( !client )
@@ -104,58 +102,6 @@ public Action Cmd_BonusChoose( int client, int args )
     return Plugin_Handled;
 }
 
-stock void ParseArgs( int args, int &uid, int &mapid, int &runid, int &mode, int &style, char[] szPlayerName, int player_len, char[] szMap, int map_len )
-{
-    if ( !args ) return;
-    
-    
-    // We don't want too many arguments being parsed.
-    if ( args > 3 ) args = 3;
-    
-    
-    
-    decl String:szArg[64];
-    
-    for ( int i = 1; i <= args; i++ )
-    {
-        GetCmdArg( i, szArg, sizeof( szArg ) );
-        //StripQuotes( szArg );
-        
-        if ( szArg[0] == '\0' ) continue;
-        
-        
-        int value = 0;
-        Search_t search = ParseSearchArg( szArg, value );
-        
-        switch ( search )
-        {
-            case SEARCH_MAPID :
-            {
-                mapid = value;
-                szMap[0] = '\0';
-            }
-            case SEARCH_UID : uid = value;
-            case SEARCH_RUNID : runid = value;
-            case SEARCH_MODE : mode = value;
-            case SEARCH_STYLE : style = value;
-            case SEARCH_MAPNAME :
-            {
-                strcopy( szMap, map_len, szArg[value] );
-                mapid = -1;
-            }
-            case SEARCH_PLAYERNAME :
-            {
-                strcopy( szPlayerName, player_len, szArg[value] );
-                uid = -1;
-            }
-        }
-        
-#if defined DEBUG_PARSESEARCH
-        PrintToServer( INF_DEBUG_PRE..."Search type (%s): %i | value: %i", szArg, search, value );
-#endif
-    }
-}
-
 public Action Cmd_PrintMyRecords( int client, int args )
 {
     if ( !client ) return Plugin_Handled;
@@ -169,8 +115,7 @@ public Action Cmd_PrintMyRecords( int client, int args )
     
     
     
-    int runid = g_iRunId[client];
-    if ( runid < 1 ) runid = MAIN_RUN_ID;
+    int runid = Inf_GetClientRunIdParse( client );
     
     
     if ( args )
@@ -183,11 +128,23 @@ public Action Cmd_PrintMyRecords( int client, int args )
         szMap[0] = '\0'; 
         
         int mapid = g_iCurMapId;
+        int runidp = -1;
         int mode = -1;
         int style = -1;
         
         
-        ParseArgs( args, useless, mapid, runid, mode, style, szUseless, sizeof( szUseless ), szMap, sizeof( szMap ) );
+        Inf_ParseArgs( args, 3, useless, mapid, runidp, mode, style, szUseless, 1, szMap, sizeof( szMap ) );
+        
+        if ( szMap[0] != 0 )
+        {
+            mapid = -1;
+            runid = MAIN_RUN_ID;
+        }
+        
+        if ( runidp != -1 )
+        {
+            runid = runidp;
+        }
         
         DB_PrintRecords( client, g_iClientId[client], mapid, runid, mode, style, _, szMap );
     }
@@ -198,6 +155,7 @@ public Action Cmd_PrintMyRecords( int client, int args )
     
     return Plugin_Handled;
 }
+
 public Action Cmd_PrintRecords( int client, int args )
 {
     if ( !client ) return Plugin_Handled;
@@ -208,8 +166,7 @@ public Action Cmd_PrintRecords( int client, int args )
     }
     
     
-    int runid = g_iRunId[client];
-    if ( runid < 1 ) runid = MAIN_RUN_ID;
+    int runid = Inf_GetClientRunIdParse( client );
     
     
     if ( args )
@@ -222,10 +179,22 @@ public Action Cmd_PrintRecords( int client, int args )
         
         int uid = -1;
         int mapid = g_iCurMapId;
+        int runidp = -1;
         int mode = -1;
         int style = -1;
         
-        ParseArgs( args, uid, mapid, runid, mode, style, szName, sizeof( szName ), szMap, sizeof( szMap ) );
+        Inf_ParseArgs( args, 3, uid, mapid, runidp, mode, style, szName, sizeof( szName ), szMap, sizeof( szMap ) );
+        
+        if ( szMap[0] != 0 )
+        {
+            mapid = -1;
+            runid = MAIN_RUN_ID;
+        }
+        
+        if ( runidp != -1 )
+        {
+            runid = runidp;
+        }
         
         DB_PrintRecords( client, uid, mapid, runid, mode, style, szName, szMap );
     }
@@ -509,6 +478,17 @@ public Action Cmd_TestColorRemove( int client, int args )
             Inf_SendSayText2( client, clients, sizeof( clients ), szArg );
         }
     }
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_TestMapName( int client, int args )
+{
+    char szArg[128];
+    GetCmdArgString( szArg, sizeof( szArg ) );
+    
+    
+    PrintToServer( "Arg: %s | Is Valid: %i | Regex handle: %x", szArg, Influx_IsValidMapName( szArg ), g_Regex_ValidMapNames );
     
     return Plugin_Handled;
 }

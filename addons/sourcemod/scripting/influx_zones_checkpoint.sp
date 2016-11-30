@@ -6,6 +6,8 @@
 #include <influx/zones>
 #include <influx/zones_checkpoint>
 
+#include <msharedutil/misc>
+
 
 //#define DEBUG_ADDS
 //#define DEBUG_ZONE
@@ -59,7 +61,6 @@ enum
 };
 
 
-
 ArrayList g_hCPZones;
 
 ArrayList g_hCPs;
@@ -78,6 +79,9 @@ float g_flLastCPTime[INF_MAXPLAYERS];
 float g_flLastCPPBTime[INF_MAXPLAYERS];
 float g_flLastCPBestTime[INF_MAXPLAYERS];
 float g_flLastCPSRTime[INF_MAXPLAYERS];
+
+
+float g_flLastCmdTime[INF_MAXPLAYERS];
 
 
 
@@ -146,12 +150,12 @@ public void OnPluginStart()
     RegAdminCmd( "sm_debugprintcps", Cmd_PrintCps, ADMFLAG_ROOT );
 #endif
 
-    RegConsoleCmd( "sm_cptimes", Cmd_PrintCpTimes );
-    RegConsoleCmd( "sm_cptime", Cmd_PrintCpTimes );
-    RegConsoleCmd( "sm_cpwr", Cmd_PrintCpTimes );
-    RegConsoleCmd( "sm_cptop", Cmd_PrintCpTimes );
-    RegConsoleCmd( "sm_wrcp", Cmd_PrintCpTimes );
-    RegConsoleCmd( "sm_topcp", Cmd_PrintCpTimes );
+    RegConsoleCmd( "sm_cptimes", Cmd_PrintTopCpTimes );
+    RegConsoleCmd( "sm_cptime", Cmd_PrintTopCpTimes );
+    RegConsoleCmd( "sm_cpwr", Cmd_PrintTopCpTimes );
+    RegConsoleCmd( "sm_cptop", Cmd_PrintTopCpTimes );
+    RegConsoleCmd( "sm_wrcp", Cmd_PrintTopCpTimes );
+    RegConsoleCmd( "sm_topcp", Cmd_PrintTopCpTimes );
     
     
     // MENUS
@@ -173,6 +177,9 @@ public void OnClientPutInServer( int client )
         
         
         ResetClientCPTimes( client );
+        
+        
+        g_flLastCmdTime[client] = 0.0;
     }
     
     

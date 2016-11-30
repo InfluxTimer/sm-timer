@@ -2,6 +2,7 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <cstrike>
+#include <regex>
 
 #include <influx/core>
 
@@ -29,6 +30,7 @@
 //#define DEBUG_DB_VER
 //#define DEBUG_DB_CBRECS
 //#define DEBUG_DB_MAPID
+//#define TEST_REGEX
 
 
 #define GAME_CONFIG_FILE      "influx.games"
@@ -39,7 +41,7 @@
 #define DEF_CHATPREFIX              "{GREY}[{PINK}"...INF_NAME..."{GREY}]"
 #define DEF_CHATCLR                 "{WHITE}"
 
-
+#define DEF_VALIDMAPNAMES           "^(surf\\_|bhop\\_|kz\\_)\\w+"
 
 
 // Print records CallBack (PCB)
@@ -196,6 +198,9 @@ ConVar g_ConVar_DefMaxWeaponSpeed;
 ConVar g_ConVar_LadderFreestyle;
 
 ConVar g_ConVar_TeleToStart;
+
+ConVar g_ConVar_ValidMapNames;
+Regex g_Regex_ValidMapNames;
 
 
 // LIBRARIES
@@ -362,6 +367,9 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_RemoveMode", Native_RemoveMode );
     CreateNative( "Influx_RemoveStyle", Native_RemoveStyle );
     
+    CreateNative( "Influx_SearchType", Native_SearchType );
+    CreateNative( "Influx_IsValidMapName", Native_IsValidMapName );
+    
     
     return APLRes_Success;
 }
@@ -471,11 +479,11 @@ public void OnPluginStart()
     g_ConVar_Admin_ModifyRunFlags = CreateConVar( "influx_core_modifyrunflags", "z", "Required flags to modify runs (tele pos, etc)." );
     
     g_ConVar_DefMode = CreateConVar( "influx_defaultmode", "auto", "Default mode.", FCVAR_NOTIFY );
-    HookConVarChange( g_ConVar_DefMode, E_ConVarChanged_DefMode );
+    g_ConVar_DefMode.AddChangeHook( E_ConVarChanged_DefMode );
     g_iDefMode = MODE_AUTO;
     
     g_ConVar_DefStyle = CreateConVar( "influx_defaultstyle", "normal", "Default style.", FCVAR_NOTIFY );
-    HookConVarChange( g_ConVar_DefStyle, E_ConVarChanged_DefStyle );
+    g_ConVar_DefStyle.AddChangeHook( E_ConVarChanged_DefStyle );
     g_iDefStyle = STYLE_NORMAL;
     
     
@@ -483,6 +491,11 @@ public void OnPluginStart()
     g_ConVar_LadderFreestyle = CreateConVar( "influx_ladderfreestyle", "1", "Whether to allow freestyle on ladders.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     g_ConVar_TeleToStart = CreateConVar( "influx_teletostartonspawn", "1", "0 = Never teleport when spawning, 1 = Only teleport if no spawnpoints are found, 2 = Always teleport to start.", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
+    
+    
+    g_ConVar_ValidMapNames = CreateConVar( "influx_core_validmapnames", DEF_VALIDMAPNAMES, "Regular expression of all valid map names. Players can only search for these maps." );
+    g_ConVar_ValidMapNames.AddChangeHook( E_ConVarChanged_ValidMapNames );
+    SetMapNameRegex();
     
     
     AutoExecConfig( true, "core", "influx" );
@@ -570,6 +583,10 @@ public void OnPluginStart()
     RegAdminCmd( "sm_testchat", Cmd_TestColor, ADMFLAG_ROOT );
     
     RegAdminCmd( "sm_testchatremove", Cmd_TestColorRemove, ADMFLAG_ROOT );
+#endif
+
+#if defined TEST_REGEX
+    RegAdminCmd( "sm_testmapname", Cmd_TestMapName, ADMFLAG_ROOT );
 #endif
     
     
@@ -2405,4 +2422,34 @@ stock bool RemoveClientTimes( int client, int irun, int mode, int style, bool bP
     
     
     return deleted_best;
+}
+
+stock void SetMapNameRegex()
+{
+    char szRegex[256];
+    char szError[256];
+    
+    
+    delete g_Regex_ValidMapNames;
+    
+    
+    g_ConVar_ValidMapNames.GetString( szRegex, sizeof( szRegex ) );
+    
+    g_Regex_ValidMapNames = new Regex( szRegex, _, szError, sizeof( szError ) );
+    
+    
+    if ( g_Regex_ValidMapNames == null )
+    {
+        LogError( INF_CON_PRE..."Couldn't compile valid map name regex! Error: '%s'", szError );
+    }
+}
+
+stock bool IsValidMapName( const char[] szMap )
+{
+    if ( g_Regex_ValidMapNames == null )
+    {
+        return false;
+    }
+    
+    return ( g_Regex_ValidMapNames.Match( szMap ) > 0 ) ? true : false;
 }

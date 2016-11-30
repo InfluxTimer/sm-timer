@@ -369,9 +369,15 @@ public void Thrd_PrintMaps( Handle db, Handle res, const char[] szError, int cli
         if ( main_recs <= 0 && misc_recs <= 0 ) continue;
         
         
+        SQL_FetchString( res, 1, szMap, sizeof( szMap ) );
+        
+        // I was unable to use REGEXP on MySQL.
+        // TODO: Change queries to use REGEXP instead.
+        if ( !IsValidMapName( szMap ) ) continue;
+        
+        
         FormatEx( szInfo, sizeof( szInfo ), "%i", SQL_FetchInt( res, 0 ) );
         
-        SQL_FetchString( res, 1, szMap, sizeof( szMap ) );
         FormatEx( szDisplay, sizeof( szDisplay ), "%s - %02i records (%02i misc.)",
             szMap,
             main_recs,
@@ -470,33 +476,6 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     }
     
     
-    // Find run name.
-    if ( reqmapid == g_iCurMapId )
-    {
-        strcopy( szMap, sizeof( szMap ), g_szCurrentMap );
-        
-        int irun = FindRunById( runid );
-        if ( irun != -1 )
-        {
-            GetRunNameByIndex( irun, szRun, sizeof( szRun ) );
-        }
-    }
-    
-    if ( szRun[0] == '\0' )
-    {
-        // Display the id at least.
-        if ( runid == MAIN_RUN_ID )
-        {
-            strcopy( szRun, sizeof( szRun ), "Main" );
-        }
-        else
-        {
-            FormatEx( szRun, sizeof( szRun ), "ID: %i", runid );
-        }
-    }
-    
-    
-    
     // We can go back to other pages. Display an option for it.
     if ( curpage > 1 )
     {
@@ -507,25 +486,30 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     }
     
     
-    
     while ( SQL_FetchRow( res ) && numrecsprinted < PRINTREC_MENU_LIMIT )
     {
-        // Get the map name once.
-        if ( szMap[0] == '\0' )
-        {
-            SQL_FetchString( res, 7, szMap, sizeof( szMap ) );
-        }
-        
         uid = SQL_FetchInt( res, 0 );
         mapid = SQL_FetchInt( res, 1 );
         runid = SQL_FetchInt( res, 2 );
         modeid = SQL_FetchInt( res, 3 );
         styleid = SQL_FetchInt( res, 4 );
         
+        
+        if ( reqmapid == -1 )
+        {
+            reqmapid = mapid; 
+        }
+        
+        // Get the map name once.
+        if ( szMap[0] == '\0' )
+        {
+            SQL_FetchString( res, 7, szMap, sizeof( szMap ) );
+        }
+        
+        
         FormatEx( szInfo, sizeof( szInfo ), "%i_%i_%i_%i_%i", uid, mapid, runid, modeid, styleid );
         
         Inf_FormatSeconds( SQL_FetchFloat( res, 5 ), szTime, sizeof( szTime ) );
-        
         
         
         if ( reqmode == -1 && modeid != -1 && ShouldModeDisplay( modeid ) )
@@ -598,6 +582,29 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     
     
     
+    // Find run name.
+    if ( reqmapid == g_iCurMapId )
+    {
+        int irun = FindRunById( runid );
+        if ( irun != -1 )
+        {
+            GetRunNameByIndex( irun, szRun, sizeof( szRun ) );
+        }
+    }
+    
+    if ( szRun[0] == 0 )
+    {
+        // Display the id at least.
+        if ( runid == MAIN_RUN_ID )
+        {
+            strcopy( szRun, sizeof( szRun ), "Main" );
+        }
+        else
+        {
+            FormatEx( szRun, sizeof( szRun ), "ID: %i", runid );
+        }
+    }
+    
     if ( reqmode != -1 && ShouldModeDisplay( reqmode ) )
     {
         GetModeName( reqmode, szMode, sizeof( szMode ) );
@@ -620,7 +627,7 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     if ( szMap[0] == '\0' ) strcopy( szMap, sizeof( szMap ), "N/A" );
     
     
-    menu.SetTitle( "%s%sRecords | %s%s%s%s%s%s | %s\n \nPages: %i-%i/%i\n----------------------------------------------\n ",
+    menu.SetTitle( "%s%sRecords | %s%s%s%s%s%s | %s\n \nPages: %i-%i/%i\n─────────────────────────────────\n ",
         ( requid != -1 && szName[0] != '\0' ) ? szName : "",
         ( requid != -1 && szName[0] != '\0' ) ? "'s " : "",
         szRun,

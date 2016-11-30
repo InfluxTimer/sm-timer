@@ -11,6 +11,16 @@ enum
     PCB_SIZE
 };
 
+enum
+{
+    PCBTOP_USERID = 0,
+    
+    PCBTOP_MODE,
+    PCBTOP_STYLE,
+    
+    PCBTOP_SIZE
+};
+
 
 // Callbacks
 #include "influx_zones_checkpoint/db_cb.sp"
@@ -299,16 +309,16 @@ stock void DB_PrintCPTimes( int client, int uid, int mapid, int runid, int mode,
     SQL_TQuery( db, Thrd_PrintCPTimes, szQuery, array, DBPrio_Low );
 }
 
-stock void DB_PrintTopCPTimes( int client, int mapid, int runid, int mode, int style )
+stock void DB_PrintTopCPTimes( int client, int mapid, int runid, int mode, int style, const char[] szMap = "" )
 {
     Handle db = Influx_GetDB();
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
     
     
-    static char szQuery[1024];
+    static char szQuery[1200];
     
     FormatEx( szQuery, sizeof( szQuery ),
-        "SELECT cpnum" ...
+        "SELECT mapname,cpnum" ...
 
         // Checkpoint's server record time.
         ",(SELECT cptime " ...
@@ -323,16 +333,55 @@ stock void DB_PrintTopCPTimes( int client, int mapid, int runid, int mode, int s
         "WHERE mapid=_t.mapid AND runid=_t.runid AND mode=_t.mode AND style=_t.style AND cpnum=_cp.cpnum" ...
         ") AS cpbesttime " ...
 
-        "FROM "...INF_TABLE_CPTIMES..." AS _cp INNER JOIN "...INF_TABLE_TIMES..." AS _t ON _cp.uid=_t.uid AND _cp.mapid=_t.mapid AND _cp.mode=_t.mode AND _cp.style=_t.style " ...
-        "WHERE _t.mapid=%i AND _t.runid=%i AND _t.mode=%i AND _t.style=%i " ...
-        "GROUP BY cpnum " ...
-        "ORDER BY cpnum",
-        mapid,
+        "FROM "...INF_TABLE_CPTIMES..." AS _cp INNER JOIN "...INF_TABLE_TIMES..." AS _t ON _cp.uid=_t.uid AND _cp.mapid=_t.mapid AND _cp.mode=_t.mode AND _cp.style=_t.style INNER JOIN "...INF_TABLE_MAPS..." AS _m ON _t.mapid=_m.mapid " ...
+        "WHERE _t.mapid=" );
+    
+    
+    if ( mapid <= 0 && szMap[0] != 0 )
+    {
+        decl String:szSearch[64];
+        strcopy( szSearch, sizeof( szSearch ), szMap );
+        
+        RemoveChars( szSearch, "`'\"%\\" );
+        
+        ReplaceString( szSearch, sizeof( szSearch ), "_", "\\_" );
+        
+        
+        if ( szSearch[0] != 0 )
+        {
+#if defined DEBUG_DB
+            PrintToServer( INF_DEBUG_PRE..."Searching for a map name: %s", szSearch );
+#endif
+            Format( szQuery, sizeof( szQuery ), "%s(SELECT mapid FROM "...INF_TABLE_MAPS..." WHERE mapname LIKE '%%%s%%' ESCAPE '%s' LIMIT 1)",
+                szQuery,
+                szSearch,
+                Influx_IsMySQL() ? "\\\\" : "\\" );
+        }
+    }
+    else
+    {
+        Format( szQuery, sizeof( szQuery ), "%s%i", szQuery, mapid );
+    }
+    
+    
+    Format( szQuery, sizeof( szQuery ),  "%s AND _t.runid=%i AND _t.mode=%i AND _t.style=%i GROUP BY cpnum ORDER BY cpnum",
+        szQuery,
         runid,
         mode,
         style );
     
-    SQL_TQuery( db, Thrd_PrintTopCPTimes, szQuery, GetClientUserId( client ), DBPrio_High );
+    
+    static int data[PCBTOP_SIZE];
+    ArrayList array = new ArrayList( PCBTOP_SIZE );
+    
+    data[PCBTOP_USERID] = GetClientUserId( client );
+    data[PCBTOP_MODE] = mode;
+    data[PCBTOP_STYLE] = style;
+    
+    array.PushArray( data );
+    
+    
+    SQL_TQuery( db, Thrd_PrintTopCPTimes, szQuery, array, DBPrio_High );
 }
 
 stock void DB_PrintDeleteCPTimes( int client, int mapid )

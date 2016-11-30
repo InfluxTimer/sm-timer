@@ -720,3 +720,27 @@ public int Native_GetRunBestTime( Handle hPlugin, int nParms )
     
     return view_as<int>( GetRunBestTime( irun, mode, style ) );
 }
+
+public int Native_SearchType( Handle hPlugin, int nParms )
+{
+    decl String:szType[32];
+    GetNativeString( 1, szType, sizeof( szType ) );
+    
+    Search_t search = SEARCH_INVALID;
+    int value = 0;
+    
+    SearchType( szType, search, value );
+    
+    SetNativeCellRef( 2, value );
+    
+    return view_as<int>( search );
+}
+
+public int Native_IsValidMapName( Handle hPlugin, int nParms )
+{
+    decl String:szMap[128];
+    GetNativeString( 1, szMap, sizeof( szMap ) );
+    
+    
+    return IsValidMapName( szMap );
+}

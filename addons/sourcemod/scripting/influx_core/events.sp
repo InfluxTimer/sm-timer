@@ -65,3 +65,8 @@ public void E_ConVarChanged_ChatMainClr1( ConVar convar, const char[] oldValue, 
 {
     DetermineChatMainClr1();
 }
+
+public void E_ConVarChanged_ValidMapNames( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    SetMapNameRegex();
+}

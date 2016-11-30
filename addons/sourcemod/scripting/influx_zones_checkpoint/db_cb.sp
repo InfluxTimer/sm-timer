@@ -285,8 +285,15 @@ public void Thrd_PrintCPTimes( Handle db, Handle res, const char[] szError, Arra
     menu.Display( client, MENU_TIME_FOREVER );
 }
 
-public void Thrd_PrintTopCPTimes( Handle db, Handle res, const char[] szError, int client )
+public void Thrd_PrintTopCPTimes( Handle db, Handle res, const char[] szError, ArrayList array )
 {
+    static int data[PCBTOP_SIZE];
+    array.GetArray( 0, data );
+    
+    delete array;
+    
+    int client = data[PCBTOP_USERID];
+    
     if ( !(client = GetClientOfUserId( client )) ) return;
     
     
@@ -302,19 +309,32 @@ public void Thrd_PrintTopCPTimes( Handle db, Handle res, const char[] szError, i
     decl String:szBest[64];
     int numrecs = 0;
     
+    decl String:szMap[64];
+    szMap[0] = 0;
+    
+    decl String:szModeStyle[64];
+    szModeStyle[0] = 0;
+    
+    
+    int reqmode = data[PCBTOP_MODE];
+    int reqstyle = data[PCBTOP_STYLE];
+    
     
     Menu menu = new Menu( Hndlr_Empty );
-    
-    menu.SetTitle( "Top CP Times\n " );
     
     
     while ( SQL_FetchRow( res ) )
     {
-        int cpnum = SQL_FetchInt( res, 0 );
+        if ( szMap[0] == 0 )
+        {
+            SQL_FetchString( res, 0, szMap, sizeof( szMap ) );
+        }
         
-        float srtime = SQL_FetchFloat( res, 1 );
+        int cpnum = SQL_FetchInt( res, 1 );
         
-        float besttime = SQL_FetchFloat( res, 2 );
+        float srtime = SQL_FetchFloat( res, 2 );
+        
+        float besttime = SQL_FetchFloat( res, 3 );
         
         
         Inf_FormatSeconds( srtime, szSR, sizeof( szSR ) );
@@ -341,6 +361,28 @@ public void Thrd_PrintTopCPTimes( Handle db, Handle res, const char[] szError, i
         
         ++numrecs;
     }
+    
+    
+    if ( szMap[0] == 0 ) strcopy( szMap, sizeof( szMap ), "N/A" );
+    
+    if ( Influx_ShouldModeDisplay( reqmode ) )
+    {
+        Influx_GetModeName( reqmode, szModeStyle, sizeof( szModeStyle ) );
+    }
+    
+    if ( Influx_ShouldStyleDisplay( reqstyle ) )
+    {
+        decl String:szTemp[32];
+        Influx_GetStyleName( reqstyle, szTemp, sizeof( szTemp ) );
+        
+        Format( szModeStyle, sizeof( szModeStyle ), "%s %s", szTemp, szModeStyle );
+    }
+    
+    
+    menu.SetTitle( "Top CP Times | %s%s%s\n─────────────────────────────────\n ",
+        ( szModeStyle[0] != 0 ) ? szModeStyle : "",
+        ( szModeStyle[0] != 0 ) ? " | " : "",
+        szMap );
     
     if ( !numrecs )
     {
