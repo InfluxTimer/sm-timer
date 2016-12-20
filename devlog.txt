@@ -5,7 +5,8 @@ COMPATIBILITY:
 - You need to run sm_updateinfluxdb command through server console.
 
 ADDED:
-- influx_recrank-plugin to display record's rank in chat.
+- influx_recrank-plugin to display record's rank in chat (after finishing a run).
+- influx_maprankings-plugin to display player's map ranking on HUD.
 - influx_zones_checkpoint-plugin for checkpoint times.
 - influx_zones_stage-plugin for stage displaying.
 - influx_ac_leftright-plugin to block malicious +left/+right usage. Recommended to be disabled for surf servers.
@@ -18,6 +19,7 @@ ADDED:
 
 CHANGES:
 - Player's join date is now recorded in database. If pre-existing records have none, furthest date from times is used (recdate).
+- Crosshair building is now the default building method. Use influx_zones_crosshairbuild-cvar to toggle.
 
 FIXES:
 - MySQL not displaying best times correctly.
