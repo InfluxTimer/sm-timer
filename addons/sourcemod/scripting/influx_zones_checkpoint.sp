@@ -8,6 +8,9 @@
 
 #include <msharedutil/misc>
 
+#undef REQUIRE_PLUGIN
+#include <influx/help>
+
 
 //#define DEBUG_ADDS
 //#define DEBUG_ZONE
@@ -192,6 +195,12 @@ public void OnClientPutInServer( int client )
     
     
     g_iBuildingNum[client] = 0;
+}
+
+public void Influx_RequestHelpCmds()
+{
+    Influx_AddHelpCommand( "wrcp/topcp <args>", "Displays all top checkpoint times." );
+    Influx_AddHelpCommand( "deletecptimes", "Menu to delete checkpoint times.", true );
 }
 
 public void Influx_OnPreRunLoad()

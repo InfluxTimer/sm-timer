@@ -307,6 +307,7 @@ public void Thrd_PrintTopCPTimes( Handle db, Handle res, const char[] szError, A
     decl String:szDisplay[128];
     decl String:szSR[64];
     decl String:szBest[64];
+    decl String:szPB[64];
     int numrecs = 0;
     
     decl String:szMap[64];
@@ -336,12 +337,14 @@ public void Thrd_PrintTopCPTimes( Handle db, Handle res, const char[] szError, A
         
         float besttime = SQL_FetchFloat( res, 3 );
         
+        float pbtime = SQL_FetchFloat( res, 4 );
+        
         
         Inf_FormatSeconds( srtime, szSR, sizeof( szSR ) );
         Format( szSR, sizeof( szSR ), "\n        SR: %s", szSR );
         
         
-        if ( besttime != srtime )
+        if ( besttime != INVALID_RUN_TIME && besttime != srtime )
         {
             Inf_FormatSeconds( besttime, szBest, sizeof( szBest ) );
             Format( szBest, sizeof( szBest ), "\n        BEST: %s", szBest );
@@ -351,11 +354,22 @@ public void Thrd_PrintTopCPTimes( Handle db, Handle res, const char[] szError, A
             szBest[0] = '\0';
         }
         
+        if ( pbtime != INVALID_RUN_TIME && pbtime != srtime )
+        {
+            Inf_FormatSeconds( pbtime, szPB, sizeof( szPB ) );
+            Format( szPB, sizeof( szPB ), "\n        PB: %s", szPB );
+        }
+        else
+        {
+            szPB[0] = 0;
+        }
         
-        FormatEx( szDisplay, sizeof( szDisplay ), "CP %i%s%s\n ",
+        
+        FormatEx( szDisplay, sizeof( szDisplay ), "CP %i%s%s%s\n ",
             cpnum,
             szSR,
-            szBest );
+            szBest,
+            szPB );
         
         menu.AddItem( "", szDisplay, ITEMDRAW_DISABLED );
         
