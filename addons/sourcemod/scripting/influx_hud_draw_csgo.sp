@@ -149,30 +149,26 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
                 
                 decl c;
                 
-                //decl String:szName[MAX_CP_NAME];
-                //Influx_GetClientLastCPName( client, szName, sizeof( szName ) );
-                
-                
                 Inf_FormatSeconds( Inf_GetTimeDif( time, cptime, c ), szTemp2, sizeof( szTemp2 ), szSecFormat );
                 
                 
-                FormatEx( szMsg, sizeof( szMsg ), "CP: %c%s", c, szTemp2 );
+                FormatEx( szMsg, sizeof( szMsg ), "CP: <font color=\"#42f4a1\">%c%s</font>", c, szTemp2 );
             }
             else
             {
                 Inf_FormatSeconds( Influx_GetClientTime( target ), szTemp, sizeof( szTemp ), szSecFormat );
-                FormatEx( szMsg, sizeof( szMsg ), "Time: %s", szTemp );
+                FormatEx( szMsg, sizeof( szMsg ), "Time: <font color=\"#42f4a1\">%s</font>", szTemp );
             }
         }
         else if ( state == STATE_START )
         {
             Influx_GetRunName( Influx_GetClientRunId( target ), szTemp, sizeof( szTemp ) );
-            FormatEx( szMsg, sizeof( szMsg ), "In %s Start", szTemp );
+            FormatEx( szMsg, sizeof( szMsg ), "<font color=\"#4286f4\">In %s Start</font>", szTemp );
         }
         
         if ( !(hideflags & HIDEFLAG_SPEED) )
         {
-            Format( szMsg, sizeof( szMsg ), "%s\nSpeed: %03.0f",
+            Format( szMsg, sizeof( szMsg ), "%s\n<font color=\"#4286f4\">Speed: %03.0f</font>",
                 szMsg,
                 GetSpeed( target ) );
         }
@@ -180,19 +176,28 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         
         bool bprac = ( g_bLib_Practise && !(hideflags & HIDEFLAG_PRACMODE) && Influx_IsClientPractising( target ) );
         
-        if ( bprac )
+        bool bpause = ( g_bLib_Pause && !(hideflags & HIDEFLAG_PAUSEMODE) && Influx_IsClientPaused( target ) );
+        
+        if ( bprac || bpause )
         {
-            Format( szMsg, sizeof( szMsg ), "%s%sPractising",
-                szMsg,
-                NEWLINE_CHECK( szMsg ) );
+            Format( szMsg, sizeof( szMsg ), "%s%s<font color=\"#ff0000\">", szMsg, NEWLINE_CHECK( szMsg ) );
+            
+            
+            if ( bprac )
+            {
+                Format( szMsg, sizeof( szMsg ), "%sPractising", szMsg );
+            }
+            
+            if ( bpause )
+            {
+                Format( szMsg, sizeof( szMsg ), "%s%sPaused", szMsg, bprac ? "/" : "" );
+            }
+            
+            
+            Format( szMsg, sizeof( szMsg ), "%s</font>", szMsg );
         }
         
-        if ( g_bLib_Pause && !(hideflags & HIDEFLAG_PAUSEMODE) && Influx_IsClientPaused( target ) )
-        {
-            Format( szMsg, sizeof( szMsg ), "%s%sPaused",
-                szMsg,
-                bprac ? "/" : "\n" );
-        }
+
         
         
         if ( szMsg[0] != '\0' )
