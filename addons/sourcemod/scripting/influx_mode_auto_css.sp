@@ -16,8 +16,6 @@ float g_flAirAccelerate;
 
 bool g_bWantsAuto[INF_MAXPLAYERS];
 
-int g_Offset_hMyWeapons;
-
 
 // CONVARS
 ConVar g_ConVar_AirAccelerate;
@@ -25,7 +23,6 @@ ConVar g_ConVar_EnableBunnyhopping;
 
 ConVar g_ConVar_Auto_AirAccelerate;
 ConVar g_ConVar_EZHop;
-ConVar g_ConVar_Weapon;
 
 
 public Plugin myinfo =
@@ -50,12 +47,6 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    if ( (g_Offset_hMyWeapons = FindSendPropInfo( "CCSPlayer", "m_hMyWeapons" )) == -1 )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't find offset for m_hMyWeapons!" );
-    }
-    
-    
     if ( (g_ConVar_AirAccelerate = FindConVar( "sv_airaccelerate" )) == null )
     {
         SetFailState( INF_CON_PRE..."Couldn't find handle for sv_airaccelerate!" );
@@ -70,7 +61,6 @@ public void OnPluginStart()
     // EVENTS
     HookEvent( "player_jump", E_PlayerJump, EventHookMode_Post );
     HookEvent( "player_hurt", E_PlayerHurt, EventHookMode_Post );
-    HookEvent( "player_spawn", E_PlayerSpawn );
     
     // CONVARS
     g_ConVar_Auto_AirAccelerate = CreateConVar( "influx_auto_airaccelerate", "1000", "", FCVAR_NOTIFY );
@@ -80,7 +70,7 @@ public void OnPluginStart()
     
     
     g_ConVar_EZHop = CreateConVar( "influx_auto_ezhop", "1", "Does this mode have EZ-Hop?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-    g_ConVar_Weapon = CreateConVar( "influx_auto_weapon", "none", "What weapon do we give the player. (to set max speed to 260, etc.) | none = remove all weapons.", FCVAR_NOTIFY );
+    
     
     AutoExecConfig( true, "mode_auto_css", "influx" );
     
@@ -154,10 +144,6 @@ public Action Influx_OnClientModeChange( int client, int mode, int lastmode )
         }
         
         
-        if ( IsPlayerAlive( client ) )
-            CheckWeapon( client );
-        
-        
         Inf_SendConVarValueFloat( client, g_ConVar_AirAccelerate, g_ConVar_Auto_AirAccelerate.FloatValue );
         Inf_SendConVarValueBool( client, g_ConVar_EnableBunnyhopping, true );
     }
@@ -207,29 +193,6 @@ public void E_PlayerHurt( Event event, const char[] szEvent, bool dontBroadcast 
     }
 }
 
-public void E_PlayerSpawn( Event event, const char[] szEvent, bool bImUselessWhyDoIExist )
-{
-    int client = GetClientOfUserId( event.GetInt( "userid" ) );
-    if ( !client ) return;
-    
-    if ( GetClientTeam( client ) <= CS_TEAM_SPECTATOR || !IsPlayerAlive( client ) ) return;
-    
-    
-    if ( Influx_GetClientMode( client ) == MODE_AUTO )
-    {
-        RequestFrame( E_PlayerSpawn_Delay, GetClientUserId( client ) );
-    }
-}
-
-public void E_PlayerSpawn_Delay( int client )
-{
-    if ( !(client = GetClientOfUserId( client )) ) return;
-    
-    if ( !IsPlayerAlive( client ) ) return;
-    
-    CheckWeapon( client );
-}
-
 public void E_PreThinkPost_Client( int client )
 {
 #if defined DEBUG_THINK
@@ -273,48 +236,4 @@ public Action Cmd_ToggleAuto( int client, int args )
     g_bWantsAuto[client] = !g_bWantsAuto[client];
     
     return Plugin_Handled;
-}
-
-stock void CheckWeapon( int client )
-{
-    int ent;
-    
-    decl String:wep[32];
-    g_ConVar_Weapon.GetString( wep, sizeof( wep ) );
-    
-    if ( StrContains( wep, "weapon_" ) == 0 )
-    {
-        bool bFound = false;
-        
-        decl String:wep2[32];
-        for ( int i = 0; i < 3; i++ )
-        {
-            if ( (ent = GetPlayerWeaponSlot( client, i )) != -1 )
-            {
-                if ( !GetEntityClassname( ent, wep2, sizeof( wep2 ) ) )
-                    continue;
-                
-                if ( StrEqual( wep[7], wep2[7], false ) )
-                {
-                    bFound = true;
-                    SetEntPropEnt( client, Prop_Send, "m_hActiveWeapon", ent );
-                }
-            }
-        }
-        
-        if ( !bFound )
-        {
-            GivePlayerItem( client, wep );
-        }
-    }
-    else
-    {
-        for ( int i = 0; i < 128; i += 4 )
-        {
-            if ( (ent = GetEntDataEnt2( client, g_Offset_hMyWeapons + i )) > 0 )
-            {
-                RemovePlayerItem( client, ent );
-            }
-        }
-    }
 }

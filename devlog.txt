@@ -20,6 +20,7 @@ ADDED:
 CHANGES:
 - Player's join date is now recorded in database. If pre-existing records have none, furthest date from times is used (recdate).
 - Crosshair building is now the default building method. Use influx_zones_crosshairbuild-cvar to toggle.
+- Autobhop mode no longer removes player's weapons. Use sm_drop instead.
 
 FIXES:
 - MySQL not displaying best times correctly.
