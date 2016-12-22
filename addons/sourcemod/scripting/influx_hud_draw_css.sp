@@ -210,6 +210,14 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
                 NEWLINE_CHECK( szMsg ) );
         }
         
+        /*if ( g_bLib_StrfSync && !(hideflags & HIDEFLAG_STRFSYNC) && state >= STATE_RUNNING )
+        {
+            Format( szMsg, sizeof( szMsg ), "%s%sSync: %.1f",
+                szMsg,
+                NEWLINE_CHECK( szMsg ),
+                Influx_GetClientStrafeSync( target ) );
+        }*/
+        
         PrintHintText( client, szMsg );
     }
     else if ( hudtype == HUDTYPE_KEYHINT )
@@ -393,13 +401,6 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
                 Influx_GetClientJumpCount( target ) );
         }
         
-        /*if ( g_bLib_StrfSync && !(hideflags & HIDEFLAG_STRFSYNC) && state >= STATE_RUNNING )
-        {
-            Format( szMsg, sizeof( szMsg ), "%s%sSync: %.1f",
-                szMsg,
-                NEWLINE_CHECK( szMsg ),
-                Influx_GetClientStrafeSync( target ) );
-        }*/
         
         Inf_ShowKeyHintText( client, szMsg );
     }
