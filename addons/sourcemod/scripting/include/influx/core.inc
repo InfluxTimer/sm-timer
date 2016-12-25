@@ -49,7 +49,9 @@ enum
     STYLE_W,
     STYLE_AD,
     STYLE_HSW,
-    STYLE_RHSW
+    STYLE_RHSW,
+    STYLE_LOWGRAV,
+    STYLE_BWD
 };
 
 enum

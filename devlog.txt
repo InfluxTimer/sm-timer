@@ -1,3 +1,10 @@
+1.0.6
+
+ADDED:
+- New styles low gravity and backwards.
+
+
+
 1.0.5
 
 COMPATIBILITY:
