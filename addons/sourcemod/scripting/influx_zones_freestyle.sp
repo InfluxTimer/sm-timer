@@ -78,6 +78,19 @@ public void OnPluginStart()
     g_bLib_Zones_Beams = LibraryExists( INFLUX_LIB_ZONES_BEAMS );
 }
 
+public void OnAllPluginsLoaded()
+{
+    if ( !Influx_RegZoneType( ZONETYPE_FS, "Freestyle", "freestyle", true ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't register zone type!" );
+    }
+}
+
+public void OnPluginEnd()
+{
+    Influx_RemoveZoneType( ZONETYPE_FS );
+}
+
 public void OnLibraryAdded( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_ZONES_BEAMS ) ) g_bLib_Zones_Beams = true;

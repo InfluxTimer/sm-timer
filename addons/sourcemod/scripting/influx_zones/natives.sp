@@ -37,7 +37,7 @@ public int Native_SetZoneName( Handle hPlugin, int nParms )
     decl String:szZone[MAX_ZONE_NAME];
     GetNativeString( 2, szZone, sizeof( szZone ) );
     
-    g_hZones.SetString( index, szZone );
+    SetZoneNameByIndex( index, szZone );
     
     return 1;
 }
@@ -74,4 +74,22 @@ public int Native_DeleteZone( Handle hPlugin, int nParms )
 public int Native_CanUserModifyZones( Handle hPlugin, int nParms )
 {
     return CanUserModifyZones( GetNativeCell( 1 ) );
+}
+
+public int Native_RegZoneType( Handle hPlugin, int nParms )
+{
+    ZoneType_t type = view_as<ZoneType_t>( GetNativeCell( 1 ) );
+    
+    char szName[MAX_ZONE_NAME];
+    GetNativeString( 2, szName, sizeof( szName ) );
+    
+    char szShortName[MAX_ZONE_NAME];
+    GetNativeString( 3, szShortName, sizeof( szShortName ) );
+    
+    return AddZoneType( type, szName, szShortName, GetNativeCell( 4 ) ? true : false );
+}
+
+public int Native_RemoveZoneType( Handle hPlugin, int nParms )
+{
+    return RemoveZoneType( view_as<ZoneType_t>( GetNativeCell( 1 ) ) );
 }

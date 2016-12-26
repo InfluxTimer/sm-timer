@@ -53,23 +53,11 @@ public int Hndlr_CreateZone( Menu menu, MenuAction action, int client, int index
     if ( !CanUserModifyZones( client ) ) return 0;
     
     
-    char szInfo[6];
+    char szInfo[32];
     if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
     
     
-    ZoneType_t zonetype = view_as<ZoneType_t>( StringToInt( szInfo ) );
-    if ( !VALID_ZONETYPE( zonetype ) )
-    {
-        FakeClientCommand( client, "sm_createzone" );
-        return 0;
-    }
-    
-    
-    char szType[32];
-    Inf_ZoneTypeToName( zonetype, szType, sizeof( szType ) );
-    
-    FakeClientCommand( client, "sm_createzone %s", szType );
-    
+    FakeClientCommand( client, "sm_createzone %s", szInfo );
     
     return 0;
 }
@@ -151,6 +139,12 @@ public int Hndlr_ZoneSettings( Menu menu, MenuAction action, int client, int ind
     
     if ( izone != -1 )
     {
+        if ( !ZoneTypeHasSettings( view_as<ZoneType_t>( g_hZones.Get( izone, ZONE_TYPE ) ) ) )
+        {
+            return 0;
+        }
+        
+        
         Action res;
         
         Call_StartForward( g_hForward_OnZoneSettings );

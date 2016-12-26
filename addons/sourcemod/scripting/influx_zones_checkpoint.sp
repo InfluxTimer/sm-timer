@@ -70,6 +70,7 @@ ArrayList g_hCPs;
 
 
 int g_iBuildingNum[INF_MAXPLAYERS];
+int g_iBuildingRunId[INF_MAXPLAYERS];
 
 
 ArrayList g_hClientCP[INF_MAXPLAYERS];
@@ -167,7 +168,17 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
+    if ( !Influx_RegZoneType( ZONETYPE_CP, "Checkpoint", "checkpoint", false ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't register zone type!" );
+    }
+    
     DB_Init();
+}
+
+public void OnPluginEnd()
+{
+    Influx_RemoveZoneType( ZONETYPE_CP );
 }
 
 public void OnClientPutInServer( int client )
@@ -207,6 +218,42 @@ public void Influx_OnPreRunLoad()
 {
     g_hCPZones.Clear();
     g_hCPs.Clear();
+}
+
+public void Influx_OnRunCreated( int runid )
+{
+    // Update checkpoints that don't have a run to use the newly created run.
+    int len;
+    
+    len = g_hCPs.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( g_hCPs.Get( i, CP_RUN_ID ) != -1 ) continue;
+        
+        
+        g_hCPs.Set( i, runid, CP_RUN_ID );
+    }
+    
+    
+    char szRun[32];
+    Influx_GetRunName( runid, szRun, sizeof( szRun ) );
+    
+    char szName[32];
+    
+    
+    len = g_hCPZones.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( g_hCPZones.Get( i, CPZONE_RUN_ID ) != -1 ) continue;
+        
+        
+        g_hCPZones.Set( i, runid, CPZONE_RUN_ID );
+        
+        
+        FormatEx( szName, sizeof( szName ), "%s CP %i", szRun, g_hCPZones.Get( i, CPZONE_NUM ) );
+        
+        Influx_SetZoneName( g_hCPZones.Get( i, CPZONE_ID ), szName );
+    }
 }
 
 public void Influx_OnClientIdRetrieved( int client, int uid, bool bNew )
@@ -336,7 +383,6 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     
     
     int runid = Influx_GetClientRunId( client );
-    if ( Influx_FindRunById( runid ) == -1 ) return;
     
     
     int cpnum = g_iBuildingNum[client];
@@ -420,12 +466,6 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     
     int runid = Influx_GetClientRunId( client );
     
-    if ( Influx_FindRunById( runid ) == -1 )
-    {
-        Influx_PrintToChat( _, client, "You must have a run to create checkpoints for!" );
-        return Plugin_Continue;
-    }
-    
     
     char szDisplay[32];
     char szInfo[32];
@@ -498,12 +538,11 @@ public int Hndlr_CreateZone_SelectCPNum( Menu oldmenu, MenuAction action, int cl
     if ( !GetMenuItem( oldmenu, index, szInfo, sizeof( szInfo ) ) ) return 0;
     
     
-    int runid = Influx_GetClientRunId( client );
-    if ( Influx_FindRunById( runid ) == -1 ) return 0;
-    
-    
     int cpnum = StringToInt( szInfo );
     if ( cpnum < 1 ) return 0;
+    
+    
+    int runid = Influx_GetClientRunId( client );
     
     
     if ( FindCPZoneByNum( runid, cpnum ) != -1 )
@@ -537,12 +576,11 @@ public int Hndlr_CreateZone_SelectMethod( Menu oldmenu, MenuAction action, int c
     if ( !GetMenuItem( oldmenu, index, szInfo, sizeof( szInfo ) ) ) return 0;
     
     
-    int runid = Influx_GetClientRunId( client );
-    if ( Influx_FindRunById( runid ) == -1 ) return 0;
-    
-    
     int cpnum = StringToInt( szInfo );
     if ( cpnum < 1 ) return 0;
+    
+    
+    int runid = Influx_GetClientRunId( client );
     
     
     switch ( index )
@@ -675,13 +713,16 @@ stock void SaveClientCP( int client, int cpnum )
 
 stock void StartToBuild( int client, int cpnum )
 {
+    int runid = Influx_GetClientRunId( client );
+    
     g_iBuildingNum[client] = cpnum;
+    g_iBuildingRunId[client] = runid;
     
     
     char szName[MAX_ZONE_NAME];
     char szRun[MAX_RUN_NAME];
     
-    Influx_GetRunName( Influx_GetClientRunId( client ), szRun, sizeof( szRun ) );
+    Influx_GetRunName( runid, szRun, sizeof( szRun ) );
     
     FormatEx( szName, sizeof( szName ), "%s CP %i", szRun, cpnum );
     

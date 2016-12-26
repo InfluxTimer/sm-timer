@@ -50,6 +50,21 @@ public void OnPluginStart()
     g_hTimer = new ArrayList( TIMER_SIZE );
 }
 
+public void OnAllPluginsLoaded()
+{
+    if (!Influx_RegZoneType( ZONETYPE_START, "Timer Start", "start", false )
+    ||  !Influx_RegZoneType( ZONETYPE_END, "Timer End", "end", false ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't register zone type!" );
+    }
+}
+
+public void OnPluginEnd()
+{
+    Influx_RemoveZoneType( ZONETYPE_START );
+    Influx_RemoveZoneType( ZONETYPE_END );
+}
+
 public void OnClientPutInServer( int client )
 {
     g_iBuildingRunId[client] = -1;

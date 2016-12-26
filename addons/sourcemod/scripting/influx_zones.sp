@@ -11,12 +11,6 @@
 
 #undef REQUIRE_PLUGIN
 #include <influx/zones_beams>
-#include <influx/zones_timer>
-#include <influx/zones_freestyle>
-#include <influx/zones_block>
-#include <influx/zones_teleport>
-#include <influx/zones_checkpoint>
-#include <influx/zones_stage>
 #include <influx/help>
 
 
@@ -39,6 +33,21 @@
 #define BUILD_DIST_RATE             32.0
 
 
+
+enum
+{
+    ZTYPE_NAME[MAX_ZONE_NAME] = 0,
+    ZTYPE_SHORTNAME[MAX_ZONE_NAME],
+    
+    ZTYPE_TYPE,
+    
+    ZTYPE_HAS_SETTINGS,
+    
+    ZTYPE_SIZE
+};
+
+
+
 ZoneType_t g_iBuildingType[INF_MAXPLAYERS];
 float g_vecBuildingStart[INF_MAXPLAYERS][3];
 //int g_iBuildingZoneId[INF_MAXPLAYERS];
@@ -50,8 +59,9 @@ float g_flBuildDist[INF_MAXPLAYERS];
 
 
 
-
 ArrayList g_hZones;
+ArrayList g_hZoneTypes;
+
 //int g_nNewZoneId;
 
 int g_iBuildBeamMat;
@@ -90,12 +100,6 @@ Handle g_hForward_OnZoneSpawned;
 
 // LIBRARIES
 bool g_bLib_Zones_Beams;
-bool g_bLib_Zones_Timer;
-bool g_bLib_Zones_Fs;
-bool g_bLib_Zones_Block;
-bool g_bLib_Zones_Tele;
-bool g_bLib_Zones_Stage;
-bool g_bLib_Zones_CP;
 
 
 #include "influx_zones/menus.sp"
@@ -130,6 +134,9 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_DeleteZone", Native_DeleteZone );
     
     CreateNative( "Influx_CanUserModifyZones", Native_CanUserModifyZones );
+    
+    CreateNative( "Influx_RegZoneType", Native_RegZoneType );
+    CreateNative( "Influx_RemoveZoneType", Native_RemoveZoneType );
 }
 
 public void OnPluginStart()
@@ -204,37 +211,20 @@ public void OnPluginStart()
     
     // LIBRARIES
     g_bLib_Zones_Beams = LibraryExists( INFLUX_LIB_ZONES_BEAMS );
-    g_bLib_Zones_Timer = LibraryExists( INFLUX_LIB_ZONES_TIMER );
-    g_bLib_Zones_Fs = LibraryExists( INFLUX_LIB_ZONES_FS );
-    g_bLib_Zones_Block = LibraryExists( INFLUX_LIB_ZONES_BLOCK );
-    g_bLib_Zones_Tele = LibraryExists( INFLUX_LIB_ZONES_TELE );
-    g_bLib_Zones_Stage = LibraryExists( INFLUX_LIB_ZONES_STAGE );
-    g_bLib_Zones_CP = LibraryExists( INFLUX_LIB_ZONES_CP );
     
     
     g_hZones = new ArrayList( ZONE_SIZE );
+    g_hZoneTypes = new ArrayList( ZTYPE_SIZE );
 }
 
 public void OnLibraryAdded( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_ZONES_BEAMS ) ) g_bLib_Zones_Beams = true;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_TIMER ) ) g_bLib_Zones_Timer = true;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = true;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_BLOCK ) ) g_bLib_Zones_Block = true;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_TELE ) ) g_bLib_Zones_Tele = true;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Zones_Stage = true;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_Zones_CP = true;
 }
 
 public void OnLibraryRemoved( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_ZONES_BEAMS ) ) g_bLib_Zones_Beams = false;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_TIMER ) ) g_bLib_Zones_Timer = false;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = false;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_BLOCK ) ) g_bLib_Zones_Block = false;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_TELE ) ) g_bLib_Zones_Tele = false;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Zones_Stage = false;
-    if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_Zones_CP = false;
 }
 
 public void Influx_RequestHelpCmds()
@@ -346,19 +336,19 @@ stock void ReadZoneFile()
         }
         else
         {
-            zonetype = Inf_ZoneNameToType( szType );
+            zonetype = FindZoneTypeByShortName( szType );
         }
         
-        if ( !VALID_ZONETYPE( zonetype ) )
+        if ( zonetype == ZONETYPE_INVALID || FindZoneType( zonetype ) == -1 )
         {
-            LogError( INF_CON_PRE..."Found invalid zone type %i!", zonetype );
+            //LogError( INF_CON_PRE..."Found invalid zone type %i!", zonetype );
             continue;
         }
         
         zoneid = kv.GetNum( "id", -1 );
         if ( zoneid < 1 )
         {
-            LogError( INF_CON_PRE..."Found invalid zone id! (id: %i)", zoneid );
+            LogError( INF_CON_PRE..."Found invalid zone id value! (id: %i)", zoneid );
             continue;
         }
         
@@ -448,6 +438,7 @@ stock int WriteZoneFile()
     decl String:szBuffer[64];
     decl zoneid;
     ZoneType_t zonetype;
+    int itype;
     
     
     KeyValues kv = new KeyValues( "Zones" );
@@ -459,9 +450,14 @@ stock int WriteZoneFile()
         zoneid = data[ZONE_ID];
         if ( zoneid < 1 ) continue;
         
-        zonetype = view_as<ZoneType_t>( data[ZONE_TYPE] );
-        if ( !VALID_ZONETYPE( zonetype ) ) continue;
         
+        zonetype = view_as<ZoneType_t>( data[ZONE_TYPE] );
+        
+        itype = FindZoneType( zonetype );
+        if ( itype == -1 )
+        {
+            continue;
+        }
         
         if ( !kv.JumpToKey( view_as<char>( data[ZONE_NAME] ), true ) )
         {
@@ -502,8 +498,7 @@ stock int WriteZoneFile()
         kv.SetNum( "id", zoneid );
         
         
-        Inf_ZoneTypeToName( zonetype, szBuffer, sizeof( szBuffer ) );
-        StringToLower( szBuffer );
+        GetZoneTypeShortNameByIndex( itype, szBuffer, sizeof( szBuffer ) );
         kv.SetString( "type", szBuffer );
         
         
@@ -635,7 +630,7 @@ stock bool StartToBuild( int client, ZoneType_t zonetype, const char[] name = ""
     {
         g_szBuildingName[client][0] = '\0';
         
-        Inf_ZoneTypeToName( zonetype, szName, sizeof( szName ) );
+        GetZoneTypeName( zonetype, szName, sizeof( szName ) );
     }
     
     
@@ -726,7 +721,7 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
     
     if ( g_szBuildingName[client][0] == '\0' )
     {
-        Inf_ZoneTypeToName( zonetype, szName, sizeof( szName ) );
+        GetZoneTypeName( zonetype, szName, sizeof( szName ) );
         
         Format( szName, sizeof( szName ), "%s #%i", szName, GetZoneTypeCount( zonetype ) + 1 );
     }
@@ -735,12 +730,6 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
         strcopy( szName, sizeof( szName ), g_szBuildingName[client] );
     }
     
-    // Make sure our name isn't already taken.
-    int num = GetZoneNameCount( szName );
-    if ( num )
-    {
-        Format( szName, sizeof( szName ), "%s (%i)", szName, num + 1 );
-    }
     
     
     
@@ -761,16 +750,16 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
     
     //int zoneid = g_nNewZoneId++;
     
-    decl data[ZONE_SIZE];
+    int data[ZONE_SIZE];
     
     data[ZONE_TYPE] = view_as<int>( zonetype );
     data[ZONE_ID] = zoneid;
     CopyArray( mins, data[ZONE_MINS], 3 );
     CopyArray( maxs, data[ZONE_MAXS], 3 );
     
-    strcopy( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME, szName );
+    int index = g_hZones.PushArray( data );
     
-    g_hZones.PushArray( data );
+    SetZoneNameByIndex( index, szName );
     
     
     Call_StartForward( g_hForward_OnZoneCreated );
@@ -803,7 +792,7 @@ stock int GetZoneNameCount( const char[] szName )
     {
         GetZoneNameByIndex( i, szComp, sizeof( szComp ) )
         
-        if ( StrContains( szName, szComp, false ) == 0 )
+        if ( StrContains( szComp, szName, false ) == 0 )
         {
             ++num;
         }
@@ -1076,4 +1065,143 @@ stock int CreateTriggerEnt( const float mins[3], const float maxs[3] )
     SetEntProp( ent, Prop_Send, "m_nSolidType", 2 ); // Essential! Use bounding box instead of model's bsp(?) for input.
     
     return ent;
+}
+
+stock bool AddZoneType( ZoneType_t type, const char[] szName, const char[] szShortName, bool bHasSettings )
+{
+    if ( FindZoneType( type ) != -1 ) return false;
+    
+    
+    int data[ZTYPE_SIZE];
+    
+    strcopy( view_as<char>( data[ZTYPE_NAME] ), MAX_ZONE_NAME, szName );
+    strcopy( view_as<char>( data[ZTYPE_SHORTNAME] ), MAX_ZONE_NAME, szShortName );
+    
+    data[ZTYPE_TYPE] = view_as<int>( type );
+    data[ZTYPE_HAS_SETTINGS] = bHasSettings;
+    
+    g_hZoneTypes.PushArray( data );
+    
+    return true;
+}
+
+stock bool RemoveZoneType( ZoneType_t type )
+{
+    int index = FindZoneType( type );
+    
+    if ( index != -1 )
+    {
+        g_hZoneTypes.Erase( index );
+        return true;
+    }
+    
+    return false;
+}
+
+stock int FindZoneType( ZoneType_t type )
+{
+    int len = g_hZoneTypes.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( g_hZoneTypes.Get( i, ZTYPE_TYPE ) == view_as<int>( type ) )
+        {
+            return i;
+        }
+    }
+    
+    return -1;
+}
+
+stock void GetZoneTypeName( ZoneType_t type, char[] sz, int len )
+{
+    GetZoneTypeNameByIndex( FindZoneType( type ), sz, len );
+}
+
+stock void GetZoneTypeNameByIndex( int index, char[] sz, int len )
+{
+    if ( index != -1 )
+    {
+        g_hZoneTypes.GetString( index, sz, len );
+    }
+    else
+    {
+        strcopy( sz, len, "N/A" );
+    }
+}
+
+stock void GetZoneTypeShortName( ZoneType_t type, char[] sz, int len )
+{
+    GetZoneTypeShortNameByIndex( FindZoneType( type ), sz, len );
+}
+
+stock void GetZoneTypeShortNameByIndex( int index, char[] sz, int len )
+{
+    if ( index != -1 )
+    {
+        decl name[MAX_ZONE_NAME_CELL];
+        
+        for ( int i = 0; i < MAX_ZONE_NAME_CELL; i++ )
+        {
+            name[i] = g_hZoneTypes.Get( index, ZTYPE_SHORTNAME + i ); 
+        }
+        
+        strcopy( sz, len, view_as<char>( name ) );
+    }
+    else
+    {
+        strcopy( sz, len, "N/A" );
+    }
+}
+
+stock ZoneType_t FindZoneTypeByShortName( const char[] sz )
+{
+    decl String:szName[32];
+    
+    int len = g_hZoneTypes.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        GetZoneTypeShortNameByIndex( i, szName, sizeof( szName ) );
+        
+        if ( StrEqual( sz, szName ) )
+        {
+            return view_as<ZoneType_t>( g_hZoneTypes.Get( i, ZTYPE_TYPE ) );
+        }
+    }
+    
+    return ZONETYPE_INVALID;
+}
+
+// This stock name is giving me cancer.
+stock bool ZoneTypeHasSettings( ZoneType_t type )
+{
+    int i = FindZoneType( type );
+    if ( i == -1 ) return false;
+    
+    return g_hZoneTypes.Get( i, ZTYPE_HAS_SETTINGS );
+}
+
+stock void SetZoneName( int zoneid, const char[] szName )
+{
+    SetZoneNameByIndex( FindZoneById( zoneid ), szName );
+}
+
+stock void SetZoneNameByIndex( int index, const char[] szName )
+{
+    if ( index == -1 ) return;
+    
+    
+    char sz[MAX_ZONE_NAME];
+    
+    strcopy( sz, sizeof( sz ), szName );
+    
+    
+    // Make sure our name isn't already taken.
+    int num = GetZoneNameCount( sz );
+    if ( num )
+    {
+        Format( sz, sizeof( sz ), "%s (%i)", sz, num + 1 );
+    }
+    
+    
+    g_hZones.SetString( index, sz );
 }

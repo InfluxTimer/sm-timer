@@ -52,6 +52,7 @@ int g_iStage[INF_MAXPLAYERS];
 int g_nStages[INF_MAXPLAYERS];
 
 int g_iBuildingNum[INF_MAXPLAYERS];
+int g_iBuildingRunId[INF_MAXPLAYERS];
 
 
 ConVar g_ConVar_ActAsCP;
@@ -119,6 +120,19 @@ public void OnPluginStart()
     g_bLib_Zones_CP = LibraryExists( INFLUX_LIB_ZONES_CP );
 }
 
+public void OnAllPluginsLoaded()
+{
+    if ( !Influx_RegZoneType( ZONETYPE_STAGE, "Stage", "stage", false ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't register zone type!" );
+    }
+}
+
+public void OnPluginEnd()
+{
+    Influx_RemoveZoneType( ZONETYPE_STAGE );
+}
+
 public void OnLibraryAdded( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_Zones_CP = true;
@@ -164,6 +178,41 @@ public void Influx_OnClientStatusChanged( int client )
 public void Influx_OnPreRunLoad()
 {
     g_hStages.Clear();
+}
+
+public void Influx_OnRunCreated( int runid )
+{
+    // Update stages that don't have a run to use the newly created run.
+    int len;
+    
+    len = g_hStages.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( g_hStages.Get( i, STAGE_RUN_ID ) != -1 ) continue;
+        
+        
+        g_hStages.Set( i, runid, STAGE_RUN_ID );
+    }
+    
+    
+    char szRun[32];
+    Influx_GetRunName( runid, szRun, sizeof( szRun ) );
+    
+    char szName[32];
+    
+    
+    len = g_hStageZones.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( g_hStageZones.Get( i, STAGEZONE_RUN_ID ) != -1 ) continue;
+        
+        
+        g_hStageZones.Set( i, runid, STAGEZONE_RUN_ID );
+        
+        FormatEx( szName, sizeof( szName ), "%s Stage %i", szRun, g_hStageZones.Get( i, STAGEZONE_NUM ) );
+        
+        Influx_SetZoneName( g_hStageZones.Get( i, STAGEZONE_ID ), szName );
+    }
 }
 
 public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
@@ -233,8 +282,7 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     if ( zonetype != ZONETYPE_STAGE ) return;
     
     
-    int runid = Influx_GetClientRunId( client );
-    if ( runid < 1 ) return;
+    int runid = g_iBuildingRunId[client];
     
     
     int stagenum = g_iBuildingNum[client];
@@ -299,12 +347,6 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     
     
     int runid = Influx_GetClientRunId( client );
-    
-    if ( Influx_FindRunById( runid ) == -1 )
-    {
-        Influx_PrintToChat( _, client, "You must have a run to create stages for!" );
-        return Plugin_Continue;
-    }
     
     
     char szDisplay[32];
@@ -376,12 +418,11 @@ public int Hndlr_CreateZone_SelectStage( Menu oldmenu, MenuAction action, int cl
     if ( !GetMenuItem( oldmenu, index, szInfo, sizeof( szInfo ) ) ) return 0;
     
     
-    int runid = Influx_GetClientRunId( client );
-    if ( Influx_FindRunById( runid ) == -1 ) return 0;
-    
-    
     int stagenum = StringToInt( szInfo );
     if ( stagenum < 2 ) return 0;
+    
+    
+    int runid = Influx_GetClientRunId( client );
     
     
     if ( FindStageByNum( runid, stagenum ) != -1 )
@@ -415,12 +456,11 @@ public int Hndlr_CreateZone_SelectMethod( Menu oldmenu, MenuAction action, int c
     if ( !GetMenuItem( oldmenu, index, szInfo, sizeof( szInfo ) ) ) return 0;
     
     
-    int runid = Influx_GetClientRunId( client );
-    if ( Influx_FindRunById( runid ) == -1 ) return 0;
-    
-    
     int stagenum = StringToInt( szInfo );
     if ( stagenum < 2 ) return 0;
+    
+    
+    int runid = Influx_GetClientRunId( client );
     
     
     switch ( index )
@@ -457,13 +497,16 @@ public int Hndlr_CreateZone_SelectMethod( Menu oldmenu, MenuAction action, int c
 
 stock void StartToBuild( int client, int stagenum )
 {
+    int runid = Influx_GetClientRunId( client );
+    
     g_iBuildingNum[client] = stagenum;
+    g_iBuildingRunId[client] = runid;
     
     
     char szName[MAX_ZONE_NAME];
     char szRun[MAX_RUN_NAME];
     
-    Influx_GetRunName( Influx_GetClientRunId( client ), szRun, sizeof( szRun ) );
+    Influx_GetRunName( runid, szRun, sizeof( szRun ) );
     
     FormatEx( szName, sizeof( szName ), "%s Stage %i", szRun, stagenum );
     

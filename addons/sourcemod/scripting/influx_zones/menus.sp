@@ -6,11 +6,10 @@
 #include "influx_zones/menus_hndlrs.sp"
 
 
-stock int FillZoneMenu( Menu menu, bool bShowTimerZones = true, bool bShowControlZones = true, bool bZoneYouAreIn = true )
+stock int FillZoneMenu( Menu menu, bool bReqSettings = true, bool bZoneYouAreIn = true )
 {
     int num_items = 0;
     
-    int i;
     ZoneType_t zonetype;
     int len = GetArrayLength_Safe( g_hZones );
     char szZone[32];
@@ -25,66 +24,32 @@ stock int FillZoneMenu( Menu menu, bool bShowTimerZones = true, bool bShowContro
         menu.AddItem( "_", "Zone You Are In" );
     }
     
-    if ( bShowTimerZones )
+    for ( int i = 0; i < len; i++ )
     {
-        for ( i = 0; i < len; i++ )
+        zonetype = view_as<ZoneType_t>( g_hZones.Get( i, ZONE_TYPE ) );
+        if ( bReqSettings && !ZoneTypeHasSettings( zonetype ) ) continue;
+        
+        
+        GetZoneTypeName( zonetype, szType, sizeof( szType ) );
+        
+        g_hZones.GetString( i, szZone, sizeof( szZone ) );
+        if ( szZone[0] == '\0' )
         {
-            zonetype = view_as<ZoneType_t>( g_hZones.Get( i, ZONE_TYPE ) );
-            if ( !Inf_IsZoneTypeTimer( zonetype ) ) continue;
-            
-            
-            Inf_ZoneTypeToName( zonetype, szType, sizeof( szType ) );
-            
-            g_hZones.GetString( i, szZone, sizeof( szZone ) );
-            if ( szZone[0] == '\0' )
-            {
-                strcopy( szZone, sizeof( szZone ), "N/A" );
-            }
-            
-            uid = g_hZones.Get( i, ZONE_ID );
-            
-            FormatEx( szDisplay, sizeof( szDisplay ), "%s [%s] [%i]",
-                szZone,
-                szType,
-                uid );
-            
-            
-            FormatEx( szInfo, sizeof( szInfo ), "z%i", uid );
-            menu.AddItem( szInfo, szDisplay );
-            
-            ++num_items;
+            strcopy( szZone, sizeof( szZone ), "N/A" );
         }
-    }
-    
-    if ( bShowControlZones )
-    {
-        for ( i = 0; i < len; i++ )
-        {
-            zonetype = view_as<ZoneType_t>( g_hZones.Get( i, ZONE_TYPE ) );
-            if ( Inf_IsZoneTypeTimer( zonetype ) ) continue;
-            
-            
-            Inf_ZoneTypeToName( zonetype, szType, sizeof( szType ) );
-            
-            g_hZones.GetString( i, szZone, sizeof( szZone ) );
-            if ( szZone[0] == '\0' )
-            {
-                strcopy( szZone, sizeof( szZone ), "N/A" );
-            }
-            
-            uid = g_hZones.Get( i, ZONE_ID );
-            
-            FormatEx( szDisplay, sizeof( szDisplay ), "%s [%s] [%i]",
-                szZone,
-                szType,
-                uid );
-            
-            
-            FormatEx( szInfo, sizeof( szInfo ), "z%i", uid );
-            menu.AddItem( szInfo, szDisplay );
-            
-            ++num_items;
-        }
+        
+        uid = g_hZones.Get( i, ZONE_ID );
+        
+        FormatEx( szDisplay, sizeof( szDisplay ), "%s [%s] [%i]",
+            szZone,
+            szType,
+            uid );
+        
+        
+        FormatEx( szInfo, sizeof( szInfo ), "z%i", uid );
+        menu.AddItem( szInfo, szDisplay );
+        
+        ++num_items;
     }
     
     return num_items;
@@ -161,19 +126,19 @@ public Action Cmd_CreateZone( int client, int args )
     
     if ( args )
     {
-        char szArg[32];
+        char szArg[12];
         GetCmdArgString( szArg, sizeof( szArg ) );
         
-        ZoneType_t zonetype = Inf_ZoneNameToType( szArg );
         
-        if ( !VALID_ZONETYPE( zonetype ) ) return Plugin_Handled;
+        ZoneType_t type = FindZoneTypeByShortName( szArg );
+        if ( type == ZONETYPE_INVALID ) return Plugin_Handled;
         
         
         Action res;
         
         Call_StartForward( g_hForward_OnZoneBuildAsk );
         Call_PushCell( client );
-        Call_PushCell( zonetype );
+        Call_PushCell( type );
         Call_Finish( res );
         
         if ( res != Plugin_Continue )
@@ -182,7 +147,7 @@ public Action Cmd_CreateZone( int client, int args )
         }
         
         
-        StartToBuild( client, zonetype );
+        StartToBuild( client, type );
         
         Inf_OpenZoneMenu( client );
     }
@@ -194,45 +159,21 @@ public Action Cmd_CreateZone( int client, int args )
         Menu menu = new Menu( Hndlr_CreateZone );
         menu.SetTitle( "Zone Creation\n " );
         
-        char szInfo[6];
+        char szDisplay[32];
+        char szInfo[32];
         
-        if ( g_bLib_Zones_Timer )
+        ZoneType_t type;
+        
+        int len = g_hZoneTypes.Length;
+        for ( int i = 0; i < len; i++ )
         {
-            FormatEx( szInfo, sizeof( szInfo ), "%i", ZONETYPE_START );
-            menu.AddItem( szInfo, "Start" );
+            type = view_as<ZoneType_t>( g_hZoneTypes.Get( i, ZTYPE_TYPE ) );
             
-            FormatEx( szInfo, sizeof( szInfo ), "%i", ZONETYPE_END );
-            menu.AddItem( szInfo, "End" );
-        }
-        
-        if ( g_bLib_Zones_Fs )
-        {
-            FormatEx( szInfo, sizeof( szInfo ), "%i", ZONETYPE_FS );
-            menu.AddItem( szInfo, "Freestyle" );
-        }
-        
-        if ( g_bLib_Zones_Block )
-        {
-            FormatEx( szInfo, sizeof( szInfo ), "%i", ZONETYPE_BLOCK );
-            menu.AddItem( szInfo, "Block" );
-        }
-        
-        if ( g_bLib_Zones_Tele )
-        {
-            FormatEx( szInfo, sizeof( szInfo ), "%i", ZONETYPE_TELE );
-            menu.AddItem( szInfo, "Teleport" );
-        }
-        
-        if ( g_bLib_Zones_CP )
-        {
-            FormatEx( szInfo, sizeof( szInfo ), "%i", ZONETYPE_CP );
-            menu.AddItem( szInfo, "Checkpoint" );
-        }
-        
-        if ( g_bLib_Zones_Stage )
-        {
-            FormatEx( szInfo, sizeof( szInfo ), "%i", ZONETYPE_STAGE );
-            menu.AddItem( szInfo, "Stage" );
+            GetZoneTypeName( type, szDisplay, sizeof( szDisplay ) );
+            GetZoneTypeShortName( type, szInfo, sizeof( szInfo ) );
+            
+            
+            menu.AddItem( szInfo, szDisplay );
         }
         
         menu.Display( client, MENU_TIME_FOREVER );
@@ -331,7 +272,7 @@ public Action Cmd_DeleteZone( int client, int args )
     Menu menu = new Menu( Hndlr_DeleteZone );
     menu.SetTitle( "Zone Deletion\n"...ZONE_MENU_FORMAT..."\n " );
     
-    int items = FillZoneMenu( menu );
+    int items = FillZoneMenu( menu, false, true );
     
     if ( !items )
     {
@@ -355,11 +296,14 @@ public Action Cmd_ZoneSettings( int client, int args )
     Menu menu = new Menu( Hndlr_ZoneSettings );
     menu.SetTitle( "Zone Settings\n"...ZONE_MENU_FORMAT..."\n " );
     
-    int items = FillZoneMenu( menu, false, true );
+    int items = FillZoneMenu( menu, true, true );
     
     if ( !items )
     {
         delete menu;
+        
+        Inf_OpenZoneMenu( client );
+        
         return Plugin_Handled;
     }
     
@@ -379,7 +323,7 @@ public Action Cmd_ZoneTele( int client, int args )
     Menu menu = new Menu( Hndlr_ZoneTele );
     menu.SetTitle( "Teleport To A Zone\n"...ZONE_MENU_FORMAT..."\n " );
     
-    int items = FillZoneMenu( menu, true, true, false );
+    int items = FillZoneMenu( menu, false, false );
     
     if ( !items )
     {

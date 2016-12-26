@@ -107,6 +107,19 @@ public void OnPluginStart()
     g_bLib_Zones_Beams = LibraryExists( INFLUX_LIB_ZONES_BEAMS );
 }
 
+public void OnAllPluginsLoaded()
+{
+    if ( !Influx_RegZoneType( ZONETYPE_BLOCK, "Block", "block", true ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't register zone type!" );
+    }
+}
+
+public void OnPluginEnd()
+{
+    Influx_RemoveZoneType( ZONETYPE_BLOCK );
+}
+
 public void OnLibraryAdded( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = true;

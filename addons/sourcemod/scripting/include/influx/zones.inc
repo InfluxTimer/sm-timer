@@ -47,6 +47,11 @@ enum ZoneType_t
 
 native ArrayList Influx_GetZonesArray();
 
+
+native bool Influx_RegZoneType( ZoneType_t type, const char[] szName, const char[] szShortName, bool bHasSettings );
+native bool Influx_RemoveZoneType( ZoneType_t type );
+
+
 native int Influx_FindZoneById( int id );
 
 
@@ -104,6 +109,7 @@ stock bool Inf_IsZoneTypeTimer( ZoneType_t zonetype )
     return ( zonetype == ZONETYPE_START || zonetype == ZONETYPE_END );
 }
 
+// Deprecated
 stock bool Inf_ZoneTypeToName( ZoneType_t type, char[] sz, int len )
 {
     switch ( type )
@@ -125,6 +131,7 @@ stock bool Inf_ZoneTypeToName( ZoneType_t type, char[] sz, int len )
     return true;
 }
 
+// Deprecated
 stock ZoneType_t Inf_ZoneNameToType( char[] sz )
 {
     if ( StrEqual( sz, "start", false ) )
@@ -177,6 +184,8 @@ stock void Inf_GetZoneTypeDefColor( ZoneType_t zonetype, int clr[4] )
 
 stock void Inf_OpenZoneMenu( int client ) { FakeClientCommand( client, "sm_zone" ); }
 
+stock void Inf_OpenCreateZoneMenu( int client ) { FakeClientCommand( client, "sm_createzone" ); }
+
 stock void Inf_OpenZoneSettingsMenu( int client ) { FakeClientCommand( client, "sm_zonesettings" ); }
 
 
@@ -220,6 +229,8 @@ public void __pl_influx_zones_SetNTVOptional()
     MarkNativeAsOptional( "Influx_GetZoneMinsMaxs" );
     MarkNativeAsOptional( "Influx_GetZoneName" );
     MarkNativeAsOptional( "Influx_GetZonesArray" );
+    MarkNativeAsOptional( "Influx_RegZoneType" );
+    MarkNativeAsOptional( "Influx_RemoveZoneType" );
     MarkNativeAsOptional( "Influx_SetZoneName" );
 }
 #endif

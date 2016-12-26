@@ -3,6 +3,12 @@
 ADDED:
 - New styles low gravity, parkour and backwards.
 
+CHANGES:
+- You can now create stages and checkpoints before having a run. Zones without run id will now be updated after the run has been created.
+
+CODE:
+- Better support for custom zone types. Added natives Influx_RegZoneType, Influx_RemoveZoneType
+
 
 
 1.0.5
