@@ -1,7 +1,7 @@
 1.0.6
 
 ADDED:
-- New styles low gravity and backwards.
+- New styles low gravity, parkour and backwards.
 
 
 
