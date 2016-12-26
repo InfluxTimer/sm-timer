@@ -2,6 +2,7 @@
 
 ADDED:
 - New styles low gravity, parkour and backwards.
+- influx_dropknife_css-plugin to allow CSS players to drop their knife. (CS:GO use mp_drop_knife_enable 1)
 
 CHANGES:
 - You can now create stages and checkpoints before having a run. Zones without run id will now be updated after the run has been created.
