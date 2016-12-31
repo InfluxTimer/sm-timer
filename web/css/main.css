@@ -1,0 +1,48 @@
+@import url(//fonts.googleapis.com/css?family=Open+Sans+Condensed:300);
+
+body{font-family:"Open Sans Condensed", sans-serif;margin:0;background-color:#E5E5E8}
+table{border-collapse:collapse;border-spacing:0;max-width:100%;margin-bottom:20px;border:1px solid #CCCCCC;}
+
+form{display:inline}
+
+a{text-decoration:none}
+a:hover{text-decoration:underline}
+p{margin:0}
+
+
+.main-cont{margin:0 auto;min-width:500px;max-width:800px;width:100%;margin-top:50px}
+
+.sitehead{background-color:#F1F1F1;border:1px solid #CCCCCC;border-left:0;border-right:0;border-top:0;width:100%;margin-bottom:20px;height:80px;max-height:100px}
+.sitehead-center-cont{height:100%;width:100%;max-width:1000px;margin:0 auto;padding-bottom:10px;padding-top:10px}
+.sitehead-logo{vertical-align:center;max-height:100%;margin-left:20px}
+.sitehead-center-cont .search-container{float:right;vertical-align:middle;margin-right:20px}
+
+.footer{margin:0 auto;width:300px;margin-top:100px;margin-bottom:10px;text-align:center}
+
+.search-container{height:35px}
+.search-input{float:left;height:100%;width:180px;font-size:12px;border:1px solid #CCCCCC;border-radius:5px 0 0 5px;padding:0;padding-left:10px}
+.search-button{float:left;height:100%;width:40px;background-color:#66D67E;border:1px solid #CCCCCC;border-radius:0 5px 5px 0;border-left:0}
+.search-button:hover{background-color:#69F67E}
+
+.search-res-img{vertical-align:middle}
+.search-res-name{display:inline-block;margin-left:10px;text-align:center}
+.search-res-name:hover{text-decoration:underline}
+
+.rectable tr{height:40px}
+.rectable tr,td,th{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-align:left;max-width:100%}
+.rectable td,th{padding-left:10px;padding-right:10px}
+.rectable td{font-size:16px}
+.rectable th{font-size:20px}
+.rectable tr:nth-child(odd){background-color:#F1F1F1}
+.rectable tr:nth-child(even){background-color:#FAFAFA}
+.rectable-head{background-color:#66D67E;font-size:24px !important;padding-left:15px;padding-bottom:15px;padding-top:15px;max-width:300px}
+.rectable-data-value{max-width:180px;width:100px}
+.rectable-nav-container{height:30px !important}
+.rectable-nav{display:inline-block;width:40px;height:100%;border:0;background-color:inherit}
+.rectable-nav:hover{color:#00AA00}
+.rectable-nav:disabled{color:#AAAAAA}
+
+.rectable-full-table{width:100%}
+
+#topplayers{width:350px}
+#searchplayers{width:370px}

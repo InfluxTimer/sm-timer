@@ -1,0 +1,9 @@
+NOTE: If you do not care for user avatars and INF_STEAMWEBAPIKEY (in config.php) is empty (''), you can skip step 2!
+
+
+1.	Configure config.php so it points to your Influx MySQL database.
+
+2.	Go to ./install/index.php to start the installation process.
+	It can be used to test your connection to database.
+
+3.	Delete the ./install/-folder
