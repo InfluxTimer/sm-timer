@@ -2,7 +2,7 @@ public void Thrd_Empty( Handle db, Handle res, const char[] szError, int client 
 {
     if ( res == null )
     {
-        Inf_DB_LogError( g_hDB, "inserting data into database", GetClientOfUserId( client ), "An error occurred while saving your data!" );
+        Inf_DB_LogError( g_hDB, "inserting data into database", client ? GetClientOfUserId( client ) : 0, "An error occurred while saving your data!" );
     }
 }
 

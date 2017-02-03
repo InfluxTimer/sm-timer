@@ -459,8 +459,11 @@ stock void Inf_DB_LogError( Handle db, const char[] szAdd, int client = 0, const
     if ( db == null ) return;
     
     
-    char szError[128];
-    SQL_GetError( db, szError, sizeof( szError ) );
+    char szError[1024];
+    if ( !SQL_GetError( db, szError, sizeof( szError ) ) )
+	{
+        strcopy( szError, sizeof( szError ), "N/A" );
+	}
     
     LogError( INF_CON_PRE..."SQL Error: %s (%s)", szError, szAdd );
     

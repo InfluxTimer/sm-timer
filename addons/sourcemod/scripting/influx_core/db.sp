@@ -64,7 +64,7 @@ stock bool DB_UpdateQuery( int ver, const char[] szQuery )
 
 stock void DB_Init()
 {
-    char szError[128], szDriver[32];
+    char szError[1024], szDriver[32];
     g_bIsMySQL = false;
     
     
