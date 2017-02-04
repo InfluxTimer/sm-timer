@@ -7,8 +7,12 @@ ADDED:
 CHANGES:
 - You can now create stages and checkpoints before having a run. Zones without run id will now be updated after the run has been created.
 
+FIXES:
+- MySQL 5.7.5 and above throwing an error. (when ONLY_FULL_GROUP_BY is set which is enabled by default.)
+- Increased db error buffer size to display full error message.
+
 CODE:
-- Better support for custom zone types. Added natives Influx_RegZoneType, Influx_RemoveZoneType
+- Better support for custom zone types. Added natives Influx_RegZoneType, Influx_RemoveZoneType, Influx_IsValidZoneType, Influx_GetZoneTypeName, Influx_GetZoneTypeShortName, Influx_GetZoneTypeByShortName
 
 
 
