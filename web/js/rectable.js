@@ -27,6 +27,12 @@ function clickRecTable( btn, tblname, dir, list )
 		form.append( 'steamid', steamid );
 	}
 	
+	var mapname = getURLParamByName( 'm' );
+	if ( mapname != null )
+	{
+		form.append( 'mapname', mapname );
+	}
+	
 	var search = getURLParamByName( 'q' );
 	if ( search != null )
 	{

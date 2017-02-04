@@ -67,6 +67,7 @@ if ( !isset( $prof_url ) )
 }
 
 $prof_name = htmlspecialchars( $prof_name );
+$prof_nameup = mb_strtoupper( $prof_name );
 
 
 
@@ -102,8 +103,10 @@ $ret = $inf->getRecentRecords( $ply['uid'], -1, -1, -1, -1, $rec_drawc );
 
 if ( $ret )
 {
-	$table = new InfRecordTable( 'RECENT RECORDS', 'recentrecords', 'rectable-full-table' );
-	$table->addColumn( 'MAP', function( $row ){return $row['mapname'];} );
+	$table = new InfRecordTable( 'RECENT RECORDS - ' . $prof_nameup, 'recentrecords', 'rectable-full-table' );
+	$table->addColumn( 'MAP', function( $row ) {
+		return '<a href="map.php?m='. $row['mapname'] . '">' . $row['mapname'] . '</a>';
+	} );
 	$table->addColumn( 'STYLE', function( $row ) {
 		global $inf;
 		return $inf->getFullStyleName( $row['mode'], $row['style'] );
@@ -120,8 +123,10 @@ $ret = $inf->getRecentSRs( $ply['uid'] );
 
 if ( $ret )
 {
-	$table = new InfRecordTable( 'TOP RECORDS - ' . mb_strtoupper( $prof_name ), 'recenttoprecords', 'rectable-full-table' );
-	$table->addColumn( 'MAP', function( $row ){return $row['mapname'];} );
+	$table = new InfRecordTable( 'TOP RECORDS - ' . $prof_nameup, 'recenttoprecords', 'rectable-full-table' );
+	$table->addColumn( 'MAP', function( $row ) {
+		return '<a href="map.php?m='. $row['mapname'] . '">' . $row['mapname'] . '</a>';
+	} );
 	$table->addColumn( 'STYLE', function( $row ) {
 		global $inf;
 		return $inf->getFullStyleName( $row['mode'], $row['style'] );

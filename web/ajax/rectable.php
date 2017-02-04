@@ -11,6 +11,7 @@ $inf = new InfDb();
 
 
 $uid = -1;
+$mapid = -1;
 
 
 $offset = isset( $_POST['offset'] ) ? (int)$_POST['offset'] : 0;
@@ -18,6 +19,7 @@ $num = isset( $_POST['num'] ) ? (int)$_POST['num'] : 0;
 $type = isset( $_POST['type'] ) ? $_POST['type'] : '';
 
 $steamid = isset( $_POST['steamid'] ) ? $_POST['steamid'] : '';
+$mapname = isset( $_POST['mapname'] ) ? $_POST['mapname'] : '';
 $search = isset( $_POST['search'] ) ? $_POST['search'] : '';
 
 if ( $steamid != '' )
@@ -28,6 +30,11 @@ if ( $steamid != '' )
 	{
 		$uid = $ret['uid'];
 	}
+}
+
+if ( $mapname != '' )
+{
+	$mapid = $inf->getMapByName( $mapname );
 }
 
 if ( $offset >= 0 )
@@ -46,6 +53,28 @@ if ( $offset >= 0 )
 	
 	switch ( $type )
 	{
+		case 'recentmaprecords' :
+		case 'recentmaptoprecords' :
+			if ( $type == 'recentmaprecords' )
+			{
+				$ret = $inf->getRecentRecords( -1, $mapid, -1, -1, -1, $num, $offset * $num );
+			}
+			else
+			{
+				$ret = $inf->getRecentSRs( -1, $mapid, -1, -1, -1, $num, $offset * $num );
+			}
+			
+			$response->addColumn( 'player', function( $row ){
+				return '<a href="user.php?u=' . InfCommon::steamId3To64( $row['steamid'] ) . '">' . htmlspecialchars( $row['name'] ) . '</a>';
+			} );
+			$response->addColumn( 'style', function( $row ) {
+				global $inf;
+				return $inf->getFullStyleName( $row['mode'], $row['style'] );
+			} );
+			$response->addColumn( 'run', function( $row ){return InfCommon::getRunName( $row['runid'] );} );
+			$response->addColumn( 'time', function( $row ){return InfCommon::formatSeconds( $row['rectime'] );} );
+			$response->addColumn( 'date', function( $row ){return InfCommon::formatDate( $row['recdate'] );} );
+			break;
 		case 'recentrecords' :
 		case 'recenttoprecords' :
 			if ( $type == 'recentrecords' )
@@ -57,7 +86,9 @@ if ( $offset >= 0 )
 				$ret = $inf->getRecentSRs( $uid, -1, -1, -1, -1, $num, $offset * $num );
 			}
 			
-			$response->addColumn( 'map', function( $row ){return $row['mapname'];} );
+			$response->addColumn( 'map', function( $row ) {
+				return '<a href="map.php?m='. $row['mapname'] . '">' . $row['mapname'] . '</a>';
+			} );
 			$response->addColumn( 'player', function( $row ){
 				return '<a href="user.php?u=' . InfCommon::steamId3To64( $row['steamid'] ) . '">' . htmlspecialchars( $row['name'] ) . '</a>';
 			} );

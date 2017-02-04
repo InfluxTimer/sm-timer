@@ -21,7 +21,9 @@ $ret = $inf->getRecentRecords( -1, -1, -1, -1, -1, $rec_drawc + 1 );
 
 
 $table = new InfRecordTable( 'RECENT RECORDS', 'recentrecords', 'rectable-full-table', $rec_drawc );
-$table->addColumn( 'MAP', function( $row ){return $row['mapname'];} );
+$table->addColumn( 'MAP', function( $row ) {
+	return '<a href="map.php?m='. $row['mapname'] . '">' . $row['mapname'] . '</a>';
+} );
 $table->addColumn( 'PLAYER', function( $row ) {
 	return '<a href="user.php?u='. InfCommon::steamId3To64( $row['steamid'] ) . '">' . $row['name'] . '</a>';
 } );
@@ -42,7 +44,9 @@ $ret = $inf->getRecentSRs( -1, -1, -1, -1, -1, $rec_drawc + 1 );
 
 
 $table = new InfRecordTable( 'RECENT TOP RECORDS', 'recenttoprecords', 'rectable-full-table', $rec_drawc );
-$table->addColumn( 'MAP', function( $row ){return $row['mapname'];} );
+$table->addColumn( 'MAP', function( $row ) {
+	return '<a href="map.php?m='. $row['mapname'] . '">' . $row['mapname'] . '</a>';
+} );
 $table->addColumn( 'PLAYER', function( $row ) {
 	return '<a href="user.php?u='. InfCommon::steamId3To64( $row['steamid'] ) . '">' . htmlspecialchars( $row['name'] ) . '</a>';
 } );

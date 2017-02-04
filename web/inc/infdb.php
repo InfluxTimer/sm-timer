@@ -185,6 +185,37 @@ class InfDb
 		return false;
 	}
 	
+	public function getMapByName( $mapname )
+	{
+		$steamid = preg_replace( "/[\'\";)(]/", '', $mapname );
+		
+		if ( !strlen( $mapname ) )
+		{
+			return false;
+		}
+		
+		
+		$res = $this->pdo->prepare( 'SELECT * FROM '.INF_TABLE_MAPS.' WHERE mapname=:mapname' );
+		
+		if ( !$res )
+		{
+			return false;
+		}
+		
+		$res->bindParam( ':mapname', $mapname );
+		
+		
+		if ( !$res->execute() )
+		{
+			return false;
+		}
+		
+		
+		$ret = $res->fetch();
+		
+		return ( $ret ) ? (int)$ret['mapid'] : false;
+	}
+	
 	/*
 		Returns all columns from user.
 	*/
