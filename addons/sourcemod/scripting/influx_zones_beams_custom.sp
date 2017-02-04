@@ -7,7 +7,7 @@
 #include <msharedutil/arrayvec>
 
 
-//#define DEBUG
+#define DEBUG
 
 
 #define CONFIG_FILE         "influx_beams.cfg"
@@ -88,11 +88,10 @@ stock void ReadBeamFile()
         }
         
         
-        ZoneType_t zonetype = Inf_ZoneNameToType( szType );
+        ZoneType_t zonetype = Influx_GetZoneTypeByShortName( szType );
         
         if ( zonetype == ZONETYPE_INVALID )
         {
-            LogError( INF_CON_PRE..."Invalid zone type '%s'!", szType );
             continue;
         }
         
@@ -176,6 +175,10 @@ stock void ReadBeamFile()
         
         
         g_hDef.PushArray( data );
+        
+#if defined DEBUG
+        PrintToServer( INF_DEBUG_PRE..."Added default zone type beams '%s'!", szType );
+#endif
     }
     while ( kv.GotoNextKey() );
     

@@ -93,3 +93,45 @@ public int Native_RemoveZoneType( Handle hPlugin, int nParms )
 {
     return RemoveZoneType( view_as<ZoneType_t>( GetNativeCell( 1 ) ) );
 }
+
+public int Native_IsValidZoneType( Handle hPlugin, int nParms )
+{
+    int index = FindZoneType( view_as<ZoneType_t>( GetNativeCell( 1 ) ) );
+    return ( index != -1 ) ? true : false;
+}
+
+public int Native_GetZoneTypeName( Handle hPlugin, int nParms )
+{
+    int index = FindZoneType( view_as<ZoneType_t>( GetNativeCell( 1 ) ) );
+    
+    int len = GetNativeCell( 3 );
+    
+    char[] sz = new char[len];
+    
+    GetZoneTypeNameByIndex( index, sz, len );
+    SetNativeString( 2, sz, len );
+    
+    return ( index != -1 );
+}
+
+public int Native_GetZoneTypeShortName( Handle hPlugin, int nParms )
+{
+    int index = FindZoneType( view_as<ZoneType_t>( GetNativeCell( 1 ) ) );
+    
+    int len = GetNativeCell( 3 );
+    
+    char[] sz = new char[len];
+    
+    GetZoneTypeShortNameByIndex( index, sz, len );
+    SetNativeString( 2, sz, len );
+    
+    return ( index != -1 );
+}
+
+public int Native_GetZoneTypeByShortName( Handle hPlugin, int nParms )
+{
+    char sz[MAX_ZONE_NAME];
+    GetNativeString( 1, sz, sizeof( sz ) );
+    
+    return view_as<int>( FindZoneTypeByShortName( sz ) );
+}

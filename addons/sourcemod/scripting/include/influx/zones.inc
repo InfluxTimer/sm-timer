@@ -51,6 +51,11 @@ native ArrayList Influx_GetZonesArray();
 native bool Influx_RegZoneType( ZoneType_t type, const char[] szName, const char[] szShortName, bool bHasSettings );
 native bool Influx_RemoveZoneType( ZoneType_t type );
 
+native bool Influx_IsValidZoneType( ZoneType_t type );
+native bool Influx_GetZoneTypeName( ZoneType_t type, char[] sz, int len );
+native bool Influx_GetZoneTypeShortName( ZoneType_t type, char[] sz, int len );
+native ZoneType_t Influx_GetZoneTypeByShortName( char[] sz );
+
 
 native int Influx_FindZoneById( int id );
 

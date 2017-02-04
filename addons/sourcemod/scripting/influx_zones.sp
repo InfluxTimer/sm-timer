@@ -137,6 +137,11 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     
     CreateNative( "Influx_RegZoneType", Native_RegZoneType );
     CreateNative( "Influx_RemoveZoneType", Native_RemoveZoneType );
+    
+    CreateNative( "Influx_IsValidZoneType", Native_IsValidZoneType );
+    CreateNative( "Influx_GetZoneTypeName", Native_GetZoneTypeName );
+    CreateNative( "Influx_GetZoneTypeShortName", Native_GetZoneTypeShortName );
+    CreateNative( "Influx_GetZoneTypeByShortName", Native_GetZoneTypeByShortName );
 }
 
 public void OnPluginStart()
