@@ -1,6 +1,8 @@
 # Influx Timer
 Please visit the site [influxtimer.com](https://influxtimer.com/) for latest stable version with compiled *.smx files.
 
+**Example of web stats: [influxtimer.com/stats](https://influxtimer.com/stats)**
+
 
 **Check devlog.txt for current changes.**
 
