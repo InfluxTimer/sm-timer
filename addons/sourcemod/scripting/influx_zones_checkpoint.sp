@@ -168,12 +168,22 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
+    AddZoneType();
+    
+    DB_Init();
+}
+
+public void Influx_OnRequestZoneTypes()
+{
+    AddZoneType();
+}
+
+stock void AddZoneType()
+{
     if ( !Influx_RegZoneType( ZONETYPE_CP, "Checkpoint", "checkpoint", false ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't register zone type!" );
     }
-    
-    DB_Init();
 }
 
 public void OnPluginEnd()

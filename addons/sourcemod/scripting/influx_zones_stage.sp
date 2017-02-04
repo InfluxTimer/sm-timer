@@ -122,6 +122,16 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
+    AddZoneType();
+}
+
+public void Influx_OnRequestZoneTypes()
+{
+    AddZoneType();
+}
+
+stock void AddZoneType()
+{
     if ( !Influx_RegZoneType( ZONETYPE_STAGE, "Stage", "stage", false ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't register zone type!" );

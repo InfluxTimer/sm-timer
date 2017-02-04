@@ -74,6 +74,8 @@ forward void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
 forward void Influx_OnZoneDeleted( int zoneid, ZoneType_t zonetype );
 forward void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent );
 
+forward void Influx_OnRequestZoneTypes();
+
 
 native bool Influx_DeleteZone( int id );
 

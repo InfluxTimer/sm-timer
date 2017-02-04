@@ -15,7 +15,7 @@
 
 
 //#define DEBUG
-#define DEBUG_CHECKZONES
+//#define DEBUG_CHECKZONES
 
 #define BUILD_MAT                   "materials/sprites/laserbeam.vmt"
 #define BUILD_SPRITE_MAT            "materials/sprites/glow01.vmt"
@@ -68,6 +68,9 @@ int g_iBuildBeamMat;
 int g_iBuildSprite;
 
 
+bool g_bLate;
+
+
 // CONVARS
 ConVar g_ConVar_SaveZonesOnMapEnd;
 
@@ -96,6 +99,8 @@ Handle g_hForward_OnZoneBuildAsk;
 Handle g_hForward_OnZoneCreated;
 Handle g_hForward_OnZoneDeleted;
 Handle g_hForward_OnZoneSpawned;
+
+Handle g_hForward_OnRequestZoneTypes;
 
 
 // LIBRARIES
@@ -142,6 +147,9 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_GetZoneTypeName", Native_GetZoneTypeName );
     CreateNative( "Influx_GetZoneTypeShortName", Native_GetZoneTypeShortName );
     CreateNative( "Influx_GetZoneTypeByShortName", Native_GetZoneTypeByShortName );
+    
+    
+    g_bLate = late;
 }
 
 public void OnPluginStart()
@@ -150,6 +158,8 @@ public void OnPluginStart()
     g_hForward_OnZoneCreated = CreateGlobalForward( "Influx_OnZoneCreated", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
     g_hForward_OnZoneDeleted = CreateGlobalForward( "Influx_OnZoneDeleted", ET_Ignore, Param_Cell, Param_Cell );
     g_hForward_OnZoneSpawned = CreateGlobalForward( "Influx_OnZoneSpawned", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
+    
+    g_hForward_OnRequestZoneTypes = CreateGlobalForward( "Influx_OnRequestZoneTypes", ET_Ignore );
     
     
     g_hForward_OnPostZoneLoad = CreateGlobalForward( "Influx_OnPostZoneLoad", ET_Ignore );
@@ -180,6 +190,10 @@ public void OnPluginStart()
     // CMDS
 #if defined DEBUG_CHECKZONES
     RegAdminCmd( "sm_checkzones", Cmd_Debug_CheckZones, ADMFLAG_ROOT );
+#endif
+
+#if defined DEBUG
+    RegAdminCmd( "sm_printzonetypes", Cmd_Debug_PrintZoneTypes, ADMFLAG_ROOT );
 #endif
     
     RegConsoleCmd( "sm_savezones", Cmd_SaveZones );
@@ -230,6 +244,15 @@ public void OnLibraryAdded( const char[] lib )
 public void OnLibraryRemoved( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_ZONES_BEAMS ) ) g_bLib_Zones_Beams = false;
+}
+
+public void OnAllPluginsLoaded()
+{
+    if ( g_bLate )
+    {
+        Call_StartForward( g_hForward_OnRequestZoneTypes );
+        Call_Finish();
+    }
 }
 
 public void Influx_RequestHelpCmds()
@@ -549,6 +572,31 @@ stock int WriteZoneFile()
 public Action Cmd_Debug_CheckZones( int client, int args )
 {
     CheckZones( client );
+    
+    return Plugin_Handled;
+}
+#endif
+
+#if defined DEBUG
+public Action Cmd_Debug_PrintZoneTypes( int client, int args )
+{
+    if ( client ) return Plugin_Handled;
+    
+    
+    decl data[ZTYPE_SIZE];
+    
+    int len = g_hZoneTypes.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        g_hZoneTypes.GetArray( i, data );
+        
+        PrintToServer( "%i | %s | %s", data[ZTYPE_TYPE], data[ZTYPE_NAME], data[ZTYPE_SHORTNAME] );
+    }
+    
+    if ( !len )
+    {
+        PrintToServer( "None!" );
+    }
     
     return Plugin_Handled;
 }

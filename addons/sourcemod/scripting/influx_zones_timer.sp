@@ -52,6 +52,16 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
+    AddZoneType();
+}
+
+public void Influx_OnRequestZoneTypes()
+{
+    AddZoneType();
+}
+
+stock void AddZoneType()
+{
     if (!Influx_RegZoneType( ZONETYPE_START, "Timer Start", "start", false )
     ||  !Influx_RegZoneType( ZONETYPE_END, "Timer End", "end", false ) )
     {
