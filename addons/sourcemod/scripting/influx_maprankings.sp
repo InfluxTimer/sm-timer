@@ -76,7 +76,11 @@ public void Influx_OnClientStatusChanged( int client )
     
     
     int mode = Influx_GetClientMode( client );
+    if ( mode == MODE_INVALID ) return;
+    
     int style = Influx_GetClientStyle( client );
+    if ( style == STYLE_INVALID ) return;
+    
     
     g_nCurrentRank[client] = GetClientRank( irun, client, mode, style );
     g_nCurrentRankCount[client] = GetRunRankCount( irun, mode, style );
