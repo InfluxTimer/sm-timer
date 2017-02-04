@@ -13,9 +13,15 @@
 #define CONFIG_FILE         "influx_beams.cfg"
 
 
+#define MAX_SHORTNAME           32
+#define MAX_SHORTNAME_CELL      ( MAX_SHORTNAME / 4 )
+
+
 enum
 {
-    DEF_ZONETYPE = 0,
+    DEF_SHORTNAME[MAX_SHORTNAME_CELL] = 0,
+    
+    DEF_ZONETYPE,
     
     DEF_DISPLAYTYPE,
     
@@ -90,12 +96,8 @@ stock void ReadBeamFile()
         
         ZoneType_t zonetype = Influx_GetZoneTypeByShortName( szType );
         
-        if ( zonetype == ZONETYPE_INVALID )
-        {
-            continue;
-        }
         
-        if ( FindDefByType( zonetype ) != -1 )
+        if ( FindDefByType( zonetype, szType ) != -1 )
         {
             LogError( INF_CON_PRE..."Zone type '%s' is already defined!", szType );
             continue;
@@ -156,6 +158,8 @@ stock void ReadBeamFile()
         
         data[DEF_ZONETYPE] = view_as<int>( zonetype );
         
+        strcopy( view_as<char>( data[DEF_SHORTNAME] ), MAX_SHORTNAME, szType );
+        
         data[DEF_DISPLAYTYPE] = view_as<int>( displaytype );
         
         data[DEF_MATINDEX] = mat;
@@ -177,7 +181,7 @@ stock void ReadBeamFile()
         g_hDef.PushArray( data );
         
 #if defined DEBUG
-        PrintToServer( INF_DEBUG_PRE..."Added default zone type beams '%s'!", szType );
+        PrintToServer( INF_DEBUG_PRE..."Added default zone type beams '%s' | Num: %i!", szType, zonetype );
 #endif
     }
     while ( kv.GotoNextKey() );
@@ -187,7 +191,10 @@ stock void ReadBeamFile()
 
 public Action Influx_OnBeamAdd( int zoneid, ZoneType_t zonetype, DisplayType_t &displaytype, int &matindex, float &width, int &framerate, int &speed, float &offset, float &offset_z, int clr[4] )
 {
-    int index = FindDefByType( zonetype );
+    char szType[32];
+    Influx_GetZoneTypeShortName( zonetype, szType, sizeof( szType ) );
+    
+    int index = FindDefByType( zonetype, szType );
     if ( index == -1 ) return Plugin_Continue;
     
 #if defined DEBUG
@@ -243,14 +250,32 @@ public Action Influx_OnBeamAdd( int zoneid, ZoneType_t zonetype, DisplayType_t &
     return Plugin_Handled;
 }
 
-stock int FindDefByType( ZoneType_t zonetype )
+stock int FindDefByType( ZoneType_t zonetype = ZONETYPE_INVALID, const char[] szShortName )
 {
+    // Find by zonetype or shortname.
+    ZoneType_t myzonetype;
+    
+    char szMyName[32];
+    
     int len = g_hDef.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( view_as<ZoneType_t>( g_hDef.Get( i, DEF_ZONETYPE ) ) == zonetype )
+        myzonetype = view_as<ZoneType_t>( g_hDef.Get( i, DEF_ZONETYPE ) );
+        
+        if ( myzonetype != ZONETYPE_INVALID && zonetype != ZONETYPE_INVALID )
         {
-            return i;
+            if ( myzonetype == zonetype ) return i;
+        }
+        else
+        {
+            g_hDef.GetString( i, szMyName, sizeof( szMyName ) );
+            
+            if ( StrEqual( szMyName, szShortName ) )
+            {
+                g_hDef.Set( i, zonetype, DEF_ZONETYPE );
+                
+                return i;
+            }
         }
     }
     
