@@ -483,7 +483,11 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     
     
     
-    if ( !IsProperlyCached( client ) ) return;
+    if ( !IsProperlyCached( client ) )
+    {
+        LogError( INF_CON_PRE..."Attempted to finish a run but client's and/or run's times haven't been cached yet! Check for SQL errors." );
+        return;
+    }
     
     
     int modeid = g_iModeId[client];
