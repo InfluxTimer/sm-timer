@@ -1,4 +1,6 @@
 # Influx Timer
+![Influx Logo](https://github.com/TotallyMehis/Influx-Timer/blob/master/web/img/inflogo.png "Influx Logo")
+
 Please visit the site [influxtimer.com](https://influxtimer.com/) for latest stable version with compiled *.smx files.
 
 **Example of web stats: [influxtimer.com/stats](https://influxtimer.com/stats)**
