@@ -7,7 +7,7 @@
 #include <msharedutil/arrayvec>
 
 
-#define DEBUG
+//#define DEBUG
 
 
 #define CONFIG_FILE         "influx_beams.cfg"
