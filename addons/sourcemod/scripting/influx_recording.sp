@@ -1036,11 +1036,11 @@ stock bool CanChangeReplay( int issuer = 0, bool bCanAdminOverride = true )
         {            
             if ( issuer == g_iReplayRequester )
             {
-                Influx_PrintToChat( _, issuer, INF_CHAT_PRE..."You've already requested a replay!" );
+                Influx_PrintToChat( _, issuer, "You've already requested a replay!" );
             }
             else
             {
-                Influx_PrintToChat( _, issuer, INF_CHAT_PRE..."Replay is being watched by {MAINCLR1}%N{CHATCLR}. Please wait for the recording to finish.", g_iReplayRequester );
+                Influx_PrintToChat( _, issuer, "Replay is being watched by {MAINCLR1}%N{CHATCLR}. Please wait for the recording to finish.", g_iReplayRequester );
             }
         }
         
