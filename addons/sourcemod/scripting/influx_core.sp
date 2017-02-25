@@ -2095,8 +2095,8 @@ stock void ResetClient( int client )
 
 stock void InitClientModeStyle( int client )
 {
-    int defmode = g_iDefMode;
-    int defstyle = g_iDefStyle;
+    int defmode = GetDefaultMode();
+    int defstyle = GetDefaultStyle();
     
     if ( FindModeById( defmode ) == -1 )
     {
@@ -2206,7 +2206,7 @@ stock int GetDefaultMode()
     
     if ( g_hModes.Length > 0 ) return GetModeIdByIndex( 0 );
     
-    return -1;
+    return MODE_INVALID;
 }
 
 stock int GetDefaultStyle()
@@ -2218,7 +2218,7 @@ stock int GetDefaultStyle()
     
     if ( g_hStyles.Length > 0 ) return GetStyleIdByIndex( 0 );
     
-    return -1;
+    return STYLE_INVALID;
 }
 
 stock void UpdateCvars()
