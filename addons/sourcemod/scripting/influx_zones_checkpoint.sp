@@ -21,6 +21,10 @@
 //#define DEBUG_INSERTCP
 
 
+
+#define INF_PRIVCOM_REMOVECPRECORDS     "sm_inf_removecprecords"
+
+
 enum
 {
     CPZONE_ID = 0,
@@ -90,7 +94,6 @@ float g_flLastCmdTime[INF_MAXPLAYERS];
 
 
 // CONVARS
-ConVar g_ConVar_Admin_DeleteFlags;
 //ConVar g_ConVar_ReqCPs;
 
 
@@ -145,10 +148,13 @@ public void OnPluginStart()
     
     
     // CONVARS
-    g_ConVar_Admin_DeleteFlags = CreateConVar( "influx_cp_deletetimes", "z", "Required flags to modify checkpoint times." );
-    
     //g_ConVar_ReqCPs = CreateConVar( "influx_checkpoint_requirecps", "0", "In order to beat the map, player must activate all checkpoints?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 
+    
+    // PRIVILEGE CMDS
+    RegAdminCmd( INF_PRIVCOM_REMOVECPRECORDS, Cmd_Empty, ADMFLAG_ROOT );
+    
+    
     //CMDS
 #if defined DEBUG_CMD
     RegAdminCmd( "sm_debugprintcps", Cmd_PrintCps, ADMFLAG_ROOT );
@@ -1057,15 +1063,7 @@ stock int FindClientCPByNum( int client, int num )
 
 stock bool CanUserModifyCPTimes( int client )
 {
-    if ( client == 0 ) return true;
-    
-    
-    decl String:szFlags[32];
-    g_ConVar_Admin_DeleteFlags.GetString( szFlags, sizeof( szFlags ) );
-    
-    int wantedflags = ReadFlagString( szFlags );
-    
-    return ( (GetUserFlagBits( client ) & wantedflags) == wantedflags );
+    return CheckCommandAccess( client, INF_PRIVCOM_REMOVECPRECORDS, ADMFLAG_ROOT );
 }
 
 stock void ResetClientCPTimes( int client )

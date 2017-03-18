@@ -1,3 +1,10 @@
+DEV
+
+CHANGES:
+- admin_overrides.cfg is now used instead of cvars like influx_core_removeflags to modify command access. See admin_overrides_influx_example.cfg for more info.
+
+
+
 1.0.6
 
 ADDED:

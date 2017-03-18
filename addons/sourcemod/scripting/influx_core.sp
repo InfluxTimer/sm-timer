@@ -44,6 +44,10 @@
 #define DEF_VALIDMAPNAMES           "^(surf\\_|bhop\\_|kz\\_)\\w+"
 
 
+#define INF_PRIVCOM_REMOVERECORDS   "sm_inf_removerecords"
+#define INF_PRIVCOM_RUNSETTINGS     "sm_inf_runsettings"
+
+
 // Print records CallBack (PCB)
 
 #define MAX_PCB_PLYNAME             32
@@ -189,8 +193,6 @@ ConVar g_ConVar_ChatMainClr1;
 ConVar g_ConVar_SaveRunsOnMapEnd;
 ConVar g_ConVar_SuppressMaxSpdWarning;
 ConVar g_ConVar_SuppressMaxSpdMsg;
-ConVar g_ConVar_Admin_RemoveFlags;
-ConVar g_ConVar_Admin_ModifyRunFlags;
 ConVar g_ConVar_DefMode;
 ConVar g_ConVar_DefStyle;
 ConVar g_ConVar_DefMaxWeaponSpeed;
@@ -475,9 +477,6 @@ public void OnPluginStart()
     g_ConVar_SuppressMaxSpdWarning = CreateConVar( "influx_core_suppressmaxwepspdwarning", "0", "Suppress player max weapon speed warning? (one printed to console)", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
-    g_ConVar_Admin_RemoveFlags = CreateConVar( "influx_core_removeflags", "z", "Required flags to remove records and runs." );
-    g_ConVar_Admin_ModifyRunFlags = CreateConVar( "influx_core_modifyrunflags", "z", "Required flags to modify runs (tele pos, etc)." );
-    
     g_ConVar_DefMode = CreateConVar( "influx_defaultmode", "auto", "Default mode.", FCVAR_NOTIFY );
     g_ConVar_DefMode.AddChangeHook( E_ConVarChanged_DefMode );
     g_iDefMode = MODE_AUTO;
@@ -499,6 +498,11 @@ public void OnPluginStart()
     
     
     AutoExecConfig( true, "core", "influx" );
+    
+    
+    // PRIVILEGE CMDS
+    RegAdminCmd( INF_PRIVCOM_REMOVERECORDS, Cmd_Empty, ADMFLAG_ROOT );
+    RegAdminCmd( INF_PRIVCOM_RUNSETTINGS, Cmd_Empty, ADMFLAG_ROOT );
     
     
     // MENUS
@@ -1903,28 +1907,12 @@ stock bool ChangeTele( int client )
 
 stock bool CanUserRemoveRecords( int client )
 {
-    if ( client == 0 ) return true;
-    
-    
-    char szFlags[32];
-    g_ConVar_Admin_RemoveFlags.GetString( szFlags, sizeof( szFlags ) );
-    
-    int wantedflags = ReadFlagString( szFlags );
-    
-    return ( (GetUserFlagBits( client ) & wantedflags) == wantedflags );
+    return CheckCommandAccess( client, INF_PRIVCOM_REMOVERECORDS, ADMFLAG_ROOT );
 }
 
 stock bool CanUserModifyRun( int client )
 {
-    if ( client == 0 ) return true;
-    
-    
-    char szFlags[32];
-    g_ConVar_Admin_ModifyRunFlags.GetString( szFlags, sizeof( szFlags ) );
-    
-    int wantedflags = ReadFlagString( szFlags );
-    
-    return ( (GetUserFlagBits( client ) & wantedflags) == wantedflags );
+    return CheckCommandAccess( client, INF_PRIVCOM_RUNSETTINGS, ADMFLAG_ROOT );
 }
 
 // TODO: Make sure this is called every time times change.

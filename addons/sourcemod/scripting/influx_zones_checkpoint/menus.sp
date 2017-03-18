@@ -46,3 +46,5 @@ public Action Cmd_PrintTopCpTimes( int client, int args )
     
     return Plugin_Handled;
 }
+
+public Action Cmd_Empty( int client, int args ) { return Plugin_Handled; }

@@ -33,6 +33,9 @@
 #define BUILD_DIST_RATE             32.0
 
 
+#define INF_PRIVCOM_CONFZONES       "sm_inf_configurezones"
+#define INF_PRIVCOM_SAVEZONES       "sm_inf_savezones"
+
 
 enum
 {
@@ -73,9 +76,6 @@ bool g_bLate;
 
 // CONVARS
 ConVar g_ConVar_SaveZonesOnMapEnd;
-
-ConVar g_ConVar_Admin_ConfZonesFlags;
-ConVar g_ConVar_Admin_SaveZonesFlags;
 
 ConVar g_ConVar_MinSize;
 ConVar g_ConVar_HeightGrace;
@@ -186,6 +186,10 @@ public void OnPluginStart()
     }
     
     
+    // PRIVILEGE CMDS
+    RegAdminCmd( INF_PRIVCOM_CONFZONES, Cmd_Empty, ADMFLAG_ROOT );
+    RegAdminCmd( INF_PRIVCOM_SAVEZONES, Cmd_Empty, ADMFLAG_ROOT );
+    
     
     // CMDS
 #if defined DEBUG_CHECKZONES
@@ -212,9 +216,6 @@ public void OnPluginStart()
     
     // CONVARS
     g_ConVar_SaveZonesOnMapEnd = CreateConVar( "influx_zones_savezones", "0", "Do we automatically save zones on map end?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-    
-    g_ConVar_Admin_ConfZonesFlags = CreateConVar( "influx_zones_configurezones", "z", "Required flags to configure zones." );
-    g_ConVar_Admin_SaveZonesFlags = CreateConVar( "influx_zones_savezones", "z", "Required flags to save zones to a file." );
     
     
     g_ConVar_MinSize = CreateConVar( "influx_zones_minzonesize", "4", "Minimum size of a zone in X, Y and Z.", FCVAR_NOTIFY, true, 1.0 );
@@ -974,28 +975,12 @@ stock int FindZoneById( int zoneid )
 
 stock bool CanUserModifyZones( int client )
 {
-    if ( client == 0 ) return true;
-    
-    
-    decl String:szFlags[32];
-    g_ConVar_Admin_ConfZonesFlags.GetString( szFlags, sizeof( szFlags ) );
-    
-    int wantedflags = ReadFlagString( szFlags );
-    
-    return ( (GetUserFlagBits( client ) & wantedflags) == wantedflags );
+    return CheckCommandAccess( client, INF_PRIVCOM_CONFZONES, ADMFLAG_ROOT );
 }
 
 stock bool CanUserSaveZones( int client )
 {
-    if ( client == 0 ) return true;
-    
-    
-    decl String:szFlags[32];
-    g_ConVar_Admin_SaveZonesFlags.GetString( szFlags, sizeof( szFlags ) );
-    
-    int wantedflags = ReadFlagString( szFlags );
-    
-    return ( (GetUserFlagBits( client ) & wantedflags) == wantedflags );
+    return CheckCommandAccess( client, INF_PRIVCOM_SAVEZONES, ADMFLAG_ROOT );
 }
 
 stock void StartShowBuild( int client )

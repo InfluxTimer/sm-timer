@@ -21,7 +21,10 @@
 //#define DEBUG_REPLAY
 
 
-#define DEF_REPLAYBOTNAME       "Replay Bot - !replay"
+#define DEF_REPLAYBOTNAME           "Replay Bot - !replay"
+
+
+#define INF_PRIVCOM_CHANGEREPLAY    "sm_inf_changereplay"
 
 
 enum
@@ -99,8 +102,6 @@ ConVar g_ConVar_AutoPlayback;
 ConVar g_ConVar_Repeat;
 ConVar g_ConVar_BotName;
 
-ConVar g_ConVar_Admin_ChangeReplayFlags;
-
 
 int g_nMaxRecLength;
 
@@ -143,6 +144,12 @@ public void OnPluginStart()
 {
     g_hRunRec = new ArrayList( RUNREC_SIZE );
     
+    
+    // PRIVILEGE CMDS
+    RegAdminCmd( INF_PRIVCOM_CHANGEREPLAY, Cmd_Empty, ADMFLAG_ROOT );
+    
+    
+    // CMDS
     RegConsoleCmd( "sm_replay", Cmd_Replay );
     RegConsoleCmd( "sm_myreplay", Cmd_MyReplay );
     //RegConsoleCmd( "sm_test_replay", Cmd_Test_Replay );
@@ -166,7 +173,6 @@ public void OnPluginStart()
     g_ConVar_BotName = CreateConVar( "influx_recording_botname", DEF_REPLAYBOTNAME, "Replay bot's name.", FCVAR_NOTIFY );
     g_ConVar_BotName.AddChangeHook( E_CvarChange_BotName );
     
-    g_ConVar_Admin_ChangeReplayFlags = CreateConVar( "influx_recording_changereplayflags", "z", "Required flags to change replay without limits." );
     
     AutoExecConfig( true, "recording", "influx" );
     
@@ -1158,7 +1164,58 @@ stock void SetRunName( int index, int mode, int style, const char[] szName )
     }
 }
 
+/*stock void GetRunWeapons( int index, int mode, int style, char[] szPrim, int prim_len, char[] szSec, int sec_len )
+{
+    decl wep[MAX_RUNREC_WEPNAME_CELL];
+    decl i;
+    
+    
+    int offset = OFFSET_MODESTYLESIZE( mode, style, MAX_RUNREC_WEPNAME_CELL );
+    
+    
+    
+    for ( i = 0; i < sizeof( wep ); i++ )
+    {
+        wep[i] = g_hRunRec.Get( index, RUNREC_REC_START_PRIMWEP + offset + i );
+    }
+    
+    strcopy( szPrim, prim_len, view_as<char>( wep ) );
+    
+    
+    for ( i = 0; i < sizeof( wep ); i++ )
+    {
+        wep[i] = g_hRunRec.Get( index, RUNREC_REC_START_SECWEP + offset + i );
+    }
+    
+    strcopy( szSec, sec_len, view_as<char>( wep ) );
+}
 
+
+stock void SetRunWeapons( int index, int mode, int style, const char[] szPrim, const char[] szSec )
+{
+    decl wep[MAX_RUNREC_WEPNAME_CELL];
+    decl i;
+    
+    
+    int offset = OFFSET_MODESTYLESIZE( mode, style, MAX_RUNREC_WEPNAME_CELL );
+    
+    
+    
+    strcopy( view_as<char>( wep ), MAX_RUNREC_WEPNAME, szPrim );
+    
+    for ( i = 0; i < sizeof( wep ); i++ )
+    {
+        g_hRunRec.Set( index, wep[i], RUNREC_REC_START_PRIMWEP + offset + i );
+    }
+    
+    
+    strcopy( view_as<char>( wep ), MAX_RUNREC_WEPNAME, szSec );
+    
+    for ( i = 0; i < sizeof( wep ); i++ )
+    {
+        g_hRunRec.Set( index, wep[i], RUNREC_REC_START_SECWEP + offset + i );
+    }
+}*/
 
 // Malicious ucmd angles will crash the server.
 stock void FixAngles( float &pitch, float &yaw )
@@ -1184,15 +1241,7 @@ stock void FixAngles( float &pitch, float &yaw )
 
 stock bool CanUserChangeReplay( int client )
 {
-    if ( client == 0 ) return true;
-    
-    
-    char szFlags[32];
-    g_ConVar_Admin_ChangeReplayFlags.GetString( szFlags, sizeof( szFlags ) );
-    
-    int wantedflags = ReadFlagString( szFlags );
-    
-    return ( (GetUserFlagBits( client ) & wantedflags) == wantedflags );
+    return CheckCommandAccess( client, INF_PRIVCOM_CHANGEREPLAY, ADMFLAG_ROOT );
 }
 
 stock void ResetReplay()
