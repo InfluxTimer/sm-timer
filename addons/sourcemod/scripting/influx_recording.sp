@@ -73,6 +73,10 @@ bool g_bReplayedOnce;
 bool g_bForcedReplay;
 
 
+Handle g_hReplayActionTimer;
+bool g_bReplayActionTimerClose;
+
+
 // RECORDING
 ArrayList g_hRunRec;
 
@@ -241,7 +245,10 @@ public void Influx_OnPostRunLoad()
 
 public void OnMapEnd()
 {
-    g_iReplayBot = -1;
+    g_bReplayActionTimerClose = true;
+    g_hReplayActionTimer = null;
+    
+    g_iReplayBot = 0;
     
     
     decl i, j, k;
@@ -459,7 +466,7 @@ stock void OnClientDisconnect( int client )
     
     if ( client == g_iReplayBot )
     {
-        g_iReplayBot = -1;
+        g_iReplayBot = 0;
     }
 }
 
@@ -584,8 +591,38 @@ public void E_PostThinkPost_Client( int client )
     InsertFrame( client );
 }
 
+stock void CreatePlaybackStart( int bot )
+{
+    if ( g_bReplayActionTimerClose )
+    {
+        delete g_hReplayActionTimer;
+    }
+    
+    g_hReplayActionTimer = CreateTimer( g_ConVar_StartTime.FloatValue, T_PlaybackStart, GetClientUserId( bot ), TIMER_FLAG_NO_MAPCHANGE );
+    
+    
+    g_nCurRec[bot] = PLAYBACK_START;
+}
+
+stock void CreatePlaybackEnd( int bot )
+{
+    if ( g_bReplayActionTimerClose )
+    {
+        delete g_hReplayActionTimer;
+    }
+    
+    g_hReplayActionTimer = CreateTimer( g_ConVar_EndTime.FloatValue, T_PlaybackToStart, GetClientUserId( bot ), TIMER_FLAG_NO_MAPCHANGE );
+    
+    
+    g_nCurRec[bot] = PLAYBACK_END;
+}
+
 public Action T_PlaybackToStart( Handle hTimer, int client )
 {
+    g_bReplayActionTimerClose = false;
+    
+    bool nulltimer = true;
+    
     if ( (client = GetClientOfUserId( client )) != -1 )
     {
         if ( g_nCurRec[client] == PLAYBACK_END )
@@ -595,17 +632,28 @@ public Action T_PlaybackToStart( Handle hTimer, int client )
                 // Couldn't find a new playback, repeat it if possible.
                 if ( g_ConVar_Repeat.BoolValue )
                 {
-                    g_nCurRec[client] = PLAYBACK_START;
+                    CreatePlaybackStart( client );
                     
-                    CreateTimer( g_ConVar_StartTime.FloatValue, T_PlaybackStart, GetClientUserId( g_iReplayBot ), TIMER_FLAG_NO_MAPCHANGE );
+                    nulltimer = false;
                 }
                 else
                 {
                     ResetReplay();
                 }
             }
+            else
+            {
+                nulltimer = false;
+            }
         }
     }
+    
+    if ( nulltimer )
+    {
+        g_hReplayActionTimer = null;
+    }
+    
+    g_bReplayActionTimerClose = true;
 }
 
 public Action T_PlaybackStart( Handle hTimer, int client )
@@ -617,6 +665,8 @@ public Action T_PlaybackStart( Handle hTimer, int client )
             g_nCurRec[client] = 0;
         }
     }
+    
+    g_hReplayActionTimer = null;
 }
 
 public void Influx_OnTimerResetPost( int client )
@@ -741,7 +791,7 @@ stock void StartPlayback( ArrayList rec, int runid, int mode, int style, float t
     }
     
     
-    if ( !wasdead && requester && g_hReplay == rec )
+    if ( !wasdead && requester && !CanUserChangeReplay( requester ) && g_hReplay == rec )
     {
         Influx_PrintToChat( 0, requester, "That run is already being replayed!" );
         return;
@@ -768,9 +818,7 @@ stock void StartPlayback( ArrayList rec, int runid, int mode, int style, float t
     
     g_hReplay = rec;
     
-    g_nCurRec[g_iReplayBot] = PLAYBACK_START;
-    
-    CreateTimer( g_ConVar_StartTime.FloatValue, T_PlaybackStart, GetClientUserId( g_iReplayBot ), TIMER_FLAG_NO_MAPCHANGE );
+    CreatePlaybackStart( g_iReplayBot );
     
     
     // Set tag.
@@ -824,8 +872,7 @@ stock void StartPlayback( ArrayList rec, int runid, int mode, int style, float t
 
 stock void FinishPlayback()
 {
-    CreateTimer( g_ConVar_EndTime.FloatValue, T_PlaybackToStart, GetClientUserId( g_iReplayBot ), TIMER_FLAG_NO_MAPCHANGE );
-    g_nCurRec[g_iReplayBot] = PLAYBACK_END;
+    CreatePlaybackEnd( g_iReplayBot );
     
     
     if ( g_iReplayRequester > 0 || g_bForcedReplay )

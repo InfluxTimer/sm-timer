@@ -2,6 +2,10 @@ DEV
 
 CHANGES:
 - admin_overrides.cfg is now used instead of cvars like influx_core_removeflags to modify command access. See admin_overrides_influx_example.cfg for more info.
+- Admins can now restart a replay.
+
+FIXES:
+- Changing between replays too fast will no longer "double reset" the playback.
 
 
 
