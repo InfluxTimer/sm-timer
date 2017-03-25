@@ -33,6 +33,14 @@ public void Influx_OnClientModeChangePost( int client, int mode )
     }
 }
 
+public void Influx_OnClientStyleChangePost( int client, int style )
+{
+    if ( style != STYLE_NORMAL && Standup_IsClientStatsEnabled( client ) )
+    {
+        Standup_SetClientStats( client, false );
+    }
+}
+
 public Action Standup_OnStatsEnable( int client, char[] szMsg, int msg_len )
 {
     if ( Influx_GetClientMode( client ) != MODE_SCROLL )
@@ -40,10 +48,21 @@ public Action Standup_OnStatsEnable( int client, char[] szMsg, int msg_len )
         Influx_SetClientMode( client, MODE_SCROLL );
     }
     
+    if ( Influx_GetClientStyle( client ) != STYLE_NORMAL )
+    {
+        Influx_SetClientStyle( client, STYLE_NORMAL );
+    }
+    
     // Make sure we've set it.
     if ( Influx_GetClientMode( client ) != MODE_SCROLL )
     {
         strcopy( szMsg, msg_len, "Your mode must be Scroll to use longjump stats!" );
+        return Plugin_Handled;
+    }
+    
+    if ( Influx_GetClientStyle( client ) != STYLE_NORMAL )
+    {
+        strcopy( szMsg, msg_len, "Your style must be Normal to use longjump stats!" );
         return Plugin_Handled;
     }
     

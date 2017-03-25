@@ -6,6 +6,7 @@ CHANGES:
 
 FIXES:
 - Changing between replays too fast will no longer "double reset" the playback.
+- Blacklisted styles from Standup.
 
 
 
