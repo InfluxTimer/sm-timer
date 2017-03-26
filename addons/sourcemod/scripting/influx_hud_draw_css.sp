@@ -18,6 +18,7 @@
 #include <influx/zones_stage>
 #include <influx/zones_checkpoint>
 #include <influx/maprankings>
+#include <influx/style_tas>
 
 
 // LIBRARIES
@@ -31,6 +32,7 @@ bool g_bLib_Truevel;
 bool g_bLib_Stage;
 bool g_bLib_CP;
 bool g_bLib_MapRanks;
+bool g_bLib_Style_Tas;
 
 
 public Plugin myinfo =
@@ -67,6 +69,7 @@ public void OnPluginStart()
     g_bLib_Stage = LibraryExists( INFLUX_LIB_ZONES_STAGE );
     g_bLib_CP = LibraryExists( INFLUX_LIB_ZONES_CP );
     g_bLib_MapRanks = LibraryExists( INFLUX_LIB_MAPRANKS );
+    g_bLib_Style_Tas = LibraryExists( INFLUX_LIB_STYLE_TAS );
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -81,6 +84,7 @@ public void OnLibraryAdded( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Stage = true;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_CP = true;
     if ( StrEqual( lib, INFLUX_LIB_MAPRANKS ) ) g_bLib_MapRanks = true;
+    if ( StrEqual( lib, INFLUX_LIB_STYLE_TAS ) ) g_bLib_Style_Tas = true;
 }
 
 public void OnLibraryRemoved( const char[] lib )
@@ -95,6 +99,7 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Stage = false;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_CP = false;
     if ( StrEqual( lib, INFLUX_LIB_MAPRANKS ) ) g_bLib_MapRanks = false;
+    if ( StrEqual( lib, INFLUX_LIB_STYLE_TAS ) ) g_bLib_Style_Tas = false;
 }
 
 public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
@@ -138,6 +143,10 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
             else if ( g_bLib_Pause && Influx_IsClientPaused( target ) )
             {
                 Inf_FormatSeconds( Influx_GetClientPausedTime( target ), szMsg, sizeof( szMsg ), szSecFormat );
+            }
+            else if ( g_bLib_Style_Tas && Influx_GetClientStyle( target ) == STYLE_TAS )
+            {
+                Inf_FormatSeconds( Influx_GetClientTASTime( target ), szMsg, sizeof( szMsg ), szSecFormat );
             }
             else
             {
@@ -212,7 +221,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         
         /*if ( g_bLib_StrfSync && !(hideflags & HIDEFLAG_STRFSYNC) && state >= STATE_RUNNING )
         {
-            Format( szMsg, sizeof( szMsg ), "%s%sSync: %.1f",
+            Format( szMsg, sizeof( szMsg ), "%s%sSync: %.1f﹪",
                 szMsg,
                 NEWLINE_CHECK( szMsg ),
                 Influx_GetClientStrafeSync( target ) );

@@ -33,6 +33,11 @@ stock void SetClientObserverTarget( int client, int ent )
     SetEntProp( client, Prop_Send, "m_hObserverTarget", ent );
 }
 
+stock void GetEntityName( int ent, char[] sz, int len )
+{
+    GetEntPropString( ent, Prop_Data, "m_iName", sz, len );
+}
+
 stock int GetEntityWaterLevel( int ent )
 {
     return GetEntProp( ent, Prop_Data, "m_nWaterLevel" );
@@ -72,6 +77,11 @@ stock void GetEntityBaseVelocity( int ent, float out[3] )
 stock void GetEntityVelocity( int ent, float out[3] )
 {
     GetEntPropVector( ent, Prop_Data, "m_vecVelocity", out );
+}
+
+stock void SetEntityBaseVelocity( int ent, const float vec[3] )
+{
+    SetEntPropVector( ent, Prop_Data, "m_vecBaseVelocity", vec );
 }
 
 stock void SetEntityVelocity( int ent, const float vec[3] )

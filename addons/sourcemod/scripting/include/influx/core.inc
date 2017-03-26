@@ -52,7 +52,8 @@ enum
     STYLE_RHSW,
     STYLE_LOWGRAV,
     STYLE_BWD,
-    STYLE_PARKOUR
+    STYLE_PARKOUR,
+    STYLE_TAS
 };
 
 enum

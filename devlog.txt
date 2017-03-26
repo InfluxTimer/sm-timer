@@ -1,5 +1,8 @@
 DEV
 
+ADDED:
+- New style: TAS (Tool Assisted). Rewind, change timescale, use auto-strafer, etc.
+
 CHANGES:
 - admin_overrides.cfg is now used instead of cvars like influx_core_removeflags to modify command access. See admin_overrides_influx_example.cfg for more info.
 - Admins can now restart a replay.
