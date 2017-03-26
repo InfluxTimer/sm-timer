@@ -7,6 +7,10 @@
 #define INFLUX_LIB_PRACTISE      "influx_practise"
 
 
+// Return != Plugin_Continue to stop practice mode.
+forward Action Influx_OnClientPracticeStart( int client );
+
+
 native bool Influx_IsClientPractising( int client );
 
 native void Influx_StartPractising( int client );

@@ -27,6 +27,11 @@ bool g_bLib_Practise;
 bool g_bLib_Teams;
 
 
+// FORWARDS
+Handle g_hForward_OnClientPause;
+
+
+// CONVARS
 ConVar g_ConVar_MaxPausesPerRun;
 ConVar g_ConVar_Cooldown;
 
@@ -55,6 +60,10 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 public void OnPluginStart()
 {
     LoadTranslations( INFLUX_PHRASES );
+    
+    
+    // FORWARDS
+    g_hForward_OnClientPause = CreateGlobalForward( "Influx_OnClientPause", ET_Hook, Param_Cell );
     
     
     // CMDS
@@ -166,28 +175,28 @@ public Action Cmd_Practise_Pause( int client, int args )
     return Plugin_Handled;
 }
 
-stock void PauseRun( int client )
+stock bool PauseRun( int client )
 {
-    if ( g_bPaused[client] ) return;
+    if ( g_bPaused[client] ) return true;
 	
     if ( Influx_GetClientState( client ) != STATE_RUNNING )
     {
         Influx_PrintToChat( _, client, "%T", "MUSTBERUNNING", client );
-        return;
+        return false;
     }
     
     
     if ( !IsPlayerAlive( client ) )
     {
         Influx_PrintToChat( _, client, "You must be alive to pause!" );
-        return;
+        return false;
     }
     
     
     if ( g_flPauseLimit[client] > GetEngineTime() )
     {
         Influx_PrintToChat( _, client, "You cannot pause so soon! Please wait {MAINCLR1}%.1f{CHATCLR} seconds!", g_flPauseLimit[client] - GetEngineTime() );
-        return;
+        return false;
     }
     
     
@@ -196,18 +205,30 @@ stock void PauseRun( int client )
     if ( !maxpauses )
     {
         Influx_PrintToChat( _, client, "Pauses aren't allowed!" );
-        return;
+        return false;
     }
     
     if ( maxpauses > 0 && g_nPauses[client] >= maxpauses )
     {
         Influx_PrintToChat( _, client, "You cannot pause more than %i time(s) every run!", maxpauses );
-        return;
+        return false;
     }
     
     if ( g_bLib_Practise && Influx_IsClientPractising( client ) )
     {
-        return;
+        return false;
+    }
+    
+    
+    Action res = Plugin_Continue;
+    
+    Call_StartForward( g_hForward_OnClientPause );
+    Call_PushCell( client );
+    Call_Finish( res );
+    
+    if ( res != Plugin_Continue )
+    {
+        return false;
     }
     
     
@@ -226,6 +247,8 @@ stock void PauseRun( int client )
     GetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client], sizeof( g_szPausedTargetName[] ) );
 
     Influx_PrintToChat( _, client, "Your run is now paused. Type {MAINCLR1}!continue{CHATCLR} to resume." );
+    
+    return true;
 }
 
 stock void ContinueRun( int client )
@@ -288,9 +311,7 @@ public int Native_PauseClientRun( Handle hPlugin, int nParams )
 {
     int client = GetNativeCell( 1 );
     
-    PauseRun( client );
-    
-    return 1;
+    return PauseRun( client );
 }
 
 public int Native_ContinueClientRun( Handle hPlugin, int nParams )

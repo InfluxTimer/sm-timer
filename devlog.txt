@@ -8,6 +8,9 @@ FIXES:
 - Changing between replays too fast will no longer "double reset" the playback.
 - Blacklisted styles from Standup.
 
+CODE:
+- Added forwards: Influx_OnClientPause, Influx_OnClientPracticeStart, Influx_OnRecordingStart & Influx_OnRecordingFinish to let other plugins control more.
+
 
 
 1.0.6

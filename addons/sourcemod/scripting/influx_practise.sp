@@ -57,6 +57,11 @@ int g_iUseAng[INF_MAXPLAYERS];
 int g_iUseVel[INF_MAXPLAYERS];
 
 
+
+// FORWARDS
+Handle g_hForward_OnClientPracticeStart;
+
+
 bool g_bLib_Pause;
 
 
@@ -85,6 +90,11 @@ public void OnPluginStart()
     LoadTranslations( INFLUX_PHRASES );
     
     
+    // FORWARDS
+    g_hForward_OnClientPracticeStart = CreateGlobalForward( "Influx_OnClientPracticeStart", ET_Hook, Param_Cell );
+    
+    
+    // CMDS
     RegConsoleCmd( "sm_practise", Cmd_Practise );
     RegConsoleCmd( "sm_practice", Cmd_Practise );
     RegConsoleCmd( "sm_prac", Cmd_Practise );
@@ -455,9 +465,21 @@ stock bool AddClientCP( int client )
     return true;
 }
 
-stock void StartPractising( int client )
+stock bool StartPractising( int client )
 {
-    if ( g_bPractising[client] ) return;
+    if ( g_bPractising[client] ) return true;
+    
+    
+    Action res = Plugin_Continue;
+    
+    Call_StartForward( g_hForward_OnClientPracticeStart );
+    Call_PushCell( client );
+    Call_Finish( res );
+    
+    if ( res != Plugin_Continue )
+    {
+        return false;
+    }
     
     
     g_bPractising[client] = true;
@@ -477,6 +499,8 @@ stock void StartPractising( int client )
     
     
     Influx_PrintToChat( _, client, "Practice mode: {MAINCLR1}ON" );
+    
+    return true;
 }
 
 stock void EndPractising( int client )
@@ -510,9 +534,7 @@ public int Native_StartPractising( Handle hPlugin, int nParams )
 {
     int client = GetNativeCell( 1 );
     
-    StartPractising( client );
-    
-    return 1;
+    return StartPractising( client );
 }
 
 public int Native_EndPractising( Handle hPlugin, int nParams )

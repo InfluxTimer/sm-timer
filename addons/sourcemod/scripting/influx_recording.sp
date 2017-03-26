@@ -95,6 +95,11 @@ float g_flTeleportDistSq;
 float g_flTickrate;
 
 
+// FORWARDS
+Handle g_hForward_OnRecordingStart;
+Handle g_hForward_OnRecordingFinish;
+
+
 // CONVARS
 ConVar g_ConVar_WeaponSwitch;
 ConVar g_ConVar_WeaponAttack;
@@ -147,6 +152,11 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 public void OnPluginStart()
 {
     g_hRunRec = new ArrayList( RUNREC_SIZE );
+    
+    
+    // FORWARDS
+    g_hForward_OnRecordingStart = CreateGlobalForward( "Influx_OnRecordingStart", ET_Event, Param_Cell );
+    g_hForward_OnRecordingFinish = CreateGlobalForward( "Influx_OnRecordingFinish", ET_Event, Param_Cell, Param_Cell );
     
     
     // PRIVILEGE CMDS
@@ -678,8 +688,8 @@ public void Influx_OnTimerStartPost( int client, int runid )
 {
     if ( g_bLib_Practise && Influx_IsClientPractising( client ) ) return;
     
+    if ( !StartRecording( client, true ) ) return;
     
-    StartRecording( client, true );
     
     // Cache "finish" stuff here if we don't get to the end.
     g_flFinishedTime[client] = INVALID_RUN_TIME;
@@ -691,7 +701,11 @@ public void Influx_OnTimerStartPost( int client, int runid )
 
 public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style, float time, float prev_pb, float prev_best, int flags )
 {
-    if ( !g_bIsRec[client] ) return;
+    if ( g_hRec[client] == null ) return;
+    
+    if ( !FinishRecording( client, true ) ) return;
+    
+    if ( g_hRec[client].Length < 1 ) return;
     
     
     g_flFinishedTime[client] = time;
@@ -700,7 +714,6 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     g_iFinishedMode[client] = mode;
     g_iFinishedStyle[client] = style;
     
-    FinishRecording( client, true );
     
     if ( flags & (RES_TIME_ISBEST | RES_TIME_FIRSTREC) )
     {
@@ -892,7 +905,7 @@ stock void FinishPlayback()
     g_iReplayRequester = -1;
 }
 
-stock void StartRecording( int client, bool bInsertFrame = false )
+stock bool StartRecording( int client, bool bInsertFrame = false )
 {
     ArrayList rec = g_hRec[client];
     
@@ -901,8 +914,23 @@ stock void StartRecording( int client, bool bInsertFrame = false )
         DeleteRecording( rec );
     }
     
-    
     g_hRec[client] = new ArrayList( REC_SIZE );
+    
+    
+    Action res = Plugin_Continue;
+    
+    Call_StartForward( g_hForward_OnRecordingStart );
+    Call_PushCell( client );
+    Call_Finish( res );
+    
+    if ( res != Plugin_Continue )
+    {
+        g_bIsRec[client] = false;
+        return false;
+    }
+    
+    
+    
     
     g_bIsRec[client] = true;
     g_nCurRec[client] = 0;
@@ -935,13 +963,29 @@ stock void StartRecording( int client, bool bInsertFrame = false )
             }
         }
     }
+    
+    return true;
 }
 
-stock void FinishRecording( int client, bool bInsertFrame = false )
+stock bool FinishRecording( int client, bool bInsertFrame = false )
 {
     g_bIsRec[client] = false;
     
-    if ( bInsertFrame )
+    
+    Action res = Plugin_Continue;
+    
+    Call_StartForward( g_hForward_OnRecordingFinish );
+    Call_PushCell( client );
+    Call_PushCell( g_hRec[client] );
+    Call_Finish( res );
+    
+    if ( res == Plugin_Stop )
+    {
+        return false;
+    }
+    
+    
+    if ( res != Plugin_Continue && bInsertFrame )
     {
 #if defined DEBUG_INSERTFRAME
         PrintToServer( INF_DEBUG_PRE..."Inserting finishing frame! (%i) Frame: %i", client, GetGameTickCount() );
@@ -950,6 +994,8 @@ stock void FinishRecording( int client, bool bInsertFrame = false )
     }
     
     //CopyToBot( g_hRec[client] );
+    
+    return true;
 }
 
 stock void StopRecording( int client )

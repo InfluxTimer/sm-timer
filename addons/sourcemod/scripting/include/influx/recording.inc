@@ -32,6 +32,16 @@ enum
     REC_SIZE
 };
 
+/*
+#define MAX_RUNREC_WEPNAME          12
+#define MAX_RUNREC_WEPNAME_CELL     ( MAX_RUNREC_WEPNAME / 4 )
+
+
+#define RUNRECFLAG_MODE_PRIM        ( 1 << 0 )
+#define RUNRECFLAG_MODE_SEC         ( 1 << 1 )
+#define RUNRECFLAG_ZOOM             ( 1 << 2 )
+#define RUNRECFLAG_ZOOM2            ( 1 << 3 )
+*/
 
 enum
 {
@@ -42,6 +52,11 @@ enum
     RUNREC_REC_TIME[MAX_MODES * MAX_STYLES],
     
     RUNREC_REC_NAME[MAX_MODES * MAX_STYLES * MAX_BEST_NAME_CELL],
+    
+    //RUNREC_REC_START_PRIMWEP[MAX_MODES * MAX_STYLES * MAX_RUNREC_WEPNAME_CELL],
+    //RUNREC_REC_START_SECWEP[MAX_MODES * MAX_STYLES * MAX_RUNREC_WEPNAME_CELL],
+    
+    //RUNREC_REC_FLAGS[MAX_MODES * MAX_STYLES],
     
     RUNREC_SIZE
 };
@@ -79,6 +94,13 @@ enum
 };
 
 #define INF_CURHEADERSIZE       RECFILE_FRAMELEN
+
+
+// Return != Plugin_Continue to disable recording for this run.
+forward Action Influx_OnRecordingStart( int client );
+
+// Return Plugin_Stop to disable saving this recording. Do not delete the recording handle!
+forward Action Influx_OnRecordingFinish( int client, ArrayList hRecording );
 
 
 native int Influx_GetReplayBot();
