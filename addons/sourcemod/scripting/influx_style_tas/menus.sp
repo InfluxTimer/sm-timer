@@ -73,7 +73,9 @@ public Action Cmd_Settings( int client, int args )
     FormatEx( szDisplay, sizeof( szDisplay ), "Auto-strafe: %s\n ", g_bAutoStrafe[client] ? "ON" : "OFF" );
     menu.AddItem( "b", szDisplay );
     
-    menu.AddItem( "c", "Display Commands\n " );
+    menu.AddItem( "c", "Display list of commands\n " );
+    
+    menu.AddItem( "d", "Back to TAS menu\n " );
     
     menu.Display( client, MENU_TIME_FOREVER );
     
@@ -85,8 +87,10 @@ public Action Cmd_ListCmds( int client, int args )
     if ( !client ) return Plugin_Handled;
    
    
-    Menu menu = new Menu( Hndlr_Empty );
+    Menu menu = new Menu( Hndlr_ListCmds );
     menu.SetTitle( "TAS Commands (!tas_listcmds)\n " );
+    
+    menu.AddItem( "a", "Back to TAS menu\n " );
     
     menu.AddItem( "", "sm_tas_continue", ITEMDRAW_DISABLED );
     menu.AddItem( "", "sm_tas_stop", ITEMDRAW_DISABLED );

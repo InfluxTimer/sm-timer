@@ -253,25 +253,41 @@ public Action Influx_OnRecordingFinish( int client, ArrayList hRecording )
     return Plugin_Handled;
 }
 
-public void Influx_OnClientStyleChangePost( int client, int style )
+public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
 {
-    // TODO - USE ME AND USE ME BETTER.
+    if ( style == STYLE_TAS )
+    {
+        if ( !Inf_SDKHook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client ) )
+        {
+            return Plugin_Handled;
+        }
+        
+        if ( !Inf_SDKHook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client ) )
+        {
+            return Plugin_Handled;
+        }
+    }
+    else if ( laststyle == STYLE_TAS )
+    {
+        SDKUnhook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client );
+        SDKUnhook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
+        
+        SetTimescale( client, 1.0 );
+    }
+    
+    return Plugin_Continue;
+}
+
+public void Influx_OnClientStyleChangePost( int client, int style, int laststyle )
+{
     if ( style == STYLE_TAS )
     {
         OpenMenu( client );
-    }
-    else
-    {
-        SetTimescale( client, 1.0 );
     }
 }
 
 public void OnClientPutInServer( int client )
 {
-    // TODO - Move me up there!
-    Inf_SDKHook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client )
-    Inf_SDKHook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
-    
     ResetClient( client );
     
     
@@ -575,13 +591,13 @@ stock float SetClientLaggedMovementValue( int client, float value )
 
 stock void SetTimescale( int client, float value )
 {
-    if ( IsFakeClient( client ) ) return;
-    
-    
     g_flTimescale[client] = value;
     
-    Inf_SendConVarValueBool( client, g_ConVar_Cheats, true );
-    Inf_SendConVarValueFloat( client, g_ConVar_Timescale, value, "%.2f" );
+    if ( !IsFakeClient( client ) )
+    {
+        Inf_SendConVarValueBool( client, g_ConVar_Cheats, true );
+        Inf_SendConVarValueFloat( client, g_ConVar_Timescale, value, "%.2f" );
+    }
 }
 
 stock void IncreaseTimescale( int client )

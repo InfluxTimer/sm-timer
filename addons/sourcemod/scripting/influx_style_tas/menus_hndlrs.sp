@@ -81,6 +81,11 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
             OpenCmdListMenu( client );
             return 0;
         }
+        case 'd' :
+        {
+            OpenMenu( client );
+            return 0;
+        }
     }
     
     OpenSettingsMenu( client );
@@ -88,9 +93,22 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
     return 0;
 }
 
-public int Hndlr_Empty( Menu menu, MenuAction action, int client, int index )
+public int Hndlr_ListCmds( Menu menu, MenuAction action, int client, int index )
 {
     MENU_HANDLE( menu, action )
+    
+    char szInfo[2];
+    if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
+    
+    
+    switch ( szInfo[0] )
+    {
+        case 'a' :
+        {
+            OpenMenu( client );
+            return 0;
+        }
+    }
     
     return 0;
 }
