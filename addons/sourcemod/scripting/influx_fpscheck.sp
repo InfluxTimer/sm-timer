@@ -148,7 +148,7 @@ public Action T_QueryFps( Handle hTimer, int client )
     }
 }
 
-public void Influx_OnClientModeChangePost( int client, int mode )
+public void Influx_OnClientModeChangePost( int client, int mode, int lastmode )
 {
     if ( IsValidMode( mode ) )
     {

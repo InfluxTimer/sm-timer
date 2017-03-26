@@ -441,10 +441,10 @@ public void OnPluginStart()
     
     
     g_hForward_OnClientModeChange = CreateGlobalForward( "Influx_OnClientModeChange", ET_Event, Param_Cell, Param_Cell, Param_Cell );
-    g_hForward_OnClientModeChangePost = CreateGlobalForward( "Influx_OnClientModeChangePost", ET_Ignore, Param_Cell, Param_Cell );
+    g_hForward_OnClientModeChangePost = CreateGlobalForward( "Influx_OnClientModeChangePost", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
     
     g_hForward_OnClientStyleChange = CreateGlobalForward( "Influx_OnClientStyleChange", ET_Event, Param_Cell, Param_Cell, Param_Cell );
-    g_hForward_OnClientStyleChangePost = CreateGlobalForward( "Influx_OnClientStyleChangePost", ET_Ignore, Param_Cell, Param_Cell );
+    g_hForward_OnClientStyleChangePost = CreateGlobalForward( "Influx_OnClientStyleChangePost", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
     
     
     g_hForward_OnRequestModes = CreateGlobalForward( "Influx_OnRequestModes", ET_Ignore );
@@ -1791,6 +1791,7 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
     Call_StartForward( g_hForward_OnClientModeChangePost );
     Call_PushCell( client );
     Call_PushCell( mode );
+    Call_PushCell( lastmode );
     Call_Finish();
     
     
@@ -1846,6 +1847,7 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
     Call_StartForward( g_hForward_OnClientStyleChangePost );
     Call_PushCell( client );
     Call_PushCell( style );
+    Call_PushCell( laststyle );
     Call_Finish();
     
     

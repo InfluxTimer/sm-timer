@@ -345,9 +345,9 @@ native bool Influx_SetClientStyle( int client, int style );
 forward void Influx_OnClientStatusChanged( int client );
 
 forward Action Influx_OnClientModeChange( int client, int mode, int lastmode );
-forward void Influx_OnClientModeChangePost( int client, int mode );
+forward void Influx_OnClientModeChangePost( int client, int mode, int lastmode );
 forward Action Influx_OnClientStyleChange( int client, int style, int laststyle );
-forward void Influx_OnClientStyleChangePost( int client, int style );
+forward void Influx_OnClientStyleChangePost( int client, int style, int laststyle );
 
 // This is where we make sure the player is abiding the style rules.
 // Look at style plugins for an example.

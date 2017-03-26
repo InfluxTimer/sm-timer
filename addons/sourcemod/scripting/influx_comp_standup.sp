@@ -25,7 +25,7 @@ public Action Influx_ShouldDrawHUD( int client, int target, HudType_t hudtype )
     /*&&      Standup_GetClientNextHint( target ) < GetEngineTime()*/ ) ? Plugin_Stop : Plugin_Continue;
 }
 
-public void Influx_OnClientModeChangePost( int client, int mode )
+public void Influx_OnClientModeChangePost( int client, int mode, int lastmode )
 {
     if ( mode != MODE_SCROLL && Standup_IsClientStatsEnabled( client ) )
     {
@@ -33,7 +33,7 @@ public void Influx_OnClientModeChangePost( int client, int mode )
     }
 }
 
-public void Influx_OnClientStyleChangePost( int client, int style )
+public void Influx_OnClientStyleChangePost( int client, int style, int laststyle )
 {
     if ( style != STYLE_NORMAL && Standup_IsClientStatsEnabled( client ) )
     {
