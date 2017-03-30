@@ -114,6 +114,9 @@ public Action Influx_OnClientModeChange( int client, int mode, int lastmode )
 {
     if ( mode == MODE_SCROLL )
     {
+        UnhookThinks( client );
+        
+        
         if ( !Inf_SDKHook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client ) )
         {
             return Plugin_Handled;

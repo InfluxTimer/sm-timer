@@ -98,6 +98,9 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
 {
     if ( style == STYLE_LOWGRAV )
     {
+        UnhookThinks( client );
+        
+        
         if ( !Inf_SDKHook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client ) )
         {
             return Plugin_Handled;

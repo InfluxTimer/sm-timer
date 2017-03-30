@@ -17,6 +17,10 @@
 
 
 
+//#define DEBUG_THINK
+
+
+
 #define FRM_CLASSNAME_SIZE          32
 #define FRM_CLASSNAME_SIZE_CELL     FRM_CLASSNAME_SIZE / 4
 
@@ -257,6 +261,9 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
 {
     if ( style == STYLE_TAS )
     {
+        UnhookThinks( client );
+        
+        
         if ( !Inf_SDKHook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client ) )
         {
             return Plugin_Handled;
@@ -264,13 +271,13 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
         
         if ( !Inf_SDKHook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client ) )
         {
+            UnhookThinks( client );
             return Plugin_Handled;
         }
     }
     else if ( laststyle == STYLE_TAS )
     {
-        SDKUnhook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client );
-        SDKUnhook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
+        UnhookThinks( client );
         
         UnfreezeClient( client );
         
@@ -278,6 +285,12 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
     }
     
     return Plugin_Continue;
+}
+
+stock void UnhookThinks( int client )
+{
+    SDKUnhook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client );
+    SDKUnhook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
 }
 
 public void Influx_OnClientStyleChangePost( int client, int style, int laststyle )
@@ -318,6 +331,10 @@ public Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &valu
 
 public void E_PreThinkPost_Client( int client )
 {
+#if defined DEBUG_THINK
+    PrintToServer( INF_DEBUG_PRE..."PreThinkPost - TAS (timescale: %.1f)", g_flTimescale[client] );
+#endif
+
     if ( !IsPlayerAlive( client ) ) return;
     
     if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return;
@@ -328,6 +345,10 @@ public void E_PreThinkPost_Client( int client )
 
 public void E_PostThinkPost_Client( int client )
 {
+#if defined DEBUG_THINK
+    PrintToServer( INF_DEBUG_PRE..."PostThinkPost - TAS (timescale: %.1f)", g_flTimescale[client] );
+#endif
+
     if ( !IsPlayerAlive( client ) ) return;
     
     if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return;
