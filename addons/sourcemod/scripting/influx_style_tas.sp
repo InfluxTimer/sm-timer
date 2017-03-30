@@ -182,7 +182,7 @@ public void Influx_OnTimerResetPost( int client )
     if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return;
     
     
-    SetEntityMoveType( client, MOVETYPE_WALK );
+    UnfreezeClient( client );
     
     ResetClient( client );
 }
@@ -272,7 +272,9 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
         SDKUnhook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client );
         SDKUnhook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
         
-        SetTimescale( client, 1.0 );
+        UnfreezeClient( client );
+        
+        SetTimescale( client, 1.0, false );
     }
     
     return Plugin_Continue;
@@ -291,7 +293,7 @@ public void OnClientPutInServer( int client )
     ResetClient( client );
     
     
-    SetTimescale( client, 1.0 );
+    SetTimescale( client, 1.0, false );
     
     g_bAutoStrafe[client] = false;
 }
@@ -579,23 +581,21 @@ stock float GetClientApproxTime( int client )
     return ( (g_iStoppedFrame[client] + 1) * GetTickInterval() );
 }
 
-stock float GetClientLaggedMovementValue( int client )
+stock void UnfreezeClient( int client )
 {
-    return GetEntPropFloat( client, Prop_Send, "m_flLaggedMovementValue" );
+    if ( GetEntityMoveType( client ) == MOVETYPE_NONE )
+    {
+        SetEntityMoveType( client, MOVETYPE_WALK );
+    }
 }
 
-stock float SetClientLaggedMovementValue( int client, float value )
-{
-    SetEntPropFloat( client, Prop_Send, "m_flLaggedMovementValue", value );
-}
-
-stock void SetTimescale( int client, float value )
+stock void SetTimescale( int client, float value, bool bCheats = true )
 {
     g_flTimescale[client] = value;
     
     if ( !IsFakeClient( client ) )
     {
-        Inf_SendConVarValueBool( client, g_ConVar_Cheats, true );
+        Inf_SendConVarValueBool( client, g_ConVar_Cheats, bCheats );
         Inf_SendConVarValueFloat( client, g_ConVar_Timescale, value, "%.2f" );
     }
 }
