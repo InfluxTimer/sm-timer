@@ -133,6 +133,11 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_tas_listcmds", Cmd_ListCmds );
     
     
+    // EVENTS
+    HookEvent( "player_team", E_PlayerTeamNDeath );
+    HookEvent( "player_death", E_PlayerTeamNDeath );
+    
+    
     if ( g_bLate )
     {
         for ( int i = 1; i <= MaxClients; i++ )
@@ -370,6 +375,17 @@ public void E_PostThinkPost_Client( int client )
     Influx_SetClientStartTick( client, GetGameTickCount() - (g_iStoppedFrame[client] + 1) );
 }
 
+public void E_PlayerTeamNDeath( Event event, const char[] szEvent, bool bImUselessWhyDoIExist )
+{
+    int client = GetClientOfUserId( event.GetInt( "userid" ) );
+    if ( !client ) return;
+    
+    if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return;
+    
+    
+    SetTimescale( client, 1.0, false );
+}
+
 #define UPDATE_YAW      flLastYaw[client] = angles[1];
 
 public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[3], float angles[3] )
@@ -387,7 +403,7 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
     
     if (GetEntityFlags( client ) & FL_ONGROUND
     ||  vel[0] != 0.0
-    || vel[1] != 0.0)
+    ||  vel[1] != 0.0)
     {
         UPDATE_YAW
         //flLastLegitYaw[client] = angles[1];
@@ -397,11 +413,11 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
     
     
     
-    Strafe_t strf = GetStrafe( angles[1], flLastYaw[client] );
+    Strafe_t strf = GetStrafe( angles[1], flLastYaw[client], 75.0 );
     
     
-    float vec[3];
-    GetEntPropVector( client, Prop_Data, "m_vecVelocity", vec );
+    decl Float:vec[3];
+    GetEntityVelocity( client, vec );
     
     NormalizeVector( vec, vec );
     
