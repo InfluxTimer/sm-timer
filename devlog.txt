@@ -6,6 +6,7 @@ COMPATIBILITY:
 
 ADDED:
 - New style: TAS (Tool Assisted). Rewind, change timescale, use auto-strafer, etc.
+- Ability to delete recordings through a menu.
 
 CHANGES:
 - admin_overrides.cfg is now used instead of cvars like influx_core_removeflags to modify command access. See admin_overrides_influx_example.cfg for more info.

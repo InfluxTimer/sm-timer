@@ -25,6 +25,7 @@
 
 
 #define INF_PRIVCOM_CHANGEREPLAY    "sm_inf_changereplay"
+#define INF_PRIVCOM_DELETERECS      "sm_inf_deleterecordings"
 
 
 enum
@@ -161,12 +162,16 @@ public void OnPluginStart()
     
     // PRIVILEGE CMDS
     RegAdminCmd( INF_PRIVCOM_CHANGEREPLAY, Cmd_Empty, ADMFLAG_ROOT );
+    RegAdminCmd( INF_PRIVCOM_DELETERECS, Cmd_Empty, ADMFLAG_ROOT );
     
     
     // CMDS
     RegConsoleCmd( "sm_replay", Cmd_Replay );
     RegConsoleCmd( "sm_myreplay", Cmd_MyReplay );
     //RegConsoleCmd( "sm_test_replay", Cmd_Test_Replay );
+    
+    RegConsoleCmd( "sm_deleterecording", Cmd_DeleteRecordings );
+    RegConsoleCmd( "sm_deleterecordings", Cmd_DeleteRecordings );
     
     
     // CONVARS
@@ -425,7 +430,7 @@ public void OnClientPutInServer( int client )
     
     
     ArrayList rec = g_hRec[client];
-    if ( rec != null ) DeleteRecording( rec );
+    if ( rec != null ) FreeRecording( rec );
     g_hRec[client] = null;
     
     if ( !IsFakeClient( client ) )
@@ -737,7 +742,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
         
         ArrayList rec = GetRunRec( irun, mode, style );
         
-        if ( rec != null ) DeleteRecording( rec );
+        if ( rec != null ) FreeRecording( rec );
         
         
         decl String:szName[32];
@@ -767,7 +772,7 @@ public void Influx_OnRunCreated( int runid )
     g_hRunRec.PushArray( data );
 }
 
-stock void DeleteRecording( ArrayList &rec )
+stock void FreeRecording( ArrayList &rec )
 {
     if ( rec == g_hReplay )
     {
@@ -911,7 +916,7 @@ stock bool StartRecording( int client, bool bInsertFrame = false )
     
     if ( rec != null )
     {
-        DeleteRecording( rec );
+        FreeRecording( rec );
     }
     
     g_hRec[client] = new ArrayList( REC_SIZE );
@@ -1335,6 +1340,11 @@ stock void FixAngles( float &pitch, float &yaw )
 stock bool CanUserChangeReplay( int client )
 {
     return CheckCommandAccess( client, INF_PRIVCOM_CHANGEREPLAY, ADMFLAG_ROOT );
+}
+
+stock bool CanUserDeleteRecordings( int client )
+{
+    return CheckCommandAccess( client, INF_PRIVCOM_DELETERECS, ADMFLAG_ROOT );
 }
 
 stock void ResetReplay()

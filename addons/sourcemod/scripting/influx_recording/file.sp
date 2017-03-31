@@ -1,3 +1,35 @@
+stock void FormatRecordingPath( char[] sz, int len, int runid, int mode, int style, const char[] szArgMap = "" )
+{
+    decl String:szMode[MAX_MODE_SHORTNAME];
+    decl String:szStyle[MAX_STYLE_SHORTNAME];
+    
+    Influx_GetModeShortName( mode, szMode, sizeof( szMode ) );
+    StringToLower( szMode );
+    
+    Influx_GetStyleShortName( style, szStyle, sizeof( szStyle ) );
+    StringToLower( szStyle );
+    
+    
+    decl String:szMap[64];
+    
+    if ( szArgMap[0] != 0 )
+    {
+        strcopy( szMap, sizeof( szMap ), szArgMap );
+    }
+    else
+    {
+        GetCurrentMapSafe( szMap, sizeof( szMap ) );
+    }
+    
+    
+    
+    BuildPath( Path_SM, sz, len, RECORDS_DIR..."/%s/rec/%i_%s_%s.rec",
+        szMap,
+        runid,
+        szMode,
+        szStyle );
+}
+
 stock void LoadAllRecordings()
 {
     char szPath[PLATFORM_MAX_PATH];
@@ -252,6 +284,22 @@ stock bool LoadRecording( const char[] szPath, ArrayList &rec, int &runid, int &
     return true;
 }
 
+stock bool DeleteRecording( int runid, int mode, int style, const char[] szMap = "" )
+{
+    decl String:szPath[PLATFORM_MAX_PATH];
+    FormatRecordingPath( szPath, sizeof( szPath ), runid, mode, style, szMap );
+    
+    
+    if ( !FileExists( szPath ) )
+    {
+        LogError( INF_CON_PRE..."Recording file '%s' does not exist. Cannot remove!" );
+        return false;
+    }
+    
+    
+    return DeleteFile( szPath );
+}
+
 stock bool SaveRecording( int client, ArrayList rec, int runid, int mode, int style, float time )
 {
     if ( rec == null )
@@ -271,25 +319,12 @@ stock bool SaveRecording( int client, ArrayList rec, int runid, int mode, int st
     }
     
     
-    decl String:szMode[MAX_MODE_SHORTNAME];
-    decl String:szStyle[MAX_STYLE_SHORTNAME];
-    
-    Influx_GetModeShortName( mode, szMode, sizeof( szMode ) );
-    StringToLower( szMode );
-    
-    Influx_GetStyleShortName( style, szStyle, sizeof( szStyle ) );
-    StringToLower( szStyle );
-    
-    
     decl String:szMap[64];
     GetCurrentMapSafe( szMap, sizeof( szMap ) );
     
     decl String:szPath[PLATFORM_MAX_PATH];
-    BuildPath( Path_SM, szPath, sizeof( szPath ), RECORDS_DIR..."/%s/rec/%i_%s_%s.rec",
-        szMap,
-        runid,
-        szMode,
-        szStyle );
+    FormatRecordingPath( szPath, sizeof( szPath ), runid, mode, style, szMap );
+
     
     
     File file = OpenFile( szPath, "wb" );
