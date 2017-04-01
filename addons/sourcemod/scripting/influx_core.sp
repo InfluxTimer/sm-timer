@@ -176,8 +176,6 @@ Handle g_hForward_OnCheckClientStyle;
 
 Handle g_hForward_OnSearchType;
 
-Handle g_hForward_OnSearchEnd;
-
 
 // FUNCS
 Handle g_hFunc_GetPlayerMaxSpeed;
@@ -456,8 +454,6 @@ public void OnPluginStart()
     
     g_hForward_OnSearchType = CreateGlobalForward( "Influx_OnSearchType", ET_Hook, Param_String, Param_CellByRef, Param_CellByRef );
     
-    g_hForward_OnSearchEnd = CreateGlobalForward( "Influx_OnSearchEnd", ET_Hook, Param_Cell, Param_Array );
-    
     
     // CONVARS
     g_ConVar_ChatPrefix = CreateConVar( "influx_chatprefix", DEF_CHATPREFIX, "Prefix for chat messages.", FCVAR_NOTIFY );
@@ -541,11 +537,6 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_b1", Cmd_Bonus1 );
     RegConsoleCmd( "sm_bonus2", Cmd_Bonus2 );
     RegConsoleCmd( "sm_b2", Cmd_Bonus2 );
-    
-    
-    RegConsoleCmd( "sm_end", Cmd_GotoEnd );
-    RegConsoleCmd( "sm_goend", Cmd_GotoEnd );
-    RegConsoleCmd( "sm_gotoend", Cmd_GotoEnd );
     
     
     // RECORD CMDS
@@ -2233,19 +2224,6 @@ stock void ResetClientMode( int client )
     g_iModeId[client] = MODE_INVALID;
     
     g_cache_flMaxSpeed[client] = g_ConVar_DefMaxWeaponSpeed.FloatValue;
-}
-
-stock bool SearchEnd( int runid, float pos[3] )
-{
-    Action res = Plugin_Continue;
-    
-    Call_StartForward( g_hForward_OnSearchEnd );
-    Call_PushCell( runid );
-    Call_PushArrayEx( pos, 3, SM_PARAM_COPYBACK );
-    Call_Finish( res );
-    
-    
-    return ( res != Plugin_Continue );
 }
 
 stock void TeleportOnSpawn( int client )

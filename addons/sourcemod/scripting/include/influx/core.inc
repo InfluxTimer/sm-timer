@@ -396,11 +396,6 @@ native bool Influx_IsValidMapName( const char[] szMap );
 
 
 
-// Searching for ending position.
-forward Action Influx_OnSearchEnd( int runid, float pos[3] );
-
-
-
 stock bool Inf_SDKHook( int entity, SDKHookType type, SDKHookCB callback )
 {
     if ( !SDKHookEx( entity, type, callback ) )

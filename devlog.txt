@@ -11,6 +11,7 @@ ADDED:
 CHANGES:
 - admin_overrides.cfg is now used instead of cvars like influx_core_removeflags to modify command access. See admin_overrides_influx_example.cfg for more info.
 - Admins can now restart a replay.
+- Moved the ability to teleport to the end to a separate plugin influx_teletoend.
 
 FIXES:
 - Changing between replays too fast will no longer "double reset" the playback.

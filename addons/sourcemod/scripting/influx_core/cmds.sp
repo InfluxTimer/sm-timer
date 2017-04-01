@@ -218,38 +218,6 @@ public Action Cmd_PrintMapsRecords( int client, int args )
     return Plugin_Handled;
 }
 
-public Action Cmd_GotoEnd( int client, int args )
-{
-    if ( !client ) return Plugin_Handled;
-    
-    if ( !IsPlayerAlive( client ) ) return Plugin_Handled;
-    
-    
-    int runid = g_iRunId[client];
-    
-    int irun = FindRunById( runid );
-    if ( irun == -1 ) return Plugin_Handled;
-    
-    
-    float pos[3];
-    if ( SearchEnd( runid, pos ) )
-    {
-        g_iRunState[client] = STATE_NONE;
-        
-        TeleportEntity( client, pos, NULL_VECTOR, NULL_VECTOR );
-    }
-    else
-    {
-        char szRun[MAX_RUN_NAME];
-        GetRunNameByIndex( irun, szRun, sizeof( szRun ) );
-        
-        
-        Influx_PrintToChat( _, client, "Couldn't find end to {MAINCLR1}%s{CHATCLR}!", szRun );
-    }
-    
-    return Plugin_Handled;
-}
-
 public Action Cmd_Admin_SetTelePos( int client, int args )
 {
     if ( !client ) return Plugin_Handled;

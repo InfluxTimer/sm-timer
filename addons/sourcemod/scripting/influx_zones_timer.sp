@@ -9,6 +9,10 @@
 #include <msharedutil/arrayvec>
 
 
+#undef REQUIRE_PLUGIN
+#include <influx/teletoend>
+
+
 //#define DEBUG
 
 
