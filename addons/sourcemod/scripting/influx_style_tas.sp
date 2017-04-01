@@ -32,7 +32,7 @@ enum
     FRM_POS[3] = 0,
     FRM_ANG[2],
     
-    FRM_VEL[3],
+    FRM_ABSVEL[3],
     FRM_BASEVEL[3],
     
     FRM_MOVETYPE,
@@ -463,8 +463,8 @@ stock void InsertFrame( int client )
     GetClientEyeAngles( client, vec );
     CopyArray( vec, data[FRM_ANG], 2 );
     
-    GetEntityVelocity( client, vec );
-    CopyArray( vec, data[FRM_VEL], 3 );
+    GetEntityAbsVelocity( client, vec );
+    CopyArray( vec, data[FRM_ABSVEL], 3 );
     
     GetEntityBaseVelocity( client, vec );
     CopyArray( vec, data[FRM_BASEVEL], 3 );
@@ -499,7 +499,7 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
     CopyArray( data[FRM_POS], pos, 3 );
     CopyArray( data[FRM_ANG], ang, 2 );
     ang[2] = 0.0;
-    CopyArray( data[FRM_VEL], vel, 3 );
+    CopyArray( data[FRM_ABSVEL], vel, 3 );
     
     
     if ( !bContinue )

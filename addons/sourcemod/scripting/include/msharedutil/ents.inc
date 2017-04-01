@@ -69,6 +69,11 @@ stock float GetEntityTrueSpeed( int ent )
     return SquareRoot( GetEntityTrueSpeedSquared( ent ) );
 }
 
+stock void GetEntityAbsVelocity( int ent, float out[3] )
+{
+    GetEntPropVector( ent, Prop_Data, "m_vecAbsVelocity", out );
+}
+
 stock void GetEntityBaseVelocity( int ent, float out[3] )
 {
     GetEntPropVector( ent, Prop_Data, "m_vecBaseVelocity", out );
