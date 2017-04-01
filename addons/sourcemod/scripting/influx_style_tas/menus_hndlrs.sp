@@ -55,6 +55,9 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
     MENU_HANDLE( menu, action )
     
     
+    if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return 0;
+    
+    
     char szInfo[2];
     if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
     
