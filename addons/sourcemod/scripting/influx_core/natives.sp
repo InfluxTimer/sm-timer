@@ -457,7 +457,6 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     
     if ( IsFakeClient( client ) ) return;
     
-    
     if ( g_iRunState[client] != STATE_RUNNING ) return;
     
     
@@ -471,15 +470,8 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     
     if ( runid != g_iRunId[client] ) return;
     
-    
-    g_iRunState[client] = STATE_FINISHED;
-    
-    
     float time = TickCountToTime( GetGameTickCount() - g_iRunStartTick[client] );
     if ( time <= INVALID_RUN_TIME ) return;
-    
-    
-    g_flFinishedTime[client] = time;
     
     
     
@@ -510,7 +502,6 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     }
     
     
-    
     float prev_pb = GetClientRunTime( irun, client, modeid, styleid );
     bool bIsNewOwnRec = ( prev_pb <= INVALID_RUN_TIME );
     bool bIsNewPB = ( !bIsNewOwnRec && time < prev_pb );
@@ -529,9 +520,6 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     
     // Add run result flags.
     resultflags |= g_hRuns.Get( irun, RUN_RESFLAGS );
-    
-    // Cache best finish time to display on hud.
-    g_flFinishBest[client] = prev_best;
     
     
     decl String:errormsg[256];
@@ -567,6 +555,14 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
         return;
     }
     
+    
+    g_iRunState[client] = STATE_FINISHED;
+    
+    
+    g_flFinishedTime[client] = time;
+    
+    // Cache best finish time to display on hud.
+    g_flFinishBest[client] = prev_best;
     
     
     if ( bIsNewOwnRec || bIsNewPB )
