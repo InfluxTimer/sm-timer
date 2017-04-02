@@ -809,55 +809,6 @@ public void OnMapEnd()
     }
 }
 
-public void OnConfigsExecuted()
-{
-    // HACK: These shouldn't be here, gotta move that gear up!
-    ConVar cvar;
-    
-    
-    cvar = FindConVar( "mp_ignore_round_win_conditions" );
-    if ( cvar != null )
-    {
-        cvar.SetBool( true );
-        delete cvar;
-    }
-    
-    cvar = FindConVar( "mp_autoteambalance" );
-    if ( cvar != null )
-    {
-        cvar.SetBool( false );
-        delete cvar;
-    }
-    
-    cvar = FindConVar( "mp_limitteams" );
-    if ( cvar != null )
-    {
-        cvar.SetInt( 0 );
-        delete cvar;
-    }
-    
-    cvar = FindConVar( "mp_spectators_max" );
-    if ( cvar != null )
-    {
-        cvar.SetInt( 1337 );
-        delete cvar;
-    }
-    
-    cvar = FindConVar( "sv_staminajumpcost" );
-    if ( cvar != null )
-    {
-        cvar.SetFloat( 0.0 );
-        delete cvar;
-    }
-    
-    cvar = FindConVar( "sv_staminalandcost" );
-    if ( cvar != null )
-    {
-        cvar.SetFloat( 0.0 );
-        delete cvar;
-    }
-}
-
 public void OnClientPutInServer( int client )
 {
     ResetClient( client );
