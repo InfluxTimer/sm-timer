@@ -20,6 +20,7 @@ FIXES:
 - Accidentally hooking think multiple times in styles/modes.
 - Fixed zone names with forward slashes not saving properly.
 - Fixed sm_wrcp queries not working (subquery returning multiple results)
+- Fixed sm_deletecptimes
 
 CODE:
 - Added forwards: Influx_OnClientPause, Influx_OnClientPracticeStart, Influx_OnRecordingStart & Influx_OnRecordingFinish to let other plugins control more.

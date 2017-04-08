@@ -419,7 +419,7 @@ stock void DB_DeleteCPRecords( int issuer, int mapid, int uid = -1, int runid = 
     
     char szQuery[512];
     
-    FormatEx( szQuery, sizeof( szQuery ), "DELETE FROM "...INF_TABLE_TIMES..." WHERE mapid=%i", mapid );
+    FormatEx( szQuery, sizeof( szQuery ), "DELETE FROM "...INF_TABLE_CPTIMES..." WHERE mapid=%i", mapid );
     
     if ( uid > 0 )
     {
