@@ -488,6 +488,10 @@ stock int WriteZoneFile()
             continue;
         }
         
+        
+        // Forward slashes need to be removed since they create a subkey. WHY?!?!?!
+        ReplaceString( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME, "/", "" );
+        
         if ( !kv.JumpToKey( view_as<char>( data[ZONE_NAME] ), true ) )
         {
             continue;
