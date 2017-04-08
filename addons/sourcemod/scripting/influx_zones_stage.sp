@@ -188,6 +188,7 @@ public void Influx_OnClientStatusChanged( int client )
 public void Influx_OnPreRunLoad()
 {
     g_hStages.Clear();
+    g_hStageZones.Clear();
 }
 
 public void Influx_OnRunCreated( int runid )
