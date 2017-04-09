@@ -104,7 +104,7 @@ stock bool KillEntity( int ent )
     return AcceptEntityInput( ent, "Kill" );
 }
 
-stock void GetEntityCollisionGroup( int ent )
+stock int GetEntityCollisionGroup( int ent )
 {
     return GetEntProp( ent, Prop_Data, "m_CollisionGroup" );
 }
