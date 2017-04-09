@@ -7,7 +7,10 @@
 #define INFLUX_LIB_HELP             "influx_help"
 
 
-forward void Influx_RequestHelpCmds();
+// Waiting to be removed.
+#define Influx_RequestHelpCmds      Influx_OnRequestHelpCmds
+
+forward void Influx_OnRequestHelpCmds();
 
 
 native bool Influx_AddHelpCommand( const char[] szCommand, const char[] szMsg, bool bAdminOnly = false );

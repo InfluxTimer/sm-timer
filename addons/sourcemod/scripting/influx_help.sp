@@ -33,7 +33,7 @@ ConVar g_ConVar_NotifyConnected;
 
 
 // FORWARDS
-Handle g_hForward_RequestHelpCmds;
+Handle g_hForward_OnRequestHelpCmds;
 
 
 public Plugin myinfo =
@@ -51,9 +51,6 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     RegPluginLibrary( INFLUX_LIB_HELP );
     
     
-    // FORWARDS
-    g_hForward_RequestHelpCmds = CreateGlobalForward( "Influx_RequestHelpCmds", ET_Ignore );
-    
     // NATIVES
     CreateNative( "Influx_AddHelpCommand", Native_AddHelpCommand );
     CreateNative( "Influx_RemoveHelpCommand", Native_RemoveHelpCommand );
@@ -61,7 +58,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hComs = new ArrayList( C_SIZE );
+    // FORWARDS
+    g_hForward_OnRequestHelpCmds = CreateGlobalForward( "Influx_OnRequestHelpCmds", ET_Ignore );
     
     
     // CONVARS
@@ -70,15 +68,19 @@ public void OnPluginStart()
     AutoExecConfig( true, "help", "influx" );
     
     
-    // COMMANDS
+    // CMDS
     RegConsoleCmd( "sm_help", Cmd_Help, "Displays a list of "...INF_NAME..."'s commands." );
+    
+    
+    
+    g_hComs = new ArrayList( C_SIZE );
 }
 
 public void OnAllPluginsLoaded()
 {
     g_hComs.Clear();
     
-    Call_StartForward( g_hForward_RequestHelpCmds );
+    Call_StartForward( g_hForward_OnRequestHelpCmds );
     Call_Finish();
 }
 

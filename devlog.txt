@@ -2,7 +2,7 @@ DEV
 
 COMPATIBILITY:
 - Delete cfg/influx/core.cfg, cfg/influx/recording.cfg and cfg/influx/zones.cfg to generate new ones with latest cvars.
-- Changed forwards: Influx_OnClientModeChangePost & Influx_OnClientStyleChangePost
+- Changed forwards: Influx_OnClientModeChangePost, Influx_OnClientStyleChangePost & Influx_RequestHelpCmds
 
 ADDED:
 - New style: TAS (Tool Assisted). Rewind, change timescale, use auto-strafer, load/save runs that are in progress, etc.
@@ -25,6 +25,7 @@ FIXES:
 CODE:
 - Added forwards: Influx_OnClientPause, Influx_OnClientPracticeStart, Influx_OnRecordingStart & Influx_OnRecordingFinish to let other plugins control more.
 - Forwards Influx_OnClientModeChangePost & Influx_OnClientStyleChangePost now also have the last mode/style argument.
+- Renamed Influx_RequestHelpCmds to Influx_OnRequestHelpCmds
 
 
 
