@@ -89,6 +89,16 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
             OpenMenu( client );
             return 0;
         }
+        case 'e' :
+        {
+            OpenLoadMenu( client );
+            return 0;
+        }
+        case 'f' :
+        {
+            OpenSaveMenu( client );
+            return 0;
+        }
     }
     
     OpenSettingsMenu( client );
@@ -112,6 +122,59 @@ public int Hndlr_ListCmds( Menu menu, MenuAction action, int client, int index )
             return 0;
         }
     }
+    
+    return 0;
+}
+
+public int Hndlr_TasLoad( Menu menu, MenuAction action, int client, int index )
+{
+    MENU_HANDLE( menu, action )
+    
+    if ( !CanUserLoadSaveTas( client ) ) return 0;
+    
+    char szInfo[32];
+    if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
+    
+    
+    char bufs[3][12];
+    if ( ExplodeString( szInfo, "_", bufs, sizeof( bufs ), sizeof( bufs[] ) ) < sizeof( bufs ) )
+    {
+        return 0;
+    }
+    
+    int runid = StringToInt( bufs[0] );
+    if ( Influx_GetClientRunId( client ) != runid ) return 0;
+    
+    
+    int mode = StringToInt( bufs[1] );
+    int style = StringToInt( bufs[2] );
+    
+    if (LoadFrames( client, g_hFrames[client], runid, mode, style )
+    &&  Influx_SetClientMode( client, mode )
+    &&  Influx_SetClientStyle( client, STYLE_TAS ))
+    {
+        SetFrame( client, g_hFrames[client].Length - 1, false, true );
+        
+        Influx_SetClientState( client, STATE_RUNNING );
+        Influx_SetClientStartTick( client, GetGameTickCount() - (g_iStoppedFrame[client] + 1) );
+        
+        
+        Influx_PrintToChat( _, client, "Loaded {MAINCLR1}%i{CHATCLR} frames from disk.", g_hFrames[client].Length );
+    }
+    
+    return 0;
+}
+
+public int Hndlr_TasSave_Confirm( Menu menu, MenuAction action, int client, int index )
+{
+    MENU_HANDLE( menu, action )
+    
+    if ( !CanUserLoadSaveTas( client ) ) return 0;
+    
+    if ( index != 0 ) return 0;
+    
+    
+    SaveFramesMsg( client );
     
     return 0;
 }

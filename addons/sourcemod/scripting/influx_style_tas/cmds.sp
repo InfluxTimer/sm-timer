@@ -1,3 +1,8 @@
+public Action Cmd_Empty( int client, int args )
+{
+    return Plugin_Handled;
+}
+
 public Action Cmd_Style_Tas( int client, int args )
 {
     if ( !client ) return Plugin_Handled;

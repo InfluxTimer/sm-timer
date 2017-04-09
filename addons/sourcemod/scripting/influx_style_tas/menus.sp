@@ -1,6 +1,5 @@
 #include "influx_style_tas/menus_hndlrs.sp"
 
-
 public Action Cmd_TasMenu( int client, int args )
 {
     if ( !client ) return Plugin_Handled;
@@ -75,6 +74,12 @@ public Action Cmd_Settings( int client, int args )
     
     menu.AddItem( "c", "Display list of commands\n " );
     
+    
+    int itemdraw = CanUserLoadSaveTas( client ) ? 0 : ITEMDRAW_DISABLED;
+    
+    menu.AddItem( "e", "Load Run", itemdraw );
+    menu.AddItem( "f", "Save Run\n ", itemdraw );
+    
     menu.AddItem( "d", "Back to TAS menu\n " );
     
     menu.Display( client, MENU_TIME_FOREVER );
@@ -107,6 +112,138 @@ public Action Cmd_ListCmds( int client, int args )
     menu.AddItem( "", "sm_tas_listcmds", ITEMDRAW_DISABLED );
     
     menu.Display( client, MENU_TIME_FOREVER );
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_LoadRun( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !CanUserLoadSaveTas( client ) ) return Plugin_Handled;
+    
+    
+    Menu menu = new Menu( Hndlr_TasLoad );
+    menu.SetTitle( "TAS Load Menu (!tas_load)\n " );
+    
+    
+    decl String:szMap[64];
+    decl String:szPath[PLATFORM_MAX_PATH];
+    decl String:szInfo[32];
+    
+    int runid;
+    int mode;
+    int style;
+    
+    int currunid = Influx_GetClientRunId( client );
+    
+    int uid = Influx_GetClientId( client );
+    
+    GetCurrentMapSafe( szMap, sizeof( szMap ) );
+    
+    
+    BuildPath( Path_SM, szPath, sizeof( szPath ), TAS_DIR..."/%s/%i",
+        szMap,
+        uid );
+    
+    DirectoryListing dir = OpenDirectory( szPath );
+    
+    if ( dir != null )
+    {
+        decl String:szFile[128];
+        
+        int i;
+        int dotpos;
+        int len;
+        
+        while ( dir.GetNext( szFile, sizeof( szFile ) ) )
+        {
+            // . and ..
+            if ( szFile[0] == '.' || szFile[0] == '\0' ) continue;
+            
+            // Check file extension.
+            len = strlen( szFile );
+            dotpos = 0;
+            
+            for ( i = 0; i < len; i++ )
+            {
+                if ( szFile[i] == '.' ) dotpos = i;
+            }
+
+            if ( !StrEqual( szFile[dotpos], ".rec", false ) ) continue;
+            
+            
+            Format( szPath, sizeof( szPath ), "%s/%s", szPath, szFile );
+            
+            File file = OpenFile( szPath, "rb" );
+            
+            if ( file == null )
+            {
+                continue;
+            }
+            
+            
+            file.Seek( TASFILE_RUNID * 4, SEEK_SET );
+            
+            
+            file.ReadInt32( runid );
+            
+            if ( currunid == runid )
+            {
+                file.ReadInt32( mode );
+                file.ReadInt32( style );
+                
+                
+                FormatEx( szInfo, sizeof( szInfo ), "%i_%i_%i", runid, mode, style );
+                
+                menu.AddItem( szInfo, szFile );
+            }
+            
+            delete file;
+        }
+    }
+    else
+    {
+        menu.AddItem( "", "No runs to load! :(", ITEMDRAW_DISABLED );
+    }
+    
+    menu.Display( client, MENU_TIME_FOREVER );
+    
+    
+    delete dir;
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_SaveRun( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return Plugin_Handled;
+    
+    if ( !CanUserLoadSaveTas( client ) ) return Plugin_Handled;
+    
+    
+    decl String:szPath[PLATFORM_MAX_PATH];
+    FormatTasPath( szPath, sizeof( szPath ), Influx_GetClientId( client ), Influx_GetClientRunId( client ), Influx_GetClientMode( client ), Influx_GetClientStyle( client ) );
+    
+    
+    if ( FileExists( szPath ) )
+    {
+        Menu menu = new Menu( Hndlr_TasSave_Confirm );
+        
+        menu.SetTitle( "Are you sure you want to overwrite previously saved version?\nFile: '...%s'\n ", szPath[16] );
+        
+        menu.AddItem( "", "Yes" );
+        menu.AddItem( "", "No" );
+        
+        menu.Display( client, MENU_TIME_FOREVER );
+        
+        return Plugin_Handled;
+    }
+    
+    
+    SaveFramesMsg( client );
     
     return Plugin_Handled;
 }

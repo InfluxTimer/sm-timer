@@ -5,7 +5,7 @@ COMPATIBILITY:
 - Changed forwards: Influx_OnClientModeChangePost & Influx_OnClientStyleChangePost
 
 ADDED:
-- New style: TAS (Tool Assisted). Rewind, change timescale, use auto-strafer, etc.
+- New style: TAS (Tool Assisted). Rewind, change timescale, use auto-strafer, load/save runs that are in progress, etc.
 - Ability to delete recordings through a menu.
 - influx_config-plugin that simply executes influx.cfg (better control over commands.)
 

@@ -9,6 +9,7 @@
 
 #include <msharedutil/arrayvec>
 #include <msharedutil/ents>
+#include <msharedutil/misc>
 
 
 #undef REQUIRE_PLUGIN
@@ -18,6 +19,50 @@
 
 
 //#define DEBUG_THINK
+
+
+
+#define PLAYBACK_SPD_LIMIT              16
+
+#define MIN_TIMESCALE                   0.25
+
+
+
+#define INF_PRIVCOM_LOADSAVETAS         "sm_inf_loadsavetas"
+
+
+
+// 4 byte | "inft"
+#define TASFILE_CURMAGIC                0x696e6674
+
+// 4 byte | "v001"
+#define TASFILE_CURVERSION              0x76303031
+
+#define MAX_TASFILE_MAPNAME             64
+#define MAX_TASFILE_MAPNAME_CELL        MAX_TASFILE_MAPNAME / 4
+
+#define MAX_TASFILE_PLYNAME             32
+#define MAX_TASFILE_PLYNAME_CELL        MAX_TASFILE_PLYNAME / 4
+
+enum
+{
+    TASFILE_MAGIC = 0,
+    TASFILE_VERSION,
+    TASFILE_HEADERSIZE,
+    
+    TASFILE_TICKRATE,
+    
+    TASFILE_RUNID,
+    TASFILE_MODE,
+    TASFILE_STYLE,
+    
+    TASFILE_MAPNAME[MAX_TASFILE_MAPNAME_CELL],
+    TASFILE_PLYNAME[MAX_TASFILE_PLYNAME_CELL],
+    
+    TASFILE_FRAMELEN
+};
+
+#define TASFILE_CURHEADERSIZE       TASFILE_FRAMELEN
 
 
 
@@ -68,6 +113,7 @@ bool g_bLate;
 
 
 #include "influx_style_tas/cmds.sp"
+#include "influx_style_tas/file.sp"
 #include "influx_style_tas/menus.sp"
 #include "influx_style_tas/natives.sp"
 
@@ -109,6 +155,10 @@ public void OnPluginStart()
     g_ConVar_Timescale.Flags &= ~(FCVAR_REPLICATED | FCVAR_CHEAT);
     
     
+    // PRIVILEGE CMDS
+    RegAdminCmd( INF_PRIVCOM_LOADSAVETAS, Cmd_Empty, ADMFLAG_ROOT );
+    
+    
     // CMDS
     RegConsoleCmd( "sm_tas", Cmd_Style_Tas, "Change your style to TAS (tool assisted speedrun)." );
     RegConsoleCmd( "sm_toolassisted", Cmd_Style_Tas );
@@ -131,6 +181,9 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_tas_menu", Cmd_TasMenu );
     RegConsoleCmd( "sm_tas_settings", Cmd_Settings );
     RegConsoleCmd( "sm_tas_listcmds", Cmd_ListCmds );
+    
+    RegConsoleCmd( "sm_tas_load", Cmd_LoadRun );
+    RegConsoleCmd( "sm_tas_save", Cmd_SaveRun );
     
     
     // EVENTS
@@ -569,13 +622,23 @@ stock void OpenCmdListMenu( int client )
     FakeClientCommand( client, "sm_tas_listcmds" );
 }
 
+stock void OpenLoadMenu( int client )
+{
+    FakeClientCommand( client, "sm_tas_load" );
+}
+
+stock void OpenSaveMenu( int client )
+{
+    FakeClientCommand( client, "sm_tas_save" );
+}
+
 stock void IncreasePlayback( int client )
 {
     if ( g_iPlayback[client] <= 0 )
     {
         g_iPlayback[client] = 1;
     }
-    else if ( g_iPlayback[client] < 16 )
+    else if ( g_iPlayback[client] < PLAYBACK_SPD_LIMIT )
     {
         g_iPlayback[client] *= 2;
     }
@@ -587,7 +650,7 @@ stock void DecreasePlayback( int client )
     {
         g_iPlayback[client] = -1;
     }
-    else if ( g_iPlayback[client] > -16 )
+    else if ( g_iPlayback[client] > -PLAYBACK_SPD_LIMIT )
     {
         g_iPlayback[client] *= 2;
     }
@@ -660,11 +723,31 @@ stock void DecreaseTimescale( int client )
     value /= 2;
     
     
-    if ( value < 0.25 )
+    if ( value < MIN_TIMESCALE )
     {
-        value = 0.25;
+        value = MIN_TIMESCALE;
     }
     
     
     SetTimescale( client, value );
+}
+
+stock bool CanUserLoadSaveTas( int client )
+{
+    return CheckCommandAccess( client, INF_PRIVCOM_LOADSAVETAS, ADMFLAG_ROOT );
+}
+
+stock void SaveFramesMsg( int client )
+{
+    decl String:szPath[128];
+    FormatTasPath( szPath, sizeof( szPath ), Influx_GetClientId( client ), Influx_GetClientRunId( client ), Influx_GetClientMode( client ), Influx_GetClientStyle( client ) );
+    
+    if ( SaveFrames( client ) )
+    {
+        Influx_PrintToChat( _, client, "Saved {MAINCLR1}%i{CHATCLR} frames to '{MAINCLR1}...%s{CHATCLR}'.", g_hFrames[client].Length, szPath[16] );
+    }
+    else
+    {
+        Influx_PrintToChat( _, client, "Couldn't save frames to disk!" );
+    }
 }
