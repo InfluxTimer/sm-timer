@@ -19,7 +19,9 @@ bool g_bWantsAuto[INF_MAXPLAYERS];
 
 // CONVARS
 ConVar g_ConVar_AirAccelerate;
+#if !defined PRE_ORANGEBOX
 ConVar g_ConVar_EnableBunnyhopping;
+#endif
 
 ConVar g_ConVar_Auto_AirAccelerate;
 ConVar g_ConVar_EZHop;
@@ -52,11 +54,13 @@ public void OnPluginStart()
         SetFailState( INF_CON_PRE..."Couldn't find handle for sv_airaccelerate!" );
     }
     
+#if !defined PRE_ORANGEBOX
     if ( (g_ConVar_EnableBunnyhopping = FindConVar( "sv_enablebunnyhopping" )) == null )
     {
         SetFailState( INF_CON_PRE..."Couldn't find handle for sv_enablebunnyhopping!" );
     }
-    
+#endif
+
     
     // EVENTS
     HookEvent( "player_jump", E_PlayerJump, EventHookMode_Post );
@@ -148,7 +152,9 @@ public Action Influx_OnClientModeChange( int client, int mode, int lastmode )
         
         
         Inf_SendConVarValueFloat( client, g_ConVar_AirAccelerate, g_ConVar_Auto_AirAccelerate.FloatValue );
+#if !defined PRE_ORANGEBOX
         Inf_SendConVarValueBool( client, g_ConVar_EnableBunnyhopping, true );
+#endif
     }
     else if ( lastmode == MODE_AUTO )
     {
@@ -203,7 +209,10 @@ public void E_PreThinkPost_Client( int client )
 #endif
     
     g_ConVar_AirAccelerate.FloatValue = g_flAirAccelerate;
+    
+#if !defined PRE_ORANGEBOX
     g_ConVar_EnableBunnyhopping.BoolValue = true;
+#endif
 }
 
 public Action OnPlayerRunCmd( int client )

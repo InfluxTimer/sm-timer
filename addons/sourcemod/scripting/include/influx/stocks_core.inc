@@ -18,6 +18,11 @@
 #define INF_MAXPLAYERS          MAXPLAYERS + 1
 
 
+// If you ever want to compile for pre-orangebox CSS versions.
+// Also remember to change Engine_CSS in halflife.inc to 2.
+//#define PRE_ORANGEBOX
+
+
 stock void Inf_FormatSeconds( float secs, char[] out, int len, const char[] secform = "%05.2f" )
 {
     // "00:00.00"

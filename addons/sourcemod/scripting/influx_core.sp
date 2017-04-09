@@ -183,7 +183,9 @@ Handle g_hFunc_GetPlayerMaxSpeed;
 
 // CONVARS
 ConVar g_ConVar_AirAccelerate;
+#if !defined PRE_ORANGEBOX
 ConVar g_ConVar_EnableBunnyhopping;
+#endif
 
 ConVar g_ConVar_ChatPrefix;
 ConVar g_ConVar_ChatClr;
@@ -395,11 +397,13 @@ public void OnPluginStart()
         SetFailState( INF_CON_PRE..."Couldn't find handle for sv_airaccelerate!" );
     }
     
+#if !defined PRE_ORANGEBOX
     if ( (g_ConVar_EnableBunnyhopping = FindConVar( "sv_enablebunnyhopping" )) == null )
     {
         SetFailState( INF_CON_PRE..."Couldn't find handle for sv_enablebunnyhopping!" );
     }
-    
+#endif
+
     
     // FORWARDS
     g_hForward_OnTimerStart = CreateGlobalForward( "Influx_OnTimerStart", ET_Hook, Param_Cell, Param_Cell, Param_String, Param_Cell );
@@ -2159,13 +2163,19 @@ stock void UpdateCvars()
     if ( !g_hModes || g_hModes.Length == 0 )
     {
         g_ConVar_AirAccelerate.Flags |= (FCVAR_NOTIFY | FCVAR_REPLICATED);
+        
+#if !defined PRE_ORANGEBOX
         g_ConVar_EnableBunnyhopping.Flags |= (FCVAR_NOTIFY | FCVAR_REPLICATED);
+#endif
     }
     // Let modes change these cvars.
     else
     {
         g_ConVar_AirAccelerate.Flags &= ~(FCVAR_NOTIFY | FCVAR_REPLICATED);
+        
+#if !defined PRE_ORANGEBOX
         g_ConVar_EnableBunnyhopping.Flags &= ~(FCVAR_NOTIFY | FCVAR_REPLICATED);
+#endif
     }
 }
 
