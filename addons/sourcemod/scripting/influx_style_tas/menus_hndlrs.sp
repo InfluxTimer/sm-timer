@@ -30,13 +30,19 @@ public int Hndlr_TasMenu( Menu menu, MenuAction action, int client, int index )
         }
         case 'd' :
         {
-            StopClient( client );
-            IncreasePlayback( client );
+            if ( ValidFrames( client ) )
+            {
+                StopClient( client );
+                IncreasePlayback( client );
+            }
         }
         case 'e' :
         {
-            StopClient( client );
-            DecreasePlayback( client );
+            if ( ValidFrames( client ) )
+            {
+                StopClient( client );
+                DecreasePlayback( client );
+            }
         }
         case 'f' :
         {

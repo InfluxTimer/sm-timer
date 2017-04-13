@@ -439,8 +439,6 @@ public void E_PlayerTeamNDeath( Event event, const char[] szEvent, bool bImUsele
     SetTimescale( client, 1.0, false );
 }
 
-#define UPDATE_YAW      flLastYaw[client] = angles[1];
-
 public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[3], float angles[3] )
 {
     if ( !IsPlayerAlive( client ) ) return Plugin_Continue;
@@ -449,53 +447,110 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
     
     if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return Plugin_Continue;
     
-    
-    static float flLastYaw[INF_MAXPLAYERS];
-    //static float flLastLegitYaw[INF_MAXPLAYERS];
-    
-    
     if (GetEntityFlags( client ) & FL_ONGROUND
     ||  vel[0] != 0.0
     ||  vel[1] != 0.0)
     {
-        UPDATE_YAW
-        //flLastLegitYaw[client] = angles[1];
-        
         return Plugin_Continue;
     }
     
     
-    
-    Strafe_t strf = GetStrafe( angles[1], flLastYaw[client], 75.0 );
+    static Strafe_t LastStrf[INF_MAXPLAYERS];
+
+// Default cl_sidespeed.
+#define SIDESPD         400.0
+
+// GetAirSpeedCap()
+// wishspd will never really be < 30.0 so just hardcoded @ 30.0
+#define AIRCAP          30.0 
+
+// No reason to add more than this.
+#define MAX_YAWADD      90.0
     
     
     decl Float:vec[3];
-    GetEntityVelocity( client, vec );
-    
-    NormalizeVector( vec, vec );
-    
-    float yaw = RadToDeg( ArcTangent2( vec[1], vec[0] ) );
+    decl Float:yawadd;
     
     
-    if ( strf == STRF_RIGHT )
+    GetClientEyeAngles( client, vec );
+    float lastyaw = vec[1];
+    
+    
+    GetEntityAbsVelocity( client, vec );
+    float spd = SquareRoot( vec[0] * vec[0] + vec[1] * vec[1] );
+    
+    
+    
+    bool bAdd = true;
+    
+    if ( spd > 0.0 )
     {
-        vel[1] = 400.0;
+        yawadd = AIRCAP / spd * AIRCAP;
     }
     else
     {
-        vel[1] = -400.0;
+        bAdd = false; // No matter what we do we'll get aircap'd.
     }
     
     
-    //flLastLegitYaw[client] = angles[1];
+    if ( yawadd > MAX_YAWADD )
+    {
+        yawadd = MAX_YAWADD;
+    }
     
+
     
-    angles[1] = yaw;
-    
-    
-    UPDATE_YAW
+    // Is our real delta smaller than the best possible? (player doesn't want to strafe out more than we want.)
+    if ( bAdd && yawadd > FloatAbs( NormalizeAngle( angles[1] - lastyaw ) ) )
+    {
+        if ( LastStrf[client] == STRF_LEFT )
+        {
+            angles[1] = lastyaw + yawadd;
+            vel[1] = SIDESPD;
+            
+            LastStrf[client] = STRF_RIGHT;
+        }
+        else
+        {
+            angles[1] = lastyaw - yawadd;
+            vel[1] = -SIDESPD;
+            
+            LastStrf[client] = STRF_LEFT;
+        }
+        
+        angles[1] = NormalizeAngle( angles[1] );
+    }
+    else // Our delta was too high, just follow the mouse and hope the player knows he may be losing dat precious speed!
+    {
+        Strafe_t strf = GetStrafe( angles[1], lastyaw, 75.0 );
+        
+        if ( strf == STRF_RIGHT )
+        {
+            vel[1] = SIDESPD;
+        }
+        else
+        {
+            vel[1] = -SIDESPD;
+        }
+        
+        LastStrf[client] = strf;
+    }
     
     return Plugin_Continue;
+}
+
+stock float NormalizeAngle( float ang )
+{
+    if ( ang > 180.0 )
+    {
+        ang -= 360.0;
+    }
+    else if ( ang < -180.0 )
+    {
+        ang += 360.0;
+    }
+    
+    return ang;
 }
 
 stock void InsertFrame( int client )
@@ -575,7 +630,6 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
         
         
         g_bStopped[client] = false;
-        
         
         for ( int j = g_hFrames[client].Length - 1; j > i; j-- )
         {
@@ -658,7 +712,10 @@ stock void DecreasePlayback( int client )
 
 stock void ContinueOrStop( int client )
 {
-    SetFrame( client, g_iStoppedFrame[client], ShouldContinue( client ) );
+    if ( !SetFrame( client, g_iStoppedFrame[client], ShouldContinue( client ) ) )
+    {
+        UnfreezeClient( client );
+    }
     
     g_iPlayback[client] = 0;
 }
@@ -750,4 +807,9 @@ stock void SaveFramesMsg( int client )
     {
         Influx_PrintToChat( _, client, "Couldn't save frames to disk!" );
     }
+}
+
+stock bool ValidFrames( int client )
+{
+    return ( g_hFrames[client] != null && g_hFrames[client].Length > 0 );
 }
