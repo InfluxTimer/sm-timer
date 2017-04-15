@@ -69,7 +69,14 @@ public Action Cmd_Settings( int client, int args )
     FormatEx( szDisplay, sizeof( szDisplay ), "Timescale: %.2fx", g_flTimescale[client] );
     menu.AddItem( "a", szDisplay );
     
-    FormatEx( szDisplay, sizeof( szDisplay ), "Auto-strafe: %s\n ", g_bAutoStrafe[client] ? "ON" : "OFF" );
+    switch ( g_iAutoStrafe[client] )
+    {
+        case AUTOSTRF_CONTROL : strcopy( szDisplay, sizeof( szDisplay ), "Easy Control" );
+        case AUTOSTRF_MAXSPEED : strcopy( szDisplay, sizeof( szDisplay ), "Maximum Speed" );
+        default : strcopy( szDisplay, sizeof( szDisplay ), "Off" );
+    }
+    
+    Format( szDisplay, sizeof( szDisplay ), "Auto-strafe: %s\n ", szDisplay );
     menu.AddItem( "b", szDisplay );
     
     menu.AddItem( "c", "Display list of commands\n " );

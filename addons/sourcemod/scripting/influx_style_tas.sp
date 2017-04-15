@@ -91,6 +91,17 @@ enum
 };
 
 
+enum
+{
+    AUTOSTRF_OFF = 0,
+    
+    AUTOSTRF_CONTROL,
+    AUTOSTRF_MAXSPEED,
+    
+    AUTOSTRF_MAX
+}
+
+
 ArrayList g_hFrames[INF_MAXPLAYERS];
 
 bool g_bStopped[INF_MAXPLAYERS];
@@ -100,7 +111,7 @@ int g_iPlayback[INF_MAXPLAYERS];
 
 float g_flTimescale[INF_MAXPLAYERS];
 
-bool g_bAutoStrafe[INF_MAXPLAYERS];
+int g_iAutoStrafe[INF_MAXPLAYERS];
 
 
 // CONVARS
@@ -366,7 +377,7 @@ public void OnClientPutInServer( int client )
     
     SetTimescale( client, 1.0, false );
     
-    g_bAutoStrafe[client] = false;
+    g_iAutoStrafe[client] = AUTOSTRF_OFF;
 }
 
 public void OnClientDisconnect( int client )
@@ -443,20 +454,22 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
 {
     if ( !IsPlayerAlive( client ) ) return Plugin_Continue;
     
-    if ( !g_bAutoStrafe[client] ) return Plugin_Continue;
+    if ( g_iAutoStrafe[client] == AUTOSTRF_OFF ) return Plugin_Continue;
     
     if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return Plugin_Continue;
+    
+    
+    static float flLastLegitYaw[INF_MAXPLAYERS];
     
     if (GetEntityFlags( client ) & FL_ONGROUND
     ||  vel[0] != 0.0
     ||  vel[1] != 0.0)
     {
+        flLastLegitYaw[client] = angles[1];
         return Plugin_Continue;
     }
     
     
-    static Strafe_t LastStrf[INF_MAXPLAYERS];
-
 // Default cl_sidespeed.
 #define SIDESPD         400.0
 
@@ -465,27 +478,53 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
 #define AIRCAP          30.0 
 
 // No reason to add more than this.
-#define MAX_YAWADD      90.0
+//#define MAX_YAWADD      90.0
     
     
     decl Float:vec[3];
     decl Float:yawadd;
     
     
-    GetClientEyeAngles( client, vec );
-    float lastyaw = vec[1];
+    float wantedyaw = angles[1];
+    
+    
+    //GetClientEyeAngles( client, vec );
+    //float lastyaw = vec[1];
     
     
     GetEntityAbsVelocity( client, vec );
     float spd = SquareRoot( vec[0] * vec[0] + vec[1] * vec[1] );
     
-    
+    float lastmoveyaw = RadToDeg( ArcTangent2( vec[1], vec[0] ) );
     
     bool bAdd = true;
     
-    if ( spd > 0.0 )
+    bool bForce = ( g_iAutoStrafe[client] == AUTOSTRF_MAXSPEED );
+    
+    if ( !bForce && spd > 0.0 )
     {
-        yawadd = AIRCAP / spd * AIRCAP;
+        //yawadd = AIRCAP / spd * AIRCAP;
+        
+        
+        decl Float:right[3];
+        float ang[3];
+        
+        
+        ang[1] = lastmoveyaw;
+        
+        GetAngleVectors( ang, NULL_VECTOR, right, NULL_VECTOR );
+        
+        vec[2] = 0.0;
+        right[2] = 0.0;
+        
+        float addspeed = (AIRCAP - GetVectorDotProduct( vec, right ));// * GetTickInterval();
+        
+        for ( int i = 0; i < 2; i++ )
+        {
+            vec[i] += addspeed * right[i];
+        }
+        
+        yawadd = FloatAbs( NormalizeAngle( RadToDeg( ArcTangent2( vec[1], vec[0] ) ) - lastmoveyaw ) );
     }
     else
     {
@@ -493,38 +532,31 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
     }
     
     
-    if ( yawadd > MAX_YAWADD )
+    /*if ( yawadd > MAX_YAWADD )
     {
         yawadd = MAX_YAWADD;
-    }
+    }*/
     
-
     
     // Is our real delta smaller than the best possible? (player doesn't want to strafe out more than we want.)
-    if ( bAdd && yawadd > FloatAbs( NormalizeAngle( angles[1] - lastyaw ) ) )
+    if ( bForce || (bAdd && yawadd > FloatAbs( NormalizeAngle( angles[1] - lastmoveyaw ) )) )
     {
-        if ( LastStrf[client] == STRF_LEFT )
+        if ( GetStrafe( angles[1], lastmoveyaw, 75.0 ) == STRF_RIGHT )
         {
-            angles[1] = lastyaw + yawadd;
+            angles[1] = lastmoveyaw;// + yawadd;
             vel[1] = SIDESPD;
-            
-            LastStrf[client] = STRF_RIGHT;
         }
         else
         {
-            angles[1] = lastyaw - yawadd;
+            angles[1] = lastmoveyaw;// - yawadd;
             vel[1] = -SIDESPD;
-            
-            LastStrf[client] = STRF_LEFT;
         }
         
         angles[1] = NormalizeAngle( angles[1] );
     }
     else // Our delta was too high, just follow the mouse and hope the player knows he may be losing dat precious speed!
     {
-        Strafe_t strf = GetStrafe( angles[1], lastyaw, 75.0 );
-        
-        if ( strf == STRF_RIGHT )
+        if ( GetStrafe( angles[1], flLastLegitYaw[client], 75.0 ) == STRF_RIGHT )
         {
             vel[1] = SIDESPD;
         }
@@ -532,9 +564,9 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
         {
             vel[1] = -SIDESPD;
         }
-        
-        LastStrf[client] = strf;
     }
+    
+    flLastLegitYaw[client] = wantedyaw;
     
     return Plugin_Continue;
 }
@@ -812,4 +844,12 @@ stock void SaveFramesMsg( int client )
 stock bool ValidFrames( int client )
 {
     return ( g_hFrames[client] != null && g_hFrames[client].Length > 0 );
+}
+
+stock void ChangeAutoStrafe( int client )
+{
+    if ( ++g_iAutoStrafe[client] >= AUTOSTRF_MAX || g_iAutoStrafe[client] < 0 )
+    {
+        g_iAutoStrafe[client] = AUTOSTRF_OFF;
+    }
 }

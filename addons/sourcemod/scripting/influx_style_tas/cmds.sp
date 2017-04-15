@@ -140,7 +140,7 @@ public Action Cmd_AutoStrafe( int client, int args )
     if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return Plugin_Handled;
     
     
-    g_bAutoStrafe[client] = !g_bAutoStrafe[client];
+    ChangeAutoStrafe( client );
     
     return Plugin_Handled;
 }

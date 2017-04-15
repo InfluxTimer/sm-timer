@@ -83,7 +83,7 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
         }
         case 'b' :
         {
-            g_bAutoStrafe[client] = !g_bAutoStrafe[client];
+            ChangeAutoStrafe( client );
         }
         case 'c' :
         {
