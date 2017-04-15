@@ -155,6 +155,9 @@ public Action Cmd_LoadRun( int client, int args )
     
     DirectoryListing dir = OpenDirectory( szPath );
     
+    
+    int nFiles = 0;
+    
     if ( dir != null )
     {
         decl String:szFile[128];
@@ -204,12 +207,15 @@ public Action Cmd_LoadRun( int client, int args )
                 FormatEx( szInfo, sizeof( szInfo ), "%i_%i_%i", runid, mode, style );
                 
                 menu.AddItem( szInfo, szFile );
+                
+                ++nFiles;
             }
             
             delete file;
         }
     }
-    else
+    
+    if ( !nFiles )
     {
         menu.AddItem( "", "No runs to load! :(", ITEMDRAW_DISABLED );
     }
