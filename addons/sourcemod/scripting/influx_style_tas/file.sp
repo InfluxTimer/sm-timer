@@ -25,7 +25,7 @@ stock void FormatTasPath( char[] sz, int len, int uid, int runid, int mode, styl
     }
     
     
-    BuildPath( Path_SM, sz, len, TAS_DIR..."/%s/%i/%i_%s_%s.rec",
+    BuildPath( Path_SM, sz, len, TAS_DIR..."/%s/%i/%i_%s_%s.tas",
         szMap,
         uid,
         runid,
@@ -208,7 +208,7 @@ stock bool SaveFrames( int client )
     StringToLower( szStyle );
     
     
-    Format( szPath, sizeof( szPath ), "%s/%i_%s_%s.rec",
+    Format( szPath, sizeof( szPath ), "%s/%i_%s_%s.tas",
         szPath,
         runid,
         szMode,

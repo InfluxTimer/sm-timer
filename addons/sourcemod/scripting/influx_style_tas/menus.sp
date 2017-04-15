@@ -177,7 +177,7 @@ public Action Cmd_LoadRun( int client, int args )
                 if ( szFile[i] == '.' ) dotpos = i;
             }
 
-            if ( !StrEqual( szFile[dotpos], ".rec", false ) ) continue;
+            if ( !StrEqual( szFile[dotpos], ".tas", false ) ) continue;
             
             
             Format( szPath, sizeof( szPath ), "%s/%s", szPath, szFile );
