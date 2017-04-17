@@ -17,6 +17,12 @@
 #define MIN_TIME_TO_PAUSE       60.0
 
 
+#define MIN_NC_PRESPEED         250.0
+#define MIN_NC_PRESPEED_SQ      MIN_NC_PRESPEED * MIN_NC_PRESPEED
+
+
+
+bool g_bUsedNoclip[INF_MAXPLAYERS];
 
 // LIBRARIES
 bool g_bLib_Practise;
@@ -169,5 +175,47 @@ stock void ToggleNoclip( int client, bool bPrint = false )
     {
         Influx_PrintToChat( _, client, "Noclip: {MAINCLR1}%s",
             ( prevmove == MOVETYPE_NOCLIP ) ? "OFF" : "ON" );
+    }
+    
+    
+    UnhookThinks( client );
+    
+    if ( prevmove == MOVETYPE_NOCLIP )
+    {
+        Inf_SDKHook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
+        
+        g_bUsedNoclip[client] = true;
+    }
+    
+}
+
+stock void UnhookThinks( int client )
+{
+    SDKUnhook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
+}
+
+public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int error_len )
+{
+    if ( g_bUsedNoclip[client] )
+    {
+        FormatEx( errormsg, error_len, "You cannot prespeed with noclip!" );
+        return Plugin_Stop;
+    }
+    
+    return Plugin_Continue;
+}
+
+public void E_PostThinkPost_Client( int client )
+{
+    if ( !g_bUsedNoclip[client] )
+    {
+        UnhookThinks( client );
+        return;
+    }
+    
+    
+    if ( GetEntitySpeedSquared( client ) < MIN_NC_PRESPEED_SQ )
+    {
+        g_bUsedNoclip[client] = false;
     }
 }
