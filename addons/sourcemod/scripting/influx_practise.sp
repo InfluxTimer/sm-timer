@@ -157,9 +157,10 @@ public Action Cmd_Practise( int client, int args )
     
     if ( !g_bPractising[client] )
     {
-        StartPractising( client );
-        
+        if(StartPractising( client ))
+        {
         FakeClientCommand( client, "sm_pracmenu" );
+        }
     }
     else
     {
