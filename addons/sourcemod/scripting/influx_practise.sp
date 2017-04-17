@@ -515,7 +515,8 @@ stock void EndPractising( int client )
     {
         Influx_ContinueClientRun( client );
     }
-    else if ( Influx_GetClientState( client ) == STATE_RUNNING )
+    // Don't let people prespeed.
+    else// if ( Influx_GetClientState( client ) == STATE_RUNNING )
     {
         Influx_TeleportToStart( client, true );
     }
