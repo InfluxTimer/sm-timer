@@ -251,9 +251,9 @@ stock bool PauseRun( int client )
     return true;
 }
 
-stock void ContinueRun( int client )
+stock bool ContinueRun( int client )
 {
-    if ( !g_bPaused[client] ) return;
+    if ( !g_bPaused[client] ) return true;
     
     
     // Spawn them if they are dead.
@@ -271,7 +271,7 @@ stock void ContinueRun( int client )
     
     
     // Spawning failed.
-    if ( !IsPlayerAlive( client ) ) return;
+    if ( !IsPlayerAlive( client ) ) return false;
     
     
     if ( g_bLib_Practise )
@@ -300,6 +300,8 @@ stock void ContinueRun( int client )
     SetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client] );
 
     Influx_PrintToChat( _, client, "Your run is no longer paused." );
+    
+    return true;
 }
 
 public int Native_IsClientPaused( Handle hPlugin, int nParams )
@@ -318,9 +320,7 @@ public int Native_ContinueClientRun( Handle hPlugin, int nParams )
 {
     int client = GetNativeCell( 1 );
     
-    ContinueRun( client );
-    
-    return 1;
+    return ContinueRun( client );
 }
 
 public int Native_GetClientPausedTime( Handle hPlugin, int nParams )

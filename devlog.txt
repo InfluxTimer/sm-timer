@@ -26,6 +26,7 @@ CODE:
 - Added forwards: Influx_OnClientPause, Influx_OnClientPracticeStart, Influx_OnRecordingStart & Influx_OnRecordingFinish to let other plugins control more.
 - Forwards Influx_OnClientModeChangePost & Influx_OnClientStyleChangePost now also have the last mode/style argument.
 - Renamed Influx_RequestHelpCmds to Influx_OnRequestHelpCmds
+- Natives Influx_PauseClientRun, Influx_ContinueClientRun & Influx_StartPractising now return a value whether it was successful.
 
 
 

@@ -12,8 +12,10 @@ forward Action Influx_OnClientPause( int client );
 
 
 native bool Influx_IsClientPaused( int client );
-native void Influx_PauseClientRun( int client );
-native void Influx_ContinueClientRun( int client );
+
+// Return whether we were successful.
+native bool Influx_PauseClientRun( int client );
+native bool Influx_ContinueClientRun( int client );
 
 native float Influx_GetClientPausedTime( int client );
 

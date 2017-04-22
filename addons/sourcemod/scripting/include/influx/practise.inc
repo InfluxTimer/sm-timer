@@ -13,7 +13,9 @@ forward Action Influx_OnClientPracticeStart( int client );
 
 native bool Influx_IsClientPractising( int client );
 
-native void Influx_StartPractising( int client );
+// Return whether we were successful.
+native bool Influx_StartPractising( int client );
+
 native void Influx_EndPractising( int client );
 
 
