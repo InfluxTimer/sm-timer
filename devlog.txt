@@ -21,6 +21,8 @@ FIXES:
 - Fixed zone names with forward slashes not saving properly.
 - Fixed sm_wrcp queries not working (subquery returning multiple results)
 - Fixed sm_deletecptimes
+- Fixed being able to prespeed with noclip.
+- Fixed practise mode menu message. (tier4fusion)
 
 CODE:
 - Added forwards: Influx_OnClientPause, Influx_OnClientPracticeStart, Influx_OnRecordingStart & Influx_OnRecordingFinish to let other plugins control more.
