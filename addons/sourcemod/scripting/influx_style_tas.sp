@@ -119,6 +119,10 @@ ConVar g_ConVar_Timescale;
 ConVar g_ConVar_Cheats;
 
 
+// LIBRARIES
+bool g_bLib_Practise;
+
+
 bool g_bLate;
 
 
@@ -212,6 +216,19 @@ public void OnPluginStart()
             }
         }
     }
+    
+    // LIBRARIES
+    g_bLib_Practise = LibraryExists( INFLUX_LIB_PRACTISE );
+}
+
+public void OnLibraryAdded( const char[] lib )
+{
+    if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = true;
+}
+
+public void OnLibraryRemoved( const char[] lib )
+{
+    if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = false;
 }
 
 public void OnAllPluginsLoaded()
@@ -330,6 +347,12 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
 {
     if ( style == STYLE_TAS )
     {
+        if ( g_bLib_Practise && Influx_IsClientPractising( client ) )
+        {
+            return Plugin_Handled;
+        }
+        
+        
         UnhookThinks( client );
         
         
