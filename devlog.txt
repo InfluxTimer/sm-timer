@@ -9,6 +9,7 @@ ADDED:
 - Ability to delete recordings through a menu.
 - influx_config-plugin that simply executes influx.cfg (better control over commands.)
 - influx_fixtimelimit-plugin that fixes map not changing according to mp_timelimit.
+- influx_specalltalk_css-plugin to allow spectators to talk with living players.
 
 CHANGES:
 - admin_overrides.cfg is now used instead of cvars like influx_core_removeflags to modify command access. See admin_overrides_influx_example.cfg for more info.
