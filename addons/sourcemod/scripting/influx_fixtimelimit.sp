@@ -4,8 +4,8 @@
 #include <influx/core>
 
 
-#define DEBUG
-#define DEBUG_TIME
+//#define DEBUG
+//#define DEBUG_TIME
 
 
 ConVar g_ConVar_IgnoreCond;
