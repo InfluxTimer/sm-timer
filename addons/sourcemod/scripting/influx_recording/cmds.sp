@@ -10,6 +10,9 @@ public Action Cmd_MyReplay( int client, int args )
     if ( !CanChangeReplay( client ) ) return Plugin_Handled;
     
     
+    FinishRecording( client, false );
+    
+    
     if ( CanReplayOwn( client ) )
     {
         ReplayOwn( client );

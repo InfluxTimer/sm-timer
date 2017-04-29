@@ -14,13 +14,7 @@ public int Hndlr_Replay( Menu menu, MenuAction action, int client, int index )
     
     if ( szInfo[0] == 'z' )
     {
-        if ( CanReplayOwn( client ) )
-        {
-            ReplayOwn( client );
-            
-            ObserveTarget( client, g_iReplayBot );
-        }
-        
+        FakeClientCommand( client, "sm_myreplay" );
         return 0;
     }
     
