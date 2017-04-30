@@ -490,11 +490,18 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     if ( irun == -1 ) return;
     
     int imode = FindModeById( modeid );
-    if ( imode == -1 ) return;
+    if ( imode == -1 )
+    {
+        LogError( INF_CON_PRE..."Client '%N' has no mode! Cannot finish timer.", client );
+        return;
+    }
     
     int istyle = FindStyleById( styleid );
-    if ( istyle == -1 ) return;
-    
+    if ( istyle == -1 )
+    {
+        LogError( INF_CON_PRE..."Client '%N' has no style! Cannot finish timer.", client );
+        return;
+    }
     
     if ( !IsClientModeValidForRun( client, imode, irun, true ) )
     {
