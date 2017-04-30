@@ -448,11 +448,13 @@ public void E_PostThinkPost_Client( int client )
     
     if ( Influx_GetClientState( client ) == STATE_RUNNING )
     {
-        InsertFrame( client );
-        
         if ( g_iPlayback[client] && g_bStopped[client] )
         {
             SetFrame( client, g_iStoppedFrame[client] + g_iPlayback[client], false );
+        }
+        else
+        {
+            InsertFrame( client );
         }
     }
     
