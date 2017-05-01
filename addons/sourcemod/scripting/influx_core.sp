@@ -77,6 +77,10 @@ enum
 
 
 
+#define INVALID_MAXSPEED        -1.0
+
+
+
 
 
 // PLAYER STUFF
@@ -886,7 +890,9 @@ stock void CapWeaponSpeed( int client )
     
     float maxspd = GetPlayerMaxSpeed( client );
     
-    if ( maxspd != 0.0 && maxspd > g_cache_flMaxSpeed[client] )
+    float modemaxspd = ( g_cache_flMaxSpeed[client] == INVALID_MAXSPEED ) ? g_ConVar_DefMaxWeaponSpeed.FloatValue : g_cache_flMaxSpeed[client];
+    
+    if ( maxspd != 0.0 && maxspd > modemaxspd )
     {
         // HACK
         if ( GetEntityFlags( client ) & FL_ONGROUND )
@@ -913,7 +919,7 @@ stock void CapWeaponSpeed( int client )
         &&  (GetEngineTime() - g_flLastValidWepSpd[client]) > 0.2 // We have the invalid weapon out for more than this.
         &&  g_flNextWepSpdPrintTime[client] < GetEngineTime() )
         {
-            Influx_PrintToChat( _, client, "Invalid weapon speed! Can be {MAINCLR1}%.0f{CHATCLR} at most!", g_cache_flMaxSpeed[client] );
+            Influx_PrintToChat( _, client, "Invalid weapon speed! Can be {MAINCLR1}%.0f{CHATCLR} at most!", modemaxspd );
             
             g_flNextWepSpdPrintTime[client] = GetEngineTime() + 10.0;
         }
@@ -1925,11 +1931,11 @@ stock float GetModeMaxspeedByIndex( int index )
         float spd = g_hModes.Get( index, MODE_MAXSPEED );
         
         
-        return ( spd > 0.0 ) ? spd : g_ConVar_DefMaxWeaponSpeed.FloatValue;
+        return ( spd > 0.0 ) ? spd : INVALID_MAXSPEED;
     }
     else
     {
-        return g_ConVar_DefMaxWeaponSpeed.FloatValue;
+        return INVALID_MAXSPEED;
     }
 }
 
@@ -2184,7 +2190,7 @@ stock void ResetClientMode( int client )
 {
     g_iModeId[client] = MODE_INVALID;
     
-    g_cache_flMaxSpeed[client] = g_ConVar_DefMaxWeaponSpeed.FloatValue;
+    g_cache_flMaxSpeed[client] = INVALID_MAXSPEED;
 }
 
 stock void TeleportOnSpawn( int client )
