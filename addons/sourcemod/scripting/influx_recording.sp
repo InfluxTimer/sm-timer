@@ -1,8 +1,11 @@
 #include <sourcemod>
 #include <cstrike>
+#include <sdkhooks>
+#include <sdktools>
 
 #include <influx/core>
 #include <influx/recording>
+#include <influx/stocks_core>
 
 #include <msharedutil/arrayvec>
 #include <msharedutil/ents>
@@ -26,6 +29,8 @@
 
 #define INF_PRIVCOM_CHANGEREPLAY    "sm_inf_changereplay"
 #define INF_PRIVCOM_DELETERECS      "sm_inf_deleterecordings"
+
+#pragma tabsize 0
 
 
 enum
@@ -105,6 +110,7 @@ Handle g_hForward_OnRecordingFinish;
 ConVar g_ConVar_WeaponSwitch;
 ConVar g_ConVar_WeaponAttack;
 ConVar g_ConVar_WeaponAttack2;
+ConVar g_ConVar_WeaponPullout;
 ConVar g_ConVar_MaxLength;
 ConVar g_ConVar_StartTime;
 ConVar g_ConVar_EndTime;
@@ -119,7 +125,6 @@ int g_nMaxRecLength;
 // LIBRARIES
 bool g_bLib_Pause;
 bool g_bLib_Practise;
-
 
 #include "influx_recording/cmds.sp"
 #include "influx_recording/file.sp"
@@ -178,6 +183,7 @@ public void OnPluginStart()
     g_ConVar_WeaponSwitch = CreateConVar( "influx_recording_wepswitching", "1", "Do weapon switching on replay.", FCVAR_NOTIFY );
     g_ConVar_WeaponAttack = CreateConVar( "influx_recording_attack", "1", "Do weapon shooting on replay.", FCVAR_NOTIFY );
     g_ConVar_WeaponAttack2 = CreateConVar( "influx_recording_attack2", "0", "Do right click on replay.", FCVAR_NOTIFY );
+	g_ConVar_WeaponPullout = CreateConVar( "influx_recording_pullout", "0", "Pull weapon out on start of replay.", FCVAR_NOTIFY );
     
     g_ConVar_MaxLength = CreateConVar( "influx_recording_maxlength", "75", "Max recording length in minutes.", FCVAR_NOTIFY );
     g_ConVar_MaxLength.AddChangeHook( E_CvarChange_MaxLength );
@@ -608,26 +614,33 @@ public void E_PostThinkPost_Client( int client )
 
 stock void CreatePlaybackStart( int bot )
 {
+	int wep = GetEntPropEnt(g_iReplayBot, Prop_Data, "m_hActiveWeapon");
+	
+	if (g_ConVar_WeaponPullout && IsValidEntity(wep) )
+	{
+		RemovePlayerItem(g_iReplayBot, wep);
+        RemoveEdict(wep);
+	}
+	
     if ( g_bReplayActionTimerClose )
     {
         delete g_hReplayActionTimer;
     }
     
     g_hReplayActionTimer = CreateTimer( g_ConVar_StartTime.FloatValue, T_PlaybackStart, GetClientUserId( bot ), TIMER_FLAG_NO_MAPCHANGE );
-    
-    
+	
     g_nCurRec[bot] = PLAYBACK_START;
 }
 
 stock void CreatePlaybackEnd( int bot )
 {
+	
     if ( g_bReplayActionTimerClose )
     {
         delete g_hReplayActionTimer;
     }
-    
+	
     g_hReplayActionTimer = CreateTimer( g_ConVar_EndTime.FloatValue, T_PlaybackToStart, GetClientUserId( bot ), TIMER_FLAG_NO_MAPCHANGE );
-    
     
     g_nCurRec[bot] = PLAYBACK_END;
 }
@@ -679,6 +692,11 @@ public Action T_PlaybackStart( Handle hTimer, int client )
         {
             g_nCurRec[client] = 0;
         }
+		
+		if (g_ConVar_WeaponPullout) 
+	    { 
+            GivePlayerItem(g_iReplayBot, "weapon_glock", 0);
+	    }
     }
     
     g_hReplayActionTimer = null;
@@ -954,7 +972,7 @@ stock bool StartRecording( int client, bool bInsertFrame = false )
         InsertFrame( client );
         
         
-        // Make sure we get the starting weapon right!
+        //Make sure we get the starting weapon right!
         if ( g_hRec[client].Length )
         {
             int wep = GetEntPropEnt( client, Prop_Data, "m_hActiveWeapon" );
@@ -975,7 +993,6 @@ stock bool StartRecording( int client, bool bInsertFrame = false )
 stock bool FinishRecording( int client, bool bInsertFrame = false )
 {
     g_bIsRec[client] = false;
-    
     
     Action res = Plugin_Continue;
     
@@ -1027,8 +1044,8 @@ stock InsertFrame( int client )
     
     
     data[REC_FLAGS] = ( GetEntityFlags( client ) & FL_DUCKING ) ? RECFLAG_CROUCH : 0;
-    
-    
+	
+	
     if ( g_ConVar_WeaponAttack.BoolValue && g_fCurButtons[client] & IN_ATTACK )
     {
         data[REC_FLAGS] |= RECFLAG_ATTACK;
@@ -1065,7 +1082,6 @@ stock InsertFrame( int client )
             case SLOT_MELEE : data[REC_FLAGS] |= RECFLAG_WEP_SLOT3;
         }
     }
-    
     
     if ( g_hRec[client].PushArray( data ) > g_nMaxRecLength )
     {
@@ -1364,7 +1380,7 @@ stock void ResetReplay()
         
         TeleportEntity( g_iReplayBot, pos, angles, ORIGIN_VECTOR );
     }
-    
+	
     
     g_hReplay = null;
     
