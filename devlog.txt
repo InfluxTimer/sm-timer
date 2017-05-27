@@ -1,7 +1,7 @@
 DEV
 
 COMPATIBILITY:
-- Delete cfg/influx/core.cfg, cfg/influx/recording.cfg and cfg/influx/zones.cfg to generate new ones with latest cvars.
+- Delete cfg/influx/core.cfg, cfg/influx/hud.cfg, cfg/influx/recording.cfg and cfg/influx/zones.cfg to generate new ones with latest cvars.
 - Changed forwards: Influx_OnClientModeChangePost, Influx_OnClientStyleChangePost & Influx_RequestHelpCmds
 - Split drawing part of influx_hud to influx_hud_draw.
 
@@ -17,6 +17,7 @@ CHANGES:
 - Admins can now restart a replay.
 - Moved the ability to teleport to the end to a separate plugin influx_teletoend.
 - Log an error if client has no mode/style when finishing a run.
+- Renamed hud drawing convars. (see cfg/influx/hud_draw.cfg) (added influx_hud_draw_menuinterval)
 
 FIXES:
 - Changing between replays too fast will no longer "double reset" the playback.
@@ -27,6 +28,7 @@ FIXES:
 - Fixed sm_deletecptimes
 - Fixed being able to prespeed with noclip.
 - Fixed practise mode menu message. (tier4fusion)
+- Not being able to draw hud faster than every ~0.1 seconds.
 
 CODE:
 - Added forwards: Influx_OnClientPause, Influx_OnClientPracticeStart, Influx_OnRecordingStart & Influx_OnRecordingFinish to let other plugins control more.
