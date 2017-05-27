@@ -1,12 +1,13 @@
 #include <sourcemod>
 
 #include <influx/core>
-#include <influx/hud>
+#include <influx/hud_draw>
 
 #include <msharedutil/misc>
 
 
 #undef REQUIRE_PLUGIN
+#include <influx/hud>
 #include <influx/help>
 #include <influx/recording>
 #include <influx/strafes>
@@ -22,6 +23,7 @@
 
 
 // LIBRARIES
+bool g_bLib_Hud;
 bool g_bLib_Strafes;
 bool g_bLib_Jumps;
 bool g_bLib_Pause;
@@ -59,6 +61,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 public void OnPluginStart()
 {
     // LIBRARIES
+    g_bLib_Hud = LibraryExists( INFLUX_LIB_HUD );
     g_bLib_Strafes = LibraryExists( INFLUX_LIB_STRAFES );
     g_bLib_Jumps = LibraryExists( INFLUX_LIB_JUMPS );
     g_bLib_Pause = LibraryExists( INFLUX_LIB_PAUSE );
@@ -74,6 +77,7 @@ public void OnPluginStart()
 
 public void OnLibraryAdded( const char[] lib )
 {
+    if ( StrEqual( lib, INFLUX_LIB_HUD ) ) g_bLib_Hud = true;
     if ( StrEqual( lib, INFLUX_LIB_STRAFES ) ) g_bLib_Strafes = true;
     if ( StrEqual( lib, INFLUX_LIB_JUMPS ) ) g_bLib_Jumps = true;
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = true;
@@ -89,6 +93,7 @@ public void OnLibraryAdded( const char[] lib )
 
 public void OnLibraryRemoved( const char[] lib )
 {
+    if ( StrEqual( lib, INFLUX_LIB_HUD ) ) g_bLib_Hud = false;
     if ( StrEqual( lib, INFLUX_LIB_STRAFES ) ) g_bLib_Strafes = false;
     if ( StrEqual( lib, INFLUX_LIB_JUMPS ) ) g_bLib_Jumps = false;
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = false;
@@ -110,10 +115,10 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
     decl String:szTemp[32];
     decl String:szSecFormat[12];
     
-    int hideflags = Influx_GetClientHideFlags( client );
+    int hideflags = ( g_bLib_Hud ) ? Influx_GetClientHideFlags( client ) : 0;
     
     
-    if ( hudtype == HUDTYPE_HINT )
+    if ( hudtype == HUDTYPE_TIMER )
     {
         Influx_GetSecondsFormat_Timer( szSecFormat, sizeof( szSecFormat ) );
         
@@ -229,7 +234,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         
         PrintHintText( client, szMsg );
     }
-    else if ( hudtype == HUDTYPE_KEYHINT )
+    else if ( hudtype == HUDTYPE_SIDEBAR )
     {
         Influx_GetSecondsFormat_Sidebar( szSecFormat, sizeof( szSecFormat ) );
         

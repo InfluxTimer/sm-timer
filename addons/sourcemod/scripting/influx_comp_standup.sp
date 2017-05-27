@@ -6,7 +6,7 @@
 #include <standup/ljmode>
 
 #undef REQUIRE_PLUGIN
-#include <influx/hud>
+#include <influx/hud_draw>
 
 
 public Plugin myinfo =
@@ -20,7 +20,7 @@ public Plugin myinfo =
 
 public Action Influx_ShouldDrawHUD( int client, int target, HudType_t hudtype )
 {
-    return (/*hudtype == HUDTYPE_HINT
+    return (/*hudtype == HUDTYPE_TIMER
     &&*/      Standup_IsClientStatsEnabled( target )
     /*&&      Standup_GetClientNextHint( target ) < GetEngineTime()*/ ) ? Plugin_Stop : Plugin_Continue;
 }

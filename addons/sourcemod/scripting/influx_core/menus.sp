@@ -6,7 +6,7 @@ public Action Cmd_Credits( int client, int args )
     if ( !client ) return Plugin_Handled;
     
     
-    if ( g_bLib_Hud )
+    if ( g_bLib_Hud_Draw )
     {
         Influx_SetNextMenuTime( client, GetEngineTime() + 5.0 );
     }

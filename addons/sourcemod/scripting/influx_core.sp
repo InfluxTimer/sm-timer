@@ -17,7 +17,7 @@
 #include <influx/practise>
 #include <influx/zones_freestyle>
 #include <influx/runs_sql>
-#include <influx/hud>
+#include <influx/hud_draw>
 //#include <influx/colorchat>
 
 
@@ -214,7 +214,7 @@ bool g_bLib_Pause;
 bool g_bLib_Practise;
 bool g_bLib_Zones_Fs;
 bool g_bLib_Runs_SQL;
-bool g_bLib_Hud;
+bool g_bLib_Hud_Draw;
 
 
 // MAP DATA
@@ -603,7 +603,7 @@ public void OnPluginStart()
     g_bLib_Practise = LibraryExists( INFLUX_LIB_PRACTISE );
     g_bLib_Zones_Fs = LibraryExists( INFLUX_LIB_ZONES_FS );
     g_bLib_Runs_SQL = LibraryExists( INFLUX_LIB_RUNS_SQL );
-    g_bLib_Hud = LibraryExists( INFLUX_LIB_HUD );
+    g_bLib_Hud_Draw = LibraryExists( INFLUX_LIB_HUD_DRAW );
     
     
     DB_Init();
@@ -627,7 +627,7 @@ public void OnLibraryAdded( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = true;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = true;
     if ( StrEqual( lib, INFLUX_LIB_RUNS_SQL ) ) g_bLib_Runs_SQL = true;
-    if ( StrEqual( lib, INFLUX_LIB_HUD ) ) g_bLib_Hud = true;
+    if ( StrEqual( lib, INFLUX_LIB_HUD_DRAW ) ) g_bLib_Hud_Draw = true;
 }
 
 public void OnLibraryRemoved( const char[] lib )
@@ -636,7 +636,7 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = false;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = false;
     if ( StrEqual( lib, INFLUX_LIB_RUNS_SQL ) ) g_bLib_Runs_SQL = false;
-    if ( StrEqual( lib, INFLUX_LIB_HUD ) ) g_bLib_Hud = false;
+    if ( StrEqual( lib, INFLUX_LIB_HUD_DRAW ) ) g_bLib_Hud_Draw = false;
 }
 
 public void OnAllPluginsLoaded()
