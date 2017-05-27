@@ -130,21 +130,21 @@ public void OnGameFrame()
     // Use OnGameFrame instead of timers since they cannot refire in less than 0.1 seconds.
     int tick = GetGameTickCount();
     
-    if ( tick >= g_nNextTimer && g_ConVar_Timer.FloatValue < 0.0 )
+    if ( tick >= g_nNextTimer && g_ConVar_Timer.FloatValue >= 0.0 )
     {
         DrawTimer();
         
         g_nNextTimer = tick + RoundFloat( g_ConVar_Timer.FloatValue / GetTickInterval() );
     }
     
-    if ( tick >= g_nNextSidebar && g_ConVar_Sidebar.FloatValue < 0.0 )
+    if ( tick >= g_nNextSidebar && g_ConVar_Sidebar.FloatValue >= 0.0 )
     {
         DrawSidebar();
         
         g_nNextSidebar = tick + RoundFloat( g_ConVar_Sidebar.FloatValue / GetTickInterval() );
     }
     
-    if ( tick >= g_nNextMenu && g_ConVar_Menu.FloatValue < 0.0 )
+    if ( tick >= g_nNextMenu && g_ConVar_Menu.FloatValue >= 0.0 )
     {
         DrawMenu();
         
