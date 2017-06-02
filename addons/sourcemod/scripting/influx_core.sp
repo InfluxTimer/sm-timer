@@ -241,6 +241,8 @@ bool g_bLate;
 int g_iCurDBVersion;
 
 
+#include "influx_core/modestyle_ovrs.sp"
+
 #include "influx_core/cmds.sp"
 #include "influx_core/colorchat.sp"
 #include "influx_core/db.sp"
@@ -391,8 +393,14 @@ public void OnPluginStart()
     g_hRunResFlags = new ArrayList( RUNRES_SIZE );
     g_hChatClrs = new ArrayList( CLR_SIZE );
     
+    g_hModeOvers = new ArrayList( MOVR_SIZE );
+    g_hStyleOvers = new ArrayList( SOVR_SIZE );
+    
     
     ReadGameConfig();
+    
+    ReadModeOverrides();
+    ReadStyleOverrides();
     
     
     // CONVAR CHANGES
@@ -1163,11 +1171,13 @@ stock bool AddMode( int id, const char[] szName, const char[] szShortName, float
     
     data[MODE_MAXSPEED] = view_as<int>( spd );
     
-    g_hModes.PushArray( data );
+    index = g_hModes.PushArray( data );
     
     
     UpdateCvars();
     
+    
+    UpdateModeOverrides();
     
     return true;
 }
@@ -1226,7 +1236,10 @@ stock bool AddStyle( int id, const char[] szName, const char[] szShortName, bool
     data[STYLE_ID] = id;
     data[STYLE_DISPLAY] = bDisplay;
     
-    g_hStyles.PushArray( data );
+    index = g_hStyles.PushArray( data );
+    
+
+    UpdateStyleOverrides( index );
     
     return true;
 }
@@ -2391,4 +2404,72 @@ stock bool IsValidMapName( const char[] szMap )
     }
     
     return ( g_Regex_ValidMapNames.Match( szMap ) > 0 ) ? true : false;
+}
+
+stock void SetModeNameByIndex( int index, const char[] szName )
+{
+    if ( index == -1 ) return;
+    
+    
+    decl name[MAX_MODE_NAME_CELL];
+    
+    strcopy( view_as<char>( name ), MAX_MODE_NAME, szName );
+    
+    for ( int i = 0; i < MAX_MODE_NAME_CELL; i++ )
+    {
+        g_hModes.Set( index, name[i], MODE_NAME + i );
+    }
+}
+
+stock void SetStyleNameByIndex( int index, const char[] szName )
+{
+    if ( index == -1 ) return;
+    
+    
+    decl name[MAX_STYLE_NAME_CELL];
+    
+    strcopy( view_as<char>( name ), MAX_STYLE_NAME, szName );
+    
+    for ( int i = 0; i < MAX_STYLE_NAME_CELL; i++ )
+    {
+        g_hStyles.Set( index, name[i], STYLE_NAME + i );
+    }
+}
+
+stock void UpdateModeOverrides( int index = -1 )
+{
+    if ( index != -1 )
+    {
+        SetModeOverrides( index );
+    }
+    else
+    {
+        int len = g_hModes.Length;
+        for ( int i = 0; i < len; i++ )
+        {
+            SetModeOverrides( i );
+        }
+    }
+    
+    // Always sort last.
+    SortModesArray();
+}
+
+stock void UpdateStyleOverrides( int index = -1 )
+{
+    if ( index != -1 )
+    {
+        SetStyleOverrides( index );
+    }
+    else
+    {
+        int len = g_hStyles.Length;
+        for ( int i = 0; i < len; i++ )
+        {
+            SetStyleOverrides( i );
+        }
+    }
+    
+    // Always sort last.
+    SortStylesArray();
 }

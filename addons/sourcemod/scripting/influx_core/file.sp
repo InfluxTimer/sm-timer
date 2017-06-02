@@ -186,3 +186,115 @@ stock int WriteMapFile()
     
     return num;
 }
+
+stock void ReadModeOverrides()
+{
+    char szPath[PLATFORM_MAX_PATH];
+    BuildPath( Path_SM, szPath, sizeof( szPath ), "configs/influx_mode_overrides.cfg" );
+    
+    KeyValues kv = new KeyValues( "Modes" );
+    kv.ImportFromFile( szPath );
+    
+    if ( !kv.GotoFirstSubKey() )
+    {
+        delete kv;
+        return;
+    }
+    
+    
+    int data[MOVR_SIZE];
+    
+    do
+    {
+        if ( !kv.GetSectionName( view_as<char>( data[MOVR_NAME_ID] ), MAX_MODE_NAME ) )
+        {
+            LogError( INF_CON_PRE..."Couldn't read mode override name!" );
+            continue;
+        }
+        
+        
+        if ( IsCharNumeric( view_as<char>( data[MOVR_NAME_ID] ) ) )
+        {
+            data[MOVR_ID] = StringToInt( view_as<char>( data[MOVR_NAME_ID] ) );
+            data[MOVR_NAME_ID] = 0;
+            
+            if ( !VALID_MODE( data[MOVR_ID] ) ) continue;
+        }
+        else
+        {
+            data[MOVR_ID] = MODE_INVALID;
+        }
+        
+        if ( FindModeOver( data[MOVR_ID], view_as<char>( data[MOVR_NAME_ID] ) ) != -1 )
+        {
+            LogError( INF_CON_PRE..."Mode override already exists for '%s' (%i)!", data[MOVR_NAME_ID], data[MOVR_ID] );
+            continue;
+        }
+        
+        
+        data[MOVR_ORDER] = kv.GetNum( "order", 0 );
+        kv.GetString( "name_override", view_as<char>( data[MOVR_OVRNAME] ), MAX_MODE_NAME, "" );
+        
+        
+        g_hModeOvers.PushArray( data );
+    }
+    while ( kv.GotoNextKey() );
+    
+    delete kv;
+}
+
+stock void ReadStyleOverrides()
+{
+    char szPath[PLATFORM_MAX_PATH];
+    BuildPath( Path_SM, szPath, sizeof( szPath ), "configs/influx_style_overrides.cfg" );
+    
+    KeyValues kv = new KeyValues( "Styles" );
+    kv.ImportFromFile( szPath );
+    
+    if ( !kv.GotoFirstSubKey() )
+    {
+        delete kv;
+        return;
+    }
+    
+    
+    int data[SOVR_SIZE];
+    
+    do
+    {
+        if ( !kv.GetSectionName( view_as<char>( data[SOVR_NAME_ID] ), MAX_STYLE_NAME ) )
+        {
+            LogError( INF_CON_PRE..."Couldn't read style override name!" );
+            continue;
+        }
+        
+        
+        if ( IsCharNumeric( view_as<char>( data[SOVR_NAME_ID] ) ) )
+        {
+            data[SOVR_ID] = StringToInt( view_as<char>( data[SOVR_NAME_ID] ) );
+            data[SOVR_NAME_ID] = 0;
+            
+            if ( !VALID_STYLE( data[SOVR_ID] ) ) continue;
+        }
+        else
+        {
+            data[SOVR_ID] = STYLE_INVALID;
+        }
+        
+        if ( FindStyleOver( data[SOVR_ID], view_as<char>( data[SOVR_NAME_ID] ) ) != -1 )
+        {
+            LogError( INF_CON_PRE..."Style override already exists for '%s' (%i)!", data[SOVR_NAME_ID], data[SOVR_ID] );
+            continue;
+        }
+        
+        
+        data[SOVR_ORDER] = kv.GetNum( "order", 0 );
+        kv.GetString( "name_override", view_as<char>( data[SOVR_OVRNAME] ), MAX_STYLE_NAME, "" );
+        
+        
+        g_hStyleOvers.PushArray( data );
+    }
+    while ( kv.GotoNextKey() );
+    
+    delete kv;
+}
