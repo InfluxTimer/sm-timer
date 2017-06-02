@@ -693,9 +693,10 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
         
         g_bStopped[client] = false;
         
-        for ( int j = g_hFrames[client].Length - 1; j > i; j-- )
+        
+        if ( (i + 1) != g_hFrames[client].Length )
         {
-            g_hFrames[client].Erase( j );
+            g_hFrames[client].Resize( i + 1 );
         }
     }
     
