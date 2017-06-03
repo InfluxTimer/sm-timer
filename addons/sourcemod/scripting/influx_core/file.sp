@@ -208,7 +208,7 @@ stock void ReadModeOverrides()
     
     do
     {
-        if ( !kv.GetSectionName( view_as<char>( data[MOVR_NAME_ID] ), MAX_MODE_NAME ) )
+        if ( !kv.GetSectionName( view_as<char>( data[MOVR_NAME_ID] ), MAX_SAFENAME ) )
         {
             LogError( INF_CON_PRE..."Couldn't read mode override name!" );
             continue;
@@ -266,7 +266,7 @@ stock void ReadStyleOverrides()
     
     do
     {
-        if ( !kv.GetSectionName( view_as<char>( data[SOVR_NAME_ID] ), MAX_STYLE_NAME ) )
+        if ( !kv.GetSectionName( view_as<char>( data[SOVR_NAME_ID] ), MAX_SAFENAME ) )
         {
             LogError( INF_CON_PRE..."Couldn't read style override name!" );
             continue;

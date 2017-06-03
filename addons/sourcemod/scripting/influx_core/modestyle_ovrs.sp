@@ -1,6 +1,6 @@
 enum
 {
-    MOVR_NAME_ID[MAX_MODE_NAME_CELL] = 0,
+    MOVR_NAME_ID[MAX_SAFENAME_CELL] = 0,
     MOVR_ID,
     
     MOVR_ORDER,
@@ -12,7 +12,7 @@ enum
 
 enum
 {
-    SOVR_NAME_ID[MAX_STYLE_NAME_CELL] = 0,
+    SOVR_NAME_ID[MAX_SAFENAME_CELL] = 0,
     SOVR_ID,
     
     SOVR_ORDER,
