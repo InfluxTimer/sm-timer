@@ -3,6 +3,7 @@ DEV
 COMPATIBILITY:
 - Delete cfg/influx/core.cfg, cfg/influx/hud.cfg, cfg/influx/recording.cfg and cfg/influx/zones.cfg to generate new ones with latest cvars.
 - Changed forwards: Influx_OnClientModeChangePost, Influx_OnClientStyleChangePost & Influx_RequestHelpCmds
+- Changed natives: Influx_AddMode & Influx_AddStyle
 - Split drawing part of influx_hud to influx_hud_draw.
 
 ADDED:
@@ -37,6 +38,7 @@ CODE:
 - Renamed Influx_RequestHelpCmds to Influx_OnRequestHelpCmds
 - Natives Influx_PauseClientRun, Influx_ContinueClientRun & Influx_StartPractising now return a value whether it was successful.
 - Separating hud drawing from influx_hud. See hud.inc & hud_draw.inc for differences. (See HudType_t changes.)
+- Added GetMode/StyleSafeName
 
 
 
