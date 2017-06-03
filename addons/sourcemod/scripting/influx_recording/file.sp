@@ -3,11 +3,11 @@ stock void FormatRecordingPath( char[] sz, int len, int runid, int mode, int sty
     decl String:szMode[MAX_MODE_SHORTNAME];
     decl String:szStyle[MAX_STYLE_SHORTNAME];
     
-    Influx_GetModeShortName( mode, szMode, sizeof( szMode ) );
-    StringToLower( szMode );
+    Influx_GetModeSafeName( mode, szMode, sizeof( szMode ) );
+    //StringToLower( szMode );
     
-    Influx_GetStyleShortName( style, szStyle, sizeof( szStyle ) );
-    StringToLower( szStyle );
+    Influx_GetStyleSafeName( style, szStyle, sizeof( szStyle ) );
+    //StringToLower( szStyle );
     
     
     decl String:szMap[64];
