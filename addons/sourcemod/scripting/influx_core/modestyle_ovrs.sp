@@ -138,7 +138,7 @@ stock void SortModeIds( int[] ids, int nModes )
     {
         int id = g_hModes.Get( i, MODE_ID );
         
-        GetModeShortNameByIndex( i, name, sizeof( name ) );
+        GetModeSafeNameByIndex( i, name, sizeof( name ) );
         
         int j = FindModeOver( id, name, true );
         
@@ -153,7 +153,7 @@ stock void SortModeIds( int[] ids, int nModes )
 stock void SetModeOverrides( int index )
 {
     decl String:name[32];
-    GetModeShortNameByIndex( index, name, sizeof( name ) );
+    GetModeSafeNameByIndex( index, name, sizeof( name ) );
     
     int j = FindModeOver( g_hModes.Get( index, MODE_ID ), name, true );
     
@@ -189,7 +189,7 @@ stock void SortStyleIds( int[] ids, int nStyles )
     {
         int id = g_hStyles.Get( i, STYLE_ID );
         
-        GetStyleShortNameByIndex( i, name, sizeof( name ) );
+        GetStyleSafeNameByIndex( i, name, sizeof( name ) );
         
         int j = FindStyleOver( id, name, true );
         
@@ -229,7 +229,7 @@ stock void SortStylesArray()
 stock void SetStyleOverrides( int index )
 {
     decl String:name[32];
-    GetStyleShortNameByIndex( index, name, sizeof( name ) );
+    GetStyleSafeNameByIndex( index, name, sizeof( name ) );
     
     int j = FindStyleOver( g_hStyles.Get( index, STYLE_ID ), name, true );
     
