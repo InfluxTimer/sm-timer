@@ -1,7 +1,7 @@
 stock void FormatRecordingPath( char[] sz, int len, int runid, int mode, int style, const char[] szArgMap = "" )
 {
-    decl String:szMode[MAX_MODE_SHORTNAME];
-    decl String:szStyle[MAX_STYLE_SHORTNAME];
+    decl String:szMode[MAX_SAFENAME];
+    decl String:szStyle[MAX_SAFENAME];
     
     Influx_GetModeSafeName( mode, szMode, sizeof( szMode ) );
     //StringToLower( szMode );
