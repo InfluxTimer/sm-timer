@@ -3,14 +3,14 @@
 
 stock void FormatTasPath( char[] sz, int len, int uid, int runid, int mode, style, const char[] szArgMap = "" )
 {
-    decl String:szMode[MAX_MODE_SHORTNAME];
-    decl String:szStyle[MAX_STYLE_SHORTNAME];
+    decl String:szMode[MAX_SAFENAME];
+    decl String:szStyle[MAX_SAFENAME];
     
-    Influx_GetModeShortName( mode, szMode, sizeof( szMode ) );
-    StringToLower( szMode );
+    Influx_GetModeSafeName( mode, szMode, sizeof( szMode ) );
+    //StringToLower( szMode );
     
-    Influx_GetStyleShortName( style, szStyle, sizeof( szStyle ) );
-    StringToLower( szStyle );
+    Influx_GetStyleSafeName( style, szStyle, sizeof( szStyle ) );
+    //StringToLower( szStyle );
     
     
     decl String:szMap[64];
