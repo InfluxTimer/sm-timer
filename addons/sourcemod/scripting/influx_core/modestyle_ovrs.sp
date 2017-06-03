@@ -68,12 +68,12 @@ static void _Sort( int[] ids, int[] orders, int num )
     while ( !bFinished );
 }
 
-static int _Find( ArrayList overs, int id_index, int id, const char[] sz = "", bool bUpdateId = false )
+static int _Find( ArrayList overs, int id_index, int invalid_id, int id, const char[] sz = "", bool bUpdateId = false )
 {
     int len = overs.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( overs.Get( i, id_index ) == id )
+        if ( id != invalid_id && overs.Get( i, id_index ) == id )
         {
             return i;
         }
@@ -97,7 +97,7 @@ static int _Find( ArrayList overs, int id_index, int id, const char[] sz = "", b
 
 stock int FindModeOver( int id = MODE_INVALID, const char[] sz = "", bool bUpdateId = false )
 {
-    return _Find( g_hModeOvers, MOVR_ID, id, sz, bUpdateId );
+    return _Find( g_hModeOvers, MOVR_ID, MODE_INVALID, id, sz, bUpdateId );
 }
 
 stock void SortModesArray()
@@ -178,7 +178,7 @@ stock void SetModeOverrides( int index )
 
 stock int FindStyleOver( int id = STYLE_INVALID, const char[] sz = "", bool bUpdateId = false )
 {
-    return _Find( g_hStyleOvers, SOVR_ID, id, sz, bUpdateId );
+    return _Find( g_hStyleOvers, SOVR_ID, STYLE_INVALID, id, sz, bUpdateId );
 }
 
 stock void SortStyleIds( int[] ids, int nStyles )
