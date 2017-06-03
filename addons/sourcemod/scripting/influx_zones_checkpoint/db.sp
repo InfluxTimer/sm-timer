@@ -308,7 +308,7 @@ stock void DB_PrintCPTimes( int client, int uid, int mapid, int runid, int mode,
     array.PushArray( data );
     
     
-    SQL_TQuery( db, Thrd_PrintCPTimes, szQuery, array, DBPrio_Low );
+    SQL_TQuery( db, Thrd_PrintCPTimes, szQuery, array, DBPrio_Normal );
 }
 
 stock void DB_PrintTopCPTimes( int client, int mapid, int runid, int mode, int style, const char[] szMap = "" )
@@ -405,7 +405,7 @@ stock void DB_PrintDeleteCPTimes( int client, int mapid )
         "SELECT runid,cpnum,COUNT(*) FROM "...INF_TABLE_CPTIMES..." WHERE mapid=%i GROUP BY runid,cpnum ORDER BY runid,cpnum",
         mapid );
     
-    SQL_TQuery( db, Thrd_PrintDeleteCpTimes, szQuery, GetClientUserId( client ), DBPrio_Low );
+    SQL_TQuery( db, Thrd_PrintDeleteCpTimes, szQuery, GetClientUserId( client ), DBPrio_Normal );
 }
 
 stock void DB_DeleteCPRecords( int issuer, int mapid, int uid = -1, int runid = -1, int cpnum = -1, int mode = MODE_INVALID, int style = STYLE_INVALID )

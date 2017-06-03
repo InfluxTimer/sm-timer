@@ -303,7 +303,7 @@ stock void DB_InitClient_Cb( int client, SQLTCallback cb )
     FormatEx( szQuery, sizeof( szQuery ), "SELECT uid FROM "...INF_TABLE_USERS..." WHERE steamid='%s'", szSteam );
 #endif
     
-    SQL_TQuery( g_hDB, cb, szQuery, GetClientUserId( client ), DBPrio_Low );
+    SQL_TQuery( g_hDB, cb, szQuery, GetClientUserId( client ), DBPrio_Normal );
 }
 
 stock void DB_InitClientTimes( int client )
@@ -385,7 +385,7 @@ stock void DB_PrintMaps( int client )
         MAIN_RUN_ID,
         MAIN_RUN_ID );
         
-    SQL_TQuery( g_hDB, Thrd_PrintMaps, szQuery, GetClientUserId( client ), DBPrio_Low );
+    SQL_TQuery( g_hDB, Thrd_PrintMaps, szQuery, GetClientUserId( client ), DBPrio_Normal );
 }
 
 stock void DB_PrintRecords(
@@ -516,7 +516,7 @@ stock void DB_PrintRecords(
     
     
     
-    SQL_TQuery( g_hDB, Thrd_PrintRecords, szQuery, array, DBPrio_Low );
+    SQL_TQuery( g_hDB, Thrd_PrintRecords, szQuery, array, DBPrio_Normal );
 }
 
 stock void DB_PrintRecordInfo( int client, int uid, int mapid, int runid, int mode, int style )
@@ -534,7 +534,7 @@ stock void DB_PrintRecordInfo( int client, int uid, int mapid, int runid, int mo
         mode,
         style );
     
-    SQL_TQuery( g_hDB, Thrd_PrintRecordInfo, szQuery, GetClientUserId( client ), DBPrio_Low );
+    SQL_TQuery( g_hDB, Thrd_PrintRecordInfo, szQuery, GetClientUserId( client ), DBPrio_Normal );
 }
 
 stock void DB_PrintDeleteRecords( int client, int mapid )
@@ -549,7 +549,7 @@ stock void DB_PrintDeleteRecords( int client, int mapid )
         "ORDER BY num DESC",
         mapid );
     
-    SQL_TQuery( g_hDB, Thrd_PrintDeleteRecords, szQuery, GetClientUserId( client ), DBPrio_Low );
+    SQL_TQuery( g_hDB, Thrd_PrintDeleteRecords, szQuery, GetClientUserId( client ), DBPrio_Normal );
 }
 
 stock void DB_DeleteRecords( int issuer, int mapid, int uid = -1, int runid = -1, int mode = MODE_INVALID, int style = STYLE_INVALID )
