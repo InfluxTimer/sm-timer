@@ -23,7 +23,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddStyle( STYLE_NORMAL, "Normal", "NRML", false ) )
+    if ( !Influx_AddStyle( STYLE_NORMAL, "Normal", "Normal", "nrml", false ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add style!" );
     }

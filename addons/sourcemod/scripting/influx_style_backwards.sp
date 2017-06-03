@@ -35,7 +35,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddStyle( STYLE_BWD, "Backwards", "BWD" ) )
+    if ( !Influx_AddStyle( STYLE_BWD, "Backwards", "Backwards", "bwd" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add style!" );
     }

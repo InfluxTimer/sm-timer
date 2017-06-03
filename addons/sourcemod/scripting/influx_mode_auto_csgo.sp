@@ -99,7 +99,7 @@ public void Influx_OnRequestModes()
 
 stock void AddMode()
 {
-    if ( !Influx_AddMode( MODE_AUTO, "Autobhop", "AUTO", 260.0 ) )
+    if ( !Influx_AddMode( MODE_AUTO, "Autobhop", "Auto", "auto", 260.0 ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_AUTO );
     }

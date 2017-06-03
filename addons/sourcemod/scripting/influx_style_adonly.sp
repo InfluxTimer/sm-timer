@@ -39,7 +39,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddStyle( STYLE_AD, "A/D-Only", "AD" ) )
+    if ( !Influx_AddStyle( STYLE_AD, "A/D-Only", "A/D-Only", "ad" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add style!" );
     }

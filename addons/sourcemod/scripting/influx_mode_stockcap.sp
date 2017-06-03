@@ -97,7 +97,7 @@ public void Influx_OnRequestModes()
 
 stock void AddMode()
 {
-    if ( !Influx_AddMode( MODE_STOCKCAP, "Stock Cap", "STOCK" ) )
+    if ( !Influx_AddMode( MODE_STOCKCAP, "Stock Cap", "Stock", "stock" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_STOCKCAP );
     }

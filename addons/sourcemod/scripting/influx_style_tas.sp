@@ -233,7 +233,7 @@ public void OnLibraryRemoved( const char[] lib )
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddStyle( STYLE_TAS, "Tool Assisted", "TAS" ) )
+    if ( !Influx_AddStyle( STYLE_TAS, "Tool Assisted", "Tas", "tas" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add style!" );
     }

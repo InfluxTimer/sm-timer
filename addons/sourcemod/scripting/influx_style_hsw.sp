@@ -25,7 +25,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddStyle( STYLE_HSW, "Half-Sideways", "HSW" ) )
+    if ( !Influx_AddStyle( STYLE_HSW, "Half-Sideways", "Half-SW", "hsw" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add style!" );
     }

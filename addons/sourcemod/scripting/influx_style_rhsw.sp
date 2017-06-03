@@ -35,7 +35,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddStyle( STYLE_RHSW, "Real HSW", "RHSW" ) )
+    if ( !Influx_AddStyle( STYLE_RHSW, "Real HSW", "Real HSW", "rhsw" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add style!" );
     }

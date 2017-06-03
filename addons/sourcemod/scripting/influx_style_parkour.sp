@@ -35,7 +35,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddStyle( STYLE_PARKOUR, "Parkour", "PARKOUR" ) )
+    if ( !Influx_AddStyle( STYLE_PARKOUR, "Parkour", "Parkour", "parkour" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add style!" );
     }

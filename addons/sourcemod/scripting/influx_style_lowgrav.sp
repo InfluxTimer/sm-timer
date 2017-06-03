@@ -64,7 +64,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddStyle( STYLE_LOWGRAV, "Low Gravity", "LOWGRAV" ) )
+    if ( !Influx_AddStyle( STYLE_LOWGRAV, "Low Gravity", "Low Grav", "lowgrav" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add style!" );
     }

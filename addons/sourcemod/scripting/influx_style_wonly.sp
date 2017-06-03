@@ -24,7 +24,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddStyle( STYLE_W, "W-Only", "W" ) )
+    if ( !Influx_AddStyle( STYLE_W, "W-Only", "W-Only", "w" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add style!" );
     }

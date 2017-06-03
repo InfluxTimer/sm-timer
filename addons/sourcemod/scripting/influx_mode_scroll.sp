@@ -99,7 +99,7 @@ public void Influx_OnRequestModes()
 
 stock void AddMode()
 {
-    if ( !Influx_AddMode( MODE_SCROLL, "Scroll", "SCRL" ) )
+    if ( !Influx_AddMode( MODE_SCROLL, "Scroll", "Scroll", "scrl" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_SCROLL );
     }

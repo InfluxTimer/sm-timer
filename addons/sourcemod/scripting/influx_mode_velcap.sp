@@ -109,7 +109,7 @@ public void Influx_OnRequestModes()
 
 stock void AddMode()
 {
-    if ( !Influx_AddMode( MODE_VELCAP, "VelCap", "VELCAP" ) )
+    if ( !Influx_AddMode( MODE_VELCAP, "VelCap", "VelCap", "velcap" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add mode! (%i)", MODE_VELCAP );
     }

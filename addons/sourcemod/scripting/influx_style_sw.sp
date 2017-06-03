@@ -23,7 +23,7 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    if ( !Influx_AddStyle( STYLE_SW, "Sideways", "SW" ) )
+    if ( !Influx_AddStyle( STYLE_SW, "Sideways", "Sideways", "sw" ) )
     {
         SetFailState( INF_CON_PRE..."Couldn't add style!" );
     }
