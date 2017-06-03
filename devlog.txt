@@ -31,6 +31,7 @@ FIXES:
 - Fixed being able to prespeed with noclip.
 - Fixed practise mode menu message. (tier4fusion)
 - Not being able to draw hud faster than every ~0.1 seconds.
+- Changed most queries with low priority to normal which could cause delays in results.
 
 CODE:
 - Added forwards: Influx_OnClientPause, Influx_OnClientPracticeStart, Influx_OnRecordingStart & Influx_OnRecordingFinish to let other plugins control more.
