@@ -42,6 +42,15 @@ Handle g_hForward_OnDrawHUD;
 bool g_bLib_Hud;
 
 
+public Plugin myinfo =
+{
+    author = INF_AUTHOR,
+    url = INF_URL,
+    name = INF_NAME..." - HUD Draw",
+    description = "Handles drawing.",
+    version = INF_VERSION
+};
+
 public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
 {
     // LIBRARIES
