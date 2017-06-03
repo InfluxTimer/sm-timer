@@ -30,7 +30,7 @@ stock int GetClientObserverTarget( int client )
 
 stock void SetClientObserverTarget( int client, int ent )
 {
-    SetEntProp( client, Prop_Send, "m_hObserverTarget", ent );
+    SetEntPropEnt( client, Prop_Send, "m_hObserverTarget", ent );
 }
 
 stock void GetEntityName( int ent, char[] sz, int len )
