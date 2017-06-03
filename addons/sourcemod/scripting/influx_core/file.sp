@@ -202,6 +202,8 @@ stock void ReadModeOverrides()
     }
     
     
+    g_hModeOvers.Clear();
+    
     int data[MOVR_SIZE];
     
     do
@@ -257,6 +259,8 @@ stock void ReadStyleOverrides()
         return;
     }
     
+    
+    g_hStyleOvers.Clear();
     
     int data[SOVR_SIZE];
     
