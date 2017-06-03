@@ -580,6 +580,8 @@ public void OnPluginStart()
     // ADMIN CMDS
     RegAdminCmd( INF_UPDATE_CMD, Cmd_UpdateDB, ADMFLAG_ROOT );
     
+    RegAdminCmd( "sm_reloadoverrides", Cmd_ReloadOverrides, ADMFLAG_ROOT );
+    
     
     RegConsoleCmd( "sm_saveruns", Cmd_Admin_SaveRuns );
     

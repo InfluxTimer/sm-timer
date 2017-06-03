@@ -10,6 +10,26 @@ public Action Cmd_UpdateDB( int client, int args )
     return Plugin_Handled;
 }
 
+public Action Cmd_ReloadOverrides( int client, int args )
+{
+    ReadModeOverrides();
+    ReadStyleOverrides();
+    
+    UpdateModeOverrides();
+    UpdateStyleOverrides();
+    
+    if ( client )
+    {
+        Influx_PrintToChat( _, client, "Reloaded mode/style overrides." );
+    }
+    else
+    {
+        PrintToServer( INF_CON_PRE..."Reloaded mode/style overrides." );
+    }
+    
+    return Plugin_Handled;
+}
+
 public Action Cmd_Version( int client, int args )
 {
     if ( client )
