@@ -92,6 +92,9 @@ enum
 #define MAX_STYLE_SHORTNAME         12
 #define MAX_STYLE_SHORTNAME_CELL    MAX_STYLE_SHORTNAME / 4
 
+#define MAX_SAFENAME                12
+#define MAX_SAFENAME_CELL           MAX_SAFENAME / 4
+
 
 //
 // Array offsets
@@ -140,6 +143,7 @@ enum
 {
     MODE_NAME[MAX_MODE_NAME_CELL] = 0,
     MODE_SHORTNAME[MAX_MODE_SHORTNAME_CELL],
+    MODE_SAFENAME[MAX_SAFENAME_CELL],
     
     MODE_ID,
     MODE_DISPLAY,
@@ -153,6 +157,7 @@ enum
 {
     STYLE_NAME[MAX_STYLE_NAME_CELL] = 0,
     STYLE_SHORTNAME[MAX_STYLE_SHORTNAME_CELL],
+    STYLE_SAFENAME[MAX_SAFENAME_CELL],
     
     STYLE_ID,
     STYLE_DISPLAY,
@@ -221,8 +226,9 @@ forward void Influx_OnRequestStyles();
 
 // If forward, OnRunCreated is called.
 native bool Influx_AddRun( int id = -1, const char[] szName = "", const float vecTelePos[3], float flTeleYaw = 0.0, bool bDoForward = true );
-native bool Influx_AddMode( int id, const char[] szName, const char[] szShortName, float flMaxSpeed = 0.0 );
-native bool Influx_AddStyle( int id, const char[] szName, const char[] szShortName, bDisplay = true );
+// NOTE: Safe name is used for folders and to identify mode/style.
+native bool Influx_AddMode( int id, const char[] szName, const char[] szShortName, const char[] szSafeName, float flMaxSpeed = 0.0 );
+native bool Influx_AddStyle( int id, const char[] szName, const char[] szShortName, const char[] szSafeName, bool bDisplay = true );
 
 native bool Influx_RemoveMode( int id );
 native bool Influx_RemoveStyle( int id );
@@ -269,8 +275,10 @@ native ArrayList Influx_GetStylesArray();
 // If check, returned name may be empty. (don't want to display it.)
 native void Influx_GetModeName( int mode, char[] out, int len, bool bCheckDisplay = false );
 native void Influx_GetModeShortName( int mode, char[] out, int len, bool bCheckDisplay = false );
+native void Influx_GetModeSafeName( int mode, char[] out, int len );
 native void Influx_GetStyleName( int style, char[] out, int len, bool bCheckDisplay = false );
 native void Influx_GetStyleShortName( int style, char[] out, int len, bool bCheckDisplay = false );
+native void Influx_GetStyleSafeName( int style, char[] out, int len );
 
 // Returns false if only mode/style or mode/style is set not to display.
 native bool Influx_ShouldModeDisplay( int mode );

@@ -358,8 +358,10 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_GetRunName", Native_GetRunName );
     CreateNative( "Influx_GetModeName", Native_GetModeName );
     CreateNative( "Influx_GetModeShortName", Native_GetModeShortName );
+    CreateNative( "Influx_GetModeSafeName", Native_GetModeSafeName );
     CreateNative( "Influx_GetStyleName", Native_GetStyleName );
     CreateNative( "Influx_GetStyleShortName", Native_GetStyleShortName );
+    CreateNative( "Influx_GetStyleSafeName", Native_GetStyleSafeName );
     
     CreateNative( "Influx_ShouldModeDisplay", Native_ShouldModeDisplay );
     CreateNative( "Influx_ShouldStyleDisplay", Native_ShouldStyleDisplay );
@@ -1141,7 +1143,7 @@ stock bool ShouldStyleDisplay( int style )
     return ( i != -1 ) ? g_hStyles.Get( i, STYLE_DISPLAY ) : 0;
 }
 
-stock bool AddMode( int id, const char[] szName, const char[] szShortName, float flMaxSpeed = 0.0 )
+stock bool AddMode( int id, const char[] szName, const char[] szShortName, const char[] szSafeName, float flMaxSpeed = 0.0 )
 {
     // This mode id is already taken!
     int index = FindModeById( id );
@@ -1159,6 +1161,7 @@ stock bool AddMode( int id, const char[] szName, const char[] szShortName, float
     int data[MODE_SIZE];
     strcopy( view_as<char>( data[MODE_NAME] ), MAX_MODE_NAME, szName );
     strcopy( view_as<char>( data[MODE_SHORTNAME] ), MAX_MODE_SHORTNAME, szShortName );
+    strcopy( view_as<char>( data[MODE_SAFENAME] ), MAX_SAFENAME, szSafeName );
     
     data[MODE_ID] = id;
     data[MODE_DISPLAY] = 1;
@@ -1217,7 +1220,7 @@ stock bool RemoveMode( int id )
     return false;
 }
 
-stock bool AddStyle( int id, const char[] szName, const char[] szShortName, bool bDisplay = true )
+stock bool AddStyle( int id, const char[] szName, const char[] szShortName, const char[] szSafeName, bool bDisplay = true )
 {
     // This style id is already taken!
     int index = FindStyleById( id );
@@ -1234,6 +1237,7 @@ stock bool AddStyle( int id, const char[] szName, const char[] szShortName, bool
     int data[STYLE_SIZE];
     strcopy( view_as<char>( data[STYLE_NAME] ), MAX_STYLE_NAME, szName );
     strcopy( view_as<char>( data[STYLE_SHORTNAME] ), MAX_STYLE_SHORTNAME, szShortName );
+    strcopy( view_as<char>( data[STYLE_SAFENAME] ), MAX_SAFENAME, szSafeName );
     
     data[STYLE_ID] = id;
     data[STYLE_DISPLAY] = bDisplay;
@@ -1440,6 +1444,30 @@ stock void GetModeShortNameByIndex( int index, char[] out, int len )
     }
 }
 
+stock void GetModeSafeName( int id, char[] out, int len )
+{
+    GetModeSafeNameByIndex( FindModeById( id ), out, len );
+}
+
+stock void GetModeSafeNameByIndex( int index, char[] out, int len )
+{
+    if ( index != -1 )
+    {
+        decl name[MAX_SAFENAME_CELL];
+        
+        for ( int i = 0; i < MAX_SAFENAME_CELL; i++ )
+        {
+            name[i] = g_hModes.Get( index, MODE_SAFENAME + i );
+        }
+        
+        strcopy( out, len, view_as<char>( name ) );
+    }
+    else
+    {
+        strcopy( out, len, "" );
+    }
+}
+
 stock void GetStyleName( int id, char[] out, int len )
 {
     GetStyleNameByIndex( FindStyleById( id ), out, len );
@@ -1485,6 +1513,30 @@ stock void GetStyleShortNameByIndex( int index, char[] out, int len )
     else
     {
         strcopy( out, len, "N/A" );
+    }
+}
+
+stock void GetStyleSafeName( int id, char[] out, int len )
+{
+    GetStyleSafeNameByIndex( FindStyleById( id ), out, len );
+}
+
+stock void GetStyleSafeNameByIndex( int index, char[] out, int len )
+{
+    if ( index != -1 )
+    {
+        decl name[MAX_SAFENAME_CELL];
+        
+        for ( int i = 0; i < MAX_SAFENAME_CELL; i++ )
+        {
+            name[i] = g_hStyles.Get( index, STYLE_SAFENAME + i );
+        }
+        
+        strcopy( out, len, view_as<char>( name ) );
+    }
+    else
+    {
+        strcopy( out, len, "" );
     }
 }
 

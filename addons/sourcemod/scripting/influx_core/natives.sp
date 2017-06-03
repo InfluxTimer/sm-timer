@@ -112,6 +112,17 @@ public int Native_GetModeShortName( Handle hPlugin, int nParms )
     return 1;
 }
 
+public int Native_GetModeSafeName( Handle hPlugin, int nParms )
+{
+    decl String:szSafe[MAX_SAFENAME];
+    
+    GetModeSafeName( GetNativeCell( 1 ), szSafe, sizeof( szSafe ) );
+    
+    SetNativeString( 2, szSafe, GetNativeCell( 3 ), true );
+    
+    return 1;
+}
+
 public int Native_GetStyleName( Handle hPlugin, int nParms )
 {
     int style = GetNativeCell( 1 );
@@ -150,6 +161,17 @@ public int Native_GetStyleShortName( Handle hPlugin, int nParms )
     GetStyleShortName( style, szStyle, sizeof( szStyle ) );
     
     SetNativeString( 2, szStyle, len, true );
+    
+    return 1;
+}
+
+public int Native_GetStyleSafeName( Handle hPlugin, int nParms )
+{
+    decl String:szSafe[MAX_SAFENAME];
+    
+    GetStyleSafeName( GetNativeCell( 1 ), szSafe, sizeof( szSafe ) );
+    
+    SetNativeString( 2, szSafe, GetNativeCell( 3 ), true );
     
     return 1;
 }
@@ -301,7 +323,10 @@ public int Native_AddMode( Handle hPlugin, int nParms )
     char szShortName[MAX_MODE_SHORTNAME];
     GetNativeString( 3, szShortName, sizeof( szShortName ) );
     
-    return AddMode( GetNativeCell( 1 ), szName, szShortName, GetNativeCell( 4 ) );
+    char szSafeName[MAX_SAFENAME];
+    GetNativeString( 4, szSafeName, sizeof( szSafeName ) );
+    
+    return AddMode( GetNativeCell( 1 ), szName, szShortName, szSafeName, GetNativeCell( 5 ) );
 }
 
 public int Native_RemoveMode( Handle hPlugin, int nParms )
@@ -317,7 +342,10 @@ public int Native_AddStyle( Handle hPlugin, int nParms )
     char szShortName[MAX_STYLE_SHORTNAME];
     GetNativeString( 3, szShortName, sizeof( szShortName ) );
     
-    return AddStyle( GetNativeCell( 1 ), szName, szShortName, GetNativeCell( 4 ) );
+    char szSafeName[MAX_SAFENAME];
+    GetNativeString( 4, szSafeName, sizeof( szSafeName ) );
+    
+    return AddStyle( GetNativeCell( 1 ), szName, szShortName, szSafeName, GetNativeCell( 5 ) );
 }
 
 public int Native_RemoveStyle( Handle hPlugin, int nParms )
