@@ -2475,6 +2475,21 @@ stock void SetModeNameByIndex( int index, const char[] szName )
     }
 }
 
+stock void SetModeShortNameByIndex( int index, const char[] szName )
+{
+    if ( index == -1 ) return;
+    
+    
+    decl name[MAX_MODE_SHORTNAME_CELL];
+    
+    strcopy( view_as<char>( name ), MAX_MODE_SHORTNAME, szName );
+    
+    for ( int i = 0; i < MAX_MODE_SHORTNAME_CELL; i++ )
+    {
+        g_hModes.Set( index, name[i], MODE_SHORTNAME + i );
+    }
+}
+
 stock void SetStyleNameByIndex( int index, const char[] szName )
 {
     if ( index == -1 ) return;
@@ -2487,6 +2502,21 @@ stock void SetStyleNameByIndex( int index, const char[] szName )
     for ( int i = 0; i < MAX_STYLE_NAME_CELL; i++ )
     {
         g_hStyles.Set( index, name[i], STYLE_NAME + i );
+    }
+}
+
+stock void SetStyleShortNameByIndex( int index, const char[] szName )
+{
+    if ( index == -1 ) return;
+    
+    
+    decl name[MAX_STYLE_SHORTNAME_CELL];
+    
+    strcopy( view_as<char>( name ), MAX_STYLE_SHORTNAME, szName );
+    
+    for ( int i = 0; i < MAX_STYLE_SHORTNAME_CELL; i++ )
+    {
+        g_hStyles.Set( index, name[i], STYLE_SHORTNAME + i );
     }
 }
 

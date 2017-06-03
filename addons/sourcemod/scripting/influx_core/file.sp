@@ -236,6 +236,7 @@ stock void ReadModeOverrides()
         
         data[MOVR_ORDER] = kv.GetNum( "order", 0 );
         kv.GetString( "name_override", view_as<char>( data[MOVR_OVRNAME] ), MAX_MODE_NAME, "" );
+        kv.GetString( "shortname_override", view_as<char>( data[MOVR_OVRSHORTNAME] ), MAX_MODE_SHORTNAME, "" );
         
         
         g_hModeOvers.PushArray( data );
@@ -294,6 +295,7 @@ stock void ReadStyleOverrides()
         
         data[SOVR_ORDER] = kv.GetNum( "order", 0 );
         kv.GetString( "name_override", view_as<char>( data[SOVR_OVRNAME] ), MAX_STYLE_NAME, "" );
+        kv.GetString( "shortname_override", view_as<char>( data[SOVR_OVRSHORTNAME] ), MAX_STYLE_SHORTNAME, "" );
         
         
         g_hStyleOvers.PushArray( data );

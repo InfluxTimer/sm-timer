@@ -5,6 +5,7 @@ enum
     
     MOVR_ORDER,
     MOVR_OVRNAME[MAX_MODE_NAME_CELL],
+    MOVR_OVRSHORTNAME[MAX_MODE_SHORTNAME_CELL],
     //MOVR_FLAGS,
     
     MOVR_SIZE
@@ -17,6 +18,7 @@ enum
     
     SOVR_ORDER,
     SOVR_OVRNAME[MAX_STYLE_NAME_CELL],
+    SOVR_OVRSHORTNAME[MAX_STYLE_SHORTNAME_CELL],
     //SOVR_FLAGS,
     
     SOVR_SIZE
@@ -167,6 +169,11 @@ stock void SetModeOverrides( int index )
     {
         SetModeNameByIndex( index, view_as<char>( data[MOVR_OVRNAME] ) );
     }
+    
+    if ( view_as<char>( data[MOVR_OVRSHORTNAME] ) != 0 )
+    {
+        SetModeShortNameByIndex( index, view_as<char>( data[MOVR_OVRSHORTNAME] ) );
+    }
 }
 
 stock int FindStyleOver( int id = STYLE_INVALID, const char[] sz = "", bool bUpdateId = false )
@@ -242,5 +249,10 @@ stock void SetStyleOverrides( int index )
     if ( view_as<char>( data[SOVR_OVRNAME] ) != 0 )
     {
         SetStyleNameByIndex( index, view_as<char>( data[SOVR_OVRNAME] ) );
+    }
+    
+    if ( view_as<char>( data[SOVR_OVRSHORTNAME] ) != 0 )
+    {
+        SetStyleShortNameByIndex( index, view_as<char>( data[SOVR_OVRSHORTNAME] ) );
     }
 }
