@@ -1,5 +1,15 @@
 DEV
 
+ADDED:
+- Modes/styles can be disallowed using flags.
+
+FIXES:
+- Setting spectator target. (sm_replay, sm_spec)
+
+
+
+1.0.7
+
 COMPATIBILITY:
 - Delete cfg/influx/core.cfg, cfg/influx/hud.cfg, cfg/influx/recording.cfg and cfg/influx/zones.cfg to generate new ones with latest cvars.
 - Changed forwards: Influx_OnClientModeChangePost, Influx_OnClientStyleChangePost & Influx_RequestHelpCmds
