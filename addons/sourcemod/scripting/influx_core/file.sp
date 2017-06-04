@@ -206,6 +206,8 @@ stock void ReadModeOverrides()
     
     int data[MOVR_SIZE];
     
+    decl String:szTemp[32];
+    
     do
     {
         if ( !kv.GetSectionName( view_as<char>( data[MOVR_NAME_ID] ), MAX_SAFENAME ) )
@@ -239,6 +241,19 @@ stock void ReadModeOverrides()
         kv.GetString( "shortname_override", view_as<char>( data[MOVR_OVRSHORTNAME] ), MAX_MODE_SHORTNAME, "" );
         
         
+        kv.GetString( "flags", szTemp, sizeof( szTemp ), "" );
+        
+        if ( szTemp[0] != 0 )
+        {
+            data[MOVR_USEADMFLAGS] = 1;
+            data[MOVR_ADMFLAGS] = ReadFlagString( szTemp );
+        }
+        else
+        {
+            data[MOVR_USEADMFLAGS] = 0;
+        }
+        
+        
         g_hModeOvers.PushArray( data );
     }
     while ( kv.GotoNextKey() );
@@ -264,6 +279,8 @@ stock void ReadStyleOverrides()
     g_hStyleOvers.Clear();
     
     int data[SOVR_SIZE];
+    
+    decl String:szTemp[32];
     
     do
     {
@@ -296,6 +313,19 @@ stock void ReadStyleOverrides()
         data[SOVR_ORDER] = kv.GetNum( "order", 0 );
         kv.GetString( "name_override", view_as<char>( data[SOVR_OVRNAME] ), MAX_STYLE_NAME, "" );
         kv.GetString( "shortname_override", view_as<char>( data[SOVR_OVRSHORTNAME] ), MAX_STYLE_SHORTNAME, "" );
+        
+        
+        kv.GetString( "flags", szTemp, sizeof( szTemp ), "" );
+        
+        if ( szTemp[0] != 0 )
+        {
+            data[SOVR_USEADMFLAGS] = 1;
+            data[SOVR_ADMFLAGS] = ReadFlagString( szTemp );
+        }
+        else
+        {
+            data[SOVR_USEADMFLAGS] = 0;
+        }
         
         
         g_hStyleOvers.PushArray( data );

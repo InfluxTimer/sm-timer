@@ -1166,6 +1166,8 @@ stock bool AddMode( int id, const char[] szName, const char[] szShortName, const
     data[MODE_ID] = id;
     data[MODE_DISPLAY] = 1;
     
+    data[MODE_ADMFLAGS] = 0;
+    
     
     float spd = flMaxSpeed;
     
@@ -1241,6 +1243,9 @@ stock bool AddStyle( int id, const char[] szName, const char[] szShortName, cons
     
     data[STYLE_ID] = id;
     data[STYLE_DISPLAY] = bDisplay;
+    
+    data[STYLE_ADMFLAGS] = 0;
+    
     
     index = g_hStyles.PushArray( data );
     
@@ -1764,6 +1769,17 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
     }
     
     
+    if ( !CheckCommandAccess( client, "", GetModeFlagsByIndex( imode ), true ) )
+    {
+        if ( bPrintToChat )
+        {
+            Influx_PrintToChat( _, client, "You do not have access to this mode!" );
+        }
+        
+        return false;
+    }
+    
+    
     int lastmode = g_iModeId[client];
     
     
@@ -1828,6 +1844,17 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
     if ( istyle == -1 ) return false;
     
     if ( bTele && !ChangeTele( client ) ) return false;
+    
+    
+    if ( !CheckCommandAccess( client, "", GetStyleFlagsByIndex( istyle ), true ) )
+    {
+        if ( bPrintToChat )
+        {
+            Influx_PrintToChat( _, client, "You do not have access to this style!" );
+        }
+        
+        return false;
+    }
     
     
     int laststyle = g_iStyleId[client];
@@ -2556,4 +2583,24 @@ stock void UpdateStyleOverrides( int index = -1 )
     
     // Always sort last.
     SortStylesArray();
+}
+
+stock int GetModeFlags( int id )
+{
+    return GetModeFlagsByIndex( FindModeById( id ) );
+}
+
+stock int GetModeFlagsByIndex( int index )
+{
+    return ( index != -1 ) ? g_hModes.Get( index, MODE_ADMFLAGS ) : 0;
+}
+
+stock int GetStyleFlags( int id )
+{
+    return GetStyleFlagsByIndex( FindStyleById( id ) );
+}
+
+stock int GetStyleFlagsByIndex( int index )
+{
+    return ( index != -1 ) ? g_hStyles.Get( index, STYLE_ADMFLAGS ) : 0;
 }

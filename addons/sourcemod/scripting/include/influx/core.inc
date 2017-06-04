@@ -148,6 +148,8 @@ enum
     MODE_ID,
     MODE_DISPLAY,
     
+    MODE_ADMFLAGS,
+    
     MODE_MAXSPEED,
     
     MODE_SIZE
@@ -161,6 +163,8 @@ enum
     
     STYLE_ID,
     STYLE_DISPLAY,
+    
+    STYLE_ADMFLAGS,
     
     STYLE_SIZE
 };
