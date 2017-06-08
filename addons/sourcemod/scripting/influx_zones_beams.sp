@@ -424,8 +424,9 @@ stock void InsertBeams( int zoneid,
     if ( width < 1.0 ) width = DEF_WIDTH;
     
     // Inherit
-    if ( offset < 1.0 ) offset = width / 2.0;
-    if ( offset_z < 1.0 ) offset_z = width / 2.0;
+    // Allow negative numbers.
+    if ( offset == 0.0 ) offset = width / 2.0;
+    if ( offset_z == 0.0 ) offset_z = width / 2.0;
     
     if ( framerate < 0 ) framerate = DEF_FRAMERATE;
     
