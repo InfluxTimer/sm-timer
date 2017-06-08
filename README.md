@@ -12,3 +12,6 @@ Please visit the site [influxtimer.com](https://influxtimer.com/) for latest sta
 Contributions are appreciated.
 If you're planning on rewriting something, you might want to create an issue first.
 If you think the server might want to take a feature out for compatibility/user experience, it should be in its own script file(s).
+
+
+Before making an issue, please visit [influxtimer.com/download#faq](https://influxtimer.com/download#faq).
