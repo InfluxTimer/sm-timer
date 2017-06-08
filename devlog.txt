@@ -2,12 +2,16 @@ DEV
 
 ADDED:
 - Modes/styles can be disallowed using flags.
+- New style: Prespeed (go supa fast)
 
 CHANGES:
 - You can use negative numbers for beam offsets (inset). See influxtimer.com/download#faq for reason.
 
 FIXES:
 - Setting spectator target. (sm_replay, sm_spec)
+
+CODE:
+- Added forward Influx_OnLimitClientPrespeed
 
 
 
