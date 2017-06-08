@@ -1,7 +1,7 @@
 #include <sourcemod>
 
 #include <influx/core>
-#include <influx/stocks_core>
+#include <influx/prespeed>
 
 #undef REQUIRE_PLUGIN
 #include <influx/runs_sql>
@@ -43,6 +43,10 @@ ConVar g_ConVar_UseTrueVel;
 ConVar g_ConVar_Cap;
 
 
+// FORWARDS
+Handle g_hForward_OnLimitClientPrespeed;
+
+
 public Plugin myinfo =
 {
     author = INF_AUTHOR,
@@ -52,9 +56,19 @@ public Plugin myinfo =
     version = INF_VERSION
 };
 
+public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
+{
+    // LIBRARIES
+    RegPluginLibrary( INFLUX_LIB_PRESPEED );
+}
+
 public void OnPluginStart()
 {
     g_hPre = new ArrayList( PRESPEED_SIZE );
+    
+    
+    // FORWARDS
+    g_hForward_OnLimitClientPrespeed = CreateGlobalForward( "Influx_OnLimitClientPrespeed", ET_Hook, Param_Cell );
     
     
     // CONVARS
@@ -203,8 +217,11 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
     {
         if ( g_nJumps[client] > maxjumps )
         {
-            FormatEx( errormsg, error_len, "You cannot jump more than {MAINCLR1}%i{CHATCLR} time(s)!", maxjumps );
-            return Plugin_Handled;
+            if ( SendLimitForward( client ) )
+            {
+                FormatEx( errormsg, error_len, "You cannot jump more than {MAINCLR1}%i{CHATCLR} time(s)!", maxjumps );
+                return Plugin_Handled;
+            }
         }
     }
     
@@ -246,20 +263,24 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
             int capstyle = g_hPre.Get( index, PRESPEED_CAP );
             if ( capstyle == -1 ) capstyle = g_ConVar_Cap.IntValue;
             
-            if ( capstyle )
+            
+            if ( SendLimitForward( client ) )
             {
-                float m = truespd / maxprespd;
-                
-                vel[0] /= m;
-                vel[1] /= m;
-                vel[2] /= m;
-                
-                TeleportEntity( client, NULL_VECTOR, NULL_VECTOR, vel );
-            }
-            else
-            {
-                FormatEx( errormsg, error_len, "Your prespeed cannot exceed {MAINCLR1}%.0f{CHATCLR}!", maxprespd );
-                return Plugin_Handled;
+                if ( capstyle )
+                {
+                    float m = truespd / maxprespd;
+                    
+                    vel[0] /= m;
+                    vel[1] /= m;
+                    vel[2] /= m;
+                    
+                    TeleportEntity( client, NULL_VECTOR, NULL_VECTOR, vel );
+                }
+                else
+                {
+                    FormatEx( errormsg, error_len, "Your prespeed cannot exceed {MAINCLR1}%.0f{CHATCLR}!", maxprespd );
+                    return Plugin_Handled;
+                }
             }
         }
     }
@@ -330,4 +351,16 @@ stock int FindPreById( int id )
     }
     
     return -1;
+}
+
+stock bool SendLimitForward( int client )
+{
+    Action res = Plugin_Continue;
+    
+    Call_StartForward( g_hForward_OnLimitClientPrespeed );
+    Call_PushCell( client );
+    Call_Finish( res );
+    
+    
+    return ( res == Plugin_Continue ) ? true : false
 }
