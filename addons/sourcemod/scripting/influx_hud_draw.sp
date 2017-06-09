@@ -60,6 +60,9 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     // NATIVES
     CreateNative( "Influx_GetSecondsFormat_Timer", Native_GetSecondsFormat_Timer );
     CreateNative( "Influx_GetSecondsFormat_Sidebar", Native_GetSecondsFormat_Sidebar );
+    
+    CreateNative( "Influx_GetNextMenuTime", Native_GetNextMenuTime );
+    CreateNative( "Influx_SetNextMenuTime", Native_SetNextMenuTime );
 }
 
 public void OnPluginStart()
