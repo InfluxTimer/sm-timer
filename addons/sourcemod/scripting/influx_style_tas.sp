@@ -705,6 +705,9 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
     SetEntityFlags( client, data[FRM_ENTFLAGS] );
     
     
+    SetEntityName( client, view_as<char>( data[FRM_TARGETNAME] ) );
+    SetEntityClassname( client, view_as<char>( data[FRM_CLASSNAME] ) );
+    
     
     g_iStoppedFrame[client] = i;
     
