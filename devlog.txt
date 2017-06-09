@@ -15,6 +15,7 @@ CHANGES:
 FIXES:
 - Setting spectator target. (sm_replay, sm_spec)
 - Setting player's targetname and classname in TAS when rewinding/fast forwarding.
+- Native binding GetNextMenuTime/SetNextMenuTime (sm_credits)
 
 CODE:
 - Added forward Influx_OnLimitClientPrespeed
