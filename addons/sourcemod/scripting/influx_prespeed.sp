@@ -11,6 +11,10 @@
 #define MIN_GROUND_TIME     0.2 // Minimum amount of time a player needs to be on the ground before we reset jumps.
 
 
+#define MIN_NC_PRESPEED         250.0 // Player has to go this slow after noclipping.
+#define MIN_NC_PRESPEED_SQ      MIN_NC_PRESPEED * MIN_NC_PRESPEED
+
+
 //#define DEBUG
 
 
@@ -33,6 +37,7 @@ ArrayList g_hPre;
 
 int g_nJumps[INF_MAXPLAYERS];
 float g_flLastLand[INF_MAXPLAYERS];
+bool g_bUsedNoclip[INF_MAXPLAYERS];
 
 
 
@@ -41,6 +46,7 @@ ConVar g_ConVar_MaxJumps;
 ConVar g_ConVar_Max;
 ConVar g_ConVar_UseTrueVel;
 ConVar g_ConVar_Cap;
+ConVar g_ConVar_Noclip;
 
 
 // FORWARDS
@@ -76,6 +82,7 @@ public void OnPluginStart()
     g_ConVar_Max = CreateConVar( "influx_prespeed_max", "300", "Default max prespeed. 0 = disable", FCVAR_NOTIFY, true, 0.0 );
     g_ConVar_UseTrueVel = CreateConVar( "influx_prespeed_usetruevel", "0", "Use truevel when checking player's speed.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_Cap = CreateConVar( "influx_prespeed_cap", "1", "If true, cap player's speed to max prespeed. Otherwise teleport.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_Noclip = CreateConVar( "influx_prespeed_noclip", "1", "If true, don't allow players to prespeed with noclip.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
     AutoExecConfig( true, "prespeed", "influx" );
@@ -89,6 +96,8 @@ public void OnClientPutInServer( int client )
 {
     g_nJumps[client] = 0;
     g_flLastLand[client] = 0.0;
+    
+    Inf_SDKHook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client );
 }
 
 public void Influx_OnPreRunLoad()
@@ -206,6 +215,13 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
 {
     int index = FindPreById( runid );
     if ( index == -1 ) return Plugin_Continue;
+    
+    
+    if ( g_ConVar_Noclip.BoolValue && g_bUsedNoclip[client] )
+    {
+        FormatEx( errormsg, error_len, "You cannot prespeed with noclip!" );
+        return Plugin_Handled;
+    }
     
     
     // Check jump count.
@@ -337,6 +353,18 @@ public void E_PlayerJump( Event event, const char[] szEvent, bool bImUselessWhyD
 #if defined DEBUG
     PrintToServer( INF_DEBUG_PRE..."Player %i has jumped consecutively %i times.", client, g_nJumps[client] );
 #endif
+}
+
+public void E_PreThinkPost_Client( int client )
+{
+    if ( GetEntityMoveType( client ) == MOVETYPE_NOCLIP )
+    {
+        g_bUsedNoclip[client] = true;
+    }
+    else if ( g_bUsedNoclip[client] && GetEntityTrueSpeedSquared( client ) < MIN_NC_PRESPEED_SQ )
+    {
+        g_bUsedNoclip[client] = false;
+    }
 }
 
 stock int FindPreById( int id )
