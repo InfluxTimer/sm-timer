@@ -217,7 +217,7 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
     if ( index == -1 ) return Plugin_Continue;
     
     
-    if ( g_ConVar_Noclip.BoolValue && g_bUsedNoclip[client] && SendLimitForward( client, g_bUsedNoclip[client] ) )
+    if ( g_ConVar_Noclip.BoolValue && g_bUsedNoclip[client] )
     {
         FormatEx( errormsg, error_len, "You cannot prespeed with noclip!" );
         return Plugin_Handled;
