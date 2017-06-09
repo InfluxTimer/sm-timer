@@ -25,6 +25,9 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    HookEvent( "player_spawn", E_PlayerSpawn );
+    
+    
     if ( g_bLate )
     {
         for ( int i = 1; i <= MaxClients; i++ )
