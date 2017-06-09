@@ -1,8 +1,12 @@
 DEV
 
+COMPATIBILITY:
+- Delete cfg/influx/prespeed.cfg to generate new ones with latest cvars.
+
 ADDED:
 - Modes/styles can be disallowed using flags.
 - New style: Prespeed (go supa fast)
+- New influx_prespeed_noclip-cvar
 
 CHANGES:
 - You can use negative numbers for beam offsets (inset). See influxtimer.com/download#faq for reason.
