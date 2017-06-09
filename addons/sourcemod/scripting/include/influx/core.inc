@@ -53,7 +53,8 @@ enum
     STYLE_LOWGRAV,
     STYLE_BWD,
     STYLE_PARKOUR,
-    STYLE_TAS
+    STYLE_TAS,
+    STYLE_PRESPEED
 };
 
 enum
