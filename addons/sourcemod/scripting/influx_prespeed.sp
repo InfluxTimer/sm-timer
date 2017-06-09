@@ -74,7 +74,7 @@ public void OnPluginStart()
     
     
     // FORWARDS
-    g_hForward_OnLimitClientPrespeed = CreateGlobalForward( "Influx_OnLimitClientPrespeed", ET_Hook, Param_Cell );
+    g_hForward_OnLimitClientPrespeed = CreateGlobalForward( "Influx_OnLimitClientPrespeed", ET_Hook, Param_Cell, Param_Cell );
     
     
     // CONVARS
@@ -217,7 +217,7 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
     if ( index == -1 ) return Plugin_Continue;
     
     
-    if ( g_ConVar_Noclip.BoolValue && g_bUsedNoclip[client] )
+    if ( g_ConVar_Noclip.BoolValue && g_bUsedNoclip[client] && SendLimitForward( client, g_bUsedNoclip[client] ) )
     {
         FormatEx( errormsg, error_len, "You cannot prespeed with noclip!" );
         return Plugin_Handled;
@@ -233,7 +233,7 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
     {
         if ( g_nJumps[client] > maxjumps )
         {
-            if ( SendLimitForward( client ) )
+            if ( SendLimitForward( client, g_bUsedNoclip[client] ) )
             {
                 FormatEx( errormsg, error_len, "You cannot jump more than {MAINCLR1}%i{CHATCLR} time(s)!", maxjumps );
                 return Plugin_Handled;
@@ -280,7 +280,7 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
             if ( capstyle == -1 ) capstyle = g_ConVar_Cap.IntValue;
             
             
-            if ( SendLimitForward( client ) )
+            if ( SendLimitForward( client, g_bUsedNoclip[client] ) )
             {
                 if ( capstyle )
                 {
@@ -381,12 +381,13 @@ stock int FindPreById( int id )
     return -1;
 }
 
-stock bool SendLimitForward( int client )
+stock bool SendLimitForward( int client, bool bUsedNoclip )
 {
     Action res = Plugin_Continue;
     
     Call_StartForward( g_hForward_OnLimitClientPrespeed );
     Call_PushCell( client );
+    Call_PushCell( bUsedNoclip );
     Call_Finish( res );
     
     

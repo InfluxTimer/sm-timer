@@ -8,7 +8,7 @@
 
 
 // Return != Plugin_Continue to not limit prespeed.
-forward Action Influx_OnLimitClientPrespeed( int client );
+forward Action Influx_OnLimitClientPrespeed( int client, bool bUsedNoclip );
 
 
 public SharedPlugin __pl_influx_prespeed =
