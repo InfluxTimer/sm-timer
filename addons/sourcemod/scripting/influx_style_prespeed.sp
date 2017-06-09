@@ -69,7 +69,7 @@ public Action Influx_OnCheckClientStyle( int client, int style, float vel[3] )
     return Plugin_Stop;
 }
 
-public Action Influx_OnLimitClientPrespeed( int client )
+public Action Influx_OnLimitClientPrespeed( int client, bool bUsedNoclip )
 {
     return ( Influx_GetClientStyle( client ) != STYLE_PRESPEED ) ? Plugin_Continue : Plugin_Stop;
 }
