@@ -38,6 +38,16 @@ stock void GetEntityName( int ent, char[] sz, int len )
     GetEntPropString( ent, Prop_Data, "m_iName", sz, len );
 }
 
+stock void SetEntityName( int ent, char[] sz )
+{
+    SetEntPropString( ent, Prop_Data, "m_iName", sz );
+}
+
+stock void SetEntityClassname( int ent, char[] sz )
+{
+	SetEntPropString( ent, Prop_Data, "m_iClassname", sz );
+}
+
 stock int GetEntityWaterLevel( int ent )
 {
     return GetEntProp( ent, Prop_Data, "m_nWaterLevel" );
