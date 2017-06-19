@@ -1,5 +1,13 @@
 DEV
 
+ADDED:
+- Autobhop-zone
+- Added crouch support to TAS so you won't get stuck in those pesky vents.
+
+
+
+1.0.8
+
 COMPATIBILITY:
 - Delete cfg/influx/prespeed.cfg to generate new ones with latest cvars.
 
