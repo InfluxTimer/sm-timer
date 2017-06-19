@@ -701,8 +701,26 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
     }
     
     
-    SetEntPropEnt( client, Prop_Data, "m_hGroundEntity", data[FRM_GROUNDENT] );
-    SetEntityFlags( client, data[FRM_ENTFLAGS] );
+    int ent = data[FRM_GROUNDENT];
+    int flags = data[FRM_ENTFLAGS];
+    
+    
+    SetEntPropEnt( client, Prop_Data, "m_hGroundEntity", ent );
+    
+    SetEntityFlags( client, flags );
+    
+    
+    // m_bDucked controls player's hull size, m_bDucking is the transition.
+    if ( flags & FL_DUCKING )
+    {
+        SetEntProp( client, Prop_Data, "m_bDucked", 1 );
+        SetEntProp( client, Prop_Data, "m_bDucking", 0 );
+    }
+    else
+    {
+        SetEntProp( client, Prop_Data, "m_bDucked", 0 );
+        SetEntProp( client, Prop_Data, "m_bDucking", 0 );
+    }
     
     
     SetEntityName( client, view_as<char>( data[FRM_TARGETNAME] ) );
