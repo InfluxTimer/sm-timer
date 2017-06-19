@@ -650,7 +650,7 @@ stock void SnapToGrid( float vec[3], int grid, int axis = 2 )
 
 stock bool StartToBuild( int client, ZoneType_t zonetype, const char[] name = "" )
 {
-    if ( !VALID_ZONETYPE( zonetype ) ) return false;
+    if ( !IsValidZoneType( zonetype ) ) return false;
     
     
     g_iBuildingType[client] = zonetype;
@@ -1246,4 +1246,9 @@ stock void SetZoneNameByIndex( int index, const char[] szName )
     
     
     g_hZones.SetString( index, sz );
+}
+
+stock void IsValidZoneType( ZoneType_t zonetype )
+{
+    return ( FindZoneType( zonetype ) != -1 ) ? true : false;
 }

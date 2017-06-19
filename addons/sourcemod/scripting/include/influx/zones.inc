@@ -43,6 +43,7 @@ enum ZoneType_t
     ZONETYPE_MAX
 };
 
+// Deprecated
 #define VALID_ZONETYPE(%0)          ( %0 > ZONETYPE_INVALID && %0 < ZONETYPE_MAX )
 
 
