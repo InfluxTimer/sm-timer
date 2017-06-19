@@ -38,6 +38,7 @@ enum ZoneType_t
     ZONETYPE_TELE,
     ZONETYPE_CP,
     ZONETYPE_STAGE,
+    ZONETYPE_AUTOBHOP,
     
     ZONETYPE_MAX
 };
@@ -184,6 +185,7 @@ stock void Inf_GetZoneTypeDefColor( ZoneType_t zonetype, int clr[4] )
         case ZONETYPE_TELE : clr = { 255, 255, 0, 255 };
         case ZONETYPE_CP : clr = { 255, 0, 255, 255 };
         case ZONETYPE_STAGE : clr = { 128, 255, 0, 255 };
+        case ZONETYPE_AUTOBHOP : clr = { 255, 0, 162, 255 };
         default : clr = { 255, 255, 255, 255 };
     }
 }
