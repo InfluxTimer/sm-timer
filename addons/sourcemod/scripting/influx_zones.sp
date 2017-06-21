@@ -1248,7 +1248,7 @@ stock void SetZoneNameByIndex( int index, const char[] szName )
     g_hZones.SetString( index, sz );
 }
 
-stock void IsValidZoneType( ZoneType_t zonetype )
+stock bool IsValidZoneType( ZoneType_t zonetype )
 {
     return ( FindZoneType( zonetype ) != -1 ) ? true : false;
 }
