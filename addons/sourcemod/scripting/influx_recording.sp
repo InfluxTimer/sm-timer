@@ -1387,7 +1387,7 @@ stock void SetBotName()
         strcopy( szName, sizeof( szName ), DEF_REPLAYBOTNAME );
     }
     
-    SetClientInfo( g_iReplayBot, "name", szName );
+    SetClientName( g_iReplayBot, szName );
 }
 
 // NATIVES
