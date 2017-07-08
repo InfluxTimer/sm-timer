@@ -30,6 +30,13 @@ stock void SendPrint( int pos, int author, int[] clients, int nClients, bool pre
     }
     
     
+    // Add CSGO color fix.
+    if ( g_bIsCSGO )
+    {
+        Format( buffer, sizeof( buffer ), " \x01\x0B%s", buffer );
+    }
+    
+    
     Inf_SendSayText2( author, clients, nClients, buffer );
 }
 

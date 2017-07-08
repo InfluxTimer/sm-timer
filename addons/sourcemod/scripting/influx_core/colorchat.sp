@@ -347,13 +347,6 @@ stock void DetermineChatPrefix()
     g_ConVar_ChatPrefix.GetString( szPrefix, sizeof( szPrefix ) );
     
     
-    // Add CSGO fix.
-    if ( g_bIsCSGO )
-    {
-        Format( szPrefix, sizeof( szPrefix ), " \x01\x0B%s", szPrefix );
-    }
-    
-    
     FormatColors( szPrefix, sizeof( szPrefix ) );
     
     
