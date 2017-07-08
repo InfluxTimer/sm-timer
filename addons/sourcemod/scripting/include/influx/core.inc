@@ -511,6 +511,23 @@ stock void Inf_Warning( int num = 1, const char[] format, any ... )
     for ( int i = 0; i < num; i++ ) PrintToServer( msg );
 }
 
+stock void Inf_ReplyToClient( int client, const char[] form, ... )
+{
+    decl String:buffer[512];
+    VFormat( buffer, sizeof( buffer ), form, 3 );
+    
+    if ( client )
+    {
+        Influx_PrintToChat( _, client, "%s", buffer );
+    }
+    else
+    {
+        Influx_RemoveChatColors( buffer, sizeof( buffer ) );
+        
+        PrintToServer( INF_CON_PRE..."%s", buffer );
+    }
+}
+
 stock void Inf_ParseArgs( int args, int maxargs, int &uid, int &mapid, int &runid, int &mode, int &style, char[] szPlayerName, int player_len, char[] szMap, int map_len )
 {
     if ( args < 1 ) return;
