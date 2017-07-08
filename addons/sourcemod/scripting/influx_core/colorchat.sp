@@ -93,7 +93,7 @@ stock void RemoveColors( char[] sz, int len )
         {
             sz[pos] = '\0';
             
-            Format( sz, len, "%s%s", sz, sz[endpos] );
+            Format( sz, len, "%s%s", sz, sz[endpos + 1] );
             
             start = pos;
         }
