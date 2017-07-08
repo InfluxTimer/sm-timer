@@ -232,6 +232,9 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     if ( !(flags & RES_TIME_FIRSTOWNREC) ) return;
     
     
+    // TODO: Add multiple runs with custom reward amounts.
+    if ( runid != 1 ) return;
+    
     DB_CheckClientRecCount( client, runid, mode, style );
 }
 
