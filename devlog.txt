@@ -2,6 +2,12 @@ DEV
 
 ADDED:
 - influx_strfsync-plugin for strafe sync
+- Simple ranks. Player finishes a run, they get points and unlock ranks. (influx_simpleranks & influx_simpleranks_chat)
+
+CODE:
+- Influx_RemoveChatColors-native not working in some cases.
+- CS:GO chat color fix is now always applied when using Influx_PrintToChat*
+
 
 
 1.0.8 Hotfix
