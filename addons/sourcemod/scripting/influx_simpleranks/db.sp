@@ -10,15 +10,24 @@ stock void DB_Init()
     SQL_TQuery( db, Thrd_Empty,
         "CREATE TABLE IF NOT EXISTS "...INF_TABLE_SIMPLERANKS..." (" ...
         "uid INT NOT NULL," ...
-        "points INT NOT NULL," ...
-        "chosenrank INT NOT NULL," ...
+        "cachedpoints INT NOT NULL," ...
+        "chosenrank VARCHAR(127)," ...
         "PRIMARY KEY(uid))", _, DBPrio_High );
+        
+    SQL_TQuery( db, Thrd_Empty,
+        "CREATE TABLE IF NOT EXISTS "...INF_TABLE_SIMPLERANKS_HISTORY..." (" ...
+        "uid INT NOT NULL," ...
+        "mapid INT NOT NULL," ...
+        "runid INT NOT NULL," ...
+        "rewardpoints INT NOT NULL," ...
+        "PRIMARY KEY(uid,mapid,runid))", _, DBPrio_High );
         
     SQL_TQuery( db, Thrd_Empty,
         "CREATE TABLE IF NOT EXISTS "...INF_TABLE_SIMPLERANKS_MAPS..." (" ...
         "mapid INT NOT NULL," ...
+        "runid INT NOT NULL," ...
         "rewardpoints INT NOT NULL," ...
-        "PRIMARY KEY(mapid))", _, DBPrio_High );
+        "PRIMARY KEY(mapid,runid))", _, DBPrio_High );
 }
 
 stock void DB_InitMap( int mapid )
@@ -28,7 +37,7 @@ stock void DB_InitMap( int mapid )
     static char szQuery[512];
     
     FormatEx( szQuery, sizeof( szQuery ),
-        "SELECT rewardpoints FROM "...INF_TABLE_SIMPLERANKS_MAPS..." WHERE mapid=%i", mapid );
+        "SELECT runid,rewardpoints FROM "...INF_TABLE_SIMPLERANKS_MAPS..." WHERE mapid=%i", mapid );
     
     
     SQL_TQuery( db, Thrd_InitMap, szQuery, _, DBPrio_Normal );
@@ -41,7 +50,7 @@ stock void DB_InitClient( int client )
     static char szQuery[256];
     
     FormatEx( szQuery, sizeof( szQuery ),
-        "SELECT points,chosenrank FROM "...INF_TABLE_SIMPLERANKS..." WHERE uid=%i", Influx_GetClientId( client ) );
+        "SELECT cachedpoints,chosenrank FROM "...INF_TABLE_SIMPLERANKS..." WHERE uid=%i", Influx_GetClientId( client ) );
     
     
     SQL_TQuery( db, Thrd_InitClient, szQuery, GetClientUserId( client ), DBPrio_Normal );
@@ -51,13 +60,18 @@ stock void DB_CheckClientRecCount( int client, int runid, int mode, int style )
 {
     Handle db = Influx_GetDB();
     
+    
+    int mapid = Influx_GetCurrentMapId();
+    
+    
     // See if the player has already beaten this map.
-    decl data[4];
+    decl data[5];
     
     data[0] = GetClientUserId( client );
-    data[1] = runid;
-    data[2] = mode;
-    data[3] = style;
+    data[1] = mapid;
+    data[2] = runid;
+    data[3] = mode;
+    data[4] = style;
     
     ArrayList array = new ArrayList( sizeof( data ) );
     array.PushArray( data );
@@ -66,32 +80,51 @@ stock void DB_CheckClientRecCount( int client, int runid, int mode, int style )
     static char szQuery[512];
     
     FormatEx( szQuery, sizeof( szQuery ),
-        "SELECT runid,mode,style FROM "...INF_TABLE_TIMES..." WHERE uid=%i AND mapid=%i", Influx_GetClientId( client ), Influx_GetCurrentMapId() );
+        "SELECT rewardpoints FROM "...INF_TABLE_SIMPLERANKS_HISTORY..." WHERE uid=%i AND mapid=%i", Influx_GetClientId( client ), mapid );
     
     SQL_TQuery( db, Thrd_CheckClientRecCount, szQuery, array, DBPrio_Normal );
 }
 
-stock void DB_IncClientPoints( int client, int reward )
+stock void DB_IncClientPoints( int client, int runid, int reward )
 {
     Handle db = Influx_GetDB();
     
     static char szQuery[512];
     
-    FormatEx( szQuery, sizeof( szQuery ),
-        "UPDATE "...INF_TABLE_SIMPLERANKS..." SET points=points+%i WHERE uid=%i", reward, Influx_GetClientId( client ) );
+    int userid = GetClientUserId( client );
     
-    SQL_TQuery( db, Thrd_Empty, szQuery, GetClientUserId( client ), DBPrio_Normal );
+    int uid = Influx_GetClientId( client );
+    int mapid = Influx_GetCurrentMapId();
+    
+    
+    FormatEx( szQuery, sizeof( szQuery ),
+        "UPDATE "...INF_TABLE_SIMPLERANKS..." SET cachedpoints=cachedpoints+%i WHERE uid=%i",
+        reward,
+        uid );
+    
+    SQL_TQuery( db, Thrd_Empty, szQuery, userid, DBPrio_Normal );
+    
+    
+    FormatEx( szQuery, sizeof( szQuery ),
+        "INSERT INTO "...INF_TABLE_SIMPLERANKS_HISTORY..." (uid,mapid,runid,rewardpoints) VALUES (%i,%i,%i,%i)",
+        uid,
+        mapid,
+        runid,
+        reward );
+    
+    SQL_TQuery( db, Thrd_Empty, szQuery, userid, DBPrio_Normal );
 }
 
-stock void DB_UpdateMapReward( int mapid, int reward, int issuer = 0 )
+stock void DB_UpdateMapReward( int mapid, int runid, int reward, int issuer = 0 )
 {
     Handle db = Influx_GetDB();
     
     char szQuery[256];
     
     FormatEx( szQuery, sizeof( szQuery ),
-        "REPLACE INTO "...INF_TABLE_SIMPLERANKS_MAPS..." (mapid,rewardpoints) VALUES (%i,%i)",
+        "REPLACE INTO "...INF_TABLE_SIMPLERANKS_MAPS..." (mapid,runid,rewardpoints) VALUES (%i,%i,%i)",
         mapid,
+        runid,
         reward );
     
     SQL_TQuery( db, Thrd_Empty, szQuery, issuer ? GetClientUserId( issuer ) : 0, DBPrio_Normal );
@@ -115,20 +148,27 @@ stock void DB_UpdateClientChosenRank( int client, const char[] szRank )
     SQL_TQuery( db, Thrd_Empty, szQuery, GetClientUserId( client ), DBPrio_Normal );
 }
 
-stock void DB_SetMapRewardByName( int client, int reward, const char[] szMap )
+stock void DB_SetMapRewardByName( int client, int runid, int reward, const char[] szMap )
 {
     Handle db = Influx_GetDB();
     
-    decl data[2];
+    decl String:szSafe[64];
+    strcopy( szSafe, sizeof( szSafe ), szMap );
+    
+    RemoveChars( szSafe, "`'\"" );
+    
+    
+    decl data[3];
     data[0] = ( client ) ? GetClientUserId( client ) : 0;
-    data[1] = reward;
+    data[1] = runid;
+    data[2] = reward;
     
     ArrayList array = new ArrayList( sizeof( data ) );
     array.PushArray( data );
     
     
     decl String:szQuery[256];
-    FormatEx( szQuery, sizeof( szQuery ), "SELECT mapid,mapname FROM "...INF_TABLE_MAPS..." WHERE mapname='%s'", szMap );
+    FormatEx( szQuery, sizeof( szQuery ), "SELECT mapid,mapname FROM "...INF_TABLE_MAPS..." WHERE mapname LIKE '%%%s%%'", szSafe );
     
     SQL_TQuery( db, Thrd_SetMapReward, szQuery, array, DBPrio_Normal );
 }

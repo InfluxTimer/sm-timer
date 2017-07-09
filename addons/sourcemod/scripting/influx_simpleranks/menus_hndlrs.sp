@@ -16,7 +16,7 @@ public int Hndlr_Rank( Menu menu, MenuAction action, int client, int index )
     {
         if ( i < g_hRanks.Length && g_nPoints[client] >= GetRankPoints( i ) )
         {
-            SetClientRank( client, i, true );
+            SetClientRank( client, i, true, _, true );
             
             DB_UpdateClientChosenRank( client, g_szCurRank[client] );
         }

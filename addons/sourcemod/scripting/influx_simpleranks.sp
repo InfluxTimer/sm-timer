@@ -20,6 +20,7 @@
 #define INF_PRIVCOM_MAPREWARD           "sm_inf_setmapreward"
 
 #define INF_TABLE_SIMPLERANKS           "inf_simpleranks"
+#define INF_TABLE_SIMPLERANKS_HISTORY   "inf_simpleranks_history"
 #define INF_TABLE_SIMPLERANKS_MAPS      "inf_simpleranks_maps"
 
 
@@ -39,6 +40,15 @@ enum
     RANK_SIZE
 };
 
+enum
+{
+    REWARD_RUN_ID = 0,
+    
+    REWARD_POINTS,
+    
+    REWARD_SIZE
+};
+
 
 
 int g_nPoints[INF_MAXPLAYERS];
@@ -46,7 +56,9 @@ char g_szCurRank[INF_MAXPLAYERS][MAX_RANK_SIZE];
 int g_iCurRank[INF_MAXPLAYERS];
 bool g_bChose[INF_MAXPLAYERS];
 
-int g_nMapReward;
+
+ArrayList g_hMapRewards;
+//int g_nMapReward;
 
 
 // CONVARS
@@ -90,13 +102,17 @@ public void OnPluginStart()
 {
     g_hRanks = new ArrayList( RANK_SIZE );
     
-    
-    g_nMapReward = -1;
+    g_hMapRewards = new ArrayList( REWARD_SIZE );
+    //g_nMapReward = -1;
     
     
     // PRIVILEGE CMDS
     RegAdminCmd( INF_PRIVCOM_CUSTOMRANK, Cmd_Empty, ADMFLAG_ROOT );
     RegAdminCmd( INF_PRIVCOM_MAPREWARD, Cmd_Empty, ADMFLAG_ROOT );
+    
+    
+    // ADMIN CMDS
+    //RegAdminCmd( "sm_recalcranks", Cmd_Admin_RecalcRanks, ADMFLAG_ROOT );
     
     
     // CMDS
@@ -106,7 +122,7 @@ public void OnPluginStart()
     
     
     // CONVARS
-    g_ConVar_DefMapReward = CreateConVar( "influx_simpleranks_defmapreward", "4", "Default map reward.", FCVAR_NOTIFY, true, 0.0 );
+    g_ConVar_DefMapReward = CreateConVar( "influx_simpleranks_defmapreward", "3", "Default map reward.", FCVAR_NOTIFY, true, 0.0 );
     g_ConVar_NotifyReward = CreateConVar( "influx_simpleranks_displayreward", "1", "Do we notify the player with the amount of points they get?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_NotifyNewRank = CreateConVar( "influx_simpleranks_displaynewrank", "1", "Do we notify the player with the new rank they receive?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
@@ -217,6 +233,13 @@ stock void ReadRanks()
     while ( kv.GotoNextKey() );
 }
 
+public void Influx_OnRequestHelpCmds()
+{
+    Influx_AddHelpCommand( "sm_rankmenu", "Choose your chat rank." );
+    Influx_AddHelpCommand( "sm_customrank", "Ability to set your own custom rank. (Flag access)" );
+    Influx_AddHelpCommand( "sm_setmapreward <name (optional)> <reward>", "Set map's reward.", true );
+}
+
 public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
 {
     DB_InitMap( mapid );
@@ -229,11 +252,9 @@ public void Influx_OnClientIdRetrieved( int client, int uid, bool bNew )
 
 public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style, float time, float prev_pb, float prev_best, int flags )
 {
-    if ( !(flags & RES_TIME_FIRSTOWNREC) ) return;
-    
-    
     // TODO: Add multiple runs with custom reward amounts.
     if ( runid != 1 ) return;
+    
     
     DB_CheckClientRecCount( client, runid, mode, style );
 }
@@ -342,10 +363,26 @@ stock void SetClientRank( int client, int index, bool bChose, const char[] szOve
     }
 }
 
-stock void RewardClient( int client, bool bPrintReward, bool bPrintNewRank )
+stock void RewardClient( int client, int runid, bool bPrintReward, bool bPrintNewRank, int override_reward = -1 )
 {
-    int reward = g_nMapReward;
-    if ( reward < 0 ) reward = g_ConVar_DefMapReward.IntValue;
+    int reward;
+    
+    if ( override_reward < 0 )
+    {
+        reward = GetMapRewardPointsSafe( runid );
+    }
+    else
+    {
+        // Use override reward.
+        reward = override_reward;
+    }
+    
+    
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Rewarding client %i with %i points!",
+        client,
+        reward );
+#endif
     
     // Nothing to update!
     if ( reward <= 0 ) return;
@@ -379,7 +416,7 @@ stock void RewardClient( int client, bool bPrintReward, bool bPrintNewRank )
         }
     }
     
-    DB_IncClientPoints( client, reward );
+    DB_IncClientPoints( client, runid, reward );
 }
 
 stock bool IsValidReward( int reward, int issuer = 0, bool bPrint = false )
@@ -397,14 +434,14 @@ stock bool IsValidReward( int reward, int issuer = 0, bool bPrint = false )
     return true;
 }
 
-stock void SetCurrentMapReward( int issuer, int reward )
+stock void SetCurrentMapReward( int issuer, int runid, int reward )
 {
     if ( !IsValidReward( reward, issuer, true ) ) return;
     
     
-    g_nMapReward = reward;
+    AddMapReward( runid, reward );
     
-    DB_UpdateMapReward( Influx_GetCurrentMapId(), reward );
+    DB_UpdateMapReward( Influx_GetCurrentMapId(), runid, reward );
     
     
     Inf_ReplyToClient( issuer, "Set current map reward to {MAINCLR1}%i{CHATCLR} points.", reward );
@@ -418,6 +455,59 @@ stock bool CanUserUseCustomRank( int client )
 stock bool CanUserSetMapReward( int client )
 {
     return CheckCommandAccess( client, INF_PRIVCOM_MAPREWARD, ADMFLAG_ROOT );
+}
+
+stock int AddMapReward( int runid, int points )
+{
+    int index = FindMapRewardById( runid );
+    if ( index != -1 ) return index;
+    
+    
+    decl data[REWARD_SIZE];
+    
+    data[REWARD_RUN_ID] = runid;
+    data[REWARD_POINTS] = points;
+    
+    
+    
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Added custom map rewards (runid: %i | points: %i)",
+        data[REWARD_RUN_ID],
+        data[REWARD_POINTS] );
+#endif
+    
+    return g_hMapRewards.PushArray( data );
+}
+
+stock int FindMapRewardById( int runid )
+{
+    int len = g_hMapRewards.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( g_hMapRewards.Get( i, REWARD_RUN_ID ) == runid )
+        {
+            return i;
+        }
+    }
+    
+    return -1;
+}
+
+stock int GetMapRewardPointsSafe( int runid )
+{
+    int reward = GetMapRewardPoints( runid )
+    
+    return ( reward < 0 ) ? g_ConVar_DefMapReward.IntValue : reward;
+}
+
+stock int GetMapRewardPoints( int runid )
+{
+    int index = FindMapRewardById( runid );
+    
+    if ( index == -1 ) return -1;
+    
+    
+    return g_hMapRewards.Get( index, REWARD_POINTS );
 }
 
 // NATIVES

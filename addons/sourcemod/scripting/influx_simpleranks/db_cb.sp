@@ -14,10 +14,13 @@ public void Thrd_InitMap( Handle db, Handle res, const char[] szError, any data 
         return;
     }
     
-    if ( !SQL_FetchRow( res ) ) return;
     
+    g_hMapRewards.Clear();
     
-    g_nMapReward = SQL_FetchInt( res, 0 );
+    while ( SQL_FetchRow( res ) )
+    {
+        AddMapReward( SQL_FetchInt( res, 0 ), SQL_FetchInt( res, 1 ) );
+    }
 }
 
 public void Thrd_InitClient( Handle db, Handle res, const char[] szError, int client )
@@ -65,7 +68,7 @@ public void Thrd_InitClient( Handle db, Handle res, const char[] szError, int cl
     {
         static char szQuery[256];
         FormatEx( szQuery, sizeof( szQuery ),
-            "INSERT INTO "...INF_TABLE_SIMPLERANKS..." (uid,points,chosenrank) VALUES (%i,0,'')", Influx_GetClientId( client ) );
+            "INSERT INTO "...INF_TABLE_SIMPLERANKS..." (uid,cachedpoints,chosenrank) VALUES (%i,0,NULL)", Influx_GetClientId( client ) );
         
         SQL_TQuery( db, Thrd_Empty, szQuery, GetClientUserId( client ), DBPrio_Normal );
     }
@@ -73,17 +76,20 @@ public void Thrd_InitClient( Handle db, Handle res, const char[] szError, int cl
 
 public void Thrd_CheckClientRecCount( Handle db, Handle res, const char[] szError, ArrayList array )
 {
-    decl data[4];
+    decl data[5];
     
     array.GetArray( 0, data, sizeof( data ) );
     delete array;
     
     
     int client = data[0];
-    int reqrunid = data[1];
-    int reqmode = data[2];
-    int reqstyle = data[3];
+    int mapid = data[1];
+    int reqrunid = data[2];
+    /*int reqmode = data[3];
+    int reqstyle = data[4];*/
     
+    
+    if ( mapid != Influx_GetCurrentMapId() ) return;
     
     if ( !(client = GetClientOfUserId( client )) ) return;
     
@@ -93,37 +99,39 @@ public void Thrd_CheckClientRecCount( Handle db, Handle res, const char[] szErro
         return;
     }
     
-    // We never know which query gets executed first.
-    // So... we'll check if this one record we have is the same one we are receiving the reward for.
-    if ( SQL_GetRowCount( res ) > 1 ) return;
     
+    // Check whether the server has updated this map's reward to be higher. If so, update ours!
+    int override_reward = -1;
     
     if ( SQL_FetchRow( res ) )
     {
-        int runid = SQL_FetchInt( res, 0 );
-        int mode = SQL_FetchInt( res, 1 );
-        int style = SQL_FetchInt( res, 2 );
+        int oldreward = SQL_FetchInt( res, 0 );
         
-        // We've already gotten points for this!
-        if ( reqrunid != runid || reqmode != mode || reqstyle != style )
+        int curreward = GetMapRewardPointsSafe( reqrunid );
+        
+        if ( oldreward >= curreward )
         {
             return;
         }
+        
+        override_reward = curreward - oldreward;
     }
-
-    RewardClient( client, g_ConVar_NotifyReward.BoolValue, g_ConVar_NotifyNewRank.BoolValue );
+    
+    
+    RewardClient( client, reqrunid, g_ConVar_NotifyReward.BoolValue, g_ConVar_NotifyNewRank.BoolValue, override_reward );
 }
 
 public void Thrd_SetMapReward( Handle db, Handle res, const char[] szError, ArrayList array )
 {
-    decl data[2];
+    decl data[3];
     
     array.GetArray( 0, data, sizeof( data ) );
     delete array;
     
     
     int client = data[0];
-    int reward = data[1];
+    int runid = data[1];
+    int reward = data[2];
     
     
     if ( client && !(client = GetClientOfUserId( client )) ) return;
@@ -154,8 +162,15 @@ public void Thrd_SetMapReward( Handle db, Handle res, const char[] szError, Arra
     decl String:szMap[64];
     SQL_FetchString( res, 1, szMap, sizeof( szMap ) );
     
-    DB_UpdateMapReward( mapid, reward );
     
-    //Inf_ReplyToClient( client, "Successfully set map's '{MAINCLR1}%s{CHATCLR}' reward to {MAINCLR1}%i{CHATCLR}!", szMap, reward );
+    if ( mapid == Influx_GetCurrentMapId() )
+    {
+        SetCurrentMapReward( client, runid, reward );
+    }
+    
+    
+    DB_UpdateMapReward( mapid, runid, reward );
+    
+    Inf_ReplyToClient( client, "Setting {MAINCLR1}%s{CHATCLR}'s reward to {MAINCLR1}%i{CHATCLR}!", szMap, reward );
 }
 

@@ -61,15 +61,23 @@ public Action Cmd_SetMapReward( int client, int args )
         StripQuotes( szMap );
         
         
-        DB_SetMapRewardByName( client, reward, szMap );
+        DB_SetMapRewardByName( client, 1, reward, szMap );
     }
     else
     {
         GetCmdArgString( szTemp, sizeof( szTemp ) );
         
-        SetCurrentMapReward( client, StringToInt( szTemp ) );
+        SetCurrentMapReward( client, 1, StringToInt( szTemp ) );
     }
     
     
     return Plugin_Handled;
 }
+
+/*public Action Cmd_Admin_RecalcRanks( int client, int args )
+{
+    DB_RecalcRanks( client );
+    
+    return Plugin_Handled;
+}*/
+
