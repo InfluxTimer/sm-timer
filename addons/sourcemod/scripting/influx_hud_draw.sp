@@ -17,11 +17,13 @@ float g_flNextDraw_Menu[INF_MAXPLAYERS];
 
 int g_nNextTimer;
 int g_nNextSidebar;
+int g_nNextHudMsg;
 int g_nNextMenu;
 
 
 // CONVARS
 ConVar g_ConVar_Timer;
+ConVar g_ConVar_HudMsg;
 ConVar g_ConVar_Sidebar;
 ConVar g_ConVar_Menu;
 
@@ -77,6 +79,8 @@ public void OnPluginStart()
     
     g_ConVar_Sidebar = CreateConVar( "influx_hud_draw_sidebarinterval", "0.75", "Draw interval for sidebar. < 0 = disable", FCVAR_NOTIFY, true, -1.0, true, 5.0 );
     
+    g_ConVar_HudMsg = CreateConVar( "influx_hud_draw_hudmsginterval", "0.75", "Draw interval for HudMsg. < 0 = disable", FCVAR_NOTIFY, true, -1.0, true, 5.0 );
+    
     g_ConVar_Menu = CreateConVar( "influx_hud_draw_menuinterval", "0.75", "Draw interval for sidebar menu. < 0 = disable", FCVAR_NOTIFY, true, -1.0, true, 5.0 );
     
     
@@ -106,6 +110,7 @@ public void OnLibraryRemoved( const char[] lib )
 public void OnMapStart()
 {
     g_nNextTimer = 0;
+    g_nNextHudMsg = 0;
     g_nNextSidebar = 0;
     g_nNextMenu = 0;
 }
@@ -154,6 +159,13 @@ public void OnGameFrame()
         DrawSidebar();
         
         g_nNextSidebar = tick + RoundFloat( g_ConVar_Sidebar.FloatValue / GetTickInterval() );
+    }
+    
+    if ( tick >= g_nNextHudMsg && g_ConVar_HudMsg.FloatValue >= 0.0 )
+    {
+        DrawHudMsg();
+        
+        g_nNextHudMsg = tick + RoundFloat( g_ConVar_HudMsg.FloatValue / GetTickInterval() );
     }
     
     if ( tick >= g_nNextMenu && g_ConVar_Menu.FloatValue >= 0.0 )
@@ -227,6 +239,22 @@ stock void DrawSidebar()
         
         
         OnDrawHUD( i, target, HUDTYPE_SIDEBAR );
+    }
+}
+
+stock void DrawHudMsg()
+{
+    for ( int i = 1; i <= MaxClients; i++ )
+    {
+        if ( !IsClientInGame( i ) || IsFakeClient( i ) ) continue;
+        
+        int target = GetClientTarget( i );
+        if ( !target ) continue;
+        
+        if ( !ShouldDraw( i, target, HUDTYPE_HUDMSG ) ) continue;
+        
+        
+        OnDrawHUD( i, target, HUDTYPE_HUDMSG );
     }
 }
 
