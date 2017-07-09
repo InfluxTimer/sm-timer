@@ -4,7 +4,7 @@
 #define _influx_style_tas_included
 
 
-#define INFLUX_LIB_STYLE_TAS            "influx_strfsync"
+#define INFLUX_LIB_STYLE_TAS            "influx_style_tas"
 
 
 native float Influx_GetClientTASTime( int client );
