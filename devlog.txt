@@ -1,5 +1,9 @@
 DEV
 
+COMPATIBILITY:
+- Delete cfg/influx/hud_draw.cfg to generate new ones with latest cvars.
+- If you update any of the following plugins, make sure to also update ALL the following: influx_core/influx_strafes/influx_style_tas/influx_strfsync
+
 ADDED:
 - Strafe sync. (influx_strfsync & influx_hud_draw_css/csgo)
 - Simple ranks. Player finishes a run, they get points and unlock ranks. (influx_simpleranks & influx_simpleranks_chat)
@@ -9,10 +13,14 @@ CHANGES:
 
 FIXES:
 - Disabled strafe counting for TAS.
+- Starting/finishing timer returning weird errors.
 
 CODE:
 - Influx_RemoveChatColors-native not working in some cases.
 - CS:GO chat color fix is now always applied when using Influx_PrintToChat*
+- Influx_OnTimerStart/Finish returning garbage string.
+- Fixed incorrect library name.
+- Inf_ReplyToClient-stock
 
 
 
