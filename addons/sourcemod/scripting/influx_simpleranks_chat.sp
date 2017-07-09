@@ -24,7 +24,7 @@ public Action OnClientSayCommand( int client, const char[] szCommand, const char
 {
     static char szRank[256];
     static char szName[MAX_NAME_LENGTH];
-    static char szNewMsg[MAX_NAME_LENGTH];
+    static char szNewMsg[512];
     
     
     
