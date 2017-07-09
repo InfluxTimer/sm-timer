@@ -481,7 +481,7 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
         
         ADD_SEPARATOR( szMsg, "\n " );
         
-        if ( g_bLib_Strafes && state >= STATE_RUNNING )
+        if ( g_bLib_Strafes && state >= STATE_RUNNING && Influx_IsCountingStrafes( client ) )
         {
             Format( szMsg, sizeof( szMsg ), "%s%sStrafes: %i",
                 szMsg,
