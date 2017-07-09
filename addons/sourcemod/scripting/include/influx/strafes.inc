@@ -7,7 +7,10 @@
 #define INFLUX_LIB_STRAFES          "influx_strafes"
 
 
+forward Action Influx_ShouldCountStrafes( int client );
+
 native int Influx_GetClientStrafeCount( int client );
+native bool Influx_IsCountingStrafes( int client );
 
 
 public SharedPlugin __pl_influx_strafes =
@@ -25,5 +28,6 @@ public SharedPlugin __pl_influx_strafes =
 public void __pl_influx_strafes_SetNTVOptional()
 {
     MarkNativeAsOptional( "Influx_GetClientStrafeCount" );
+    MarkNativeAsOptional( "Influx_IsCountingStrafes" );
 }
 #endif

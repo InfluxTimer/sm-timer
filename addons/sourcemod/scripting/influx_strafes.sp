@@ -15,8 +15,18 @@
 
 
 int g_nNumStrfs[INF_MAXPLAYERS];
+bool g_bCount[INF_MAXPLAYERS];
 
+
+// FORWARDS
+Handle g_hForward_ShouldCountStrafes;
+
+
+// LIBRARIES
 bool g_bLib_Pause;
+
+
+bool g_bLate;
 
 
 public Plugin myinfo =
@@ -34,11 +44,32 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     
     // NATIVES
     CreateNative( "Influx_GetClientStrafeCount", Native_GetClientStrafeCount );
+    CreateNative( "Influx_IsCountingStrafes", Native_IsCountingStrafes );
+    
+    
+    g_bLate = late;
 }
 
 public void OnPluginStart()
 {
+    // FORWARDS
+    g_hForward_ShouldCountStrafes = CreateGlobalForward( "Influx_ShouldCountStrafes", ET_Hook, Param_Cell );
+    
+    
+    // LIBRARIES
     g_bLib_Pause = LibraryExists( INFLUX_LIB_PAUSE );
+    
+    
+    if ( g_bLate )
+    {
+        for ( int i = 1; i <= MaxClients; i++ )
+        {
+            if ( IsClientInGame( i ) )
+            {
+                OnClientPutInServer( i );
+            }
+        }
+    }
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -53,8 +84,29 @@ public void OnLibraryRemoved( const char[] lib )
 
 public void OnClientPutInServer( int client )
 {
-    if ( !IsFakeClient( client ) )
-        Inf_SDKHook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
+    g_bCount[client] = false;
+}
+
+public void Influx_OnTimerStartPost( int client, int runid )
+{
+    Action res = Plugin_Continue;
+    
+    Call_StartForward( g_hForward_ShouldCountStrafes );
+    Call_PushCell( client );
+    Call_Finish( res );
+    
+    if ( res == Plugin_Continue )
+    {
+        g_bCount[client] = true;
+        HookThinks( client );
+    }
+    else
+    {
+        g_bCount[client] = false;
+        UnhookThinks( client );
+    }
+    
+    g_nNumStrfs[client] = 0;
 }
 
 public void OnAllPluginsLoaded()
@@ -90,11 +142,6 @@ public void Influx_OnPrintRecordInfo( int client, Handle dbres, ArrayList itemli
     }
 }
 
-public void Influx_OnTimerStartPost( int client, int runid )
-{
-    g_nNumStrfs[client] = 0;
-}
-
 public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style, float time, float prev_pb, float prev_best, int flags )
 {
     if ( flags & (RES_TIME_PB | RES_TIME_FIRSTOWNREC) )
@@ -128,6 +175,11 @@ public void E_PostThinkPost_Client( int client )
 {
     if ( !IsPlayerAlive( client ) ) return;
     
+    if ( !g_bCount[client] )
+    {
+        UnhookThinks( client );
+        return;
+    }
     
     static Strafe_t iLastValidStrafe[INF_MAXPLAYERS];
     
@@ -248,7 +300,22 @@ public bool TraceFilter_AnythingButMe( int ent, int mask, int client )
     return ( ent != client );
 }
 
+stock void HookThinks( int client )
+{
+    Inf_SDKHook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
+}
+
+stock void UnhookThinks( int client )
+{
+    SDKUnhook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
+}
+
 public int Native_GetClientStrafeCount( Handle hPlugin, int nParams )
 {
     return g_nNumStrfs[GetNativeCell( 1 )];
+}
+
+public int Native_IsCountingStrafes( Handle hPlugin, int nParams )
+{
+    return g_bCount[GetNativeCell( 1 )];
 }
