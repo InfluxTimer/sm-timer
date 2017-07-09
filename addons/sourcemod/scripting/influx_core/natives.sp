@@ -439,7 +439,7 @@ public int Native_StartTimer( Handle hPlugin, int nParms )
     Call_StartForward( g_hForward_OnTimerStart );
     Call_PushCell( client );
     Call_PushCell( runid );
-    Call_PushStringEx( errormsg, sizeof( errormsg ), 0, SM_PARAM_COPYBACK );
+    Call_PushStringEx( errormsg, sizeof( errormsg ), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK );
     Call_PushCell( sizeof( errormsg ) );
     int error = Call_Finish( res );
     
@@ -569,7 +569,7 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     Call_PushCell( styleid );
     Call_PushCell( time );
     Call_PushCell( resultflags );
-    Call_PushStringEx( errormsg, sizeof( errormsg ), 0, SM_PARAM_COPYBACK );
+    Call_PushStringEx( errormsg, sizeof( errormsg ), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK );
     Call_PushCell( sizeof( errormsg ) );
     int error = Call_Finish( res );
     
