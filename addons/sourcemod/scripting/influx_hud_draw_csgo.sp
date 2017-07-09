@@ -25,6 +25,21 @@
 //#define DEBUG
 
 
+
+float g_flJoin[INF_MAXPLAYERS];
+
+
+
+ConVar g_ConVar_Title;
+ConVar g_ConVar_TitleDisplayAlways;
+ConVar g_ConVar_Font;
+ConVar g_ConVar_FontSize;
+ConVar g_ConVar_TabSize;
+
+char g_szTitle[256];
+char g_szFont[256];
+
+
 // LIBRARIES
 bool g_bLib_Hud;
 bool g_bLib_Strafes;
@@ -44,7 +59,7 @@ public Plugin myinfo =
 {
     author = INF_AUTHOR,
     url = INF_URL,
-    name = INF_NAME..." - HUD | Draw CS:GO",
+    name = INF_NAME..." - HUD Draw | CS:GO",
     description = "Displays info on player's screen.",
     version = INF_VERSION
 };
@@ -63,6 +78,24 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    // CONVARS
+    g_ConVar_Title = CreateConVar( "influx_hud_draw_title", "\t<font color='#00AAFF'>Influx Timer</font>", "Title to be shown to all players.", FCVAR_NOTIFY );
+    g_ConVar_Title.AddChangeHook( E_ConVarChanged_Title );
+    g_ConVar_Title.GetString( g_szTitle, sizeof( g_szTitle ) );
+    
+    g_ConVar_TitleDisplayAlways = CreateConVar( "influx_hud_draw_titlealways", "0", "Do we always display the title when player is in start/has no run?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    
+    g_ConVar_Font = CreateConVar( "influx_hud_draw_font", "monospace", "Font to use in the timer hud. Monospace fonts recommended.", FCVAR_NOTIFY );
+    g_ConVar_Font.AddChangeHook( E_ConVarChanged_Font );
+    g_ConVar_Font.GetString( g_szFont, sizeof( g_szFont ) );
+    
+    g_ConVar_FontSize = CreateConVar( "influx_hud_draw_fontsize", "22", "Font size. 22 recommended.", FCVAR_NOTIFY );
+    
+    g_ConVar_TabSize = CreateConVar( "influx_hud_draw_tabsize", "12", "Amount of characters a tab is. If you increase/decrease font size you need to tweak this.", FCVAR_NOTIFY, true, 1.0 );
+    
+    AutoExecConfig( true, "hud_draw_csgo", "influx" );
+    
+    
     // LIBRARIES
     g_bLib_Hud = LibraryExists( INFLUX_LIB_HUD );
     g_bLib_Strafes = LibraryExists( INFLUX_LIB_STRAFES );
@@ -109,14 +142,37 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_STYLE_TAS ) ) g_bLib_Style_Tas = false;
 }
 
+public void OnClientPutInServer( int client )
+{
+    g_flJoin[client] = GetEngineTime();
+}
+
+public void E_ConVarChanged_Title( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    g_ConVar_Title.GetString( g_szTitle, sizeof( g_szTitle ) );
+}
+
+public void E_ConVarChanged_Font( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    g_ConVar_Font.GetString( g_szFont, sizeof( g_szFont ) );
+}
+
 public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
 {
     static char szMsg[256];
-    szMsg[0] = '\0';
+    szMsg[0] = 0;
     
-    decl String:szTemp[32];
-    decl String:szTemp2[32];
+    static char szTemp[64];
+    static char szTemp2[64];
+    static char szTemp3[64];
+    
     decl String:szSecFormat[12];
+    
+    RunState_t state = Influx_GetClientState( target );
+    
+    decl curlinelen;
+    
+    bool bIsReplayBot = ( IsFakeClient( target ) && g_bLib_Recording && Influx_GetReplayBot() == target );
     
     
     int hideflags = ( g_bLib_Hud ) ? Influx_GetClientHideFlags( client ) : 0;
@@ -126,12 +182,103 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
     {
         Influx_GetSecondsFormat_Timer( szSecFormat, sizeof( szSecFormat ) );
         
+        curlinelen = 0;
         
-        RunState_t state = Influx_GetClientState( target );
         
-        if ( !(hideflags & HIDEFLAG_TIME) && state >= STATE_RUNNING )
+        if (state <= STATE_START
+        &&  (g_ConVar_TitleDisplayAlways.BoolValue || (g_flJoin[client] + 15.0 > GetEngineTime())))
         {
+            FormatEx( szMsg, sizeof( szMsg ), "%s", g_szTitle );
+        }
+        else if ( !bIsReplayBot )
+        {
+            if ( !(hideflags & HIDEFLAG_PB_TIME) && Influx_IsClientCached( target ) )
+            {
+                float time = Influx_GetClientCurrentPB( target );
+                
+                if ( time > INVALID_RUN_TIME )
+                {
+                    Inf_FormatSeconds( time, szTemp, sizeof( szTemp ), szSecFormat );
+                    curlinelen = FormatEx( szMsg, sizeof( szMsg ), "PB: %s", szTemp );
+                }
+                else
+                {
+                    curlinelen = strcopy( szMsg, sizeof( szMsg ), "PB: N/A" );
+                }
+            }
+            
+            if ( !(hideflags & HIDEFLAG_WR_TIME) )
+            {
+                float time = Influx_GetClientCurrentBestTime( target );
+                
+                if ( time > INVALID_RUN_TIME )
+                {
+                    Inf_FormatSeconds( time, szTemp3, sizeof( szTemp3 ), szSecFormat );
+                    Influx_GetClientCurrentBestName( target, szTemp2, sizeof( szTemp2 ) );
+                    
+                    LimitString( szTemp2, sizeof( szTemp2 ), 8 );
+                    
+                    
+                    FormatEx( szTemp, sizeof( szTemp ), "SR: %s (%s)", szTemp3, szTemp2 );
+                }
+                else
+                {
+                    strcopy( szTemp, sizeof( szTemp ), "SR: N/A" );
+                }
+                
+                GetTabs( curlinelen, szTemp2, sizeof( szTemp2 ) );
+                
+                Format( szMsg, sizeof( szMsg ), "%s%s%s",
+                    szMsg,
+                    szTemp2,
+                    szTemp );
+            }
+        }
+        
+        
+        AddAndGotoLine( szMsg, szMsg, sizeof( szMsg ), 2 );
+        curlinelen = 0;
+        /*
+Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
+            Influx_GetStyleName( Influx_GetReplayStyle(), szTemp2, sizeof( szTemp2 ), true );
+        */
+        
+        if ( bIsReplayBot )
+        {
+            Inf_FormatSeconds( Influx_GetReplayTime(), szTemp, sizeof( szTemp ), szSecFormat );
+            
+            curlinelen = FormatEx( szTemp2, sizeof( szTemp2 ), "Time: %s", szTemp );
+            
+            
+            Format( szMsg, sizeof( szMsg ), "%s%s", szMsg, szTemp2 );
+        }
+        else if ( state == STATE_START )
+        {
+            Influx_GetRunName( Influx_GetClientRunId( target ), szTemp2, sizeof( szTemp2 ) );
+            curlinelen = Format( szTemp2, sizeof( szTemp2 ), "In %s Start", szTemp2 );
+            
+            Format( szMsg, sizeof( szMsg ), "%s<font color='#4286f4'>%s</font>", szMsg, szTemp2 );
+        }
+        else if ( state >= STATE_RUNNING )
+        {
+            float time = INVALID_RUN_TIME;
             float cptime = INVALID_RUN_TIME;
+            
+            decl String:pre[2];
+            pre[0] = 0;
+            pre[1] = 0;
+            
+            
+            decl String:szForm[32];
+            strcopy( szForm, sizeof( szForm ), "%05.2f" );
+            
+            decl String:szTimeName[32];
+            strcopy( szTimeName, sizeof( szTimeName ), "Time: " );
+            
+            decl String:szColor[32];
+            szColor[0] = 0;
+            
+            
             
             if (g_bLib_CP
             &&  (GetEngineTime() - Influx_GetClientLastCPTouch( target )) < 2.0)
@@ -143,84 +290,158 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
             }
             
             
+            //if ( IsFakeClient( target ) )
             if ( state == STATE_FINISHED )
             {
-                Inf_FormatSeconds( Influx_GetClientFinishedTime( target ), szTemp, sizeof( szTemp ), "%05.2f" );
-                FormatEx( szMsg, sizeof( szMsg ), "Time: %s", szTemp );
+                time = Influx_GetClientFinishedTime( target );
             }
             else if ( g_bLib_Pause && Influx_IsClientPaused( target ) )
             {
-                Inf_FormatSeconds( Influx_GetClientPausedTime( target ), szTemp, sizeof( szTemp ), "%05.2f" );
-                FormatEx( szMsg, sizeof( szMsg ), "Time: %s", szTemp );
+                time = Influx_GetClientPausedTime( target );
             }
             else if ( cptime != INVALID_RUN_TIME )
             {
-                float time = Influx_GetClientLastCPTime( target );
-                
-                decl c;
-                
-                Inf_FormatSeconds( Inf_GetTimeDif( time, cptime, c ), szTemp2, sizeof( szTemp2 ), szSecFormat );
+                float lastcptime = Influx_GetClientLastCPTime( target );
                 
                 
-                FormatEx( szMsg, sizeof( szMsg ), "CP: <font color=\"#42f4a1\">%c%s</font>", c, szTemp2 );
+                
+                time = Inf_GetTimeDif( lastcptime, cptime, view_as<int>( pre[0] ) );
+                strcopy( szForm, sizeof( szForm ), szSecFormat );
+                
+                strcopy( szColor, sizeof( szColor ), " color='#42f4a1'" );
+                
+                strcopy( szTimeName, sizeof( szTimeName ), "CP: " );
             }
             else if ( g_bLib_Style_Tas && Influx_GetClientStyle( target ) == STYLE_TAS )
             {
-                Inf_FormatSeconds( Influx_GetClientTASTime( target ), szTemp, sizeof( szTemp ), szSecFormat );
-                FormatEx( szMsg, sizeof( szMsg ), "Time: %s", szTemp );
+                time = Influx_GetClientTASTime( target );
+                strcopy( szForm, sizeof( szForm ), szSecFormat );
             }
             else
             {
-                Inf_FormatSeconds( Influx_GetClientTime( target ), szTemp, sizeof( szTemp ), szSecFormat );
-                FormatEx( szMsg, sizeof( szMsg ), "Time: <font color=\"#42f4a1\">%s</font>", szTemp );
+                time = Influx_GetClientTime( target );
+                strcopy( szForm, sizeof( szForm ), szSecFormat );
+                
+                strcopy( szColor, sizeof( szColor ), " color='#42f4a1'" );
             }
-        }
-        else if ( state == STATE_START )
-        {
-            Influx_GetRunName( Influx_GetClientRunId( target ), szTemp, sizeof( szTemp ) );
-            FormatEx( szMsg, sizeof( szMsg ), "<font color=\"#4286f4\">In %s Start</font>", szTemp );
-        }
-        
-        if ( !(hideflags & HIDEFLAG_SPEED) )
-        {
-            Format( szMsg, sizeof( szMsg ), "%s\n<font color=\"#4286f4\">Speed: %03.0f</font>",
-                szMsg,
-                GetSpeed( target ) );
-        }
-        
-        
-        bool bprac = ( g_bLib_Practise && !(hideflags & HIDEFLAG_PRACMODE) && Influx_IsClientPractising( target ) );
-        
-        bool bpause = ( g_bLib_Pause && !(hideflags & HIDEFLAG_PAUSEMODE) && Influx_IsClientPaused( target ) );
-        
-        if ( bprac || bpause )
-        {
-            Format( szMsg, sizeof( szMsg ), "%s%s<font color=\"#ff0000\">", szMsg, NEWLINE_CHECK( szMsg ) );
             
-            
-            if ( bprac )
+            if ( time != INVALID_RUN_TIME )
             {
-                Format( szMsg, sizeof( szMsg ), "%sPractising", szMsg );
+                curlinelen += strlen( pre );
+                
+                
+                curlinelen += strlen( szTimeName );
+                
+                Inf_FormatSeconds( time, szTemp, sizeof( szTemp ), szForm );
+                
+                curlinelen += strlen( szTemp );
+                
+                Format( szMsg, sizeof( szMsg ), "%s%s<font%s>%s%s</font>",
+                    szMsg,
+                    szTimeName,
+                    szColor,
+                    ( pre[0] != 0 ) ? pre : "",
+                    szTemp );
             }
-            
-            if ( bpause )
-            {
-                Format( szMsg, sizeof( szMsg ), "%s%sPaused", szMsg, bprac ? "/" : "" );
-            }
-            
-            
-            Format( szMsg, sizeof( szMsg ), "%s</font>", szMsg );
         }
         
-
+        
+        GetTabs( curlinelen, szTemp, sizeof( szTemp ) );
+        
+        Format( szMsg, sizeof( szMsg ), "%s%sSpeed: <font color='#4286f4'>%03.0f</font>",
+            szMsg,
+            szTemp,
+            GetSpeed( target ) );
+        
+        AddAndGotoLine( szMsg, szMsg, sizeof( szMsg ), 3 );
+        
+        curlinelen = 0;
         
         
-        if ( szMsg[0] != '\0' )
+        if ( !IsFakeClient( target ) )
         {
+            if ( g_bLib_MapRanks )
+            {
+                int rank = Influx_GetClientCurrentMapRank( target );
+                int numrecs = Influx_GetClientCurrentMapRankCount( target );
+                
+                if ( numrecs > 0 )
+                {
+                    if ( rank > 0 )
+                    {
+                        curlinelen = FormatEx( szTemp, sizeof( szTemp ), "Rank: %i/%i", rank, numrecs );
+                    }
+                    else
+                    {
+                        curlinelen = FormatEx( szTemp, sizeof( szTemp ), "Rank: -/%i", numrecs );
+                    }
+                }
+                else
+                {
+                    curlinelen = FormatEx( szTemp, sizeof( szTemp ), "Rank: -/-" );
+                }
+                
+                Format( szMsg, sizeof( szMsg ), "%s%s", szMsg, szTemp );
+            }
+        }
+        else if ( bIsReplayBot )
+        {
+            Influx_GetReplayName( szTemp, sizeof( szTemp ) );
+            
+            LimitString( szTemp, sizeof( szTemp ), 8 );
+            
+            FormatEx( szTemp2, sizeof( szTemp2 ), "Name: %s", szTemp );
+            
+            AddPadding( szTemp2, sizeof( szTemp2 ), 12 );
+            
+            curlinelen = strlen( szTemp2 );
+            
+            Format( szMsg, sizeof( szMsg ), "%s%s", szMsg, szTemp2 );
+        }
+        
+        
+        int targetmode = MODE_INVALID;
+        int targetstyle = STYLE_INVALID;
+        
+        if ( bIsReplayBot )
+        {
+            targetmode = Influx_GetReplayMode();
+            targetstyle = Influx_GetReplayStyle();
+        }
+        else
+        {
+            targetmode = Influx_GetClientMode( target );
+            targetstyle = Influx_GetClientStyle( target );
+        }
+        
+        
+        Influx_GetModeShortName( targetmode, szTemp3, sizeof( szTemp3 ), true );
+        Influx_GetStyleShortName( targetstyle, szTemp2, sizeof( szTemp2 ), true );
+        
+        if ( szTemp2[0] == 0 && szTemp3[0] == 0 )
+        {
+            strcopy( szTemp2, sizeof( szTemp2 ), "N/A" );
+        }
+        
+        GetTabs( curlinelen, szTemp, sizeof( szTemp ) );
+        
+        Format( szMsg, sizeof( szMsg ), "%s%sStyle: %s%s%s",
+            szMsg,
+            szTemp,
+            szTemp2,
+            ( szTemp2[0] != 0 ) ? " " : "",
+            szTemp3 );
+        
+        
+        
+        if ( szMsg[0] != 0 )
+        {
+            Format( szMsg, sizeof( szMsg ), "<font size='%i' face='%s'>%s</font>", g_ConVar_FontSize.IntValue, g_szFont, szMsg );
+            
             PrintHintText( client, szMsg );
         }
     }
-    else if ( hudtype == HUDTYPE_MENU )
+    else if ( hudtype == HUDTYPE_HUDMSG )
     {
         Influx_GetSecondsFormat_Sidebar( szSecFormat, sizeof( szSecFormat ) );
         
@@ -228,38 +449,6 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         // Disable for bots.
         if ( IsFakeClient( target ) )
         {
-            // Draw recording bot info.
-            if ( g_bLib_Recording && Influx_GetReplayBot() == target )
-            {
-                float time = Influx_GetReplayTime();
-                if ( time == INVALID_RUN_TIME ) return Plugin_Stop;
-                
-                
-                decl String:szTime[12];
-                
-                
-                
-                Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
-                Influx_GetStyleName( Influx_GetReplayStyle(), szTemp2, sizeof( szTemp2 ), true );
-                
-                
-                Inf_FormatSeconds( time, szTime, sizeof( szTime ), szSecFormat );
-                
-                
-                decl String:szName[16];
-                Influx_GetReplayName( szName, sizeof( szName ) );
-                
-                FormatEx( szMsg, sizeof( szMsg ), "%s%s%s\n \nTime: %s\nName: %s",
-                    szTemp2, // Style
-                    ( szTemp2[0] != '\0' ) ? " " : "",
-                    szTemp, // Mode
-                    szTime,
-                    szName );
-                
-                
-                ShowPanel( client, szMsg );
-            }
-            
             return Plugin_Stop;
         }
         
@@ -280,74 +469,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
             FormatEx( szMsg, sizeof( szMsg ), "Stage: %s", szTemp2 );
         }
         
-        if ( g_bLib_MapRanks )
-        {
-            int rank = Influx_GetClientCurrentMapRank( target );
-            int numrecs = Influx_GetClientCurrentMapRankCount( target );
-            
-            if ( numrecs > 0 )
-            {
-                if ( rank > 0 )
-                {
-                    Format( szMsg, sizeof( szMsg ), "%s%sRank: %i/%i", szMsg, NEWLINE_CHECK( szMsg ), rank, numrecs );
-                }
-                else
-                {
-                    Format( szMsg, sizeof( szMsg ), "%s%sRank: ?/%i", szMsg, NEWLINE_CHECK( szMsg ), numrecs );
-                }
-            }
-        }
-        
-        
-        if ( !(hideflags & HIDEFLAG_PB_TIME) && Influx_IsClientCached( target ) )
-        {
-            float time = Influx_GetClientCurrentPB( target );
-            
-            if ( time > INVALID_RUN_TIME )
-            {
-                Inf_FormatSeconds( time, szTemp2, sizeof( szTemp2 ), szSecFormat );
-                FormatEx( szTemp, sizeof( szTemp ), "PB: %s", szTemp2 );
-            }
-            else
-            {
-                strcopy( szTemp, sizeof( szTemp ), "PB: N/A" );
-            }
-            
-            Format( szMsg, sizeof( szMsg ), "%s%s%s", szMsg, NEWLINE_CHECK( szMsg ), szTemp );
-        }
-        
-        if ( !(hideflags & HIDEFLAG_WR_TIME) )
-        {
-            float time = Influx_GetClientCurrentBestTime( target );
-            
-            if ( time > INVALID_RUN_TIME )
-            {
-                decl String:szTemp3[32];
-                
-                Inf_FormatSeconds( time, szTemp2, sizeof( szTemp2 ), szSecFormat );
-                Influx_GetClientCurrentBestName( target, szTemp3, sizeof( szTemp3 ) );
-                
-                LimitString( szTemp3, sizeof( szTemp3 ), 8 );
-                
-                
-                FormatEx( szTemp, sizeof( szTemp ), "SR: %s (%s)", szTemp2, szTemp3 );
-            }
-            else
-            {
-                strcopy( szTemp, sizeof( szTemp ), "SR: N/A" );
-            }
-            
-            Format( szMsg, sizeof( szMsg ), "%s%s%s",
-                szMsg,
-                NEWLINE_CHECK( szMsg ),
-                szTemp );
-        }
-        
-        
         ADD_SEPARATOR( szMsg, "\n " );
-        
-        
-        RunState_t state = Influx_GetClientState( target );
         
         if ( g_bLib_Strafes && state >= STATE_RUNNING )
         {
@@ -365,7 +487,28 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
                 Influx_GetClientJumpCount( target ) );
         }
         
-        ShowPanel( client, szMsg );
+        
+        ADD_SEPARATOR( szMsg, "\n " );
+        
+        bool bprac = ( g_bLib_Practise && !(hideflags & HIDEFLAG_PRACMODE) && Influx_IsClientPractising( target ) );
+        
+        bool bpause = ( g_bLib_Pause && !(hideflags & HIDEFLAG_PAUSEMODE) && Influx_IsClientPaused( target ) );
+        
+        if ( bprac || bpause )
+        {
+            if ( bprac )
+            {
+                Format( szMsg, sizeof( szMsg ), "%sPractising", szMsg );
+            }
+            
+            if ( bpause )
+            {
+                Format( szMsg, sizeof( szMsg ), "%s%sPaused", szMsg, bprac ? "/" : "" );
+            }
+        }
+        
+        
+        DisplayHudMsg( client, szMsg );
     }
     
     return Plugin_Stop;
@@ -377,13 +520,140 @@ stock float GetSpeed( int client )
     return ( g_bLib_Truevel && Influx_IsClientUsingTruevel( client ) ) ? GetEntityTrueSpeed( client ) : GetEntitySpeed( client );
 }
 
-stock void ShowPanel( int client, const char[] msg )
+/*stock void ShowPanel( int client, const char[] msg )
 {
     Panel panel = new Panel();
     panel.SetTitle( msg );
     panel.Send( client, Hndlr_Panel_Empty, 3 );
     
     delete panel;
-}
+}*/
 
 public int Hndlr_Panel_Empty( Menu menu, MenuAction action, int client, int param2 ) {}
+
+
+stock bool AddAndGotoLine( const char[] sz, char[] out, int len, int wantedline )
+{
+    if ( wantedline < 2 ) return false;
+    
+    
+    int numlines = 1;
+    
+    int start = 0;
+    decl pos;
+    while ( (pos = FindCharInString( sz[start], '\n' )) != -1 )
+    {
+        ++numlines;
+        
+        start += pos + 1;
+    }
+    
+    if ( numlines >= wantedline ) return false;
+    
+    
+    while ( numlines < wantedline )
+    {
+        int lastpos = strlen( out ) - 1;
+        
+        if ( lastpos < 0 ) lastpos = 0;
+        
+        Format( out, len, "%s%s\n", out, (lastpos == 0 || out[lastpos] == '\n') ? " " : "" );
+        
+        ++numlines;
+    }
+    
+    return true; 
+}
+
+stock void DisplayHudMsg( int client, const char[] msg )
+{
+    int clients[1];
+    clients[0] = client;
+    
+    float pos[2];
+    pos = view_as<float>( { 1.0, 0.0 } );
+    
+    int clr[4];
+    clr = { 255, 255, 255, 255 };
+    
+    SendHudMsg( clients, 1, msg, 2, pos, clr, clr, 0, 0.0, 0.0, 1.0, 0.0 );
+}
+
+stock void SendHudMsg(  int[] clients,
+                        int nClients,
+                        const char[] text,
+                        int channel,
+                        const float pos[2],
+                        const int clr1[4],
+                        const int clr2[4],
+                        int effect,
+                        float fade_in,
+                        float fade_out,
+                        float hold_time,
+                        float fx_time )
+{
+    static UserMsg UserMsg_HudMsg = INVALID_MESSAGE_ID;
+    
+    if ( UserMsg_HudMsg == INVALID_MESSAGE_ID )
+    {
+        if ( (UserMsg_HudMsg = GetUserMessageId( "HudMsg" )) == INVALID_MESSAGE_ID )
+        {
+            SetFailState( INF_CON_PRE..."Couldn't find usermessage id for HudMsg!" );
+        }
+    }
+    
+    
+    Handle hMsg = StartMessageEx( UserMsg_HudMsg, clients, nClients, USERMSG_BLOCKHOOKS );
+    
+    if ( hMsg != null )
+    {
+        if ( GetUserMessageType() == UM_Protobuf )
+        {
+            PbSetInt( hMsg, "channel", channel );
+            PbSetVector2D( hMsg, "pos", pos );
+            PbSetColor( hMsg, "clr1", clr1 );
+            PbSetColor( hMsg, "clr2", clr2 );
+            PbSetInt( hMsg, "effect", effect );
+            PbSetFloat( hMsg, "fade_in_time", fade_in );
+            PbSetFloat( hMsg, "fade_out_time", fade_out );
+            PbSetFloat( hMsg, "hold_time", hold_time );
+            PbSetFloat( hMsg, "fx_time", fx_time );
+            PbSetString( hMsg, "text", text );
+        }
+        else
+        {
+            PrintToServer( "This shouldn't happen!" );
+        }
+        
+        EndMessage();
+    }
+}
+
+stock void GetTabs( int linelen, char[] out, int len, int numtabs = 2 )
+{
+    out[0] = 0;
+    
+    int num = numtabs - linelen / g_ConVar_TabSize.IntValue;
+
+    for ( int i = 0; i < num; i++ )
+    {
+        Format( out, len, "%s\t", out );
+    }
+}
+
+stock void AddPadding( char[] out, int len, int padding )
+{
+    int l = strlen( out );
+    
+    if ( l >= padding ) return;
+    
+    if ( padding >= len ) return;
+    
+    
+    for ( int i = l; i < padding; i++ )
+    {
+        out[i] = ' ';
+    }
+    
+    out[padding] = 0;
+}
