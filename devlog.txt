@@ -1,11 +1,14 @@
 DEV
 
 ADDED:
-- influx_strfsync-plugin for strafe sync
+- Strafe sync. (influx_strfsync & influx_hud_draw_css/csgo)
 - Simple ranks. Player finishes a run, they get points and unlock ranks. (influx_simpleranks & influx_simpleranks_chat)
 
 CHANGES:
 - Completely remade CS:GO HUD. Now uses HudMsg and we cram more info into the timer bar.
+
+FIXES:
+- Disabled strafe counting for TAS.
 
 CODE:
 - Influx_RemoveChatColors-native not working in some cases.
