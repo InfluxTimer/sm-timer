@@ -91,7 +91,7 @@ public void OnPluginStart()
     
     g_ConVar_FontSize = CreateConVar( "influx_hud_draw_fontsize", "22", "Font size. 22 recommended.", FCVAR_NOTIFY );
     
-    g_ConVar_TabSize = CreateConVar( "influx_hud_draw_tabsize", "12", "Amount of characters a tab is. If you increase/decrease font size you need to tweak this.", FCVAR_NOTIFY, true, 1.0 );
+    g_ConVar_TabSize = CreateConVar( "influx_hud_draw_tabsize", "6", "Amount of characters a tab is. If you increase/decrease font size you need to tweak this.", FCVAR_NOTIFY, true, 1.0 );
     
     AutoExecConfig( true, "hud_draw_csgo", "influx" );
     
@@ -639,7 +639,7 @@ stock void SendHudMsg(  int[] clients,
     }
 }
 
-stock void GetTabs( int linelen, char[] out, int len, int numtabs = 2 )
+stock void GetTabs( int linelen, char[] out, int len, int numtabs = 3 )
 {
     out[0] = 0;
     
