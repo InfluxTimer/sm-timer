@@ -36,10 +36,12 @@ ConVar g_ConVar_Font;
 ConVar g_ConVar_FontSize;
 ConVar g_ConVar_TabSize;
 ConVar g_ConVar_Pos;
+ConVar g_ConVar_Clr;
 
 char g_szTitle[256];
 char g_szFont[256];
 float g_fPos[2];
+int g_iClr[4];
 
 
 // LIBRARIES
@@ -98,6 +100,10 @@ public void OnPluginStart()
     g_ConVar_Pos = CreateConVar( "influx_hud_draw_pos", "0 0.4", "Set the position where the sidebar is drawn.", FCVAR_NOTIFY );
     g_ConVar_Pos.AddChangeHook( E_ConVarChanged_Pos );
     GetHudMsgPos();
+    
+    g_ConVar_Clr = CreateConVar( "influx_hud_draw_clr", "255 255 255 255", "Set the color of the hud msg.", FCVAR_NOTIFY );
+    g_ConVar_Clr.AddChangeHook( E_ConVarChanged_Clr );
+    GetHudMsgClr();
     
     AutoExecConfig( true, "hud_draw_csgo", "influx" );
     
@@ -167,6 +173,11 @@ public void E_ConVarChanged_Font( ConVar convar, const char[] oldValue, const ch
 public void E_ConVarChanged_Pos( ConVar convar, const char[] oldValue, const char[] newValue )
 {
     GetHudMsgPos();
+}
+
+public void E_ConVarChanged_Clr( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    GetHudMsgClr();
 }
 
 public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
@@ -594,10 +605,7 @@ stock void DisplayHudMsg( int client, const char[] msg )
     //float pos[2];
     //pos = view_as<float>( { 1.0, 0.0 } );
     
-    int clr[4];
-    clr = { 255, 255, 255, 255 };
-    
-    SendHudMsg( clients, 1, msg, 2, g_fPos, clr, clr, 0, 0.0, 0.0, 1.0, 0.0 );
+    SendHudMsg( clients, 1, msg, 2, g_fPos, g_iClr, g_iClr, 0, 0.0, 0.0, 1.0, 0.0 );
 }
 
 stock void SendHudMsg(  int[] clients,
@@ -689,4 +697,18 @@ stock void GetHudMsgPos()
     
     g_fPos[0] = StringToFloat( bufs[0] );
     g_fPos[1] = StringToFloat( bufs[1] );
+}
+
+stock void GetHudMsgClr()
+{
+    decl String:sz[32];
+    decl String:bufs[sizeof( g_iClr )][8];
+    g_ConVar_Clr.GetString( sz, sizeof( sz ) );
+    
+    ExplodeString( sz, " ", bufs, sizeof( bufs ), sizeof( bufs[] ), true );
+    
+    for ( int i = 0; i < sizeof( g_iClr ); i++ )
+    {
+        g_iClr[i] = StringToInt( bufs[i] );
+    }
 }
