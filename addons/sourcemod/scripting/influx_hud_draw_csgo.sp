@@ -35,9 +35,11 @@ ConVar g_ConVar_TitleDisplayAlways;
 ConVar g_ConVar_Font;
 ConVar g_ConVar_FontSize;
 ConVar g_ConVar_TabSize;
+ConVar g_ConVar_Pos;
 
 char g_szTitle[256];
 char g_szFont[256];
+float g_fPos[2];
 
 
 // LIBRARIES
@@ -92,6 +94,10 @@ public void OnPluginStart()
     g_ConVar_FontSize = CreateConVar( "influx_hud_draw_fontsize", "22", "Font size. 22 recommended.", FCVAR_NOTIFY );
     
     g_ConVar_TabSize = CreateConVar( "influx_hud_draw_tabsize", "6", "Amount of characters a tab is. If you increase/decrease font size you need to tweak this.", FCVAR_NOTIFY, true, 1.0 );
+    
+    g_ConVar_Pos = CreateConVar( "influx_hud_draw_pos", "0 0.4", "Set the position where the sidebar is drawn.", FCVAR_NOTIFY );
+    g_ConVar_Pos.AddChangeHook( E_ConVarChanged_Pos );
+    GetHudMsgPos();
     
     AutoExecConfig( true, "hud_draw_csgo", "influx" );
     
@@ -156,6 +162,11 @@ public void E_ConVarChanged_Title( ConVar convar, const char[] oldValue, const c
 public void E_ConVarChanged_Font( ConVar convar, const char[] oldValue, const char[] newValue )
 {
     g_ConVar_Font.GetString( g_szFont, sizeof( g_szFont ) );
+}
+
+public void E_ConVarChanged_Pos( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    GetHudMsgPos();
 }
 
 public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
@@ -580,13 +591,13 @@ stock void DisplayHudMsg( int client, const char[] msg )
     int clients[1];
     clients[0] = client;
     
-    float pos[2];
-    pos = view_as<float>( { 1.0, 0.0 } );
+    //float pos[2];
+    //pos = view_as<float>( { 1.0, 0.0 } );
     
     int clr[4];
     clr = { 255, 255, 255, 255 };
     
-    SendHudMsg( clients, 1, msg, 2, pos, clr, clr, 0, 0.0, 0.0, 1.0, 0.0 );
+    SendHudMsg( clients, 1, msg, 2, g_fPos, clr, clr, 0, 0.0, 0.0, 1.0, 0.0 );
 }
 
 stock void SendHudMsg(  int[] clients,
@@ -666,4 +677,16 @@ stock void AddPadding( char[] out, int len, int padding )
     }
     
     out[padding] = 0;
+}
+
+stock void GetHudMsgPos()
+{
+    decl String:sz[32];
+    decl String:bufs[2][16];
+    g_ConVar_Pos.GetString( sz, sizeof( sz ) );
+    
+    ExplodeString( sz, " ", bufs, sizeof( bufs ), sizeof( bufs[] ), true );
+    
+    g_fPos[0] = StringToFloat( bufs[0] );
+    g_fPos[1] = StringToFloat( bufs[1] );
 }
