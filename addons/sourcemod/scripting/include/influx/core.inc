@@ -511,7 +511,7 @@ stock void Inf_Warning( int num = 1, const char[] format, any ... )
     for ( int i = 0; i < num; i++ ) PrintToServer( msg );
 }
 
-stock void Inf_ReplyToClient( int client, const char[] form, ... )
+stock void Inf_ReplyToClient( int client, const char[] form, any ... )
 {
     decl String:buffer[512];
     VFormat( buffer, sizeof( buffer ), form, 3 );
