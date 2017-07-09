@@ -14,7 +14,7 @@
 #include <influx/jumps>
 #include <influx/pause>
 #include <influx/practise>
-//#include <influx/strfsync>
+#include <influx/strfsync>
 #include <influx/truevel>
 #include <influx/zones_stage>
 #include <influx/zones_checkpoint>
@@ -47,7 +47,7 @@ bool g_bLib_Jumps;
 bool g_bLib_Pause;
 bool g_bLib_Practise;
 bool g_bLib_Recording;
-//bool g_bLib_StrfSync;
+bool g_bLib_StrfSync;
 bool g_bLib_Truevel;
 bool g_bLib_Stage;
 bool g_bLib_CP;
@@ -103,7 +103,7 @@ public void OnPluginStart()
     g_bLib_Pause = LibraryExists( INFLUX_LIB_PAUSE );
     g_bLib_Practise = LibraryExists( INFLUX_LIB_PRACTISE );
     g_bLib_Recording = LibraryExists( INFLUX_LIB_RECORDING );
-    //g_bLib_StrfSync = LibraryExists( INFLUX_LIB_STRFSYNC );
+    g_bLib_StrfSync = LibraryExists( INFLUX_LIB_STRFSYNC );
     g_bLib_Truevel = LibraryExists( INFLUX_LIB_TRUEVEL );
     g_bLib_Stage = LibraryExists( INFLUX_LIB_ZONES_STAGE );
     g_bLib_CP = LibraryExists( INFLUX_LIB_ZONES_CP );
@@ -119,6 +119,7 @@ public void OnLibraryAdded( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = true;
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = true;
     if ( StrEqual( lib, INFLUX_LIB_RECORDING ) ) g_bLib_Recording = true;
+    if ( StrEqual( lib, INFLUX_LIB_STRFSYNC ) ) g_bLib_StrfSync = true;
     if ( StrEqual( lib, INFLUX_LIB_TRUEVEL ) ) g_bLib_Truevel = true;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Stage = true;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_CP = true;
@@ -134,7 +135,7 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = false;
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = false;
     if ( StrEqual( lib, INFLUX_LIB_RECORDING ) ) g_bLib_Recording = false;
-    //if ( StrEqual( lib, INFLUX_LIB_STRFSYNC ) ) g_bLib_StrfSync = false;
+    if ( StrEqual( lib, INFLUX_LIB_STRFSYNC ) ) g_bLib_StrfSync = false;
     if ( StrEqual( lib, INFLUX_LIB_TRUEVEL ) ) g_bLib_Truevel = false;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_STAGE ) ) g_bLib_Stage = false;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_CP ) ) g_bLib_CP = false;
@@ -207,7 +208,16 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
                 }
             }
             
-            if ( !(hideflags & HIDEFLAG_WR_TIME) )
+            if ( state == STATE_RUNNING && g_bLib_StrfSync )
+            {
+                GetTabs( curlinelen, szTemp2, sizeof( szTemp2 ) );
+                
+                Format( szMsg, sizeof( szMsg ), "%s%sSync: %.1f﹪",
+                    szMsg,
+                    szTemp2,
+                    Influx_GetClientStrafeSync( target ) );
+            }
+            else if ( !(hideflags & HIDEFLAG_WR_TIME) )
             {
                 float time = Influx_GetClientCurrentBestTime( target );
                 
