@@ -26,9 +26,7 @@ public SharedPlugin __pl_influx_simpleranks =
 #if !defined REQUIRE_PLUGIN
 public void __pl_influx_simpleranks_SetNTVOptional()
 {
-    MarkNativeAsOptional( "Influx_IsClientPractising" );
-    
-    MarkNativeAsOptional( "Influx_StartPractising" );
-    MarkNativeAsOptional( "Influx_EndPractising" );
+    MarkNativeAsOptional( "Influx_GetClientSimpleRank" );
+    MarkNativeAsOptional( "Influx_GetClientSimpleRankPoints" );
 }
 #endif
