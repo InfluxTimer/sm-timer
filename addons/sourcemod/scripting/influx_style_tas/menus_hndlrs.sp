@@ -74,7 +74,7 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
         {
             if ( g_flTimescale[client] >= 1.0 )
             {
-                SetTimescale( client, 0.25 );
+                SetTimescale( client, MIN_TIMESCALE );
             }
             else
             {
