@@ -167,6 +167,10 @@ public int Hndlr_TasLoad( Menu menu, MenuAction action, int client, int index )
         
         Influx_PrintToChat( _, client, "Loaded {MAINCLR1}%i{CHATCLR} frames from disk.", g_hFrames[client].Length );
     }
+    else
+    {
+        Influx_PrintToChat( _, client, "Couldn't load file from disk!" );
+    }
     
     return 0;
 }
