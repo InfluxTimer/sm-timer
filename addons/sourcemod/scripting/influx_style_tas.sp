@@ -380,7 +380,8 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
         
         UnfreezeClient( client );
         
-        SetTimescale( client, 1.0, false );
+        
+        SetClientCheats( client, false );
     }
     
     return Plugin_Continue;
@@ -396,6 +397,9 @@ public void Influx_OnClientStyleChangePost( int client, int style, int laststyle
 {
     if ( style == STYLE_TAS )
     {
+        SetClientCheats( client, true );
+        
+        
         OpenMenu( client );
         
         if ( GetEngineVersion() == Engine_CSGO && laststyle != STYLE_TAS )
@@ -410,7 +414,7 @@ public void OnClientPutInServer( int client )
     ResetClient( client );
     
     
-    SetTimescale( client, 1.0, false );
+    SetClientCheats( client, false );
     
     g_iAutoStrafe[client] = AUTOSTRF_OFF;
 }
@@ -484,7 +488,7 @@ public void E_PlayerTeamNDeath( Event event, const char[] szEvent, bool bImUsele
     if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return;
     
     
-    SetTimescale( client, 1.0, false );
+    SetTimescale( client, 1.0 );
 }
 
 public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[3], float angles[3] )
@@ -837,13 +841,12 @@ stock void UnfreezeClient( int client )
     }
 }
 
-stock void SetTimescale( int client, float value, bool bCheats = true )
+stock void SetTimescale( int client, float value )
 {
     g_flTimescale[client] = value;
     
     if ( !IsFakeClient( client ) )
     {
-        Inf_SendConVarValueBool( client, g_ConVar_Cheats, bCheats );
         Inf_SendConVarValueFloat( client, g_ConVar_Timescale, value, "%.2f" );
     }
 }
@@ -911,4 +914,17 @@ stock void ChangeAutoStrafe( int client )
     {
         g_iAutoStrafe[client] = AUTOSTRF_OFF;
     }
+}
+
+stock void SetClientCheats( int client, bool bAllow )
+{
+    if ( IsFakeClient( client ) ) return;
+    
+    
+    if ( !bAllow )
+    {
+        SetTimescale( client, 1.0 );
+    }
+    
+    Inf_SendConVarValueBool( client, g_ConVar_Cheats, bAllow );
 }
