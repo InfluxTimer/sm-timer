@@ -28,6 +28,9 @@ forward Action Influx_OnBeamAdd( int zoneid, ZoneType_t zonetype, DisplayType_t 
 
 native bool Influx_SetZoneBeamDisplayType( int zoneid, DisplayType_t displaytype );
 
+// First is XY offset, Second is Z offset.
+native bool Influx_GetDefaultBeamOffsets( ZoneType_t zonetype, float offsets[2] );
+
 
 stock DisplayType_t Inf_DisplayNameToType( const char[] sz )
 {
@@ -103,6 +106,7 @@ public SharedPlugin __pl_influx_zones_beams =
 #if !defined REQUIRE_PLUGIN
 public void __pl_influx_zones_beams_SetNTVOptional()
 {
+    MarkNativeAsOptional( "Influx_GetDefaultBeamOffsets" );
     MarkNativeAsOptional( "Influx_SetZoneBeamDisplayType" );
 }
 #endif

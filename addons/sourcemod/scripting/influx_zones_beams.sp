@@ -120,8 +120,10 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     // LIBRARIES
     RegPluginLibrary( INFLUX_LIB_ZONES_BEAMS );
     
+    
     // NATIVES
     CreateNative( "Influx_SetZoneBeamDisplayType", Native_SetZoneBeamDisplayType );
+    CreateNative( "Influx_GetDefaultBeamOffsets", Native_GetDefaultBeamOffsets );
 }
 
 public void OnPluginStart()
@@ -726,12 +728,22 @@ stock bool SetDefaultBeamSettings( int zoneid, ZoneType_t zonetype, DisplayType_
     return true;
 }
 
-stock int FindDefByType( ZoneType_t zonetype = ZONETYPE_INVALID, const char[] szShortName )
+stock int FindDefByType( ZoneType_t zonetype = ZONETYPE_INVALID, const char[] szInName = "" )
 {
     // Find by zonetype or shortname.
     ZoneType_t myzonetype;
     
     char szMyName[32];
+    char szShortName[32];
+    
+    if ( szInName[0] != 0 )
+    {
+        strcopy( szShortName, sizeof( szShortName ), szInName );
+    }
+    else
+    {
+        Influx_GetZoneTypeShortName( zonetype, szShortName, sizeof( szShortName ) );
+    }
     
     int len = g_hDef.Length;
     for ( int i = 0; i < len; i++ )
@@ -968,6 +980,21 @@ public int Native_SetZoneBeamDisplayType( Handle hPlugin, int nParms )
     
     
     g_hBeams.Set( index, displaytype, BEAM_DISPLAYTYPE );
+    
+    return 1;
+}
+
+public int Native_GetDefaultBeamOffsets( Handle hPlugin, int nParms )
+{
+    int index = FindDefByType( GetNativeCell( 1 ) );
+    if ( index == -1 ) return 0;
+    
+    
+    decl offsets[2];
+    offsets[0] = g_hDef.Get( index, DEFBEAM_OFFSET )
+    offsets[1] = g_hDef.Get( index, DEFBEAM_OFFSET_Z );
+    
+    SetNativeArray( 2, offsets, sizeof( offsets ) );
     
     return 1;
 }
