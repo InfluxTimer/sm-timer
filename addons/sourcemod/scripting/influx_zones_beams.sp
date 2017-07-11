@@ -319,6 +319,10 @@ stock void ReadDefaultSettingsFile()
     
     decl data[DEFBEAM_SIZE];
     
+    decl String:szDownload[2048];
+    decl String:szDlBuffer[8][256];
+    decl String:szMat[PLATFORM_MAX_PATH];
+    
     do
     {
         if ( !kv.GetSectionName( szType, sizeof( szType ) ) )
@@ -349,24 +353,18 @@ stock void ReadDefaultSettingsFile()
         }
         
         
-        decl String:szTex[PLATFORM_MAX_PATH];
-        kv.GetString( "texture", szTex, sizeof( szTex ), "" );
         
-        decl String:szMat[PLATFORM_MAX_PATH];
         kv.GetString( "material", szMat, sizeof( szMat ), "" );
+        kv.GetString( "download", szDownload, sizeof( szDownload ), "" );
         
         
         int mat = 0;
         
-        if ( szMat[0] != '\0' )
+        if ( szMat[0] != 0 )
         {
             if ( FileExists( szMat, true ) )
             {
-                if ( (mat = PrecacheModel( szMat )) > 0 )
-                {
-                    AddFileToDownloadsTable( szMat );
-                }
-                else
+                if ( (mat = PrecacheModel( szMat )) < 1 )
                 {
                     LogError( INF_CON_PRE..."Couldn't precache beam material '%s'!", szMat );
                 }
@@ -377,15 +375,25 @@ stock void ReadDefaultSettingsFile()
             }
         }
         
-        if ( szTex[0] != '\0' )
+        if ( szDownload[0] != 0 )
         {
-            if ( FileExists( szTex, true ) )
+            int dllen = ExplodeString( szDownload, ";", szDlBuffer, sizeof( szDlBuffer ), sizeof( szDlBuffer[] ), true );
+            
+            for ( int i = 0; i < dllen; i++ )
             {
-                AddFileToDownloadsTable( szTex );
-            }
-            else
-            {
-                LogError( INF_CON_PRE..."Beam texture '%s' does not exist! Can't add to downloads table.", szTex );
+                TrimString( szDlBuffer[i] );
+                
+                if ( szDlBuffer[i][0] == 0 ) continue;
+                
+                
+                if ( FileExists( szDlBuffer[i], true ) )
+                {
+                    AddFileToDownloadsTable( szDlBuffer[i] );
+                }
+                else
+                {
+                    LogError( INF_CON_PRE..."Beam file '%s' does not exist! Can't add to downloads table.", szDlBuffer[i] );
+                }
             }
         }
         
