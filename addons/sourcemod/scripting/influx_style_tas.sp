@@ -25,7 +25,8 @@
 
 #define PLAYBACK_SPD_LIMIT              16
 
-#define MIN_TIMESCALE                   0.25
+#define MIN_TIMESCALE                   0.1
+#define TIMESCALE_STEPS                 0.1
 
 
 
@@ -851,7 +852,7 @@ stock void IncreaseTimescale( int client )
 {
     float value = g_flTimescale[client];
     
-    value *= 2;
+    value += TIMESCALE_STEPS;
     
     
     if ( value > 1.0 )
@@ -867,7 +868,7 @@ stock void DecreaseTimescale( int client )
 {
     float value = g_flTimescale[client];
     
-    value /= 2;
+    value -= TIMESCALE_STEPS;
     
     
     if ( value < MIN_TIMESCALE )
