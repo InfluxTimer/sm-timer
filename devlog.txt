@@ -9,6 +9,7 @@ COMPATIBILITY:
 ADDED:
 - Strafe sync. (influx_strfsync & influx_hud_draw_css/csgo)
 - Simple ranks. Player finishes a run, they get points and unlock ranks. (influx_simpleranks & influx_simpleranks_chat)
+- Added influx_style_tas_silentstrafer-cvar to allow the replay of a TAS run to have silent strafing.
 
 CHANGES:
 - Completely remade CS:GO HUD. Now uses HudMsg and we cram more info into the timer bar.
