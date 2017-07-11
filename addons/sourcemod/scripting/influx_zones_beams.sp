@@ -586,7 +586,7 @@ stock void InsertBeams( int zoneid,
         displaytype = DISPLAYTYPE_BEAMS;
     }
     
-    if ( width < 1.0 ) width = DEF_WIDTH;
+    if ( width < 0.01 ) width = DEF_WIDTH;
     
     // Inherit
     // Allow negative numbers.
