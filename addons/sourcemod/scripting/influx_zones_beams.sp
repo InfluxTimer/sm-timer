@@ -747,7 +747,7 @@ stock int FindDefByType( ZoneType_t zonetype = ZONETYPE_INVALID, const char[] sz
         {
             g_hDef.GetString( i, szMyName, sizeof( szMyName ) );
             
-            if ( StrEqual( szMyName, szShortName ) )
+            if ( StrEqual( szMyName, szShortName, false ) )
             {
                 g_hDef.Set( i, zonetype, DEFBEAM_ZONETYPE );
                 
