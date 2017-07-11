@@ -41,7 +41,15 @@ public Action Cmd_TasMenu( int client, int args )
     
     menu.AddItem( "e", szDisplay );
     
-    menu.AddItem( "a", "> Next Frame" );
+    if ( CanAdvanceFrame( client ) )
+    {
+        menu.AddItem( "g", "> Advance Frame" );
+    }
+    else
+    {
+        menu.AddItem( "a", "> Next Frame" );
+    }
+    
     menu.AddItem( "b", "< Previous Frame\n " );
     
     menu.AddItem( "f", "Settings\n " );

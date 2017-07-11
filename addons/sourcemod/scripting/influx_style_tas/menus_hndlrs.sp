@@ -49,6 +49,14 @@ public int Hndlr_TasMenu( Menu menu, MenuAction action, int client, int index )
             OpenSettingsMenu( client );
             return 0;
         }
+        case 'g' :
+        {
+            if ( CanAdvanceFrame( client ) )
+            {
+                AdvanceFrame( client );
+                return 0;
+            }
+        }
     }
     
     OpenMenu( client );

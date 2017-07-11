@@ -41,6 +41,23 @@ public Action Cmd_Stop( int client, int args )
     return Plugin_Handled;
 }
 
+public Action Cmd_AdvanceFrame( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !IsPlayerAlive( client ) ) return Plugin_Handled;
+    
+    if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return Plugin_Handled;
+    
+    
+    if ( CanAdvanceFrame( client ) )
+    {
+        AdvanceFrame( client );
+    }
+    
+    return Plugin_Handled;
+}
+
 public Action Cmd_Forward( int client, int args )
 {
     if ( !client ) return Plugin_Handled;

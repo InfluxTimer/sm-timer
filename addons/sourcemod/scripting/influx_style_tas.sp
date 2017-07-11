@@ -119,6 +119,8 @@ int g_iAutoStrafe[INF_MAXPLAYERS];
 
 float g_vecLastWantedAngles[INF_MAXPLAYERS][3];
 
+bool g_bAdvanceFrame[INF_MAXPLAYERS];
+
 
 // CONVARS
 ConVar g_ConVar_SilentStrafer;
@@ -195,6 +197,8 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_tas_fwd", Cmd_Forward );
     RegConsoleCmd( "sm_tas_bwd", Cmd_Backward );
+    
+    RegConsoleCmd( "sm_tas_advanceframe", Cmd_AdvanceFrame );
     
     RegConsoleCmd( "sm_tas_nextframe", Cmd_NextFrame );
     RegConsoleCmd( "sm_tas_prevframe", Cmd_PrevFrame );
@@ -684,6 +688,16 @@ stock void InsertFrame( int client )
     GetEntityClassname( client, view_as<char>( data[FRM_CLASSNAME] ), FRM_CLASSNAME_SIZE );
     
     g_iStoppedFrame[client] = g_hFrames[client].PushArray( data );
+    
+    
+    if ( g_bAdvanceFrame[client] )
+    {
+        g_bAdvanceFrame[client] = false;
+        
+        SetFrame( client, g_iStoppedFrame[client], false, true );
+        
+        OpenMenu( client );
+    }
 }
 
 stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
@@ -847,6 +861,8 @@ stock void ResetClient( int client )
     g_iStoppedFrame[client] = -1;
     
     g_iPlayback[client] = 0;
+    
+    g_bAdvanceFrame[client] = false;
 }
 
 stock bool ShouldContinue( int client )
@@ -953,4 +969,16 @@ stock void SetClientCheats( int client, bool bAllow )
     }
     
     Inf_SendConVarValueBool( client, g_ConVar_Cheats, bAllow );
+}
+
+stock bool CanAdvanceFrame( int client )
+{
+    return ( ShouldContinue( client ) && g_hFrames[client] && (g_iStoppedFrame[client] + 1) >= g_hFrames[client].Length );
+}
+
+stock void AdvanceFrame( int client )
+{
+    g_bAdvanceFrame[client] = true;
+    
+    ContinueOrStop( client );
 }
