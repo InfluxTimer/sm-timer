@@ -24,6 +24,36 @@
 #define DEF_WIDTH           1.0
 
 
+
+#define CONFIG_FILE         "influx_beams.cfg"
+
+
+#define MAX_SHORTNAME           32
+#define MAX_SHORTNAME_CELL      ( MAX_SHORTNAME / 4 )
+
+
+enum
+{
+    DEFBEAM_SHORTNAME[MAX_SHORTNAME_CELL] = 0,
+    
+    DEFBEAM_ZONETYPE,
+    
+    DEFBEAM_DISPLAYTYPE,
+    
+    DEFBEAM_MATINDEX,
+    
+    DEFBEAM_WIDTH,
+    DEFBEAM_FRAMERATE,
+    DEFBEAM_SPEED,
+    
+    DEFBEAM_OFFSET,
+    DEFBEAM_OFFSET_Z,
+    
+    DEFBEAM_CLR[4],
+    
+    DEFBEAM_SIZE
+};
+
 enum
 {
     BEAM_ZONE_ID = 0,
@@ -61,6 +91,8 @@ int g_iDefBeamMat;
 
 ArrayList g_hBeams;
 
+ArrayList g_hDef;
+
 
 // FORWARDS
 Handle g_hForward_OnBeamAdd;
@@ -95,6 +127,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 public void OnPluginStart()
 {
     g_hBeams = new ArrayList( BEAM_SIZE );
+    g_hDef = new ArrayList( DEFBEAM_SIZE );
     
     
     // FORWARDS
@@ -256,6 +289,136 @@ public void Influx_OnPreRunLoad()
     }
     
     g_hBeams.Clear();
+    
+    
+    ReadDefaultSettingsFile();
+}
+
+stock void ReadDefaultSettingsFile()
+{
+    char szPath[PLATFORM_MAX_PATH];
+    BuildPath( Path_SM, szPath, sizeof( szPath ), "configs/"...CONFIG_FILE );
+    
+    
+    KeyValues kv = new KeyValues( "Beams" );
+    kv.ImportFromFile( szPath );
+    
+    if ( !kv.GotoFirstSubKey() )
+    {
+        delete kv;
+        return;
+    }
+    
+    
+    g_hDef.Clear();
+    
+    char szType[32];
+    int clr[4];
+    
+    decl data[DEFBEAM_SIZE];
+    
+    do
+    {
+        if ( !kv.GetSectionName( szType, sizeof( szType ) ) )
+        {
+            LogError( INF_CON_PRE..."Couldn't read zone type name for default beams!" );
+            continue;
+        }
+        
+        
+        ZoneType_t zonetype = Influx_GetZoneTypeByShortName( szType );
+        
+        
+        if ( FindDefByType( zonetype, szType ) != -1 )
+        {
+            LogError( INF_CON_PRE..."Zone type '%s' is already defined for default beams!", szType );
+            continue;
+        }
+        
+        
+        decl String:szDisplay[32];
+        kv.GetString( "displaytype", szDisplay, sizeof( szDisplay ), "beams" );
+        
+        DisplayType_t displaytype = Inf_DisplayNameToType( szDisplay );
+        if ( displaytype == DISPLAYTYPE_INVALID )
+        {
+            LogError( INF_CON_PRE..."Invalid display type '%s'!", szDisplay );
+            continue;
+        }
+        
+        
+        decl String:szTex[PLATFORM_MAX_PATH];
+        kv.GetString( "texture", szTex, sizeof( szTex ), "" );
+        
+        decl String:szMat[PLATFORM_MAX_PATH];
+        kv.GetString( "material", szMat, sizeof( szMat ), "" );
+        
+        
+        int mat = 0;
+        
+        if ( szMat[0] != '\0' )
+        {
+            if ( FileExists( szMat, true ) )
+            {
+                if ( (mat = PrecacheModel( szMat )) > 0 )
+                {
+                    AddFileToDownloadsTable( szMat );
+                }
+                else
+                {
+                    LogError( INF_CON_PRE..."Couldn't precache beam material '%s'!", szMat );
+                }
+            }
+            else
+            {
+                LogError( INF_CON_PRE..."Beam material '%s' does not exist!", szMat );
+            }
+        }
+        
+        if ( szTex[0] != '\0' )
+        {
+            if ( FileExists( szTex, true ) )
+            {
+                AddFileToDownloadsTable( szTex );
+            }
+            else
+            {
+                LogError( INF_CON_PRE..."Beam texture '%s' does not exist! Can't add to downloads table.", szTex );
+            }
+        }
+        
+        
+        data[DEFBEAM_ZONETYPE] = view_as<int>( zonetype );
+        
+        strcopy( view_as<char>( data[DEFBEAM_SHORTNAME] ), MAX_SHORTNAME, szType );
+        
+        data[DEFBEAM_DISPLAYTYPE] = view_as<int>( displaytype );
+        
+        data[DEFBEAM_MATINDEX] = mat;
+        
+        data[DEFBEAM_WIDTH] = view_as<int>( kv.GetFloat( "width", 0.0 ) );
+        data[DEFBEAM_FRAMERATE] = kv.GetNum( "framerate", -1 );
+        data[DEFBEAM_SPEED] = kv.GetNum( "speed", 0 );
+        
+        data[DEFBEAM_OFFSET] = view_as<int>( kv.GetFloat( "offset", 0.0 ) );
+        data[DEFBEAM_OFFSET_Z] = view_as<int>( kv.GetFloat( "offset_z", 0.0 ) );
+        
+        
+        FillArray( clr, 0, sizeof( clr ) );
+        kv.GetColor4( "color", clr );
+        
+        CopyArray( clr, data[DEFBEAM_CLR], 4 );
+        
+        
+        g_hDef.PushArray( data );
+        
+#if defined DEBUG
+        PrintToServer( INF_DEBUG_PRE..."Added default zone type beams '%s' | Num: %i!", szType, zonetype );
+#endif
+    }
+    while ( kv.GotoNextKey() );
+    
+    delete kv;
 }
 
 public void E_ConVarChanged_DrawInterval( ConVar convar, const char[] oldValue, const char[] newValue )
@@ -409,6 +572,8 @@ stock void InsertBeams( int zoneid,
     clr = inclr;
     
     
+    SetDefaultBeamSettings( zoneid, zonetype, displaytype, beammat, width, framerate, speed, offset, offset_z, clr );
+    
     if ( !SendBeamAdd( zoneid, zonetype, displaytype, beammat, width, framerate, speed, offset, offset_z, clr ) )
     {
         return;
@@ -498,6 +663,99 @@ stock void InsertBeams( int zoneid,
     CopyArray( clr, data[BEAM_CLR], 4 );
     
     g_hBeams.PushArray( data );
+}
+
+stock bool SetDefaultBeamSettings( int zoneid, ZoneType_t zonetype, DisplayType_t &displaytype, int &mat, float &width, int &framerate, int &speed, float &offset, float &offset_z, int clr[4] )
+{
+    char szType[32];
+    Influx_GetZoneTypeShortName( zonetype, szType, sizeof( szType ) );
+    
+    int index = FindDefByType( zonetype, szType );
+    if ( index == -1 ) return false;
+    
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Setting default beam settings to zone %i!", zoneid );
+#endif
+
+    decl data[DEFBEAM_SIZE];
+    g_hDef.GetArray( index, data );
+    
+    if ( displaytype == DISPLAYTYPE_INVALID )
+    {
+        displaytype = view_as<DisplayType_t>( data[DEFBEAM_DISPLAYTYPE] );
+    }
+    
+    if ( mat < 1 )
+    {
+#if defined DEBUG
+        PrintToServer( INF_DEBUG_PRE..."Setting default beam material to zone %i! (%i)", zoneid, data[DEFBEAM_MATINDEX] );
+#endif
+        mat = data[DEFBEAM_MATINDEX];
+    }
+    
+    if ( width == 0.0 )
+    {
+        width = view_as<float>( data[DEFBEAM_WIDTH] );
+    }
+    
+    if ( framerate == -1 )
+    {
+        framerate = data[DEFBEAM_FRAMERATE];
+    }
+    
+    //if ( speed == -1 )
+    //{
+    speed = data[DEFBEAM_SPEED];
+    //}
+    
+    if ( offset == 0 )
+    {
+        offset = view_as<float>( data[DEFBEAM_OFFSET] );
+    }
+    
+    if ( offset_z == 0 )
+    {
+        offset_z = view_as<float>( data[DEFBEAM_OFFSET_Z] );
+    }
+    
+    if ( clr[3] == 0 )
+    {
+        CopyArray( data[DEFBEAM_CLR], clr, 4 );
+    }
+    
+    return true;
+}
+
+stock int FindDefByType( ZoneType_t zonetype = ZONETYPE_INVALID, const char[] szShortName )
+{
+    // Find by zonetype or shortname.
+    ZoneType_t myzonetype;
+    
+    char szMyName[32];
+    
+    int len = g_hDef.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        myzonetype = view_as<ZoneType_t>( g_hDef.Get( i, DEFBEAM_ZONETYPE ) );
+        
+        if ( myzonetype != ZONETYPE_INVALID && zonetype != ZONETYPE_INVALID )
+        {
+            if ( myzonetype == zonetype ) return i;
+        }
+        else
+        {
+            g_hDef.GetString( i, szMyName, sizeof( szMyName ) );
+            
+            if ( StrEqual( szMyName, szShortName ) )
+            {
+                g_hDef.Set( i, zonetype, DEFBEAM_ZONETYPE );
+                
+                return i;
+            }
+        }
+    }
+    
+    return -1;
 }
 
 stock int FindBeamById( int zoneid )
