@@ -12,6 +12,9 @@ ADDED:
 
 CHANGES:
 - Completely remade CS:GO HUD. Now uses HudMsg and we cram more info into the timer bar.
+- Timer zones will now by default use beam offsets that most people are familiar with.
+- Added more timesteps to TAS.
+- Players with TAS style will now always be able to use cheat commands, not only when using timescale.
 
 FIXES:
 - Disabled strafe counting for TAS.
