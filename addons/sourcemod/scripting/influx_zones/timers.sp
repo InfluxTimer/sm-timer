@@ -33,7 +33,6 @@ public Action T_DrawBuildBeams( Handle hTimer, int client )
         GetClientAbsOrigin( client, p7 );
     }
     
-    
     if ( g_ConVar_HeightGrace.FloatValue != 0.0 )
     {
         if ( FloatAbs( p1[2] - p7[2] ) < g_ConVar_HeightGrace.FloatValue )
@@ -43,6 +42,25 @@ public Action T_DrawBuildBeams( Handle hTimer, int client )
     }
     
     SnapToGrid( p7, g_nBuildingGridSize[client], 2 );
+    
+    
+    CorrectMinsMaxs( p1, p7 );
+    
+    if ( g_bLib_Zones_Beams )
+    {
+        decl Float:offsets[2];
+        if ( Influx_GetDefaultBeamOffsets( g_iBuildingType[client], offsets ) )
+        {
+            p1[0] += offsets[0];
+            p1[1] += offsets[0];
+            p1[2] += offsets[1];
+            
+            p7[0] -= offsets[0];
+            p7[1] -= offsets[0];
+            p7[2] -= offsets[1];
+        }
+    }
+    
     
     p3[0] = p7[0];
     p3[1] = p7[1];
