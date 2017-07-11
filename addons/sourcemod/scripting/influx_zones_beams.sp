@@ -519,19 +519,8 @@ public void Influx_OnZoneSavePost( int zoneid, ZoneType_t zonetype, KeyValues kv
             clr[i] = g_hBeams.Get( ibeam, BEAM_CLR ) + i;
         }
         
-        bool bIsDefClr = true;
-        decl defclr[4];
-        Inf_GetZoneTypeDefColor( zonetype, defclr );
-        for ( i = 0; i < 4; i++ )
-        {
-            if ( clr[i] != defclr[i] )
-            {
-                bIsDefClr = false;
-                break;
-            }
-        }
         
-        if ( !bIsDefClr )
+        if ( !IsSameAsDefColor( zonetype, clr ) )
             kv.SetColor4( "beam_color", clr );
     }
 }
@@ -599,7 +588,7 @@ stock void InsertBeams( int zoneid,
     
     //if ( speed == -1 ) speed = DEF_SPEED;
     
-    if ( clr[3] <= 0 ) Inf_GetZoneTypeDefColor( view_as<ZoneType_t>( zonetype ), clr );
+    if ( clr[3] <= 0 ) GetZoneTypeDefColor( view_as<ZoneType_t>( zonetype ), clr );
     
     if ( beammat < 1 ) beammat = g_iDefBeamMat;
     
@@ -941,7 +930,39 @@ public bool TraceFilter_WorldOnly( int ent, int mask )
     return ( ent == 0 );
 }
 
+stock bool IsSameAsDefColor( ZoneType_t zonetype, const int clr[4] )
+{
+    decl defclr[4];
+    if ( !GetZoneTypeDefColor( zonetype, defclr ) )
+    {
+        return false;
+    }
+    
+    for ( int i = 0; i < 4; i++ )
+    {
+        if ( clr[i] != defclr[i] )
+        {
+            return false;
+        }
+    }
+    
+    return true;
+}
 
+stock bool GetZoneTypeDefColor( ZoneType_t zonetype, int clr[4] )
+{
+    int index = FindDefByType( zonetype );
+    
+    if ( index == -1 ) return false;
+    
+    
+    for ( int i = 0; i < sizeof( clr ); i++ )
+    {
+        clr[i] = g_hDef.Get( index, DEFBEAM_CLR + i );
+    }
+    
+    return true;
+}
 
 stock void StartBeams()
 {
