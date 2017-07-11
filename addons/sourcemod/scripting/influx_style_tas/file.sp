@@ -58,6 +58,7 @@ stock bool LoadFrames( int client, ArrayList &frames, int runid, int mode, int s
     
     int temp;
     float flTemp;
+    int version;
     
     file.ReadInt32( temp );
     if ( temp != TASFILE_CURMAGIC )
@@ -66,9 +67,14 @@ stock bool LoadFrames( int client, ArrayList &frames, int runid, int mode, int s
         return false;
     }
     
-    file.ReadInt32( temp );
-    if ( temp != TASFILE_CURVERSION )
+    file.ReadInt32( version );
+    if ( version != TASFILE_CURVERSION )
     {
+        LogError( INF_CON_PRE..."Found TAS file '%s' with differing version! (Current: %s | File: %s)",
+            szPath,
+            TASFILE_CURVERSION,
+            version );
+            
         delete file;
         return false;
     }
@@ -133,12 +139,34 @@ stock bool LoadFrames( int client, ArrayList &frames, int runid, int mode, int s
     }
     
     
-    decl data[FRM_SIZE];
+    
     
     delete frames;
     
     frames = new ArrayList( FRM_SIZE );
     
+    bool ret = false;
+    
+    
+    switch ( version )
+    {
+        case TASFILE_CURVERSION : ret = ReadFrames( file, frames, len );
+        //case TASFILE_VERSION_1 : ret = ReadFramesVersion1( file, frames, len );
+        default : ret = false;
+    }
+    
+    
+    delete file;
+    
+    if ( !ret ) delete frames;
+    
+    
+    return ret;
+}
+
+stock bool ReadFrames( File file, ArrayList frames, int len )
+{
+    decl data[FRM_SIZE];
     
     for ( int i = 0; i < len; i++ )
     {
@@ -146,20 +174,40 @@ stock bool LoadFrames( int client, ArrayList &frames, int runid, int mode, int s
         {
             LogError( INF_CON_PRE..."Encountered a sudden end of file!" );
             
-            delete frames;
-            delete file;
-            
             return false;
         }
         
         frames.PushArray( data );
     }
     
+    return true;
+}
+
+/*
+stock bool ReadFramesVersion1( File file, ArrayList frames, int len )
+{
+    decl dataold[FRM_SIZE - 2];
+    decl data[FRM_SIZE];
     
-    delete file;
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( file.Read( dataold, sizeof( dataold ) - 2, 4 ) == -1 )
+        {
+            LogError( INF_CON_PRE..."Encountered a sudden end of file!" );
+            
+            return false;
+        }
+        
+        CopyArray( dataold[0], data[0], 5 );
+        CopyArray( dataold[3], data[FRM_ANG], 2 );
+        CopyArray( dataold[5], data[FRM_ABSVEL], sizeof( dataold ) - 5 );
+        
+        frames.PushArray( data );
+    }
     
     return true;
 }
+*/
 
 stock bool SaveFrames( int client )
 {

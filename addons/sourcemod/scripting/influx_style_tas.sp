@@ -37,8 +37,9 @@
 // 4 byte | "inft"
 #define TASFILE_CURMAGIC                0x696e6674
 
-// 4 byte | "v001"
-#define TASFILE_CURVERSION              0x76303031
+// 4 byte | "v002"
+#define TASFILE_VERSION_1               0x76303031
+#define TASFILE_CURVERSION              0x76303032
 
 #define MAX_TASFILE_MAPNAME             64
 #define MAX_TASFILE_MAPNAME_CELL        MAX_TASFILE_MAPNAME / 4
@@ -77,6 +78,7 @@ enum
 enum
 {
     FRM_POS[3] = 0,
+    FRM_ANGREAL[2],
     FRM_ANG[2],
     
     FRM_ABSVEL[3],
@@ -115,8 +117,12 @@ float g_flTimescale[INF_MAXPLAYERS];
 
 int g_iAutoStrafe[INF_MAXPLAYERS];
 
+float g_vecLastWantedAngles[INF_MAXPLAYERS][3];
+
 
 // CONVARS
+ConVar g_ConVar_SilentStrafer;
+
 ConVar g_ConVar_Timescale;
 ConVar g_ConVar_Cheats;
 
@@ -170,6 +176,10 @@ public void OnPluginStart()
     }
     
     g_ConVar_Timescale.Flags &= ~(FCVAR_REPLICATED | FCVAR_CHEAT);
+    
+    
+    
+    g_ConVar_SilentStrafer = CreateConVar( "influx_style_tas_silentstrafer", "1", "Do we record the player's wanted angles to a replay?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
     // PRIVILEGE CMDS
@@ -327,13 +337,17 @@ public Action Influx_OnRecordingFinish( int client, ArrayList hRecording )
     decl framedata[FRM_SIZE];
     decl recdata[REC_SIZE];
     
+    
+    int ang_index = g_ConVar_SilentStrafer.BoolValue ? FRM_ANG : FRM_ANGREAL;
+    
+    
     int len = g_hFrames[client].Length;
     for ( int i = 0; i < len; i++ )
     {
         g_hFrames[client].GetArray( i, framedata );
         
         CopyArray( framedata[FRM_POS], recdata[REC_POS], 3 );
-        CopyArray( framedata[FRM_ANG], recdata[REC_ANG], 2 );
+        CopyArray( framedata[ang_index], recdata[REC_ANG], 2 );
         
         
         recdata[REC_FLAGS] = 0;
@@ -495,9 +509,16 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
 {
     if ( !IsPlayerAlive( client ) ) return Plugin_Continue;
     
-    if ( g_iAutoStrafe[client] == AUTOSTRF_OFF ) return Plugin_Continue;
-    
     if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return Plugin_Continue;
+    
+    
+    g_vecLastWantedAngles[client] = angles;
+    
+    if ( g_iAutoStrafe[client] == AUTOSTRF_OFF )
+    {
+        return Plugin_Continue;
+    }
+    
     
     
     static float flLastLegitYaw[INF_MAXPLAYERS];
@@ -607,6 +628,7 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
         }
     }
     
+    
     flLastLegitYaw[client] = wantedyaw;
     
     return Plugin_Continue;
@@ -642,7 +664,9 @@ stock void InsertFrame( int client )
     CopyArray( vec, data[FRM_POS], 3 );
     
     GetClientEyeAngles( client, vec );
-    CopyArray( vec, data[FRM_ANG], 2 );
+    CopyArray( vec, data[FRM_ANGREAL], 2 );
+    
+    CopyArray( g_vecLastWantedAngles[client], data[FRM_ANG], 2 );
     
     GetEntityAbsVelocity( client, vec );
     CopyArray( vec, data[FRM_ABSVEL], 3 );
@@ -670,6 +694,7 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
     
     
     decl Float:pos[3];
+    //decl Float:angreal[3];
     decl Float:ang[3];
     decl Float:vel[3];
     
@@ -678,6 +703,8 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
     g_hFrames[client].GetArray( i, data );
     
     CopyArray( data[FRM_POS], pos, 3 );
+    //CopyArray( data[FRM_ANGREAL], angreal, 2 );
+    //angreal[2] = 0.0;
     CopyArray( data[FRM_ANG], ang, 2 );
     ang[2] = 0.0;
     CopyArray( data[FRM_ABSVEL], vel, 3 );
@@ -693,9 +720,8 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
     {
         SetEntityMoveType( client, view_as<MoveType>( data[FRM_MOVETYPE] ) );
         
-
         
-        TeleportEntity( client, pos, ang, vel );
+        TeleportEntity( client, pos, NULL_VECTOR, vel );
         
         
         CopyArray( data[FRM_BASEVEL], vel, 3 );
