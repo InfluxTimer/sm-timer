@@ -9,9 +9,10 @@ COMPATIBILITY:
 ADDED:
 - Strafe sync. (influx_strfsync & influx_hud_draw_css/csgo)
 - Simple ranks. Player finishes a run, they get points and unlock ranks. (influx_simpleranks & influx_simpleranks_chat)
-- Added influx_style_tas_silentstrafer-cvar to allow the replay of a TAS run to have silent strafing.
-- Added frame advancement to TAS.
-- Added influx_advshowkeys-plugin for more detailed view of player's inputs. Detect cheaters.
+- influx_style_tas_silentstrafer-cvar to allow the replay of a TAS run to have silent strafing.
+- Frame advancement to TAS.
+- influx_advshowkeys-plugin for more detailed view of player's inputs. Detect cheaters.
+- influx_recording_prerunrecord-cvar which records player's movement before leaving the start into the replay.
 
 CHANGES:
 - Completely remade CS:GO HUD. Now uses HudMsg and we cram more info into the timer bar.
@@ -20,7 +21,7 @@ CHANGES:
 - Players with TAS style will now always be able to use cheat commands, not only when using timescale.
 
 FIXES:
-- Disabled strafe counting for TAS.
+- Disabled strafe/jump counting for TAS.
 - Starting/finishing timer returning weird errors.
 - Creating zones with beam offsets will now display the beams correctly.
 
