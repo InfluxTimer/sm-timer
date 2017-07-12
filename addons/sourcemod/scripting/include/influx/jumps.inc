@@ -7,7 +7,11 @@
 #define INFLUX_LIB_JUMPS          "influx_jumps"
 
 
+forward Action Influx_ShouldCountJumps( int client );
+
+
 native int Influx_GetClientJumpCount( int client );
+native bool Influx_IsCountingJumps( int client );
 
 
 public SharedPlugin __pl_influx_jumps =
@@ -25,5 +29,6 @@ public SharedPlugin __pl_influx_jumps =
 public void __pl_influx_jumps_SetNTVOptional()
 {
     MarkNativeAsOptional( "Influx_GetClientJumpCount" );
+    MarkNativeAsOptional( "Influx_IsCountingJumps" );
 }
 #endif
