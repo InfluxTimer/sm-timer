@@ -106,7 +106,7 @@ public void Influx_OnTimerStartPost( int client, int runid )
         UnhookThinks( client );
     }
     
-    g_nNumStrfs[client] = 0;
+    g_nNumStrfs[client] = g_bCount[client] ? 0 : -1;
 }
 
 public void OnAllPluginsLoaded()
@@ -144,6 +144,9 @@ public void Influx_OnPrintRecordInfo( int client, Handle dbres, ArrayList itemli
 
 public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style, float time, float prev_pb, float prev_best, int flags )
 {
+    if ( flags & RES_TIME_FIRSTOWNREC && !g_bCount[client] ) return;
+    
+    
     if ( flags & (RES_TIME_PB | RES_TIME_FIRSTOWNREC) )
     {
         Handle db = Influx_GetDB();
