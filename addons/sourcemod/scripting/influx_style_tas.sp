@@ -14,6 +14,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <influx/strafes>
+#include <influx/jumps>
 #include <influx/pause>
 #include <influx/practise>
 
@@ -294,6 +295,11 @@ public void Influx_OnTimerResetPost( int client )
 }
 
 public Action Influx_ShouldCountStrafes( int client )
+{
+    return ( Influx_GetClientStyle( client ) == STYLE_TAS ) ? Plugin_Handled : Plugin_Continue;
+}
+
+public Action Influx_ShouldCountJumps( int client )
 {
     return ( Influx_GetClientStyle( client ) == STYLE_TAS ) ? Plugin_Handled : Plugin_Continue;
 }
