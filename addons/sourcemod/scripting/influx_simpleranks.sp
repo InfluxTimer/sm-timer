@@ -25,6 +25,8 @@
 
 
 #define RANK_FILE_NAME                  "influx_simpleranks.cfg"
+#define RANK_MODEPOINTFILE_NAME         "influx_simpleranks_mode_points.cfg"
+#define RANK_STYLEPOINTFILE_NAME        "influx_simpleranks_style_points.cfg"
 
 
 #define MAX_RANK_SIZE                   128
@@ -50,6 +52,24 @@ enum
 };
 
 
+#define MAX_P_NAME_ID       32
+#define MAX_P_NAME_ID_CELL  ( MAX_P_NAME_ID / 4 )
+
+enum
+{
+    P_NAME_ID[MAX_P_NAME_ID_CELL] = 0,
+    P_ID,
+    
+    P_VAL,
+    
+    P_SIZE
+}
+
+
+
+ArrayList g_hModePoints;
+ArrayList g_hStylePoints;
+
 
 int g_nPoints[INF_MAXPLAYERS];
 char g_szCurRank[INF_MAXPLAYERS][MAX_RANK_SIZE];
@@ -65,6 +85,7 @@ ArrayList g_hMapRewards;
 ConVar g_ConVar_DefMapReward;
 ConVar g_ConVar_NotifyReward;
 ConVar g_ConVar_NotifyNewRank;
+ConVar g_ConVar_NotFirst;
 
 
 ArrayList g_hRanks;
@@ -74,6 +95,7 @@ bool g_bLate;
 
 #include "influx_simpleranks/cmds.sp"
 #include "influx_simpleranks/db.sp"
+#include "influx_simpleranks/file.sp"
 #include "influx_simpleranks/menus.sp"
 
 public Plugin myinfo =
@@ -103,6 +125,9 @@ public void OnPluginStart()
     g_hRanks = new ArrayList( RANK_SIZE );
     
     g_hMapRewards = new ArrayList( REWARD_SIZE );
+    
+    g_hModePoints = new ArrayList( P_SIZE );
+    g_hStylePoints = new ArrayList( P_SIZE );
     //g_nMapReward = -1;
     
     
@@ -122,9 +147,10 @@ public void OnPluginStart()
     
     
     // CONVARS
-    g_ConVar_DefMapReward = CreateConVar( "influx_simpleranks_defmapreward", "3", "Default map reward.", FCVAR_NOTIFY, true, 0.0 );
+    g_ConVar_DefMapReward = CreateConVar( "influx_simpleranks_defmapreward", "8", "Default map reward.", FCVAR_NOTIFY, true, 0.0 );
     g_ConVar_NotifyReward = CreateConVar( "influx_simpleranks_displayreward", "1", "Do we notify the player with the amount of points they get?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_NotifyNewRank = CreateConVar( "influx_simpleranks_displaynewrank", "1", "Do we notify the player with the new rank they receive?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_NotFirst = CreateConVar( "influx_simpleranks_reward_notfirst_perc", "0.1", "Percentage of the normal amount we give to players. 0 = Disable", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     AutoExecConfig( true, "simpleranks", "influx" );
     
@@ -157,6 +183,7 @@ public void OnPluginStart()
 public void OnMapStart()
 {
     ReadRanks();
+    ReadStyleModePoints();
 }
 
 public void OnClientPutInServer( int client )
@@ -171,66 +198,6 @@ public void OnClientPutInServer( int client )
 public void OnAllPluginsLoaded()
 {
     DB_Init();
-}
-
-stock void ReadRanks()
-{
-#if defined DEBUG
-    PrintToServer( INF_DEBUG_PRE..."Reading ranks from file... (%s)", RANK_FILE_NAME );
-#endif
-
-    char szPath[PLATFORM_MAX_PATH];
-    BuildPath( Path_SM, szPath, sizeof( szPath ), "configs/"...RANK_FILE_NAME );
-
-    KeyValues kv = new KeyValues( "Ranks" );
-    kv.ImportFromFile( szPath );
-    
-    if ( !kv.GotoFirstSubKey() )
-    {
-        delete kv;
-        return;
-    }
-    
-    
-    g_hRanks.Clear();
-    
-    
-    decl String:szTemp[256];
-    decl data[RANK_SIZE];
-    
-    do
-    {
-        if ( !kv.GetSectionName( szTemp, sizeof( szTemp ) ) )
-        {
-            LogError( INF_CON_PRE..."Couldn't read rank name!" );
-            continue;
-        }
-        
-        if ( strlen( szTemp ) >= MAX_RANK_SIZE )
-        {
-            LogError( INF_CON_PRE..."Rank name length cannot exceed %i characters! (%s)", MAX_RANK_SIZE, szTemp );
-            continue;
-        }
-        
-        strcopy( view_as<char>( data[RANK_NAME] ), MAX_RANK_SIZE, szTemp );
-        
-        
-        int points = kv.GetNum( "points", -1 );
-        
-        if ( points < 0 )
-        {
-            LogError( INF_CON_PRE..."Invalid rank points %i! Must be above or equal to 0! (%s)", points, data[RANK_NAME] );
-            continue;
-        }
-        
-        
-        data[RANK_POINTS] = points;
-        data[RANK_UNLOCK] = kv.GetNum( "unlock", 0 );
-        
-        
-        g_hRanks.PushArray( data );
-    }
-    while ( kv.GotoNextKey() );
 }
 
 public void Influx_OnRequestHelpCmds()
@@ -252,9 +219,10 @@ public void Influx_OnClientIdRetrieved( int client, int uid, bool bNew )
 
 public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style, float time, float prev_pb, float prev_best, int flags )
 {
-    // TODO: Add multiple runs with custom reward amounts.
-    if ( runid != 1 ) return;
-    
+    if ( GetMapRewardPointsSafe( runid ) == 0 )
+    {
+        return;
+    }
     
     DB_CheckClientRecCount( client, runid, mode, style );
 }
@@ -363,13 +331,18 @@ stock void SetClientRank( int client, int index, bool bChose, const char[] szOve
     }
 }
 
-stock void RewardClient( int client, int runid, bool bPrintReward, bool bPrintNewRank, int override_reward = -1 )
+stock void RewardClient(int client,
+                        int runid,
+                        int mode,
+                        int style,
+                        int override_reward = -1,
+                        bool bFirst = true )
 {
     int reward;
     
     if ( override_reward < 0 )
     {
-        reward = GetMapRewardPointsSafe( runid );
+        reward = CalcReward( runid, mode, style, bFirst );
     }
     else
     {
@@ -379,9 +352,11 @@ stock void RewardClient( int client, int runid, bool bPrintReward, bool bPrintNe
     
     
 #if defined DEBUG
-    PrintToServer( INF_DEBUG_PRE..."Rewarding client %i with %i points!",
+    PrintToServer( INF_DEBUG_PRE..."Rewarding client %i with %i points! (First: %i | Override reward: %i)",
         client,
-        reward );
+        reward,
+        bFirst,
+        override_reward );
 #endif
     
     // Nothing to update!
@@ -393,30 +368,21 @@ stock void RewardClient( int client, int runid, bool bPrintReward, bool bPrintNe
     
     g_nPoints[client] += reward;
     
-    
-    if ( bPrintReward )
+    if ( g_ConVar_NotifyReward.BoolValue )
     {
         Influx_PrintToChat( _, client, "You've received {MAINCLR1}%i{CHATCLR} points! You now have {MAINCLR1}%i{CHATCLR} points!", reward, g_nPoints[client] );
     }
     
     if ( oldrank != newrank && newrank != -1 )
     {
-        decl String:szNewRank[MAX_RANK_SIZE];
-        GetRankName( newrank, szNewRank, sizeof( szNewRank ) );
-        
-        if ( bPrintNewRank )
-        {
-            Influx_PrintToChat( _, client, "You are now {MAINCLR1}%s{CHATCLR}!", szNewRank );
-        }
-        
         // Update their rank.
         if ( !g_bChose[client] )
         {
-            SetClientRank( client, newrank, false, szNewRank );
+            SetClientRank( client, newrank, false, _, g_ConVar_NotifyNewRank.BoolValue );
         }
     }
     
-    DB_IncClientPoints( client, runid, reward );
+    DB_IncClientPoints( client, runid, mode, style, reward, bFirst );
 }
 
 stock bool IsValidReward( int reward, int issuer = 0, bool bPrint = false )
@@ -439,12 +405,16 @@ stock void SetCurrentMapReward( int issuer, int runid, int reward )
     if ( !IsValidReward( reward, issuer, true ) ) return;
     
     
-    AddMapReward( runid, reward );
+    SetMapReward( runid, reward );
     
     DB_UpdateMapReward( Influx_GetCurrentMapId(), runid, reward );
     
+    char szRun[32];
+    Influx_GetRunName( runid, szRun, sizeof( szRun ) );
     
-    Inf_ReplyToClient( issuer, "Set current map reward to {MAINCLR1}%i{CHATCLR} points.", reward );
+    Inf_ReplyToClient( issuer, "Set current map's {MAINCLR1}%s{CHATCLR} reward to {MAINCLR1}%i{CHATCLR} points.",
+        szRun,
+        reward );
 }
 
 stock bool CanUserUseCustomRank( int client )
@@ -457,24 +427,26 @@ stock bool CanUserSetMapReward( int client )
     return CheckCommandAccess( client, INF_PRIVCOM_MAPREWARD, ADMFLAG_ROOT );
 }
 
-stock int AddMapReward( int runid, int points )
+stock int SetMapReward( int runid, int points )
 {
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Setting custom map rewards (runid: %i | points: %i)",
+        runid,
+        points );
+#endif
+
     int index = FindMapRewardById( runid );
-    if ( index != -1 ) return index;
-    
+    if ( index != -1 )
+    {
+        g_hMapRewards.Set( index, points, REWARD_POINTS );
+        return index;
+    }
     
     decl data[REWARD_SIZE];
     
     data[REWARD_RUN_ID] = runid;
     data[REWARD_POINTS] = points;
     
-    
-    
-#if defined DEBUG
-    PrintToServer( INF_DEBUG_PRE..."Added custom map rewards (runid: %i | points: %i)",
-        data[REWARD_RUN_ID],
-        data[REWARD_POINTS] );
-#endif
     
     return g_hMapRewards.PushArray( data );
 }
@@ -495,7 +467,11 @@ stock int FindMapRewardById( int runid )
 
 stock int GetMapRewardPointsSafe( int runid )
 {
-    int reward = GetMapRewardPoints( runid )
+    int reward = GetMapRewardPoints( runid );
+    
+    // Must set custom amount for bonuses.
+    if ( runid != MAIN_RUN_ID && reward < 0 ) return 0;
+    
     
     return ( reward < 0 ) ? g_ConVar_DefMapReward.IntValue : reward;
 }
@@ -508,6 +484,85 @@ stock int GetMapRewardPoints( int runid )
     
     
     return g_hMapRewards.Get( index, REWARD_POINTS );
+}
+
+stock int GetSecondReward( int reward )
+{
+    reward = RoundFloat( reward * g_ConVar_NotFirst.FloatValue );
+    
+    if ( g_ConVar_NotFirst.FloatValue != 0.0 && !reward )
+    {
+        reward = 1;
+    }
+    
+    return reward;
+}
+
+stock int GetModePoints( int mode )
+{
+    decl String:sz[32];
+    Influx_GetModeSafeName( mode, sz, sizeof( sz ) );
+    int index = FindMultById( mode, sz, g_hModePoints );
+    
+    if ( index == -1 ) return 0;
+    
+    
+    return g_hModePoints.Get( index, P_VAL );
+}
+
+stock int GetStylePoints( int style )
+{
+    decl String:sz[32];
+    Influx_GetStyleSafeName( style, sz, sizeof( sz ) );
+    int index = FindMultById( style, sz, g_hStylePoints );
+    
+    if ( index == -1 ) return 0;
+    
+    
+    return g_hStylePoints.Get( index, P_VAL );
+}
+
+stock int FindMultById( int id, const char[] sz, ArrayList array )
+{
+    decl myid;
+    decl String:szTemp[32];
+    
+    
+    int len = array.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        myid = array.Get( i, P_ID );
+        
+        if ( myid != -1 )
+        {
+            if ( myid == id ) return i;
+        }
+        else
+        {
+            array.GetString( i, szTemp, sizeof( szTemp ) );
+            
+            if ( StrEqual( sz, szTemp, false ) )
+                return i;
+        }
+    }
+    
+    return -1;
+}
+
+stock int CalcReward( int runid, int mode, int style, bool bFirst )
+{
+    int reward = GetMapRewardPointsSafe( runid );
+    
+    if ( reward < 1 ) return 0;
+    
+    
+    if ( !bFirst )
+    {
+        reward = GetSecondReward( reward );
+    }
+    
+    
+    return reward + GetModePoints( mode ) + GetStylePoints( style );
 }
 
 // NATIVES

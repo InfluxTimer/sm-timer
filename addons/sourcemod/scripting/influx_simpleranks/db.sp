@@ -19,8 +19,11 @@ stock void DB_Init()
         "uid INT NOT NULL," ...
         "mapid INT NOT NULL," ...
         "runid INT NOT NULL," ...
+        "mode INT NOT NULL," ...
+        "style INT NOT NULL," ...
         "rewardpoints INT NOT NULL," ...
-        "PRIMARY KEY(uid,mapid,runid))", _, DBPrio_High );
+        "wasfirst INT NOT NULL," ...
+        "PRIMARY KEY(uid,mapid,runid,mode,style))", _, DBPrio_High );
         
     SQL_TQuery( db, Thrd_Empty,
         "CREATE TABLE IF NOT EXISTS "...INF_TABLE_SIMPLERANKS_MAPS..." (" ...
@@ -47,13 +50,20 @@ stock void DB_InitClient( int client )
 {
     Handle db = Influx_GetDB();
     
+    
+    int userid = GetClientUserId( client );
+    
+    int uid = Influx_GetClientId( client );
+    
+    
     static char szQuery[256];
     
+    
     FormatEx( szQuery, sizeof( szQuery ),
-        "SELECT cachedpoints,chosenrank FROM "...INF_TABLE_SIMPLERANKS..." WHERE uid=%i", Influx_GetClientId( client ) );
+        "SELECT cachedpoints,chosenrank FROM "...INF_TABLE_SIMPLERANKS..." WHERE uid=%i", uid );
     
     
-    SQL_TQuery( db, Thrd_InitClient, szQuery, GetClientUserId( client ), DBPrio_Normal );
+    SQL_TQuery( db, Thrd_InitClient, szQuery, userid, DBPrio_Normal );
 }
 
 stock void DB_CheckClientRecCount( int client, int runid, int mode, int style )
@@ -62,6 +72,7 @@ stock void DB_CheckClientRecCount( int client, int runid, int mode, int style )
     
     
     int mapid = Influx_GetCurrentMapId();
+    int uid = Influx_GetClientId( client );
     
     
     // See if the player has already beaten this map.
@@ -80,12 +91,15 @@ stock void DB_CheckClientRecCount( int client, int runid, int mode, int style )
     static char szQuery[512];
     
     FormatEx( szQuery, sizeof( szQuery ),
-        "SELECT rewardpoints FROM "...INF_TABLE_SIMPLERANKS_HISTORY..." WHERE uid=%i AND mapid=%i", Influx_GetClientId( client ), mapid );
+        "SELECT mode,style,rewardpoints,wasfirst FROM "...INF_TABLE_SIMPLERANKS_HISTORY..." WHERE uid=%i AND mapid=%i AND runid=%i", 
+        uid,
+        mapid,
+        runid );
     
     SQL_TQuery( db, Thrd_CheckClientRecCount, szQuery, array, DBPrio_Normal );
 }
 
-stock void DB_IncClientPoints( int client, int runid, int reward )
+stock void DB_IncClientPoints( int client, int runid, int mode, int style, int reward, bool bFirst )
 {
     Handle db = Influx_GetDB();
     
@@ -106,11 +120,14 @@ stock void DB_IncClientPoints( int client, int runid, int reward )
     
     
     FormatEx( szQuery, sizeof( szQuery ),
-        "INSERT INTO "...INF_TABLE_SIMPLERANKS_HISTORY..." (uid,mapid,runid,rewardpoints) VALUES (%i,%i,%i,%i)",
+        "REPLACE INTO "...INF_TABLE_SIMPLERANKS_HISTORY..." (uid,mapid,runid,mode,style,rewardpoints,wasfirst) VALUES (%i,%i,%i,%i,%i,%i,%i)",
         uid,
         mapid,
         runid,
-        reward );
+        mode,
+        style,
+        reward,
+        bFirst ? 1 : 0 );
     
     SQL_TQuery( db, Thrd_Empty, szQuery, userid, DBPrio_Normal );
 }

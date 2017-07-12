@@ -61,13 +61,13 @@ public Action Cmd_SetMapReward( int client, int args )
         StripQuotes( szMap );
         
         
-        DB_SetMapRewardByName( client, 1, reward, szMap );
+        DB_SetMapRewardByName( client, MAIN_RUN_ID, reward, szMap );
     }
     else
     {
         GetCmdArgString( szTemp, sizeof( szTemp ) );
         
-        SetCurrentMapReward( client, 1, StringToInt( szTemp ) );
+        SetCurrentMapReward( client, Influx_GetClientRunId( client ), StringToInt( szTemp ) );
     }
     
     

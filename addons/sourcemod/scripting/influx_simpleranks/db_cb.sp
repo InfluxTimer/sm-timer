@@ -19,7 +19,7 @@ public void Thrd_InitMap( Handle db, Handle res, const char[] szError, any data 
     
     while ( SQL_FetchRow( res ) )
     {
-        AddMapReward( SQL_FetchInt( res, 0 ), SQL_FetchInt( res, 1 ) );
+        SetMapReward( SQL_FetchInt( res, 0 ), SQL_FetchInt( res, 1 ) );
     }
 }
 
@@ -71,6 +71,9 @@ public void Thrd_InitClient( Handle db, Handle res, const char[] szError, int cl
             "INSERT INTO "...INF_TABLE_SIMPLERANKS..." (uid,cachedpoints,chosenrank) VALUES (%i,0,NULL)", Influx_GetClientId( client ) );
         
         SQL_TQuery( db, Thrd_Empty, szQuery, GetClientUserId( client ), DBPrio_Normal );
+        
+        
+        SetClientDefRank( client );
     }
 }
 
@@ -85,8 +88,8 @@ public void Thrd_CheckClientRecCount( Handle db, Handle res, const char[] szErro
     int client = data[0];
     int mapid = data[1];
     int reqrunid = data[2];
-    /*int reqmode = data[3];
-    int reqstyle = data[4];*/
+    int reqmode = data[3];
+    int reqstyle = data[4];
     
     
     if ( mapid != Influx_GetCurrentMapId() ) return;
@@ -103,22 +106,41 @@ public void Thrd_CheckClientRecCount( Handle db, Handle res, const char[] szErro
     // Check whether the server has updated this map's reward to be higher. If so, update ours!
     int override_reward = -1;
     
-    if ( SQL_FetchRow( res ) )
+    bool bFirst = SQL_GetRowCount( res ) ? false : true;
+    
+    
+    while ( SQL_FetchRow( res ) )
     {
-        int oldreward = SQL_FetchInt( res, 0 );
+        // Check if the reward has changed. If so, give us moar points!
+        int mode = SQL_FetchInt( res, 0 );
+        int style = SQL_FetchInt( res, 1 );
         
-        int curreward = GetMapRewardPointsSafe( reqrunid );
+        if ( mode != reqmode || style != reqstyle ) continue;
         
+        
+        int oldreward = SQL_FetchInt( res, 2 );
+        
+        int curreward = CalcReward( reqrunid, mode, style, SQL_FetchInt( res, 3 ) ? true : false );
+        PrintToServer( "Cur: %i | Old: %i", curreward, oldreward );
+        // Hasn't changed.
         if ( oldreward >= curreward )
         {
             return;
         }
         
         override_reward = curreward - oldreward;
+        
+        break;
     }
     
     
-    RewardClient( client, reqrunid, g_ConVar_NotifyReward.BoolValue, g_ConVar_NotifyNewRank.BoolValue, override_reward );
+    RewardClient(
+        client,
+        reqrunid,
+        reqmode,
+        reqstyle,
+        override_reward,
+        bFirst );
 }
 
 public void Thrd_SetMapReward( Handle db, Handle res, const char[] szError, ArrayList array )
@@ -171,6 +193,8 @@ public void Thrd_SetMapReward( Handle db, Handle res, const char[] szError, Arra
     
     DB_UpdateMapReward( mapid, runid, reward );
     
-    Inf_ReplyToClient( client, "Setting {MAINCLR1}%s{CHATCLR}'s reward to {MAINCLR1}%i{CHATCLR}!", szMap, reward );
+    Inf_ReplyToClient( client, "Setting {MAINCLR1}%s{CHATCLR}'s reward to {MAINCLR1}%i{CHATCLR}!",
+        szMap,
+        reward );
 }
 
