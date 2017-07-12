@@ -511,7 +511,7 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
                 Influx_GetClientStrafeCount( target ) );
         }
         
-        if ( g_bLib_Jumps && state >= STATE_RUNNING )
+        if ( g_bLib_Jumps && state >= STATE_RUNNING && Influx_IsCountingJumps( client ) )
         {
             Format( szMsg, sizeof( szMsg ), "%s%sJumps: %i",
                 szMsg,

@@ -407,7 +407,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
                 Influx_GetClientStrafeCount( target ) );
         }
         
-        if ( g_bLib_Jumps && state >= STATE_RUNNING )
+        if ( g_bLib_Jumps && state >= STATE_RUNNING && Influx_IsCountingJumps( client ) )
         {
             Format( szMsg, sizeof( szMsg ), "%s%sJumps: %i",
                 szMsg,
