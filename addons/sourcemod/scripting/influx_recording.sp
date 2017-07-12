@@ -91,6 +91,14 @@ char g_szWep_Prim[INF_MAXPLAYERS][32];
 char g_szWep_Sec[INF_MAXPLAYERS][32];
 
 
+// Pre-run stuff...
+ArrayList g_hPreRec[INF_MAXPLAYERS];
+int g_iCurPreRecStart[INF_MAXPLAYERS];
+bool g_bPreRecFilled[INF_MAXPLAYERS];
+
+int g_nMaxPreRecLength;
+
+
 float g_flTeleportDistSq;
 
 float g_flTickrate;
@@ -111,6 +119,7 @@ ConVar g_ConVar_EndTime;
 ConVar g_ConVar_AutoPlayback;
 ConVar g_ConVar_Repeat;
 ConVar g_ConVar_BotName;
+ConVar g_ConVar_PreRunTime;
 
 
 int g_nMaxRecLength;
@@ -192,6 +201,9 @@ public void OnPluginStart()
     g_ConVar_BotName = CreateConVar( "influx_recording_botname", DEF_REPLAYBOTNAME, "Replay bot's name.", FCVAR_NOTIFY );
     g_ConVar_BotName.AddChangeHook( E_CvarChange_BotName );
     
+    g_ConVar_PreRunTime = CreateConVar( "influx_recording_prerunrecord", "0", "How many seconds we record before the player leaves the start. 0 = Disable", FCVAR_NOTIFY, true, 0.0, true, 1337.0 );
+    g_ConVar_PreRunTime.AddChangeHook( E_CvarChange_PreRunTime );
+    
     
     AutoExecConfig( true, "recording", "influx" );
     
@@ -210,6 +222,7 @@ public void OnPluginStart()
     
     SetTeleDistance( 3500.0, g_flTickrate );
     SetMaxRecordingLength( g_flTickrate );
+    SetMaxPreRunLength();
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -419,9 +432,39 @@ public void E_CvarChange_BotName( ConVar convar, const char[] oldval, const char
     SetBotName();
 }
 
+public void E_CvarChange_PreRunTime( ConVar convar, const char[] oldval, const char[] newval )
+{
+    SetMaxPreRunLength();
+}
+
 stock void SetMaxRecordingLength( float tickrate )
 {
     g_nMaxRecLength = g_ConVar_MaxLength.IntValue * 60 * RoundFloat( tickrate );
+}
+
+stock void SetMaxPreRunLength()
+{
+    g_nMaxPreRecLength = RoundFloat( 1.0 / GetTickInterval() * g_ConVar_PreRunTime.FloatValue );
+    
+    for ( int i = 1; i < INF_MAXPLAYERS; i++ )
+    {
+        delete g_hPreRec[i];
+        
+        
+        if ( g_nMaxPreRecLength > 0 )
+        {
+            g_hPreRec[i] = new ArrayList( REC_SIZE, g_nMaxPreRecLength );
+            
+            
+            ResetClientPreRun( i );
+        }
+    }
+}
+
+stock void ResetClientPreRun( int client )
+{
+    g_iCurPreRecStart[client] = 0;
+    g_bPreRecFilled[client] = false;
 }
 
 public void OnClientPutInServer( int client )
@@ -435,6 +478,8 @@ public void OnClientPutInServer( int client )
     
     if ( !IsFakeClient( client ) )
     {
+        ResetClientPreRun( client );
+        
         Inf_SDKHook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
     }
     else
@@ -595,6 +640,9 @@ stock bool FindNewPlayback()
 public void E_PostThinkPost_Client( int client )
 {
     if ( !IsPlayerAlive( client ) ) return;
+    
+    InsertPreRunFrame( client );
+    
     
     if ( !g_bIsRec[client] ) return;
     
@@ -946,28 +994,32 @@ stock bool StartRecording( int client, bool bInsertFrame = false )
     g_szWep_Prim[client][0] = '\0';
     g_szWep_Sec[client][0] = '\0';
     
-    if ( bInsertFrame )
+    
+    bool preframes = AddPreRunFrames( client );
+    
+    
+    if ( !preframes && bInsertFrame )
     {
 #if defined DEBUG_INSERTFRAME
         PrintToServer( INF_DEBUG_PRE..."Inserting starting frame! (%i) Frame: %i", client, GetGameTickCount() );
 #endif
         InsertFrame( client );
+    }
+    
+    // Make sure we get the starting weapon right!
+    if ( g_hRec[client].Length )
+    {
+        int wep = GetEntPropEnt( client, Prop_Data, "m_hActiveWeapon" );
+        int flags = g_hRec[client].Get( 0, REC_FLAGS );
         
-        
-        // Make sure we get the starting weapon right!
-        if ( g_hRec[client].Length )
+        switch ( FindSlotByWeapon( client, wep ) )
         {
-            int wep = GetEntPropEnt( client, Prop_Data, "m_hActiveWeapon" );
-            int flags = g_hRec[client].Get( 0, REC_FLAGS );
-            
-            switch ( FindSlotByWeapon( client, wep ) )
-            {
-                case SLOT_PRIMARY : g_hRec[client].Set( 0, flags | RECFLAG_WEP_SLOT1, REC_FLAGS );
-                case SLOT_SECONDARY : g_hRec[client].Set( 0, flags | RECFLAG_WEP_SLOT2, REC_FLAGS );
-                case SLOT_MELEE : g_hRec[client].Set( 0, flags | RECFLAG_WEP_SLOT3, REC_FLAGS );
-            }
+            case SLOT_PRIMARY : g_hRec[client].Set( 0, flags | RECFLAG_WEP_SLOT1, REC_FLAGS );
+            case SLOT_SECONDARY : g_hRec[client].Set( 0, flags | RECFLAG_WEP_SLOT2, REC_FLAGS );
+            case SLOT_MELEE : g_hRec[client].Set( 0, flags | RECFLAG_WEP_SLOT3, REC_FLAGS );
         }
     }
+
     
     return true;
 }
@@ -1009,14 +1061,83 @@ stock void StopRecording( int client )
     g_bIsRec[client] = false;
 }
 
-stock InsertFrame( int client )
+stock bool AddPreRunFrames( int client )
 {
-#if defined DEBUG_INSERTFRAME
-    PrintToServer( INF_DEBUG_PRE..."(%i) | Frame: %i", client, GetGameTickCount() );
-#endif
+    if ( !g_hPreRec[client] ) return false;
+    
+    if ( !g_nMaxPreRecLength ) return false;
+    
+    
+    int curstart = g_iCurPreRecStart[client];
+    
+    
+    if ( !g_bPreRecFilled[client] )
+    {
+        if ( !curstart ) return false;
+        
+        
+        ArrayList rec = g_hPreRec[client].Clone();
+        
+        rec.Resize( curstart );
+    }
+    else
+    {
+        ArrayList rec = g_hPreRec[client].Clone();
+        
+        
+        if ( curstart <= 0 )
+        {
+            g_hRec[client] = rec;
+            return true;
+        }
+        
+        
+        rec.Resize( rec.Length + 1 );
+        
+        int lastindex = rec.Length - 1;
+        
+        //int len =  - 1;
+        for ( int i = curstart; i < lastindex; i++ )
+        {
+            rec.ShiftUp( 0 );
+            rec.SwapAt( 0, lastindex );
+        }
+        
+        
+        rec.Resize( g_nMaxPreRecLength );
+        
+        g_hRec[client] = rec;
+    }
+
+    
+    return true;
+}
+
+stock void InsertPreRunFrame( int client )
+{
+    if ( !g_hPreRec[client] ) return;
+    
+    if ( !g_nMaxPreRecLength ) return;
+    
     
     static int data[REC_SIZE];
-    static float temp[3];
+    
+    FillFrame( client, data );
+    
+    
+    g_hPreRec[client].SetArray( g_iCurPreRecStart[client], data );
+    
+    if ( ++g_iCurPreRecStart[client] >= g_nMaxPreRecLength )
+    {
+        g_iCurPreRecStart[client] = 0;
+        
+        g_bPreRecFilled[client] = true;
+    }
+}
+
+stock void FillFrame( int client, any data[REC_SIZE] )
+{
+    decl Float:temp[3];
     
     GetClientAbsOrigin( client, temp );
     CopyArray( temp, data[REC_POS], 3 );
@@ -1065,7 +1186,17 @@ stock InsertFrame( int client )
             case SLOT_MELEE : data[REC_FLAGS] |= RECFLAG_WEP_SLOT3;
         }
     }
+}
+
+stock InsertFrame( int client )
+{
+#if defined DEBUG_INSERTFRAME
+    PrintToServer( INF_DEBUG_PRE..."(%i) | Frame: %i", client, GetGameTickCount() );
+#endif
     
+    static int data[REC_SIZE];
+
+    FillFrame( client, data );
     
     if ( g_hRec[client].PushArray( data ) > g_nMaxRecLength )
     {
