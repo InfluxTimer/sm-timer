@@ -21,9 +21,9 @@ public Action Cmd_TasMenu( int client, int args )
     // Fast forward
     strcopy( szDisplay, sizeof( szDisplay ), ">>| Forward" );
     
-    if ( g_iPlayback[client] > 0 )
+    if ( g_flPlayback[client] > 0.0 )
     {
-        Format( szDisplay, sizeof( szDisplay ), "%s (%ix)", szDisplay, g_iPlayback[client] );
+        Format( szDisplay, sizeof( szDisplay ), "%s (%.2fx)", szDisplay, g_flPlayback[client] );
     }
     
     menu.AddItem( "d", szDisplay );
@@ -32,9 +32,9 @@ public Action Cmd_TasMenu( int client, int args )
     // Rewind
     strcopy( szDisplay, sizeof( szDisplay ), "<<| Rewind" );
     
-    if ( g_iPlayback[client] < 0 )
+    if ( g_flPlayback[client] < 0.0 )
     {
-        Format( szDisplay, sizeof( szDisplay ), "%s (%ix)", szDisplay, -g_iPlayback[client] );
+        Format( szDisplay, sizeof( szDisplay ), "%s (%.2fx)", szDisplay, -g_flPlayback[client] );
     }
     
     Format( szDisplay, sizeof( szDisplay ), "%s\n ", szDisplay );

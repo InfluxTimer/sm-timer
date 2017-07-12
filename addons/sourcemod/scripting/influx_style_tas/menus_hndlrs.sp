@@ -16,13 +16,13 @@ public int Hndlr_TasMenu( Menu menu, MenuAction action, int client, int index )
         {
             SetFrame( client, g_iStoppedFrame[client] + 1, false, true );
             
-            g_iPlayback[client] = 0;
+            StopPlayback( client );
         }
         case 'b' :
         {
             SetFrame( client, g_iStoppedFrame[client] - 1, false, true );
             
-            g_iPlayback[client] = 0;
+            StopPlayback( client );
         }
         case 'c' :
         {

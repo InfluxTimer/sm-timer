@@ -99,7 +99,7 @@ public Action Cmd_NextFrame( int client, int args )
     
     SetFrame( client, g_iStoppedFrame[client] + 1, false );
     
-    g_iPlayback[client] = 0;
+    StopPlayback( client );
     
     return Plugin_Handled;
 }
@@ -115,7 +115,7 @@ public Action Cmd_PrevFrame( int client, int args )
     
     SetFrame( client, g_iStoppedFrame[client] - 1, false );
     
-    g_iPlayback[client] = 0;
+    StopPlayback( client );
     
     return Plugin_Handled;
 }

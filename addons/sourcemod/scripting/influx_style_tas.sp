@@ -25,6 +25,7 @@
 
 
 #define PLAYBACK_SPD_LIMIT              16
+#define PLAYBACK_SPD_START              0.25
 
 #define MIN_TIMESCALE                   0.1
 #define TIMESCALE_STEPS                 0.1
@@ -112,7 +113,8 @@ ArrayList g_hFrames[INF_MAXPLAYERS];
 bool g_bStopped[INF_MAXPLAYERS];
 int g_iStoppedFrame[INF_MAXPLAYERS];
 
-int g_iPlayback[INF_MAXPLAYERS];
+float g_flPlayback[INF_MAXPLAYERS];
+float g_flAccPlayback[INF_MAXPLAYERS];
 
 float g_flTimescale[INF_MAXPLAYERS];
 
@@ -488,9 +490,9 @@ public void E_PostThinkPost_Client( int client )
     
     if ( Influx_GetClientState( client ) == STATE_RUNNING )
     {
-        if ( g_iPlayback[client] && g_bStopped[client] )
+        if ( g_flPlayback[client] != 0.0 && g_bStopped[client] )
         {
-            SetFrame( client, g_iStoppedFrame[client] + g_iPlayback[client], false );
+            Playback( client );
         }
         else
         {
@@ -656,6 +658,42 @@ stock float NormalizeAngle( float ang )
     }
     
     return ang;
+}
+
+stock void Playback( int client )
+{
+    if ( !g_hFrames[client] ) return;
+    
+    if ( g_hFrames[client].Length < 1 ) return;
+    
+    
+    int skip = RoundFloat( g_flPlayback[client] );
+    
+    if ( !skip )
+    {
+        g_flAccPlayback[client] += g_flPlayback[client];
+        
+        skip = RoundFloat( g_flAccPlayback[client] );
+        
+        
+        if ( skip ) g_flAccPlayback[client] = 0.0;
+    }
+    
+    if ( skip != 0 )
+    {
+        int nextframe = g_iStoppedFrame[client] + skip;
+        
+        if ( nextframe >= g_hFrames[client].Length )
+        {
+            nextframe = g_hFrames[client].Length - 1;
+        }
+        else if ( nextframe < 0 )
+        {
+            nextframe = 0;
+        }
+        
+        SetFrame( client, nextframe, false );
+    }
 }
 
 stock void InsertFrame( int client )
@@ -829,25 +867,25 @@ stock void OpenSaveMenu( int client )
 
 stock void IncreasePlayback( int client )
 {
-    if ( g_iPlayback[client] <= 0 )
+    if ( g_flPlayback[client] <= 0.0 )
     {
-        g_iPlayback[client] = 1;
+        g_flPlayback[client] = PLAYBACK_SPD_START;
     }
-    else if ( g_iPlayback[client] < PLAYBACK_SPD_LIMIT )
+    else if ( g_flPlayback[client] < PLAYBACK_SPD_LIMIT )
     {
-        g_iPlayback[client] *= 2;
+        g_flPlayback[client] *= 2.0;
     }
 }
 
 stock void DecreasePlayback( int client )
 {
-    if ( g_iPlayback[client] >= 0 )
+    if ( g_flPlayback[client] >= 0.0 )
     {
-        g_iPlayback[client] = -1;
+        g_flPlayback[client] = -PLAYBACK_SPD_START;
     }
-    else if ( g_iPlayback[client] > -PLAYBACK_SPD_LIMIT )
+    else if ( g_flPlayback[client] > -PLAYBACK_SPD_LIMIT )
     {
-        g_iPlayback[client] *= 2;
+        g_flPlayback[client] *= 2.0;
     }
 }
 
@@ -858,7 +896,7 @@ stock void ContinueOrStop( int client )
         UnfreezeClient( client );
     }
     
-    g_iPlayback[client] = 0;
+    StopPlayback( client );
 }
 
 stock void ResetClient( int client )
@@ -866,14 +904,14 @@ stock void ResetClient( int client )
     g_bStopped[client] = false;
     g_iStoppedFrame[client] = -1;
     
-    g_iPlayback[client] = 0;
+    StopPlayback( client );
     
     g_bAdvanceFrame[client] = false;
 }
 
 stock bool ShouldContinue( int client )
 {
-    return ( g_bStopped[client] && !g_iPlayback[client] );
+    return ( g_bStopped[client] && g_flPlayback[client] == 0.0 );
 }
 
 stock float GetClientApproxTime( int client )
@@ -988,3 +1026,10 @@ stock void AdvanceFrame( int client )
     
     ContinueOrStop( client );
 }
+
+stock void StopPlayback( int client )
+{
+    g_flPlayback[client] = 0.0;
+    g_flAccPlayback[client] = 0.0;
+}
+
