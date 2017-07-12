@@ -17,7 +17,7 @@ ADDED:
 CHANGES:
 - Completely remade CS:GO HUD. Now uses HudMsg and we cram more info into the timer bar.
 - Timer zones will now by default use beam offsets that most people are familiar with.
-- Added more timesteps to TAS.
+- Added more steps to TAS timescale & rewind/forward.
 - Players with TAS style will now always be able to use cheat commands, not only when using timescale.
 
 FIXES:
@@ -31,7 +31,8 @@ CODE:
 - Fixed Influx_OnTimerStart/Finish returning garbage string.
 - Fixed incorrect library name.
 - Added Inf_ReplyToClient-stock
-- Added Influx_GetDefaultBeamOffsets-native
+- Added natives: Influx_GetDefaultBeamOffsets, Influx_IsCountingJumps, Influx_IsCountingStrafes
+- Added forwards: Influx_ShouldCountStrafes, Influx_ShouldCountJumps
 
 
 
