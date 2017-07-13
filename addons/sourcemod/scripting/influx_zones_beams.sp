@@ -22,6 +22,7 @@
 #define DEF_DISPLAYTYPE     DISPLAYTYPE_BEAMS
 #define DEF_MAT             "materials/sprites/laserbeam.vmt"
 #define DEF_WIDTH           1.0
+#define DEF_BEAMCLR         { 255, 255, 255, 255 }
 
 
 
@@ -437,6 +438,12 @@ stock void ReadDefaultSettingsFile()
         FillArray( clr, 0, sizeof( clr ) );
         kv.GetColor4( "color", clr );
         
+        if ( IsInvisibleColor( clr ) )
+        {
+            LogError( INF_CON_PRE..."Zone type '%s' has no/invalid color specified! Assuming default color.", szType );
+        }
+        
+        
         CopyArray( clr, data[DEFBEAM_CLR], 4 );
         
         
@@ -613,7 +620,7 @@ stock void InsertBeams( int zoneid,
     
     //if ( speed == -1 ) speed = DEF_SPEED;
     
-    if ( clr[3] <= 0 ) GetZoneTypeDefColor( view_as<ZoneType_t>( zonetype ), clr );
+    if ( IsInvisibleColor( clr ) ) clr = DEF_BEAMCLR;
     
     if ( beammat < 1 ) beammat = g_iDefBeamMat;
     
@@ -1014,6 +1021,14 @@ stock bool SendBeamAdd( int zoneid, ZoneType_t zonetype, DisplayType_t &displayt
     Call_Finish( res );
     
     return ( res == Plugin_Stop ) ? false : true;
+}
+
+stock bool IsInvisibleColor( const int clr[4] )
+{
+    if ( clr[3] <= 0 ) return true;
+    
+    
+    return ( (clr[0] + clr[1] + clr[2]) <= 0 );
 }
 
 // NATIVES
