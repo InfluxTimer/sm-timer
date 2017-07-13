@@ -121,7 +121,7 @@ public void Thrd_CheckClientRecCount( Handle db, Handle res, const char[] szErro
         int oldreward = SQL_FetchInt( res, 2 );
         
         int curreward = CalcReward( reqrunid, mode, style, SQL_FetchInt( res, 3 ) ? true : false );
-        PrintToServer( "Cur: %i | Old: %i", curreward, oldreward );
+        
         // Hasn't changed.
         if ( oldreward >= curreward )
         {
