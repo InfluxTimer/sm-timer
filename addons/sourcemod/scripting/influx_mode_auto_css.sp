@@ -215,9 +215,10 @@ public void E_PreThinkPost_Client( int client )
 #endif
 }
 
-public Action OnPlayerRunCmd( int client )
+public Action OnPlayerRunCmd( int client, int &buttons )
 {
     if (IsPlayerAlive( client )
+    &&  buttons & IN_JUMP
     &&  Influx_GetClientMode( client ) == MODE_AUTO
     &&  g_bWantsAuto[client]
     &&  GetEntityMoveType( client ) == MOVETYPE_WALK // Not on ladder
