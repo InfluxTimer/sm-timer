@@ -94,6 +94,9 @@ ArrayList g_hBeams;
 ArrayList g_hDef;
 
 
+bool g_bShowHidden[INF_MAXPLAYERS];
+
+
 // FORWARDS
 Handle g_hForward_OnBeamAdd;
 
@@ -154,6 +157,11 @@ public void OnPluginStart()
     
     
     // CMDS
+    RegConsoleCmd( "sm_showhiddenzones", Cmd_ShowHidden );
+    RegConsoleCmd( "sm_showhidden", Cmd_ShowHidden );
+    RegConsoleCmd( "sm_hiddenzones", Cmd_ShowHidden );
+    RegConsoleCmd( "sm_showzones", Cmd_ShowHidden );
+    
     RegConsoleCmd( "sm_beamsettings", Cmd_BeamSettings );
     
     
@@ -168,6 +176,18 @@ public void OnLibraryAdded( const char[] lib )
 public void OnLibraryRemoved( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_HUD ) ) g_bLib_Hud = false;
+}
+
+public Action Cmd_ShowHidden( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    
+    g_bShowHidden[client] = !g_bShowHidden[client];
+    
+    Influx_PrintToChat( _, client, "Hidden beams are now %s.", g_bShowHidden[client] ? "enabled" : "disabled" );
+    
+    return Plugin_Handled;
 }
 
 public Action Cmd_BeamSettings( int client, int args )
@@ -474,31 +494,28 @@ public void Influx_OnZoneLoadPost( int zoneid, ZoneType_t zonetype, KeyValues kv
     }
     
     
-    if ( displaytype != DISPLAYTYPE_NONE )
-    {
-        int clr[4];
-        kv.GetColor4( "beam_color", clr );
-        
-        
-        
-        decl Float:mins[3], Float:maxs[3];
-        kv.GetVector( "mins", mins );
-        kv.GetVector( "maxs", maxs );
-        
-        InsertBeams(
-            zoneid,
-            zonetype,
-            mins,
-            maxs,
-            displaytype,
-            _,
-            kv.GetFloat( "beam_width", 0.0 ),
-            kv.GetNum( "beam_framerate", -1 ),
-            kv.GetNum( "beam_speed", 0 ),
-            _,
-            _,
-            clr );
-    }
+    int clr[4];
+    kv.GetColor4( "beam_color", clr );
+    
+    
+    
+    decl Float:mins[3], Float:maxs[3];
+    kv.GetVector( "mins", mins );
+    kv.GetVector( "maxs", maxs );
+    
+    InsertBeams(
+        zoneid,
+        zonetype,
+        mins,
+        maxs,
+        displaytype,
+        _,
+        kv.GetFloat( "beam_width", 0.0 ),
+        kv.GetNum( "beam_framerate", -1 ),
+        kv.GetNum( "beam_speed", 0 ),
+        _,
+        _,
+        clr );
 }
 
 public void Influx_OnZoneSavePost( int zoneid, ZoneType_t zonetype, KeyValues kv )
@@ -813,14 +830,13 @@ public Action T_DrawBeams( Handle hTimer )
         decl framerate, spd, matindex;
         decl Float:width;
         
+        DisplayType_t displaytype;
+        
         int[] clients = new int[MaxClients];
         
         for ( int i = 0; i < len; i++ )
         {
-            if ( view_as<DisplayType_t>( g_hBeams.Get( i, BEAM_DISPLAYTYPE ) ) == DISPLAYTYPE_NONE )
-            {
-                continue;
-            }
+            displaytype = view_as<DisplayType_t>( g_hBeams.Get( i, BEAM_DISPLAYTYPE ) );
             
             
             static float p1[3], p2[3], p3[3], p4[3], p5[3], p6[3], p7[3], p8[3];
@@ -840,6 +856,9 @@ public Action T_DrawBeams( Handle hTimer )
             for ( client = 1; client <= MaxClients; client++ )
                 if ( IsClientInGame( client ) && !IsFakeClient( client ) )
                 {
+                    if ( displaytype == DISPLAYTYPE_NONE && !g_bShowHidden[client] )
+                        continue;
+                    
                     if ( g_flShowBeams[client] == 0.0 || g_flShowBeams[client] > engtime )
                         continue;
                     
@@ -902,7 +921,7 @@ public Action T_DrawBeams( Handle hTimer )
             TE_SetupBeamPoints( p4, p1, matindex, 0, 0, framerate, drawinterval, width, width, BEAM_FADE, 0.0, clr, spd );
             TE_Send( clients, nClients, 0.0 );
             
-            if ( view_as<DisplayType_t>( data[BEAM_DISPLAYTYPE] ) == DISPLAYTYPE_BEAMS_FULL )
+            if ( displaytype == DISPLAYTYPE_BEAMS_FULL || displaytype == DISPLAYTYPE_NONE)
             {
                 CopyArray( data[BEAM_P5], p5, 3 );
                 CopyArray( data[BEAM_P6], p6, 3 );
