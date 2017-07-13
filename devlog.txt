@@ -21,6 +21,7 @@ CHANGES:
 - Added more steps to TAS timescale & rewind/forward.
 - Players with TAS style will now always be able to use cheat commands, not only when using timescale.
 - VelCap is now by default called 400vel.
+- Zone building sprite is now shown a bit longer when in menus.
 
 FIXES:
 - Disabled strafe/jump counting for TAS.
