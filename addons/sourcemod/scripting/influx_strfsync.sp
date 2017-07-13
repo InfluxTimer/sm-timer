@@ -5,15 +5,16 @@
 
 #include <msharedutil/arrayvec>
 #include <msharedutil/ents>
+#include <influx/stocks_strf>
 
 #undef REQUIRE_PLUGIN
 #include <influx/pause>
 
 
 
-//#define DEBUG
+#define DEBUG
 
-#define NUM_SECS            60
+#define NUM_SECS            30
 
 
 int g_nStrfsGood[INF_MAXPLAYERS][NUM_SECS];
@@ -101,6 +102,8 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
     
     if ( !IsPlayerAlive( client ) ) return Plugin_Continue;
     
+    if ( GetEntityMoveType( client ) != MOVETYPE_WALK ) return Plugin_Continue;
+    
     
     if ( IS_PAUSED( g_bLib_Pause, client ) ) return Plugin_Continue;
     
@@ -113,40 +116,15 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
     &&  !(fLastFlags[client] & FL_ONGROUND)
     &&  flLastYaw[client] != angles[1])
     {
-        if ( (vel[0] != 0.0 || vel[1] != 0.0) )
+        if ( vel[1] != 0.0 || (buttons & (IN_MOVELEFT|IN_MOVERIGHT) == (IN_MOVELEFT|IN_MOVERIGHT)) )
         {
-            decl Float:temp[3];
-            temp = vel;
-            
-            float yaw = angles[1];
-            
-            
-            
-            RotateVectorXY( temp, DegToRad( yaw ) );
-            
-            
-            decl Float:velocity[3];
-            GetEntityAbsVelocity( client, velocity );
-            
-            
-            GetUnitVectorXY( temp, temp );
-            //GetUnitVectorXY( velocity, velocity );
-            
-            temp[2] = 0.0;
-            velocity[2] = 0.0;
-            
-            float dot = GetVectorDotProduct( temp, velocity );
-            
-            if ( dot < 30.0 )
-            {
+            // I gave up.
+            Strafe_t strf = GetStrafe( angles[1], flLastYaw[client], 20.0 );
+                
+            if ((strf == STRF_LEFT && vel[1] < 0.0)
+            ||  (strf == STRF_RIGHT && vel[1] > 0.0))
                 ++g_nStrfsGood[client][ g_iStrfPos[client] ];
-            }
-            
-#if defined DEBUG
-            PrintToServer( INF_DEBUG_PRE..."Dot product: %06.2f", dot );
-#endif
         }
-
         
         
         if ( ++g_nTickCount[client] >= g_nMaxTicks )
@@ -181,31 +159,6 @@ stock void ResetClient( int client )
     g_iStrfPos[client] = 0;
     g_nTickCount[client] = 0;
     g_bUsedAll[client] = false;
-}
-
-stock float GetUnitVectorXY( const float vec[3], float target[3] )
-{
-    decl Float:temp[3];
-    temp = vec;
-    
-    float len = SquareRoot( vec[0] * vec[0] + vec[1] * vec[1] );
-    
-    target[0] /= len;
-    target[1] /= len;
-    
-    return len;
-}
-
-stock void RotateVectorXY( float vec[3], float ang_rad )
-{
-    float sin = Sine( ang_rad );
-    float cos = Cosine( ang_rad );
-    
-    decl Float:temp[3];
-    temp = vec;
-    
-    vec[0] = temp[0] * cos - temp[1] * sin;
-    vec[1] = temp[0] * sin + temp[1] * cos;
 }
 
 stock float GetSync( int client )
