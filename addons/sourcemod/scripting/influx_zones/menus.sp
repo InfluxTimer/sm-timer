@@ -110,6 +110,7 @@ public Action Cmd_ZoneMain( int client, int args )
     if ( g_bLib_Zones_Beams )
     {
         menu.AddItem( INF_CMD_BEAM, "Beam Settings",    ( !bBuilding && bHaveZones )        ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
+        menu.AddItem( INF_CMD_BEAM_SHOWHIDDEN, "Toggle Hidden Zones" );
     }
     
     menu.Display( client, MENU_TIME_FOREVER );

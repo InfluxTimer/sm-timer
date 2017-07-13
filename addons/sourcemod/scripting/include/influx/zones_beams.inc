@@ -7,6 +7,7 @@
 #define INFLUX_LIB_ZONES_BEAMS      "influx_zones_beams"
 
 #define INF_CMD_BEAM                "sm_beamsettings"
+#define INF_CMD_BEAM_SHOWHIDDEN     "sm_showhiddenzones"
 
 
 enum DisplayType_t
