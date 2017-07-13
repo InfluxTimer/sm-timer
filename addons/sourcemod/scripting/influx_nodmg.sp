@@ -1,9 +1,11 @@
 #include <sourcemod>
 #include <cstrike>
-#include <sdktools_hooks>
+#include <sdkhooks>
 
 #include <influx/core>
-#include <influx/stocks_core>
+
+
+ConVar g_ConVar_Type;
 
 
 bool g_bLate;
@@ -25,30 +27,31 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    // CONVARS
+    g_ConVar_Type = CreateConVar( "influx_nodmg_type", "2", "0 = Don't do anything, 1 = Only block fall-damage, 2 = Block all damage", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
+    g_ConVar_Type.AddChangeHook( E_ConVarChanged_Type );
+    
+    AutoExecConfig( true, "nodmg", "influx" );
+    
+    
+    // EVENTS
     HookEvent( "player_spawn", E_PlayerSpawn );
     
     
     if ( g_bLate )
     {
-        for ( int i = 1; i <= MaxClients; i++ )
-        {
-            if ( IsClientInGame( i ) )
-            {
-                SetDamage( i, false );
-            }
-        }
+        UpdateAllClients( false );
     }
 }
 
 public void OnPluginEnd()
 {
-    for ( int i = 1; i <= MaxClients; i++ )
-    {
-        if ( IsClientInGame( i ) )
-        {
-            SetDamage( i, true );
-        }
-    }
+    UpdateAllClients( true );
+}
+
+public void E_ConVarChanged_Type( ConVar convar, const char[] oldValue, const char[] newValue )
+{
+    UpdateAllClients( false );
 }
 
 public void E_PlayerSpawn( Event event, const char[] szEvent, bool bImUselessWhyDoIExist )
@@ -69,17 +72,68 @@ public void E_PlayerSpawn_Delay( int client )
     if ( !IsPlayerAlive( client ) ) return;
     
     
-    SetDamage( client, false );
+    UpdateClient( client, false );
 }
 
-stock void SetDamage( int client, bool bAllowDmg )
+public Action OnTakeDamageAlive_Client( int victim, int &attacker, int &inflictor, float &damage, int &damagetype )
 {
-    SetEntProp( client, Prop_Data, "m_takedamage", bAllowDmg ? 2 : 1 ); // Events only so we still have stamina affecting us.
-    
-    
-    // Crashes when seeing other players in CSGO(?).
-    /*if ( !IsFakeClient( client ) )
+    if ( damagetype == DMG_FALL )
     {
-        SetEntProp( client, Prop_Send, "m_nHitboxSet", 2 );
-    }*/
+        damage = 0.0;
+        return Plugin_Changed;
+    }
+    
+    return Plugin_Continue;
+}
+
+stock void UpdateClient( int client, bool bAllowDmg )
+{
+    int val = g_ConVar_Type.IntValue;
+    
+    if ( !bAllowDmg && val == 1 )
+    {
+        UnhookDamage( client );
+        HookDamage( client );
+    }
+    else
+    {
+        UnhookDamage( client );
+    }
+
+    
+    // Events only so we still have stamina affecting us.
+    if ( !bAllowDmg && val == 2 )
+    {
+        SetTakeDamage( client, false );
+    }
+    else
+    {
+        SetTakeDamage( client, true );
+    }
+}
+
+stock void UpdateAllClients( bool bAllowDmg )
+{
+    for ( int i = 1; i <= MaxClients; i++ )
+    {
+        if ( IsClientInGame( i ) )
+        {
+            UpdateClient( i, bAllowDmg );
+        }
+    }
+}
+
+stock void HookDamage( int client )
+{
+    Inf_SDKHook( client, SDKHook_OnTakeDamageAlive, OnTakeDamageAlive_Client );
+}
+
+stock void UnhookDamage( int client )
+{
+    SDKUnhook( client, SDKHook_OnTakeDamageAlive, OnTakeDamageAlive_Client );
+}
+
+stock void SetTakeDamage( int client, bool bAllowDmg )
+{
+    SetEntProp( client, Prop_Data, "m_takedamage", bAllowDmg ? 2 : 1 );
 }
