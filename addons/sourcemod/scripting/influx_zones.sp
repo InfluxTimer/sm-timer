@@ -17,6 +17,8 @@
 //#define DEBUG
 //#define DEBUG_CHECKZONES
 
+#define SHOWSPRITE_NONE             -2
+
 #define BUILD_MAT                   "materials/sprites/laserbeam.vmt"
 #define BUILD_SPRITE_MAT            "materials/sprites/glow01.vmt"
 
@@ -57,7 +59,7 @@ float g_vecBuildingStart[INF_MAXPLAYERS][3];
 //int g_iBuildingRunId[INF_MAXPLAYERS];
 int g_nBuildingGridSize[INF_MAXPLAYERS];
 char g_szBuildingName[INF_MAXPLAYERS][MAX_ZONE_NAME];
-bool g_bBuildStart[INF_MAXPLAYERS];
+int g_iShowSprite[INF_MAXPLAYERS];
 float g_flBuildDist[INF_MAXPLAYERS];
 
 
@@ -147,6 +149,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_GetZoneTypeName", Native_GetZoneTypeName );
     CreateNative( "Influx_GetZoneTypeShortName", Native_GetZoneTypeShortName );
     CreateNative( "Influx_GetZoneTypeByShortName", Native_GetZoneTypeByShortName );
+    
+    CreateNative( "Influx_SetDrawBuildingSprite", Native_SetDrawBuildingSprite );
     
     
     g_bLate = late;
@@ -307,7 +311,7 @@ public void OnClientPutInServer( int client )
     g_iBuildingType[client] = ZONETYPE_INVALID;
     g_nBuildingGridSize[client] = 8;
     g_szBuildingName[client][0] = '\0';
-    g_bBuildStart[client] = false;
+    g_iShowSprite[client] = SHOWSPRITE_NONE;
     g_flBuildDist[client] = BUILD_DEF_DIST;
     
     
@@ -650,6 +654,10 @@ stock void SnapToGrid( float vec[3], int grid, int axis = 2 )
 
 stock bool StartToBuild( int client, ZoneType_t zonetype, const char[] name = "" )
 {
+    // We don't need to show the sprite anymore.
+    g_iShowSprite[client] = SHOWSPRITE_NONE;
+    
+    
     if ( !IsValidZoneType( zonetype ) ) return false;
     
     
@@ -987,18 +995,20 @@ stock bool CanUserSaveZones( int client )
     return CheckCommandAccess( client, INF_PRIVCOM_SAVEZONES, ADMFLAG_ROOT );
 }
 
-stock void StartShowBuild( int client )
+stock void SetShowBuild( int client, bool show = true )
 {
-    if ( g_bBuildStart[client] )
+    if ( g_iShowSprite[client] > SHOWSPRITE_NONE )
     {
-        g_bBuildStart[client] = false;
+        if ( !show )
+            g_iShowSprite[client] = SHOWSPRITE_NONE;
+        
         return;
     }
     
     
     CreateTimer( ZONE_BUILDDRAW_INTERVAL, T_DrawBuildStart, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
     
-    g_bBuildStart[client] = true;
+    g_iShowSprite[client] = view_as<int>( ZONETYPE_INVALID );
 }
 
 stock void GetEyeTrace( int client, float pos[3] )

@@ -135,3 +135,8 @@ public int Native_GetZoneTypeByShortName( Handle hPlugin, int nParms )
     
     return view_as<int>( FindZoneTypeByShortName( sz ) );
 }
+
+public int Native_SetDrawBuildingSprite( Handle hPlugin, int nParms )
+{
+    SetShowBuild( GetNativeCell( 1 ), GetNativeCell( 2 ) ? true : false );
+}

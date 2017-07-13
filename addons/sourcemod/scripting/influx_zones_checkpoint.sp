@@ -547,7 +547,15 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
 
 public int Hndlr_CreateZone_SelectCPNum( Menu oldmenu, MenuAction action, int client, int index )
 {
-    MENU_HANDLE( oldmenu, action )
+    if ( action == MenuAction_End )
+    {
+        delete oldmenu;
+        return 0;
+    }
+    
+    Influx_SetDrawBuildingSprite( client, false );
+    
+    if ( action != MenuAction_Select ) return 0;
     
     
     char szInfo[16];

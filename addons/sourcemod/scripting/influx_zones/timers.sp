@@ -120,12 +120,7 @@ public Action T_DrawBuildStart( Handle hTimer, int client )
         return Plugin_Stop;
     }
     
-    if ( g_iBuildingType[client] != ZONETYPE_INVALID )
-    {
-        return Plugin_Stop;
-    }
-    
-    if ( !g_bBuildStart[client] )
+    if ( g_iShowSprite[client] == SHOWSPRITE_NONE )
     {
         return Plugin_Stop;
     }
@@ -145,6 +140,18 @@ public Action T_DrawBuildStart( Handle hTimer, int client )
     }
     
     SnapToGrid( pos, g_nBuildingGridSize[client], 2 );
+    
+    
+    if ( g_bLib_Zones_Beams && view_as<ZoneType_t>( g_iShowSprite[client] ) > ZONETYPE_INVALID )
+    {
+        decl Float:offsets[2];
+        if ( Influx_GetDefaultBeamOffsets( view_as<ZoneType_t>( g_iShowSprite[client] ), offsets ) )
+        {
+            pos[0] += offsets[0];
+            pos[1] += offsets[0];
+        }
+    }
+    
     
     DrawBuildSprite( pos );
     

@@ -135,6 +135,9 @@ public Action Cmd_CreateZone( int client, int args )
         if ( type == ZONETYPE_INVALID ) return Plugin_Handled;
         
         
+        g_iShowSprite[client] = view_as<int>( type );
+        
+        
         Action res;
         
         Call_StartForward( g_hForward_OnZoneBuildAsk );
@@ -147,14 +150,13 @@ public Action Cmd_CreateZone( int client, int args )
             return Plugin_Handled;
         }
         
-        
         StartToBuild( client, type );
         
         Inf_OpenZoneMenu( client );
     }
     else
     {
-        StartShowBuild( client );
+        SetShowBuild( client );
         
         
         Menu menu = new Menu( Hndlr_CreateZone );

@@ -71,6 +71,9 @@ native bool Influx_SetZoneName( int id, const char[] sz );
 native bool Influx_GetZoneMinsMaxs( int id, float mins[3], float maxs[3] );
 
 
+native void Influx_SetDrawBuildingSprite( int client, bool show );
+
+
 
 forward void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype );
 forward void Influx_OnZoneDeleted( int zoneid, ZoneType_t zonetype );
@@ -241,6 +244,7 @@ public void __pl_influx_zones_SetNTVOptional()
     MarkNativeAsOptional( "Influx_GetZonesArray" );
     MarkNativeAsOptional( "Influx_RegZoneType" );
     MarkNativeAsOptional( "Influx_RemoveZoneType" );
+    MarkNativeAsOptional( "Influx_SetDrawBuildingSprite" );
     MarkNativeAsOptional( "Influx_SetZoneName" );
 }
 #endif
