@@ -13,12 +13,14 @@ ADDED:
 - Frame advancement to TAS.
 - influx_advshowkeys-plugin for more detailed view of player's inputs. Detect cheaters.
 - influx_recording_prerunrecord-cvar which records player's movement before leaving the start into the replay.
+- influx_nodmg_type-cvar to change whether we only block fall-damage or everything.
 
 CHANGES:
 - Completely remade CS:GO HUD. Now uses HudMsg and we cram more info into the timer bar.
 - Timer zones will now by default use beam offsets that most people are familiar with.
 - Added more steps to TAS timescale & rewind/forward.
 - Players with TAS style will now always be able to use cheat commands, not only when using timescale.
+- VelCap is now by default called 400vel.
 
 FIXES:
 - Disabled strafe/jump counting for TAS.
