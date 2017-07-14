@@ -11,7 +11,6 @@ ADDED:
 - Simple ranks. Player finishes a run, they get points and unlock ranks. (influx_simpleranks & influx_simpleranks_chat)
 - influx_style_tas_silentstrafer-cvar to allow the replay of a TAS run to have silent strafing.
 - Frame advancement to TAS.
-- influx_advshowkeys-plugin for more detailed view of player's inputs. Detect cheaters.
 - influx_recording_prerunrecord-cvar which records player's movement before leaving the start into the replay.
 - influx_nodmg_type-cvar to change whether we only block fall-damage or everything.
 - sm_addcp, sm_lastusedcp & sm_lastcreatedcp commands and late-loading to influx_practise
@@ -27,7 +26,7 @@ CHANGES:
 FIXES:
 - Disabled strafe/jump counting for TAS.
 - Starting/finishing timer returning weird errors.
-- Creating zones with beam offsets will now display the beams correctly.
+- Creating zones with beam offsets will now create the beams correctly.
 
 CODE:
 - Fixed Influx_RemoveChatColors-native not working in some cases.
