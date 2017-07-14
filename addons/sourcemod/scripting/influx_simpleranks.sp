@@ -202,9 +202,9 @@ public void OnAllPluginsLoaded()
 
 public void Influx_OnRequestHelpCmds()
 {
-    Influx_AddHelpCommand( "sm_rankmenu", "Choose your chat rank." );
-    Influx_AddHelpCommand( "sm_customrank", "Ability to set your own custom rank. (Flag access)" );
-    Influx_AddHelpCommand( "sm_setmapreward <name (optional)> <reward>", "Set map's reward.", true );
+    Influx_AddHelpCommand( "rankmenu", "Choose your chat rank." );
+    Influx_AddHelpCommand( "customrank", "Ability to set your own custom rank. (Flag access)" );
+    Influx_AddHelpCommand( "setmapreward <name (optional)> <reward>", "Set map's reward.", true );
 }
 
 public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
