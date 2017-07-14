@@ -44,24 +44,6 @@ public Action T_DrawBuildBeams( Handle hTimer, int client )
     SnapToGrid( p7, g_nBuildingGridSize[client], 2 );
     
     
-    CorrectMinsMaxs( p1, p7 );
-    
-    if ( g_bLib_Zones_Beams )
-    {
-        decl Float:offsets[2];
-        if ( Influx_GetDefaultBeamOffsets( g_iBuildingType[client], offsets ) )
-        {
-            p1[0] += offsets[0];
-            p1[1] += offsets[0];
-            p1[2] += offsets[1];
-            
-            p7[0] -= offsets[0];
-            p7[1] -= offsets[0];
-            p7[2] -= offsets[1];
-        }
-    }
-    
-    
     p3[0] = p7[0];
     p3[1] = p7[1];
     p3[2] = p1[2];
@@ -120,7 +102,7 @@ public Action T_DrawBuildStart( Handle hTimer, int client )
         return Plugin_Stop;
     }
     
-    if ( g_iShowSprite[client] == SHOWSPRITE_NONE )
+    if ( !g_bShowSprite[client] )
     {
         return Plugin_Stop;
     }
@@ -140,17 +122,6 @@ public Action T_DrawBuildStart( Handle hTimer, int client )
     }
     
     SnapToGrid( pos, g_nBuildingGridSize[client], 2 );
-    
-    
-    if ( g_bLib_Zones_Beams && view_as<ZoneType_t>( g_iShowSprite[client] ) > ZONETYPE_INVALID )
-    {
-        decl Float:offsets[2];
-        if ( Influx_GetDefaultBeamOffsets( view_as<ZoneType_t>( g_iShowSprite[client] ), offsets ) )
-        {
-            pos[0] += offsets[0];
-            pos[1] += offsets[0];
-        }
-    }
     
     
     DrawBuildSprite( pos );

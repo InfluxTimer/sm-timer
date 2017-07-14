@@ -59,7 +59,7 @@ float g_vecBuildingStart[INF_MAXPLAYERS][3];
 //int g_iBuildingRunId[INF_MAXPLAYERS];
 int g_nBuildingGridSize[INF_MAXPLAYERS];
 char g_szBuildingName[INF_MAXPLAYERS][MAX_ZONE_NAME];
-int g_iShowSprite[INF_MAXPLAYERS];
+bool g_bShowSprite[INF_MAXPLAYERS];
 float g_flBuildDist[INF_MAXPLAYERS];
 
 
@@ -311,7 +311,7 @@ public void OnClientPutInServer( int client )
     g_iBuildingType[client] = ZONETYPE_INVALID;
     g_nBuildingGridSize[client] = 8;
     g_szBuildingName[client][0] = '\0';
-    g_iShowSprite[client] = SHOWSPRITE_NONE;
+    g_bShowSprite[client] = false;
     g_flBuildDist[client] = BUILD_DEF_DIST;
     
     
@@ -655,7 +655,7 @@ stock void SnapToGrid( float vec[3], int grid, int axis = 2 )
 stock bool StartToBuild( int client, ZoneType_t zonetype, const char[] name = "" )
 {
     // We don't need to show the sprite anymore.
-    g_iShowSprite[client] = SHOWSPRITE_NONE;
+    g_bShowSprite[client] = false;
     
     
     if ( !IsValidZoneType( zonetype ) ) return false;
@@ -997,10 +997,9 @@ stock bool CanUserSaveZones( int client )
 
 stock void SetShowBuild( int client, bool show = true )
 {
-    if ( g_iShowSprite[client] > SHOWSPRITE_NONE )
+    if ( g_bShowSprite[client] )
     {
-        if ( !show )
-            g_iShowSprite[client] = SHOWSPRITE_NONE;
+        g_bShowSprite[client] = show;
         
         return;
     }
@@ -1008,7 +1007,7 @@ stock void SetShowBuild( int client, bool show = true )
     
     CreateTimer( ZONE_BUILDDRAW_INTERVAL, T_DrawBuildStart, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
     
-    g_iShowSprite[client] = view_as<int>( ZONETYPE_INVALID );
+    g_bShowSprite[client] = show;
 }
 
 stock void GetEyeTrace( int client, float pos[3] )
