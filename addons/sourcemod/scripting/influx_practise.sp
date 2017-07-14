@@ -62,7 +62,11 @@ int g_iUseVel[INF_MAXPLAYERS];
 Handle g_hForward_OnClientPracticeStart;
 
 
+// LIBRARIES
 bool g_bLib_Pause;
+
+
+bool g_bLate;
 
 
 public Plugin myinfo =
@@ -83,6 +87,9 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_IsClientPractising", Native_IsClientPractising );
     CreateNative( "Influx_StartPractising", Native_StartPractising );
     CreateNative( "Influx_EndPractising", Native_EndPractising );
+    
+    
+    g_bLate = late;
 }
 
 public void OnPluginStart()
@@ -109,6 +116,15 @@ public void OnPluginStart()
     
     
     g_bLib_Pause = LibraryExists( INFLUX_LIB_PAUSE );
+    
+    
+    if ( g_bLate )
+    {
+        for ( int i = 1; i <= MaxClients; i++ )
+        {
+            if ( IsClientInGame( i ) ) OnClientPutInServer( i );
+        }
+    }
 }
 
 public void OnLibraryAdded( const char[] lib )
