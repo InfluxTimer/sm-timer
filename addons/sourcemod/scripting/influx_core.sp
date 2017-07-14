@@ -31,6 +31,7 @@
 //#define DEBUG_DB_CBRECS
 //#define DEBUG_DB_MAPID
 //#define TEST_REGEX
+//#define TEST_MODESTYLES
 
 
 #define GAME_CONFIG_FILE      "influx.games"
@@ -593,6 +594,11 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_deleterun", Cmd_Admin_DeleteRun );
     
+    
+#if defined TEST_MODESTYLES
+    RegAdminCmd( "sm_printstyles", Cmd_TestPrintStyles, ADMFLAG_ROOT );
+#endif
+
     
 #if defined TEST_COLORCHAT
     RegAdminCmd( "sm_testchat", Cmd_TestColor, ADMFLAG_ROOT );

@@ -482,3 +482,27 @@ public Action Cmd_TestMapName( int client, int args )
     
     return Plugin_Handled;
 }
+
+public Action Cmd_TestPrintStyles( int client, int args )
+{
+    if ( client ) return Plugin_Handled;
+    
+    
+    decl mode[MODE_SIZE];
+    decl style[STYLE_SIZE];
+    
+    for ( int i = 0; i < g_hModes.Length; i++ )
+    {
+        g_hModes.GetArray( i, mode );
+        PrintToServer( INF_DEBUG_PRE..."Mode | Index: %i | Name: %s", mode[MODE_ID], mode[MODE_NAME] );
+    }
+    
+    for ( int i = 0; i < g_hStyles.Length; i++ )
+    {
+        g_hStyles.GetArray( i, style );
+        PrintToServer( INF_DEBUG_PRE..."Style | Index: %i | Name: %s", style[STYLE_ID], style[STYLE_NAME] );
+    }
+    
+    return Plugin_Handled;
+}
+
