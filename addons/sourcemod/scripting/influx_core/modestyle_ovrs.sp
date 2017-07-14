@@ -166,15 +166,20 @@ stock void SetModeOverrides( int index )
     if ( j == -1 ) return;
     
     
+    char test[2];
+    
     decl data[MOVR_SIZE];
     g_hModeOvers.GetArray( j, data );
     
-    if ( view_as<char>( data[MOVR_OVRNAME] ) != 0 )
+    test[0] = view_as<char>( data[MOVR_OVRNAME] );
+    if ( test[0] != 0 )
     {
+        PrintToServer( "Setting mode name to %s | %x", data[MOVR_OVRNAME], data[MOVR_OVRNAME] );
         SetModeNameByIndex( index, view_as<char>( data[MOVR_OVRNAME] ) );
     }
     
-    if ( view_as<char>( data[MOVR_OVRSHORTNAME] ) != 0 )
+    test[0] = view_as<char>( data[MOVR_OVRSHORTNAME] );
+    if ( test[0] != 0 )
     {
         SetModeShortNameByIndex( index, view_as<char>( data[MOVR_OVRSHORTNAME] ) );
     }
@@ -252,15 +257,20 @@ stock void SetStyleOverrides( int index )
     if ( j == -1 ) return;
     
     
+    char test[2];
+    
     decl data[SOVR_SIZE];
     g_hStyleOvers.GetArray( j, data );
     
-    if ( view_as<char>( data[SOVR_OVRNAME] ) != 0 )
+    test[0] = view_as<char>( data[SOVR_OVRNAME] );
+    if ( test[0] != 0 )
     {
         SetStyleNameByIndex( index, view_as<char>( data[SOVR_OVRNAME] ) );
     }
     
-    if ( view_as<char>( data[SOVR_OVRSHORTNAME] ) != 0 )
+    
+    test[0] = view_as<char>( data[SOVR_OVRSHORTNAME] );
+    if ( test[0] != 0 )
     {
         SetStyleShortNameByIndex( index, view_as<char>( data[SOVR_OVRSHORTNAME] ) );
     }
