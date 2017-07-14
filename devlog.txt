@@ -27,6 +27,7 @@ FIXES:
 - Disabled strafe/jump counting for TAS.
 - Starting/finishing timer returning weird errors.
 - Creating zones with beam offsets will now create the beams correctly.
+- Mode/style overrides using an empty name.
 
 CODE:
 - Fixed Influx_RemoveChatColors-native not working in some cases.
