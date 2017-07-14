@@ -187,6 +187,9 @@ public void OnPluginStart()
     g_ConVar_SilentStrafer = CreateConVar( "influx_style_tas_silentstrafer", "1", "Do we record the player's wanted angles to a replay?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
+    AutoExecConfig( true, "style_tas", "influx" );
+    
+    
     // PRIVILEGE CMDS
     RegAdminCmd( INF_PRIVCOM_LOADSAVETAS, Cmd_Empty, ADMFLAG_ROOT );
     
