@@ -37,6 +37,7 @@ CODE:
 - Added Inf_ReplyToClient-stock
 - Added natives: Influx_GetDefaultBeamOffsets, Influx_IsCountingJumps, Influx_IsCountingStrafes
 - Added forwards: Influx_ShouldCountStrafes, Influx_ShouldCountJumps
+- Fixed missing native marking as optional.
 
 
 
