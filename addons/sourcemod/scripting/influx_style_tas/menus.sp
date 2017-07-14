@@ -121,6 +121,7 @@ public Action Cmd_ListCmds( int client, int args )
     menu.AddItem( "", "sm_tas_autostrafe", ITEMDRAW_DISABLED );
     menu.AddItem( "", "sm_tas_inctimescale", ITEMDRAW_DISABLED );
     menu.AddItem( "", "sm_tas_dectimescale", ITEMDRAW_DISABLED );
+    menu.AddItem( "", "sm_tas_advanceframe", ITEMDRAW_DISABLED );
     
     menu.AddItem( "", "sm_tas_menu", ITEMDRAW_DISABLED );
     menu.AddItem( "", "sm_tas_settings", ITEMDRAW_DISABLED );
