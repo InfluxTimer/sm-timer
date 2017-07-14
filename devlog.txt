@@ -14,6 +14,7 @@ ADDED:
 - influx_advshowkeys-plugin for more detailed view of player's inputs. Detect cheaters.
 - influx_recording_prerunrecord-cvar which records player's movement before leaving the start into the replay.
 - influx_nodmg_type-cvar to change whether we only block fall-damage or everything.
+- sm_addcp, sm_lastusedcp & sm_lastcreatedcp commands and late-loading to influx_practise
 
 CHANGES:
 - Completely remade CS:GO HUD. Now uses HudMsg and we cram more info into the timer bar.
