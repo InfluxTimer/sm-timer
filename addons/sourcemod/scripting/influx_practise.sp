@@ -101,7 +101,9 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_pracmenu", Cmd_CPMenu );
     RegConsoleCmd( "sm_cpmenu", Cmd_CPMenu );
-    //RegConsoleCmd( "sm_cp", Cmd_AddCP );
+    RegConsoleCmd( "sm_addcp", Cmd_AddCP );
+    RegConsoleCmd( "sm_lastcreatedcp", Cmd_LastCreatedCP );
+    RegConsoleCmd( "sm_lastusedcp", Cmd_LastUsedCP );
     RegConsoleCmd( "sm_pracsettings", Cmd_CPSettings );
     RegConsoleCmd( "sm_cpsettings", Cmd_CPSettings );
     
@@ -133,9 +135,11 @@ public void OnClientPutInServer( int client )
 public void Influx_RequestHelpCmds()
 {
     Influx_AddHelpCommand( "practise", "Toggle practise mode." );
-    //Influx_AddHelpCommand( "cp", "Add a practice checkpoint." );
     Influx_AddHelpCommand( "cpmenu", "Opens checkpoint menu." );
     Influx_AddHelpCommand( "cpsettings", "Opens checkpoint setting menu." );
+    Influx_AddHelpCommand( "addcp", "Add a practice checkpoint." );
+    Influx_AddHelpCommand( "lastusedcp", "Teleport to last used practice checkpoint." );
+    Influx_AddHelpCommand( "lastcreatedcp", "Teleport to last created practice checkpoint." );
 }
 
 public Action Influx_OnTimerFinish( int client, int runid, int mode, int style, float time, int flags, char[] errormsg, int error_len )
@@ -170,6 +174,54 @@ public Action Cmd_Practise( int client, int args )
     return Plugin_Handled;
 }
 
+public Action Cmd_AddCP( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !g_bPractising[client] )
+    {
+        Influx_PrintToChat( _, client, "%T", "MUSTBEPRACTISING", client );
+        return Plugin_Handled;
+    }
+    
+    
+    AddClientCP( client );
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_LastUsedCP( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !g_bPractising[client] )
+    {
+        Influx_PrintToChat( _, client, "%T", "MUSTBEPRACTISING", client );
+        return Plugin_Handled;
+    }
+    
+    
+    TeleportClientToLastUsedCP( client );
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_LastCreatedCP( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !g_bPractising[client] )
+    {
+        Influx_PrintToChat( _, client, "%T", "MUSTBEPRACTISING", client );
+        return Plugin_Handled;
+    }
+    
+    
+    TeleportClientToLastCreatedCP( client );
+    
+    return Plugin_Handled;
+}
+
 public Action Cmd_CPMenu( int client, int args )
 {
     if ( !client ) return Plugin_Handled;
@@ -183,8 +235,9 @@ public Action Cmd_CPMenu( int client, int args )
     
     Menu menu = new Menu( Hndlr_CP );
     
-    menu.AddItem( "-2", "Last used", ( g_iLastUsed[client] != -1 ) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
-    menu.AddItem( "-1", "Add CP\n " );
+    menu.AddItem( "-3", "Last created (sm_lastcreatedcp)" );
+    menu.AddItem( "-2", "Last used (sm_lastusedcp)", ( g_iLastUsed[client] != -1 ) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
+    menu.AddItem( "-1", "Add CP (sm_addcp)\n " );
     menu.AddItem( "0", "Settings\n " );
     
     char szInfo[6];
@@ -238,14 +291,13 @@ public int Hndlr_CP( Menu menu, MenuAction action, int client, int menuindex )
     
     switch ( id )
     {
+        case -3 :
+        {
+            TeleportClientToLastCreatedCP( client );
+        }
         case -2 :
         {
-            int index = g_iLastUsed[client];
-            
-            if ( g_hPrac[client].Get( index, view_as<int>( PRAC_ID ) ) > 0 )
-            {
-                TeleportClientToCP( client, index );
-            }
+            TeleportClientToLastUsedCP( client );
         }
         case -1 :
         {
@@ -372,6 +424,33 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
     FakeClientCommand( client, "sm_cpsettings" );
     
     return 0;
+}
+
+stock bool TeleportClientToLastUsedCP( int client )
+{
+    int index = g_iLastUsed[client];
+    
+    if ( g_hPrac[client].Get( index, view_as<int>( PRAC_ID ) ) > 0 )
+    {
+        return TeleportClientToCP( client, index );
+    }
+    
+    return false;
+}
+
+stock bool TeleportClientToLastCreatedCP( int client )
+{
+    int index = g_iCurIndex[client] - 1;
+    
+    if ( index < 0 ) index = MAX_CHECKPOINTS - 1;
+    
+    
+    if ( g_hPrac[client].Get( index, view_as<int>( PRAC_ID ) ) > 0 )
+    {
+        return TeleportClientToCP( client, index );
+    }
+    
+    return false;
 }
 
 stock bool TeleportClientToCP( int client, int index )
