@@ -245,13 +245,13 @@ public Action Cmd_EndZone( int client, int args )
             decl Float:offsets[2];
             if ( Influx_GetDefaultBeamOffsets( g_iBuildingType[client], offsets ) )
             {
-                mins[0] += offsets[0];
-                mins[1] += offsets[0];
-                mins[2] += offsets[1];
+                mins[0] -= offsets[0];
+                mins[1] -= offsets[0];
+                mins[2] -= offsets[1];
                 
-                maxs[0] -= offsets[0];
-                maxs[1] -= offsets[0];
-                maxs[2] -= offsets[1];
+                maxs[0] += offsets[0];
+                maxs[1] += offsets[0];
+                maxs[2] += offsets[1];
             }
         }
         
