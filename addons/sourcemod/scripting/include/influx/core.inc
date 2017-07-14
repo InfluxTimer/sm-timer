@@ -741,6 +741,7 @@ public void __pl_influx_core_SetNTVOptional()
     MarkNativeAsOptional( "Influx_GetDB" );
     MarkNativeAsOptional( "Influx_GetModeName" );
     MarkNativeAsOptional( "Influx_GetModesArray" );
+    MarkNativeAsOptional( "Influx_GetModeSafeName" );
     MarkNativeAsOptional( "Influx_GetModeShortName" );
     MarkNativeAsOptional( "Influx_GetNextMenuTime" );
     MarkNativeAsOptional( "Influx_GetPostRunLoadForward" );
@@ -749,6 +750,7 @@ public void __pl_influx_core_SetNTVOptional()
     MarkNativeAsOptional( "Influx_GetRunsArray" );
     MarkNativeAsOptional( "Influx_GetStyleName" );
     MarkNativeAsOptional( "Influx_GetStylesArray" );
+    MarkNativeAsOptional( "Influx_GetStyleSafeName" );
     MarkNativeAsOptional( "Influx_GetStyleShortName" );
     MarkNativeAsOptional( "Influx_InvalidateClientRun" );
     MarkNativeAsOptional( "Influx_IsClientCached" );

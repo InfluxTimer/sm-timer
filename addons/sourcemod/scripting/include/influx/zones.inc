@@ -241,7 +241,11 @@ public void __pl_influx_zones_SetNTVOptional()
     MarkNativeAsOptional( "Influx_FindZoneById" );
     MarkNativeAsOptional( "Influx_GetZoneMinsMaxs" );
     MarkNativeAsOptional( "Influx_GetZoneName" );
+    MarkNativeAsOptional( "Influx_GetZoneTypeByShortName" );
+    MarkNativeAsOptional( "Influx_GetZoneTypeName" );
+    MarkNativeAsOptional( "Influx_GetZoneTypeShortName" );
     MarkNativeAsOptional( "Influx_GetZonesArray" );
+    MarkNativeAsOptional( "Influx_IsValidZoneType" );
     MarkNativeAsOptional( "Influx_RegZoneType" );
     MarkNativeAsOptional( "Influx_RemoveZoneType" );
     MarkNativeAsOptional( "Influx_SetDrawBuildingSprite" );
