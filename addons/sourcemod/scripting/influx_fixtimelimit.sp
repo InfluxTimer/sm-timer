@@ -9,7 +9,6 @@
 
 
 ConVar g_ConVar_IgnoreCond;
-ConVar g_ConVar_Timelimit;
 
 
 public Plugin myinfo =
@@ -29,24 +28,18 @@ public void OnPluginStart()
     {
         SetFailState( INF_CON_PRE..."Couldn't find handle for mp_ignore_round_win_conditions!" );
     }
-    
-    g_ConVar_Timelimit = FindConVar( "mp_timelimit" );
-    
-    if ( g_ConVar_Timelimit == null )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't find handle for mp_timelimit!" );
-    }
 }
 
-public void OnMapStart()
+public void OnConfigsExecuted()
 {
     CreateTimer( 1.0, T_CheckTime, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT );
 }
 
 public Action T_CheckTime( Handle hTimer )
 {
-    // We cannot change the map through round termination if mp_timelimit is <= 0
-    if ( g_ConVar_Timelimit.IntValue <= 0 ) return Plugin_Continue;
+    int timelimit = 0;
+    // We cannot change the map through round termination if timelimit is <= 0
+    if ( !GetMapTimeLimit( timelimit ) || timelimit == 0 ) return Plugin_Continue;
     
     
     int timeleft = 1;
@@ -54,10 +47,14 @@ public Action T_CheckTime( Handle hTimer )
     bool bSupported = GetMapTimeLeft( timeleft );
     
 #if defined DEBUG_TIME
-    PrintToServer( INF_DEBUG_PRE..."Time left: %i (%s)", timeleft, bSupported ? "Supported" : "Not Supported" );
+    PrintToServer( INF_DEBUG_PRE..."Time left: %i (%s) (Timelimit: %i)", timeleft, bSupported ? "Supported" : "Not Supported", timelimit );
 #endif
     
-    if ( bSupported && timeleft < 0 )
+    // HACK: If time left is negative, timelimit is infinite. However, timelimit can be > 0 while time left is -1.
+    // If we're unlucky and miss time left == 0, we'll never get a map change.
+    // Therefore just skip -1...
+    // Fuck this m8
+    if ( bSupported && (timeleft == 0 || timeleft < -1) )
     {
 #if defined DEBUG
         PrintToServer( INF_DEBUG_PRE..."Timelimit reached! Ending round..." );
