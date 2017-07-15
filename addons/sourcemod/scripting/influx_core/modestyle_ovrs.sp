@@ -174,7 +174,6 @@ stock void SetModeOverrides( int index )
     test[0] = view_as<char>( data[MOVR_OVRNAME] );
     if ( test[0] != 0 )
     {
-        PrintToServer( "Setting mode name to %s | %x", data[MOVR_OVRNAME], data[MOVR_OVRNAME] );
         SetModeNameByIndex( index, view_as<char>( data[MOVR_OVRNAME] ) );
     }
     
