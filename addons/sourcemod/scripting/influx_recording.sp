@@ -247,22 +247,13 @@ public void Influx_OnRequestResultFlags()
     Influx_AddResultFlag( "Don't save recording file", RES_RECORDING_DONTSAVE );
 }
 
+public void Influx_OnPreRunLoad()
+{
+    g_hRunRec.Clear();
+}
+
 public void Influx_OnPostRunLoad()
 {
-    // Update our run array.
-    g_hRunRec.Clear();
-    
-    ArrayList runs = Influx_GetRunsArray();
-    
-    int data[RUNREC_SIZE];
-    int len = GetArrayLength_Safe( runs );
-    for ( int i = 0; i < len; i++ )
-    {
-        data[RUNREC_RUN_ID] = runs.Get( i, RUN_ID );
-        g_hRunRec.PushArray( data );
-    }
-    
-    
     g_iReplayLastFindRun = 0;
     g_iReplayLastFindMode = 0;
     g_iReplayLastFindStyle = -1;
@@ -814,6 +805,9 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
 
 public void Influx_OnRunCreated( int runid )
 {
+    if ( FindRunRecById( runid ) != -1 ) return;
+    
+    
     int data[RUNREC_SIZE];
     data[RUNREC_RUN_ID] = runid;
     
