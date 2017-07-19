@@ -226,10 +226,6 @@ bool g_bNewMapId;
 bool g_bBestTimesCached;
 
 // Cached id.
-int g_iRunId_Main;
-int g_iRunId_Bonus1;
-int g_iRunId_Bonus2;
-
 int g_iDefMode;
 int g_iDefStyle;
 
@@ -524,10 +520,6 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_influx", Cmd_Credits );
     RegConsoleCmd( "sm_credits", Cmd_Credits );
     
-    
-    RegConsoleCmd( "sm_run", Cmd_Change_Run );
-    RegConsoleCmd( "sm_runs", Cmd_Change_Run );
-    
     RegConsoleCmd( "sm_mode", Cmd_Change_Mode );
     RegConsoleCmd( "sm_modes", Cmd_Change_Mode );
     
@@ -537,25 +529,6 @@ public void OnPluginStart()
     
     // CMDS
     RegConsoleCmd( "sm_version", Cmd_Version );
-    
-    
-    RegConsoleCmd( "sm_r", Cmd_Restart );
-    RegConsoleCmd( "sm_re", Cmd_Restart );
-    RegConsoleCmd( "sm_rs", Cmd_Restart );
-    RegConsoleCmd( "sm_restart", Cmd_Restart );
-    RegConsoleCmd( "sm_start", Cmd_Restart );
-    
-    
-    RegConsoleCmd( "sm_main", Cmd_Main );
-    RegConsoleCmd( "sm_m", Cmd_Main );
-    
-    RegConsoleCmd( "sm_bonus", Cmd_BonusChoose );
-    RegConsoleCmd( "sm_b", Cmd_BonusChoose );
-    
-    RegConsoleCmd( "sm_bonus1", Cmd_Bonus1 );
-    RegConsoleCmd( "sm_b1", Cmd_Bonus1 );
-    RegConsoleCmd( "sm_bonus2", Cmd_Bonus2 );
-    RegConsoleCmd( "sm_b2", Cmd_Bonus2 );
     
     
     // RECORD CMDS
@@ -781,13 +754,6 @@ public void Influx_RequestHelpCmds()
     Influx_AddHelpCommand( "run", "Display run selector menu." );
     Influx_AddHelpCommand( "style", "Display style selector menu." );
     Influx_AddHelpCommand( "mode", "Display mode selector menu." );
-}
-
-public void Influx_OnPostRunLoad() // May be called from runs_sql...
-{
-    //g_bRunsLoaded = true;
-    
-    DetermineRuns();
 }
 
 public void OnMapStart()
@@ -2047,44 +2013,6 @@ stock bool IsProperlyCached( int client = 0 )
     
     
     return ( g_bBestTimesCached && g_bCachedTimes[client] );
-}
-
-stock void DetermineRuns()
-{
-    g_iRunId_Main = -1;
-    g_iRunId_Bonus1 = -1;
-    g_iRunId_Bonus2 = -1;
-    
-    char szRun[MAX_RUN_NAME];
-    
-    int len = g_hRuns.Length;
-    for ( int i = 0; i < len; i++ )
-    {
-        GetRunNameByIndex( i, szRun, sizeof( szRun ) );
-        
-        int id = GetRunIdByIndex( i );
-        
-        if ( StrContains( szRun, "main", false ) != -1 )
-        {
-            g_iRunId_Main = id;
-        }
-        else if ( StrContains( szRun, "bonus", false ) != -1 )
-        {
-            if ( StrContains( szRun, "2" ) != -1 )
-            {
-                g_iRunId_Bonus2 = id;
-            }
-            else
-            {
-                g_iRunId_Bonus1 = id;
-            }
-        }
-    }
-    
-    if ( g_iRunId_Main == -1 && FindRunById( MAIN_RUN_ID ) )
-    {
-        g_iRunId_Main = MAIN_RUN_ID;
-    }
 }
 
 stock void InvalidateClientRun( int client )

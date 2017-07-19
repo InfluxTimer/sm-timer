@@ -70,20 +70,6 @@ stock bool GetRecMenuPageData( const char[] sz, any data[PCB_SIZE] )
 
 public int Hndlr_Panel_Empty( Menu menu, MenuAction action, int client, int param2 ) {}
 
-public int Hndlr_Change_Run( Menu menu, MenuAction action, int client, int index )
-{
-    MENU_HANDLE( menu, action )
-    
-    
-    char szInfo[8];
-    if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
-    
-    
-    SetClientRun( client, StringToInt( szInfo ) );
-    
-    return 0;
-}
-
 public int Hndlr_Change_Mode( Menu menu, MenuAction action, int client, int index )
 {
     MENU_HANDLE( menu, action )

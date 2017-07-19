@@ -35,38 +35,6 @@ public Action Cmd_Credits( int client, int args )
     return Plugin_Handled;
 }
 
-public Action Cmd_Change_Run( int client, int args )
-{
-    if ( !client ) return Plugin_Handled;
-    
-    
-    Menu menu = new Menu( Hndlr_Change_Run );
-    
-    char szInfo[8];
-    char szRun[MAX_RUN_NAME];
-    
-    GetRunName( g_iRunId[client], szRun, sizeof( szRun ) );
-    menu.SetTitle( "Change Run\nCurrent: %s\n ", szRun );
-    
-    int len = GetArrayLength_Safe( g_hRuns );
-    int id;
-    for ( int i = 0; i < len; i++ )
-    {
-        GetRunNameByIndex( i, szRun, sizeof( szRun ) );
-        
-        id = g_hRuns.Get( i, RUN_ID );
-        FormatEx( szInfo, sizeof( szInfo ), "%i", id );
-        
-        Format( szRun, sizeof( szRun ), "%s (ID: %i)", szRun, id );
-        
-        menu.AddItem( szInfo, szRun, ( g_iRunId[client] == id ) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT );
-    }
-    
-    menu.Display( client, MENU_TIME_FOREVER );
-    
-    return Plugin_Handled;
-}
-
 public Action Cmd_Change_Mode( int client, int args )
 {
     if ( !client ) return Plugin_Handled;
