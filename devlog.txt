@@ -1,7 +1,22 @@
 DEV
 
 COMPATIBILITY:
-- Delete cfg/influx/hud_draw.cfg to generate new ones with latest cvars.
+- If you update any of the following plugins, make sure to also update ALL of them: influx_core/influx_teletoend
+- sm_restart/sm_runs has been migrated to influx_teletorun from influx_core.
+
+
+ADDED:
+- influx_teletorun-plugin (influx_teletorun_restarttocurrent-cvar for sm_restart to set your run to main...)
+
+CODE:
+- Refactored how runs are created.
+- Added Influx_SetClientRun-native
+
+
+1.1.0
+
+COMPATIBILITY:
+- Delete cfg/influx/hud_draw.cfg, cfg/influx/recording.cfg to generate new ones with latest cvars.
 - If you update any of the following plugins, make sure to also update ALL the following: influx_core/influx_strafes/influx_style_tas/influx_strfsync
 - Remove influx_zones_beams_custom-plugin. Same functionality has been migrated to influx_zones_beams.
 - Make sure your influx_beams.cfg follows the new format.
