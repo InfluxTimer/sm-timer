@@ -64,10 +64,9 @@ stock void ReadMapFile()
     }
     
     
-    int data[RUN_SIZE];
+    char szRun[MAX_RUN_NAME];
     
     float telepos[3];
-    float teleyaw;
     int runid;
     
     do
@@ -85,22 +84,11 @@ stock void ReadMapFile()
             continue;
         }
         
-        if ( !kv.GetSectionName( view_as<char>( data[RUN_NAME] ), MAX_RUN_NAME ) )
+        if ( !kv.GetSectionName( szRun, sizeof( szRun ) ) )
         {
             LogError( INF_CON_PRE..."Couldn't read run name!" );
             continue;
         }
-        
-        
-        data[RUN_ID] = runid;
-        
-        
-        data[RUN_RESFLAGS] = kv.GetNum( "resflags", 0 );
-        data[RUN_MODEFLAGS] = kv.GetNum( "modeflags", 0 );
-        
-        
-        kv.GetVector( "telepos", telepos, ORIGIN_VECTOR );
-        teleyaw = kv.GetFloat( "teleyaw", 0.0 );
         
         
         Call_StartForward( g_hForward_OnRunLoad );
@@ -109,11 +97,16 @@ stock void ReadMapFile()
         Call_Finish();
         
         
-        int irun = g_hRuns.PushArray( data );
+        kv.GetVector( "telepos", telepos, ORIGIN_VECTOR );
         
-        
-        SetRunTelePos( irun, telepos, true );
-        SetRunTeleYaw( irun, teleyaw );
+        AddRun( runid,
+                szRun,
+                telepos,
+                kv.GetFloat( "teleyaw", 0.0 ),
+                kv.GetNum( "resflags", 0 ),
+                kv.GetNum( "modeflags", 0 ),
+                true,
+                false );
     }
     while ( kv.GotoNextKey() );
     

@@ -2610,3 +2610,109 @@ stock int GetStyleFlagsByIndex( int index )
 {
     return ( index != -1 ) ? g_hStyles.Get( index, STYLE_ADMFLAGS ) : 0;
 }
+
+stock int AddRun(   int runid,
+                    const char[] szInRun = "",
+                    const float telepos[3],
+                    float teleyaw,
+                    int resflags,
+                    int modeflags,
+                    bool bDoForward = true,
+                    bool bPrint = false )
+{
+    if ( g_hRuns == null ) return -1;
+    
+    
+    // If they didn't request a specific id, find one that doesn't exist.
+    if ( runid == -1 )
+    {
+        int highest = -1;
+        
+        int len = g_hRuns.Length;
+        for ( int i = 0; i < len; i++ )
+        {
+            if ( g_hRuns.Get( i, RUN_ID ) > highest )
+            {
+                highest = g_hRuns.Get( i, RUN_ID );
+            }
+        }
+        
+        if ( highest == -1 )
+        {
+            runid = MAIN_RUN_ID;
+        }
+        else
+        {
+            runid = highest + 1;
+        }
+    }
+    
+    
+    if ( runid < 1 ) return -1;
+    
+    // That run already exists!
+    if ( FindRunById( runid ) != -1 )
+    {
+        LogError( INF_CON_PRE..."Attempted to add an already existing run! (%i)", runid );
+        return -1;
+    }
+    
+    if ( runid > MAX_RUNS )
+    {
+        LogError( INF_CON_PRE..."Attempted to add more than %i runs! (%i)", MAX_RUNS, runid );
+        return -1;
+    }
+    
+    
+    char szRun[MAX_RUN_NAME];
+    
+    
+    int data[RUN_SIZE];
+    
+    
+    if ( strlen( szInRun ) )
+    {
+        strcopy( szRun, sizeof( szRun ), szInRun );
+    }
+    else
+    {
+        // Determine our run name if they didn't give it to us.
+        if ( runid == MAIN_RUN_ID )
+        {
+            strcopy( szRun, sizeof( szRun ), "Main" );
+        }
+        else
+        {
+            int len = g_hRuns.Length;
+            FormatEx( szRun, sizeof( szRun ), "Bonus #%i", len );
+        }
+    }
+    
+    
+    data[RUN_ID] = runid;
+    strcopy( view_as<char>( data[RUN_NAME] ), MAX_RUN_NAME, szRun );
+    
+    
+    data[RUN_RESFLAGS] = resflags;
+    data[RUN_MODEFLAGS] = modeflags;
+    
+    int irun = g_hRuns.PushArray( data );
+    
+    
+    SetRunTelePos( irun, telepos, true );
+    SetRunTeleYaw( irun, Inf_SnapTo( teleyaw ) );
+    
+    
+    if ( bDoForward )
+    {
+        Call_StartForward( g_hForward_OnRunCreated );
+        Call_PushCell( runid );
+        Call_Finish();
+    }
+    
+    if ( bPrint )
+        Influx_PrintToChatAll( _, 0, "{MAINCLR1}%s{CHATCLR} has been created!", szRun );
+    
+    
+    return runid;
+}

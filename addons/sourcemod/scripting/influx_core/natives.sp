@@ -219,100 +219,13 @@ public int Native_GetClientCurrentBestName( Handle hPlugin, int nParms )
 
 public int Native_AddRun( Handle hPlugin, int nParms )
 {
-    if ( g_hRuns == null ) return -1;
+    char szRun[MAX_RUN_NAME];
+    GetNativeString( 2, szRun, sizeof( szRun ) );
     
-    // That run already exists!
-    int runid = GetNativeCell( 1 );
-    if ( runid != -1 && FindRunById( runid ) != -1 ) return -1;
+    float pos[3];
+    GetNativeArray( 3, pos, 3 );
     
-    
-    // If they didn't request a specific id, find one that doesn't exist.
-    if ( runid == -1 )
-    {
-        int highest = -1;
-        
-        int len = g_hRuns.Length;
-        for ( int i = 0; i < len; i++ )
-        {
-            if ( g_hRuns.Get( i, RUN_ID ) > highest )
-            {
-                highest = g_hRuns.Get( i, RUN_ID );
-            }
-        }
-        
-        if ( highest == -1 )
-        {
-            runid = MAIN_RUN_ID;
-        }
-        else
-        {
-            runid = highest + 1;
-        }
-    }
-    
-    
-    if ( runid > 0 && FindRunById( runid ) == -1 )
-    {
-        if ( runid > MAX_RUNS )
-        {
-            LogError( INF_CON_PRE..."Attempted to add more than %i runs! (%i)", MAX_RUNS, runid );
-            return 0;
-        }
-        
-        int data[RUN_SIZE];
-        
-        // Determine our run name if they didn't give it to us.
-        decl String:szRun[MAX_RUN_NAME];
-        GetNativeString( 2, szRun, sizeof( szRun ) );
-        
-        if ( !strlen( szRun ) )
-        {
-            if ( runid == MAIN_RUN_ID )
-            {
-                strcopy( szRun, sizeof( szRun ), "Main" );
-            }
-            else
-            {
-                int len = g_hRuns.Length;
-                FormatEx( szRun, sizeof( szRun ), "Bonus #%i", len );
-            }
-        }
-        
-        
-        data[RUN_ID] = runid;
-        strcopy( view_as<char>( data[RUN_NAME] ), MAX_RUN_NAME, szRun );
-        
-        
-        float pos[3];
-        GetNativeArray( 3, pos, 3 );
-        
-        float yaw = Inf_SnapTo( GetNativeCell( 4 ) );
-        
-        
-        int irun = g_hRuns.PushArray( data );
-        
-        
-        SetRunTelePos( irun, pos, true );
-        SetRunTeleYaw( irun, yaw );
-        
-        
-        if ( GetNativeCell( 5 ) )
-        {
-            Call_StartForward( g_hForward_OnRunCreated );
-            Call_PushCell( runid );
-            Call_Finish();
-        }
-        
-        
-        Influx_PrintToChatAll( _, 0, "{MAINCLR1}%s{CHATCLR} has been created!", szRun );
-        
-        DetermineRuns();
-        
-        return runid;
-    }
-    
-    
-    return -1;
+    AddRun( GetNativeCell( 1 ), szRun, pos, GetNativeCell( 4 ), 0, 0, GetNativeCell( 5 ) ? true : false, true );
 }
 
 public int Native_AddMode( Handle hPlugin, int nParms )
