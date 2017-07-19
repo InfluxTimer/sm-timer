@@ -30,6 +30,13 @@ public int Native_GetClientRunId( Handle hPlugin, int nParms )
     return g_iRunId[client];
 }
 
+public int Native_SetClientRun( Handle hPlugin, int nParms )
+{
+    int client = GetNativeCell( 1 );
+    
+    return SetClientRun( client, GetNativeCell( 2 ) );
+}
+
 public int Native_GetClientMode( Handle hPlugin, int nParms )
 {
     int client = GetNativeCell( 1 );

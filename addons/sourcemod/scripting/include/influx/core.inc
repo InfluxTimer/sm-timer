@@ -346,6 +346,7 @@ native void Influx_TeleportToStart( int client, bool bSafe = false );
 native void Influx_InvalidateClientRun( int client );
 
 native int Influx_GetClientRunId( int client );
+native bool Influx_SetClientRun( int client, int runid );
 
 native int Influx_GetClientMode( int client );
 native bool Influx_SetClientMode( int client, int mode );
