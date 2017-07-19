@@ -4,13 +4,16 @@ COMPATIBILITY:
 - If you update any of the following plugins, make sure to also update ALL of them: influx_core/influx_teletoend
 - sm_restart/sm_runs has been migrated to influx_teletorun from influx_core.
 
-
 ADDED:
 - influx_teletorun-plugin (influx_teletorun_restarttocurrent-cvar for sm_restart to set your run to main...)
+
+FIXES:
+- TAS easy control-mode now behaves as intended.
 
 CODE:
 - Refactored how runs are created.
 - Added Influx_SetClientRun-native
+
 
 
 1.1.0
