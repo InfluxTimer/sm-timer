@@ -549,91 +549,46 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
     
 // Default cl_sidespeed.
 #define SIDESPD         400.0
-
-// GetAirSpeedCap()
-// wishspd will never really be < 30.0 so just hardcoded @ 30.0
-#define AIRCAP          30.0 
-
-// No reason to add more than this.
-//#define MAX_YAWADD      90.0
-    
-    
-    decl Float:vec[3];
-    decl Float:yawadd;
     
     
     float wantedyaw = angles[1];
     
     
-    //GetClientEyeAngles( client, vec );
-    //float lastyaw = vec[1];
-    
-    
+    decl Float:vec[3];
     GetEntityAbsVelocity( client, vec );
-    float spd = SquareRoot( vec[0] * vec[0] + vec[1] * vec[1] );
     
     float lastmoveyaw = RadToDeg( ArcTangent2( vec[1], vec[0] ) );
     
-    bool bAdd = true;
+    bool bForce = true;
     
-    bool bForce = ( g_iAutoStrafe[client] == AUTOSTRF_MAXSPEED );
-    
-    if ( !bForce && spd > 0.0 )
+    // Only force if our yaw hasn't changed.
+    if ( g_iAutoStrafe[client] == AUTOSTRF_CONTROL )
     {
-        //yawadd = AIRCAP / spd * AIRCAP;
-        
-        
-        decl Float:right[3];
-        float ang[3];
-        
-        
-        ang[1] = lastmoveyaw;
-        
-        GetAngleVectors( ang, NULL_VECTOR, right, NULL_VECTOR );
-        
-        vec[2] = 0.0;
-        right[2] = 0.0;
-        
-        float addspeed = (AIRCAP - GetVectorDotProduct( vec, right ));// * GetTickInterval();
-        
-        for ( int i = 0; i < 2; i++ )
-        {
-            vec[i] += addspeed * right[i];
-        }
-        
-        yawadd = FloatAbs( NormalizeAngle( RadToDeg( ArcTangent2( vec[1], vec[0] ) ) - lastmoveyaw ) );
-    }
-    else
-    {
-        bAdd = false; // No matter what we do we'll get aircap'd.
+        bForce = ( wantedyaw == flLastLegitYaw[client] );
     }
     
-    
-    /*if ( yawadd > MAX_YAWADD )
+    if ( bForce )
     {
-        yawadd = MAX_YAWADD;
-    }*/
-    
-    
-    // Is our real delta smaller than the best possible? (player doesn't want to strafe out more than we want.)
-    if ( bForce || (bAdd && yawadd > FloatAbs( NormalizeAngle( angles[1] - lastmoveyaw ) )) )
-    {
-        if ( GetStrafe( angles[1], lastmoveyaw, 75.0 ) == STRF_RIGHT )
+        float lastyaw = ( flLastLegitYaw[client] == wantedyaw || g_iAutoStrafe[client] == AUTOSTRF_MAXSPEED ) ? lastmoveyaw : flLastLegitYaw[client];
+        
+        if ( GetStrafe( wantedyaw, lastyaw, 75.0 ) == STRF_RIGHT )
         {
-            angles[1] = lastmoveyaw;// + yawadd;
+            angles[1] = lastmoveyaw;
             vel[1] = SIDESPD;
         }
         else
         {
-            angles[1] = lastmoveyaw;// - yawadd;
+            angles[1] = lastmoveyaw;
             vel[1] = -SIDESPD;
         }
         
+        
         angles[1] = NormalizeAngle( angles[1] );
     }
-    else // Our delta was too high, just follow the mouse and hope the player knows he may be losing dat precious speed!
+    else
     {
-        if ( GetStrafe( angles[1], flLastLegitYaw[client], 75.0 ) == STRF_RIGHT )
+        // Just follow the mouse.
+        if ( GetStrafe( wantedyaw, flLastLegitYaw[client], 75.0 ) == STRF_RIGHT )
         {
             vel[1] = SIDESPD;
         }
