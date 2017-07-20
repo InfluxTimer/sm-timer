@@ -7,6 +7,9 @@ COMPATIBILITY:
 ADDED:
 - influx_teletorun-plugin (influx_teletorun_restarttocurrent-cvar for sm_restart to set your run to main...)
 
+CHANGES:
+- Influx will now create more bonus run commands (eg. sm_b4/sm_bonus4).
+
 FIXES:
 - TAS easy control-mode now behaves as intended.
 
