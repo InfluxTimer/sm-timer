@@ -3,15 +3,18 @@ DEV
 COMPATIBILITY:
 - If you update any of the following plugins, make sure to also update ALL of them: influx_core/influx_teletoend
 - sm_restart/sm_runs has been migrated to influx_teletorun from influx_core.
+- Updated/added map zones.
 
 ADDED:
 - influx_teletorun-plugin (influx_teletorun_restarttocurrent-cvar for sm_restart to set your run to main...)
+- More map zones.
 
 CHANGES:
 - Influx will now create more bonus run commands (eg. sm_b4/sm_bonus4).
 
 FIXES:
 - TAS easy control-mode now behaves as intended.
+- Errors when server talks in chat.
 
 CODE:
 - Refactored how runs are created.
