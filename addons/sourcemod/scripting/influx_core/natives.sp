@@ -232,7 +232,7 @@ public int Native_AddRun( Handle hPlugin, int nParms )
     float pos[3];
     GetNativeArray( 3, pos, 3 );
     
-    AddRun( GetNativeCell( 1 ), szRun, pos, GetNativeCell( 4 ), 0, 0, GetNativeCell( 5 ) ? true : false, true );
+    return AddRun( GetNativeCell( 1 ), szRun, pos, GetNativeCell( 4 ), 0, 0, GetNativeCell( 5 ) ? true : false, true );
 }
 
 public int Native_AddMode( Handle hPlugin, int nParms )
