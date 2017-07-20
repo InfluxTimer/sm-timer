@@ -4,14 +4,25 @@
 
 
 
+enum
+{
+    BONUS_NUM = 0,
+    BONUS_RUN_ID,
+    
+    BONUS_SIZE
+};
+
 
 int g_iRunId_Main;
-int g_iRunId_Bonus1;
-int g_iRunId_Bonus2;
+
+ArrayList g_hBonuses;
 
 
 // CONVARS
 ConVar g_ConVar_RestartToCurrent;
+
+
+bool g_bLate;
 
 
 public Plugin myinfo =
@@ -23,8 +34,16 @@ public Plugin myinfo =
     version = INF_VERSION
 };
 
+public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
+{
+    g_bLate = late;
+}
+
 public void OnPluginStart()
 {
+    g_hBonuses = new ArrayList( BONUS_SIZE );
+    
+    
     // CONVARS
     g_ConVar_RestartToCurrent = CreateConVar( "influx_teletorun_restarttocurrent", "1", "If true, restart command will put player to their current run's start. Otherwise, teleport to main start.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
@@ -48,25 +67,38 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_main", Cmd_Main );
     RegConsoleCmd( "sm_m", Cmd_Main );
     
-    RegConsoleCmd( "sm_bonus", Cmd_BonusChoose );
-    RegConsoleCmd( "sm_b", Cmd_BonusChoose );
+    RegConsoleCmd( "sm_bonus", Cmd_Bonus );
+    RegConsoleCmd( "sm_b", Cmd_Bonus );
     
-    RegConsoleCmd( "sm_bonus1", Cmd_Bonus1 );
-    RegConsoleCmd( "sm_b1", Cmd_Bonus1 );
-    RegConsoleCmd( "sm_bonus2", Cmd_Bonus2 );
-    RegConsoleCmd( "sm_b2", Cmd_Bonus2 );
+    
+    
+    if ( g_bLate )
+    {
+        Influx_OnPreRunLoad();
+        
+        
+        ArrayList runs = Influx_GetRunsArray();
+        int len = runs.Length;
+        
+        for ( int i = 0; i < len; i++ )
+        {
+            Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+        }
+    }
 }
 
 public void Influx_OnPreRunLoad()
 {
     g_iRunId_Main = -1;
-    g_iRunId_Bonus1 = -1;
-    g_iRunId_Bonus2 = -1;
+    
+    g_hBonuses.Clear();
 }
 
 public void Influx_OnRunCreated( int runid )
 {
-    char szRun[MAX_RUN_NAME];
+    decl String:szRun[MAX_RUN_NAME];
+    szRun[0] = 0;
+    
     Influx_GetRunName( runid, szRun, sizeof( szRun ) );
     
     if ( StrContains( szRun, "main", false ) == 0 )
@@ -75,22 +107,32 @@ public void Influx_OnRunCreated( int runid )
     }
     else if ( StrContains( szRun, "bonus", false ) == 0 )
     {
-        if ( StrContains( szRun, "2" ) != -1 )
-        {
-            g_iRunId_Bonus2 = runid;
-        }
-        else
-        {
-            g_iRunId_Bonus1 = runid;
-        }
+        int pos = FindCharInString( szRun, '#' ) + 1;
+        
+        int val = StringToInt( szRun[pos] );
+        
+        if ( val < 1 ) return;
+        
+        
+        AddBonus( val, runid );
     }
 }
 
 public void Influx_OnRunDeleted( int runid )
 {
-    if ( g_iRunId_Main == runid ) g_iRunId_Main = -1;
-    else if ( g_iRunId_Bonus1 == runid ) g_iRunId_Bonus1 = -1;
-    else if ( g_iRunId_Bonus2 == runid ) g_iRunId_Bonus2 = -1;
+    if ( g_iRunId_Main == runid )
+    {
+        g_iRunId_Main = -1;
+    }
+    else
+    {
+        int index = FindBonusById( runid );
+        
+        if ( index != -1 )
+        {
+            g_hBonuses.Erase( index );
+        }
+    }
 }
 
 public Action Cmd_Restart( int client, int args )
@@ -140,41 +182,68 @@ public Action Cmd_Main( int client, int args )
     return Plugin_Handled;
 }
 
-public Action Cmd_Bonus1( int client, int args )
+public Action Lstnr_Bonus( int client, const char[] command, int argc )
 {
-    if ( client ) AttemptToSet( client, g_iRunId_Bonus1 );
-    return Plugin_Handled;
+    if ( !client ) return Plugin_Continue;
+    
+    if ( argc ) return Plugin_Continue;
+    
+    
+    int pos = 0;
+    
+    // "sm_bonus1"
+    if ( StrContains( command, "sm_bonus" ) == 0 )
+    {
+        pos = 8;
+    }
+    // "sm_b1"
+    else
+    {
+        pos = 4;
+    }
+    
+    int num = StringToInt( command[pos] );
+    PrintToServer( "bla %s, %i", command[pos], num );
+    if ( !num ) num = 1;
+    
+    
+    int index = FindBonusByNum( num );
+    
+    if ( index != -1 )
+    {
+        AttemptToSet( client, g_hBonuses.Get( index, BONUS_RUN_ID ) );
+    }
+    else
+    {
+        Influx_PrintToChat( _, client, "Bonus %i does not exist!", num );
+    }
+    
+    return Plugin_Stop;
 }
 
-public Action Cmd_Bonus2( int client, int args )
-{
-    if ( client ) AttemptToSet( client, g_iRunId_Bonus2 );
-    return Plugin_Handled;
-}
-
-public Action Cmd_BonusChoose( int client, int args )
+public Action Cmd_Bonus( int client, int args )
 {
     if ( !client ) return Plugin_Handled;
     
-    if ( !args )
+    
+    int num = 1;
+    
+    if ( args )
     {
-        AttemptToSet( client, g_iRunId_Bonus1 );
-        return Plugin_Handled;
+        char szArg[6];
+        GetCmdArgString( szArg, sizeof( szArg ) );
+        
+        num = StringToInt( szArg );
+        
+        if ( !num ) num = 1;
     }
     
+    int index = FindBonusByNum( num );
     
-    char szArg[6];
-    GetCmdArgString( szArg, sizeof( szArg ) );
     
-    int value = StringToInt( szArg );
-    
-    if ( value == 1 )
+    if ( index != -1 )
     {
-        AttemptToSet( client, g_iRunId_Bonus1 );
-    }
-    else if ( value == 2 )
-    {
-        AttemptToSet( client, g_iRunId_Bonus2 );
+        AttemptToSet( client, g_hBonuses.Get( index, BONUS_RUN_ID ) );
     }
     else
     {
@@ -237,4 +306,75 @@ public int Hndlr_Change_Run( Menu menu, MenuAction action, int client, int index
     Influx_SetClientRun( client, StringToInt( szInfo ) );
     
     return 0;
+}
+
+stock int FindBonusByNum( int num )
+{
+    int len = g_hBonuses.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( g_hBonuses.Get( i, BONUS_NUM ) == num )
+            return i;
+    }
+    
+    return -1;
+}
+
+stock int FindBonusById( int runid )
+{
+    int len = g_hBonuses.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( g_hBonuses.Get( i, BONUS_RUN_ID ) == runid )
+            return i;
+    }
+    
+    return -1;
+}
+
+stock int AddBonus( int num, int runid )
+{
+    int index;
+    
+    index = FindBonusByNum( num );
+    if ( index != -1 ) return index;
+    
+    
+    int data[BONUS_SIZE];
+    
+    data[BONUS_NUM] = num;
+    data[BONUS_RUN_ID] = runid;
+    
+    index = g_hBonuses.PushArray( data );
+    
+    
+    char szCmdName[32];
+    
+    
+    FormatEx( szCmdName, sizeof( szCmdName ), "sm_bonus%i", num );
+    if ( !CommandExists( szCmdName ) )
+    {
+        RegConsoleCmd( szCmdName, Cmd_Bonus );
+    }
+    
+    HookBonusCmd( szCmdName );
+    
+    
+    FormatEx( szCmdName, sizeof( szCmdName ), "sm_b%i", num );
+    if ( !CommandExists( szCmdName ) )
+    {
+        RegConsoleCmd( szCmdName, Cmd_Bonus );
+    }
+    
+    HookBonusCmd( szCmdName );
+    
+    return index;
+}
+
+stock void HookBonusCmd( const char[] szCmdName )
+{
+    // HACK: Make sure we don't double hook it.
+    AddCommandListener( Lstnr_Bonus, szCmdName );
+    RemoveCommandListener( Lstnr_Bonus, szCmdName );
+    AddCommandListener( Lstnr_Bonus, szCmdName );
 }
