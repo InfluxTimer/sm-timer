@@ -202,8 +202,9 @@ public Action Lstnr_Bonus( int client, const char[] command, int argc )
         pos = 4;
     }
     
+    
     int num = StringToInt( command[pos] );
-    PrintToServer( "bla %s, %i", command[pos], num );
+    
     if ( !num ) num = 1;
     
     
@@ -373,8 +374,5 @@ stock int AddBonus( int num, int runid )
 
 stock void HookBonusCmd( const char[] szCmdName )
 {
-    // HACK: Make sure we don't double hook it.
-    AddCommandListener( Lstnr_Bonus, szCmdName );
-    RemoveCommandListener( Lstnr_Bonus, szCmdName );
     AddCommandListener( Lstnr_Bonus, szCmdName );
 }
