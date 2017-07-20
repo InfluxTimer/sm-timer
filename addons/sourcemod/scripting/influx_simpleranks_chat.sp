@@ -22,6 +22,11 @@ public void OnPluginStart()
 
 public Action OnClientSayCommand( int client, const char[] szCommand, const char[] szMsg )
 {
+    if ( !client ) return Plugin_Continue;
+    
+    if ( !IsClientInGame( client ) ) return Plugin_Continue;
+    
+    
     static char szRank[256];
     static char szName[MAX_NAME_LENGTH];
     static char szNewMsg[512];

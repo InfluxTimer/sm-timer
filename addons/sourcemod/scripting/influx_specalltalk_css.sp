@@ -71,6 +71,10 @@ public Action Cmd_Test( int client, int args )
 
 public void OnClientSayCommand_Post( int client, const char[] szCommand, const char[] szMsg )
 {
+    if ( !client ) return;
+    
+    if ( !IsClientInGame( client ) ) return;
+    
     if ( GetClientTeam( client ) != CS_TEAM_SPECTATOR ) return;
     
     
