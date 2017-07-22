@@ -162,16 +162,11 @@ public Action Cmd_CreateZone( int client, int args )
         char szDisplay[32];
         char szInfo[32];
         
-        ZoneType_t type;
-        
         int len = g_hZoneTypes.Length;
         for ( int i = 0; i < len; i++ )
         {
-            type = view_as<ZoneType_t>( g_hZoneTypes.Get( i, ZTYPE_TYPE ) );
-            
-            GetZoneTypeName( type, szDisplay, sizeof( szDisplay ) );
-            GetZoneTypeShortName( type, szInfo, sizeof( szInfo ) );
-            
+            GetZoneTypeNameByIndex( i, szDisplay, sizeof( szDisplay ) );
+            GetZoneTypeShortNameByIndex( i, szInfo, sizeof( szInfo ) );
             
             menu.AddItem( szInfo, szDisplay );
         }

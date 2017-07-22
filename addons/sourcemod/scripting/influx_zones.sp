@@ -17,7 +17,6 @@
 //#define DEBUG
 //#define DEBUG_CHECKZONES
 
-#define SHOWSPRITE_NONE             -2
 
 #define BUILD_MAT                   "materials/sprites/laserbeam.vmt"
 #define BUILD_SPRITE_MAT            "materials/sprites/glow01.vmt"
@@ -1065,8 +1064,9 @@ stock int CreateTriggerEnt( const float mins[3], const float maxs[3] )
         return -1;
     }
     
-    
-    DispatchKeyValue( ent, "wait", "0" );
+    // 0 will set it to 0.1
+    // wait-value should not affect the touch outputs, but just in case.
+    DispatchKeyValue( ent, "wait", "0.001" );
     
 #define SF_CLIENTS  1
 #define SF_NOBOTS   4096
