@@ -2,7 +2,6 @@
 #include <sdktools>
 
 #include <influx/core>
-#include <influx/recording>
 #include <influx/style_tas>
 
 #include <influx/stocks_strf>
@@ -13,6 +12,7 @@
 
 
 #undef REQUIRE_PLUGIN
+#include <influx/recording>
 #include <influx/strafes>
 #include <influx/jumps>
 #include <influx/pause>
