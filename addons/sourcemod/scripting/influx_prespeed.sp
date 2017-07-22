@@ -78,7 +78,7 @@ public void OnPluginStart()
     
     
     // CONVARS
-    g_ConVar_MaxJumps = CreateConVar( "influx_prespeed_maxjumps", "0", "Maximum number of jumps a player can jump at the start? 0 = disable", FCVAR_NOTIFY, true, 0.0 );
+    g_ConVar_MaxJumps = CreateConVar( "influx_prespeed_maxjumps", "-1", "Maximum number of jumps a player can do before starting a run? -1 = disable", FCVAR_NOTIFY, true, -1.0 );
     g_ConVar_Max = CreateConVar( "influx_prespeed_max", "300", "Default max prespeed. 0 = disable", FCVAR_NOTIFY, true, 0.0 );
     g_ConVar_UseTrueVel = CreateConVar( "influx_prespeed_usetruevel", "0", "Use truevel when checking player's speed.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_Cap = CreateConVar( "influx_prespeed_cap", "1", "If true, cap player's speed to max prespeed. Otherwise teleport.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
@@ -169,7 +169,7 @@ public void Influx_OnRunLoad( int runid, KeyValues kv )
     data[PRESPEED_RUN_ID] = runid;
     
     data[PRESPEED_MAX] = view_as<int>( kv.GetFloat( "prespeed_max", -1.0 ) );
-    data[PRESPEED_MAXJUMPS] = kv.GetNum( "prespeed_maxjumps", -1 );
+    data[PRESPEED_MAXJUMPS] = kv.GetNum( "prespeed_maxjumps", -2 );
     data[PRESPEED_USETRUEVEL] = kv.GetNum( "prespeed_usetruevel", -1 );
     data[PRESPEED_CAP] = kv.GetNum( "prespeed_cap", -1 );
     
@@ -195,7 +195,7 @@ public void Influx_OnRunSave( int runid, KeyValues kv )
         kv.SetFloat( "prespeed_max", maxprespd );
     }
     
-    if ( maxjumps != -1 && maxjumps != g_ConVar_MaxJumps.IntValue )
+    if ( maxjumps != -2 && maxjumps != g_ConVar_MaxJumps.IntValue )
     {
         kv.SetNum( "prespeed_maxjumps", maxjumps );
     }
@@ -226,16 +226,25 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
     
     // Check jump count.
     int maxjumps = g_hPre.Get( index, PRESPEED_MAXJUMPS );
-    if ( maxjumps == -1 ) maxjumps = g_ConVar_MaxJumps.IntValue;
+    if ( maxjumps == -2 ) maxjumps = g_ConVar_MaxJumps.IntValue;
     
     
-    if ( maxjumps > 0 )
+    if ( maxjumps >= 0 )
     {
         if ( g_nJumps[client] > maxjumps )
         {
             if ( SendLimitForward( client, g_bUsedNoclip[client] ) )
             {
-                FormatEx( errormsg, error_len, "You cannot jump more than {MAINCLR1}%i{CHATCLR} time(s)!", maxjumps );
+                if ( maxjumps )
+                {
+                    FormatEx( errormsg, error_len, "You cannot jump more than {MAINCLR1}%i{CHATCLR} time(s) at the start!", maxjumps );
+                }
+                else
+                {
+                    FormatEx( errormsg, error_len, "You cannot jump at all at the start!" );
+                }
+                
+                
                 return Plugin_Handled;
             }
         }
