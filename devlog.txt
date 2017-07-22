@@ -1,6 +1,7 @@
 DEV
 
 COMPATIBILITY:
+- Delete cfg/influx/prespeed.cfg to generate new ones with latest cvars.
 - If you update any of the following plugins, make sure to also update ALL of them: influx_core/influx_teletorun
 - sm_restart/sm_runs has been migrated to influx_teletorun from influx_core.
 - Updated/added map zones.
@@ -15,11 +16,13 @@ CHANGES:
 - Influx will now create more bonus run commands (eg. sm_b4/sm_bonus4).
 - Normal-style is now at the top of menus by default.
 - Timer zones are now at the top of menus by default.
+- influx_prespeed_maxjumps-cvar is now by default -1. 0 = no jumping at all, 1 = only one jump, etc.
 
 FIXES:
 - TAS easy control-mode now behaves as intended.
 - Errors when server talks in chat.
 - TAS no longer requires recording-module.
+- New runs not following default prespeed settings.
 
 CODE:
 - Refactored how runs are created.
