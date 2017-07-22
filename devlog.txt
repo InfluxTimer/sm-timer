@@ -1,16 +1,19 @@
 DEV
 
 COMPATIBILITY:
-- If you update any of the following plugins, make sure to also update ALL of them: influx_core/influx_teletoend
+- If you update any of the following plugins, make sure to also update ALL of them: influx_core/influx_teletorun
 - sm_restart/sm_runs has been migrated to influx_teletorun from influx_core.
 - Updated/added map zones.
 
 ADDED:
 - influx_teletorun-plugin (influx_teletorun_restarttocurrent-cvar for sm_restart to set your run to main...)
 - More map zones.
+- influx_version-cvar to track servers running Influx.
 
 CHANGES:
 - Influx will now create more bonus run commands (eg. sm_b4/sm_bonus4).
+- Normal-style is now at the top of menus by default.
+- Timer zones are now at the top of menus by default.
 
 FIXES:
 - TAS easy control-mode now behaves as intended.
