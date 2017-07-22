@@ -472,6 +472,8 @@ public void OnPluginStart()
     
     
     // CONVARS
+    CreateConVar( "influx_version", INF_VERSION, "Version of Influx. Do not change.", FCVAR_NOTIFY );
+    
     g_ConVar_ChatPrefix = CreateConVar( "influx_chatprefix", DEF_CHATPREFIX, "Prefix for chat messages.", FCVAR_NOTIFY );
     g_ConVar_ChatPrefix.AddChangeHook( E_ConVarChanged_Prefix );
     
