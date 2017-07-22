@@ -52,7 +52,76 @@ public Action Cmd_TasMenu( int client, int args )
     
     menu.AddItem( "b", "< Previous Frame\n " );
     
+    menu.AddItem( "h", "CP Menu" );
     menu.AddItem( "f", "Settings\n " );
+    
+    menu.Display( client, MENU_TIME_FOREVER );
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_TasCPMenu( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !IsPlayerAlive( client ) ) return Plugin_Handled;
+    
+    if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return Plugin_Handled;
+    
+    
+    bool bHasCP = ( g_hFrameCP[client] != null && g_hFrameCP[client].Length > 0 );
+    
+    int numcps = 0;
+    
+    
+    Menu menu = new Menu( Hndlr_TasCPMenu );
+    
+    
+    menu.AddItem( "a", ShouldContinue( client ) ? "Continue\n " : "Stop\n " );
+    
+    
+    menu.AddItem( "b", "Add CP" );
+    menu.AddItem( "c", "Last used", bHasCP ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
+    menu.AddItem( "d", "Last created\n ", bHasCP ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
+    
+    menu.AddItem( "e", "Back to TAS menu" );
+    menu.AddItem( "f", "Settings\n " );
+    
+    
+    if ( bHasCP )
+    {
+        decl String:szDisplay[32];
+        decl String:szInfo[32];
+        
+        int num;
+        
+        int endindex = g_iCurCP[client];
+        
+        for ( int i = g_iCurCP[client] - 1;; i-- )
+        {
+            if ( i < 0 )
+            {
+                i = MAX_FRMCP - 1;
+            }
+            
+            
+            num = g_hFrameCP[client].Get( i, FRMCP_NUM );
+            
+            if ( num > 0 )
+            {
+                FormatEx( szInfo, sizeof( szInfo ), "g%i", num );
+                FormatEx( szDisplay, sizeof( szDisplay ), "CP %i (%i)", num, g_hFrameCP[client].Get( i, FRMCP_FRMINDEX ) + 1 );
+                
+                menu.AddItem( szInfo, szDisplay );
+                
+                ++numcps;
+            }
+            
+            if ( i == endindex ) break;
+        }
+    }
+
+    menu.SetTitle( "TAS CP Menu (!tas_cpmenu)\nCheckpoints: %i\n ", numcps );
     
     menu.Display( client, MENU_TIME_FOREVER );
     

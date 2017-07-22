@@ -57,9 +57,70 @@ public int Hndlr_TasMenu( Menu menu, MenuAction action, int client, int index )
                 return 0;
             }
         }
+        case 'h' :
+        {
+            OpenCPMenu( client );
+            return 0;
+        }
     }
     
     OpenMenu( client );
+    
+    return 0;
+}
+
+public int Hndlr_TasCPMenu( Menu menu, MenuAction action, int client, int index )
+{
+    MENU_HANDLE( menu, action )
+    
+    
+    if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return 0;
+    
+    
+    char szInfo[16];
+    if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
+    
+    
+    switch ( szInfo[0] )
+    {
+        case 'a' :
+        {
+            ContinueOrStop( client );
+        }
+        case 'b' :
+        {
+            AddCP( client );
+        }
+        case 'c' :
+        {
+            GotoCP( client, g_iLastUsedCP[client] );
+        }
+        case 'd' :
+        {
+            GotoCP( client, g_iLastCreatedCP[client] );
+        }
+        case 'e' :
+        {
+            OpenMenu( client );
+            return 0;
+        }
+        case 'f' :
+        {
+            OpenSettingsMenu( client );
+            return 0;
+        }
+        case 'g' :
+        {
+            int num = StringToInt( szInfo[1] );
+            
+            if ( num > 0 )
+            {
+                GotoCP( client, num );
+            }
+        }
+    }
+    
+    OpenCPMenu( client );
     
     return 0;
 }

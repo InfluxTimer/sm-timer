@@ -96,7 +96,6 @@ enum
     FRM_SIZE
 };
 
-
 enum
 {
     AUTOSTRF_OFF = 0,
@@ -105,7 +104,17 @@ enum
     AUTOSTRF_MAXSPEED,
     
     AUTOSTRF_MAX
-}
+};
+
+enum
+{
+    FRMCP_NUM = 0,
+    FRMCP_FRMINDEX,
+    
+    FRMCP_SIZE
+};
+
+#define MAX_FRMCP       50
 
 
 ArrayList g_hFrames[INF_MAXPLAYERS];
@@ -123,6 +132,12 @@ int g_iAutoStrafe[INF_MAXPLAYERS];
 float g_vecLastWantedAngles[INF_MAXPLAYERS][3];
 
 bool g_bAdvanceFrame[INF_MAXPLAYERS];
+
+ArrayList g_hFrameCP[INF_MAXPLAYERS];
+int g_iCurCP[INF_MAXPLAYERS];
+int g_nCPs[INF_MAXPLAYERS];
+int g_iLastUsedCP[INF_MAXPLAYERS];
+int g_iLastCreatedCP[INF_MAXPLAYERS];
 
 
 // CONVARS
@@ -216,6 +231,7 @@ public void OnPluginStart()
     
     // MENUS
     RegConsoleCmd( "sm_tas_menu", Cmd_TasMenu );
+    RegConsoleCmd( "sm_tas_cpmenu", Cmd_TasCPMenu );
     RegConsoleCmd( "sm_tas_settings", Cmd_Settings );
     RegConsoleCmd( "sm_tas_listcmds", Cmd_ListCmds );
     
@@ -282,8 +298,9 @@ public void Influx_OnTimerStartPost( int client, int runid )
     
     delete g_hFrames[client];
     
-    
     g_hFrames[client] = new ArrayList( FRM_SIZE );
+    
+
     
     
     ResetClient( client );
@@ -751,6 +768,8 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
         {
             g_hFrames[client].Resize( i + 1 );
         }
+        
+        EraseFutureCPs( client, i );
     }
     
     
@@ -801,6 +820,11 @@ stock void StopClient( int client )
 stock void OpenMenu( int client )
 {
     FakeClientCommand( client, "sm_tas_menu" );
+}
+
+stock void OpenCPMenu( int client )
+{
+    FakeClientCommand( client, "sm_tas_cpmenu" );
 }
 
 stock void OpenSettingsMenu( int client )
@@ -861,6 +885,11 @@ stock void ResetClient( int client )
 {
     g_bStopped[client] = false;
     g_iStoppedFrame[client] = -1;
+    
+    
+    delete g_hFrameCP[client];
+    g_iCurCP[client] = 0;
+    
     
     StopPlayback( client );
     
@@ -991,3 +1020,154 @@ stock void StopPlayback( int client )
     g_flAccPlayback[client] = 0.0;
 }
 
+stock void EraseFutureCPs( int client, int index )
+{
+    if ( g_hFrameCP[client] == null ) return;
+    
+    
+    int len = GetFrameCPLength( client );
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( index < g_hFrameCP[client].Get( i, FRMCP_FRMINDEX ) )
+        {
+            g_hFrameCP[client].Set( i, 0, FRMCP_NUM );
+        }
+    }
+    
+    g_iCurCP[client] = FindHighestCPNum( client ) + 1;
+}
+
+stock int FindHighestCPNum( int client )
+{
+    int index;
+    
+    int highest = 0;
+    int highest_index = -1;
+    
+    
+    for ( int i = 0; i < MAX_FRMCP; i++ )
+    {
+        if ( g_hFrameCP[client].Get( i, FRMCP_NUM ) < 1 ) continue;
+        
+        
+        index = g_hFrameCP[client].Get( i, FRMCP_FRMINDEX );
+        
+        if ( highest < index )
+        {
+            highest_index = i;
+            highest = index;
+        }
+    }
+    
+    return highest_index;
+}
+
+stock int FindFrameCPByNum( int client, int num )
+{
+    if ( g_hFrameCP[client] == null ) return -1;
+    
+    
+    int len = GetFrameCPLength( client );
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( g_hFrameCP[client].Get( i, FRMCP_NUM ) == num )
+        {
+            return i;
+        }
+    }
+    
+    return -1;
+}
+
+stock int FindFrameCPByIndex( int client, int index )
+{
+    if ( g_hFrameCP[client] == null ) return -1;
+    
+    
+    int len = GetFrameCPLength( client );
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( g_hFrameCP[client].Get( i, FRMCP_FRMINDEX ) == index )
+        {
+            return i;
+        }
+    }
+    
+    return -1;
+}
+
+stock int GetFrameCPLength( int client )
+{
+    if ( g_hFrameCP[client] == null ) return -1;
+    
+    int len = g_hFrameCP[client].Length;
+    
+    if ( g_nCPs[client] < len ) len = g_nCPs[client];
+    
+    return len;
+}
+
+stock void AddCP( int client )
+{
+    if ( g_hFrames[client] == null ) return;
+    
+    
+    if ( g_hFrameCP[client] == null ) CreateFrameCP( client );
+    
+    
+    int index = -1;
+    
+    if ( g_bStopped[client] ) index = g_iStoppedFrame[client];
+    else index = g_hFrames[client].Length - 1;
+    
+    
+    if ( index < 0 || index >= g_hFrames[client].Length ) return;
+    
+    if ( FindFrameCPByIndex( client, index ) != -1 ) return;
+    
+    
+    decl data[FRMCP_SIZE];
+    data[FRMCP_FRMINDEX] = index;
+    data[FRMCP_NUM] = ++g_nCPs[client];
+    
+    g_hFrameCP[client].SetArray( g_iCurCP[client]++, data );
+    
+    if ( g_iCurCP[client] >= MAX_FRMCP ) g_iCurCP[client] = 0;
+    
+    
+    g_iLastCreatedCP[client] = data[FRMCP_NUM];
+}
+
+stock void CreateFrameCP( int client )
+{
+    delete g_hFrameCP[client];
+    
+    g_hFrameCP[client] = new ArrayList( FRMCP_SIZE, MAX_FRMCP );
+    
+    
+    for ( int i = 0; i < MAX_FRMCP; i++ )
+    {
+        g_hFrameCP[client].Set( i, 0, FRMCP_NUM );
+    }
+    
+    g_iCurCP[client] = 0;
+    g_nCPs[client] = 0;
+    
+    g_iLastUsedCP[client] = 0;
+    g_iLastCreatedCP[client] = 0;
+}
+
+stock void GotoCP( int client, int num )
+{
+    if ( num < 1 ) return;
+    
+    
+    int i = FindFrameCPByNum( client, num );
+    
+    if ( i != -1 )
+    {
+        SetFrame( client, g_hFrameCP[client].Get( i, FRMCP_FRMINDEX ), false, true );
+        
+        g_iLastUsedCP[client] = num;
+    }
+}
