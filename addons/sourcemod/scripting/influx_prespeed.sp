@@ -104,7 +104,10 @@ public void OnClientPutInServer( int client )
     g_nJumps[client] = 0;
     g_flLastLand[client] = 0.0;
     
-    Inf_SDKHook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client );
+    if ( !IsFakeClient( client ) )
+    {
+        Inf_SDKHook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client );
+    }
 }
 
 public void Influx_OnPreRunLoad()
