@@ -7,6 +7,13 @@
 #include <influx/runs_sql>
 
 
+
+#define INVALID_MAXSPD          -1.0
+#define INVALID_MAXJUMPS        -2
+#define INVALID_USETRUEVEL      -1
+#define INVALID_DOCAP           -1
+
+
 #define MAX_GROUND_SPD      280.0
 #define MIN_GROUND_TIME     0.2 // Minimum amount of time a player needs to be on the ground before we reset jumps.
 
@@ -168,10 +175,10 @@ public void Influx_OnRunLoad( int runid, KeyValues kv )
     
     data[PRESPEED_RUN_ID] = runid;
     
-    data[PRESPEED_MAX] = view_as<int>( kv.GetFloat( "prespeed_max", -1.0 ) );
-    data[PRESPEED_MAXJUMPS] = kv.GetNum( "prespeed_maxjumps", -2 );
-    data[PRESPEED_USETRUEVEL] = kv.GetNum( "prespeed_usetruevel", -1 );
-    data[PRESPEED_CAP] = kv.GetNum( "prespeed_cap", -1 );
+    data[PRESPEED_MAX] = view_as<int>( kv.GetFloat( "prespeed_max", INVALID_MAXSPD ) );
+    data[PRESPEED_MAXJUMPS] = kv.GetNum( "prespeed_maxjumps", INVALID_MAXJUMPS );
+    data[PRESPEED_USETRUEVEL] = kv.GetNum( "prespeed_usetruevel", INVALID_USETRUEVEL );
+    data[PRESPEED_CAP] = kv.GetNum( "prespeed_cap", INVALID_DOCAP );
     
     g_hPre.PushArray( data );
 }
@@ -190,22 +197,22 @@ public void Influx_OnRunSave( int runid, KeyValues kv )
     int truevel = data[PRESPEED_USETRUEVEL];
     int cap = data[PRESPEED_CAP];
     
-    if ( maxprespd != -1.0 && maxprespd != g_ConVar_Max.FloatValue )
+    if ( maxprespd != INVALID_MAXSPD && maxprespd != g_ConVar_Max.FloatValue )
     {
         kv.SetFloat( "prespeed_max", maxprespd );
     }
     
-    if ( maxjumps != -2 && maxjumps != g_ConVar_MaxJumps.IntValue )
+    if ( maxjumps != INVALID_MAXJUMPS && maxjumps != g_ConVar_MaxJumps.IntValue )
     {
         kv.SetNum( "prespeed_maxjumps", maxjumps );
     }
     
-    if ( truevel != -1 && truevel != g_ConVar_UseTrueVel.IntValue )
+    if ( truevel != INVALID_USETRUEVEL && truevel != g_ConVar_UseTrueVel.IntValue )
     {
         kv.SetNum( "prespeed_usetruevel", truevel ? 1 : 0 );
     }
     
-    if ( cap != -1 && cap != g_ConVar_Cap.IntValue )
+    if ( cap != INVALID_DOCAP && cap != g_ConVar_Cap.IntValue )
     {
         kv.SetNum( "prespeed_cap", cap ? 1 : 0 );
     }
