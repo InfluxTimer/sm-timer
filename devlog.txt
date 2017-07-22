@@ -9,6 +9,7 @@ ADDED:
 - influx_teletorun-plugin (influx_teletorun_restarttocurrent-cvar for sm_restart to set your run to main...)
 - More map zones.
 - influx_version-cvar to track servers running Influx.
+- Cps to TAS.
 
 CHANGES:
 - Influx will now create more bonus run commands (eg. sm_b4/sm_bonus4).
@@ -18,6 +19,7 @@ CHANGES:
 FIXES:
 - TAS easy control-mode now behaves as intended.
 - Errors when server talks in chat.
+- TAS no longer requires recording-module.
 
 CODE:
 - Refactored how runs are created.
