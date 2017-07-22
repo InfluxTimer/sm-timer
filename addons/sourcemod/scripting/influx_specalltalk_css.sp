@@ -24,7 +24,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     {
         FormatEx( szError, error_len, "Bad engine version!" );
         
-        return APLRes_Failure;
+        return APLRes_SilentFailure;
     }
     
     return APLRes_Success;
