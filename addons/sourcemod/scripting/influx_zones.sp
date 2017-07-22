@@ -1133,6 +1133,8 @@ stock bool AddZoneType( ZoneType_t type, const char[] szName, const char[] szSho
     
     g_hZoneTypes.PushArray( data );
     
+    ImportantTypesToHead();
+    
     return true;
 }
 
@@ -1260,4 +1262,33 @@ stock void SetZoneNameByIndex( int index, const char[] szName )
 stock bool IsValidZoneType( ZoneType_t zonetype )
 {
     return ( FindZoneType( zonetype ) != -1 ) ? true : false;
+}
+
+stock void ImportantTypesToHead()
+{
+    // HACK: Display start and end types at the start of the menus.
+    int i, k;
+    ZoneType_t type;
+    
+    int j = 0;
+    
+    int len = g_hZoneTypes.Length;
+    
+    ZoneType_t important[] = { ZONETYPE_START, ZONETYPE_END };
+    
+    for ( i = 0; i < len; i++ )
+    {
+        type = view_as<ZoneType_t>( g_hZoneTypes.Get( i, ZTYPE_TYPE ) );
+        
+        
+        for ( k = 0; k < sizeof( important ); k++ )
+        {
+            if ( type != important[k] ) continue;
+            
+            if ( j != i )
+                g_hZoneTypes.SwapAt( i, j );
+            
+            ++j;
+        }
+    }
 }
