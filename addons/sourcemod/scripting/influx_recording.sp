@@ -240,6 +240,8 @@ public void OnLibraryRemoved( const char[] lib )
 public void Influx_RequestHelpCmds()
 {
     Influx_AddHelpCommand( "replay", "Open replay menu." );
+    Influx_AddHelpCommand( "myreplay", "Play your own recording." );
+    Influx_AddHelpCommand( "deleterecording", "Delete recordings.", true );
 }
 
 public void Influx_OnRequestResultFlags()
