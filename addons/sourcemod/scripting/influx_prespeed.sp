@@ -124,10 +124,10 @@ public void Influx_OnRunCreated( int runid )
     
     data[PRESPEED_RUN_ID] = runid;
     
-    data[PRESPEED_MAX] = view_as<int>( g_ConVar_Max.FloatValue );
-    data[PRESPEED_MAXJUMPS] = g_ConVar_MaxJumps.IntValue;
-    data[PRESPEED_USETRUEVEL] = g_ConVar_UseTrueVel.BoolValue;
-    data[PRESPEED_CAP] = g_ConVar_Cap.BoolValue;
+    data[PRESPEED_MAX] = view_as<int>( INVALID_MAXSPD );
+    data[PRESPEED_MAXJUMPS] = INVALID_MAXJUMPS;
+    data[PRESPEED_USETRUEVEL] = INVALID_USETRUEVEL;
+    data[PRESPEED_CAP] = INVALID_DOCAP;
     
     g_hPre.PushArray( data );
 }
