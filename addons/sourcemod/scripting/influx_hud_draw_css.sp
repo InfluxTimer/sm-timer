@@ -288,7 +288,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         }
         
         
-        if ( g_bLib_Stage && Influx_ShouldDisplayStages( client ) )
+        if ( g_bLib_Stage && Influx_ShouldDisplayStages( target ) )
         {
             int stages = Influx_GetClientStageCount( target );
             
@@ -399,7 +399,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         
         RunState_t state = Influx_GetClientState( target );
         
-        if ( g_bLib_Strafes && state >= STATE_RUNNING && Influx_IsCountingStrafes( client ) )
+        if ( g_bLib_Strafes && state >= STATE_RUNNING && Influx_IsCountingStrafes( target ) )
         {
             Format( szMsg, sizeof( szMsg ), "%s%sStrafes: %i",
                 szMsg,
@@ -407,7 +407,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
                 Influx_GetClientStrafeCount( target ) );
         }
         
-        if ( g_bLib_Jumps && state >= STATE_RUNNING && Influx_IsCountingJumps( client ) )
+        if ( g_bLib_Jumps && state >= STATE_RUNNING && Influx_IsCountingJumps( target ) )
         {
             Format( szMsg, sizeof( szMsg ), "%s%sJumps: %i",
                 szMsg,

@@ -485,7 +485,7 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
         }
         
         
-        if ( g_bLib_Stage && Influx_ShouldDisplayStages( client ) )
+        if ( g_bLib_Stage && Influx_ShouldDisplayStages( target ) )
         {
             int stages = Influx_GetClientStageCount( target );
             
@@ -503,7 +503,7 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
         
         ADD_SEPARATOR( szMsg, "\n " );
         
-        if ( g_bLib_Strafes && state >= STATE_RUNNING && Influx_IsCountingStrafes( client ) )
+        if ( g_bLib_Strafes && state >= STATE_RUNNING && Influx_IsCountingStrafes( target ) )
         {
             Format( szMsg, sizeof( szMsg ), "%s%sStrafes: %i",
                 szMsg,
@@ -511,7 +511,7 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
                 Influx_GetClientStrafeCount( target ) );
         }
         
-        if ( g_bLib_Jumps && state >= STATE_RUNNING && Influx_IsCountingJumps( client ) )
+        if ( g_bLib_Jumps && state >= STATE_RUNNING && Influx_IsCountingJumps( target ) )
         {
             Format( szMsg, sizeof( szMsg ), "%s%sJumps: %i",
                 szMsg,
