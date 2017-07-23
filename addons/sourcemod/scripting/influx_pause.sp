@@ -6,6 +6,7 @@
 
 #include <msharedutil/arrayvec>
 #include <msharedutil/misc>
+#include <msharedutil/ents>
 
 #undef REQUIRE_PLUGIN
 #include <influx/help>
@@ -18,6 +19,7 @@ int g_nPauses[INF_MAXPLAYERS];
 
 float g_vecContinuePos[INF_MAXPLAYERS][3];
 float g_vecContinueAng[INF_MAXPLAYERS][3];
+float g_vecContinueVel[INF_MAXPLAYERS][3];
 char g_szPausedTargetName[INF_MAXPLAYERS][128];
 int g_nPausedTicks[INF_MAXPLAYERS];
 bool g_bPaused[INF_MAXPLAYERS];
@@ -34,6 +36,7 @@ Handle g_hForward_OnClientPause;
 // CONVARS
 ConVar g_ConVar_MaxPausesPerRun;
 ConVar g_ConVar_Cooldown;
+ConVar g_ConVar_UseVel;
 
 
 public Plugin myinfo =
@@ -75,6 +78,7 @@ public void OnPluginStart()
     // CONVARS
     g_ConVar_MaxPausesPerRun = CreateConVar( "influx_pause_maxperrun", "-1", "Maximum pauses per run. -1 = disable limit, 0 = disable completely", FCVAR_NOTIFY, true, -1.0 );
     g_ConVar_Cooldown = CreateConVar( "influx_pause_cooldown", "10", "How many seconds the player has to wait before being able to pause again.", FCVAR_NOTIFY, true, 0.0 );
+    g_ConVar_UseVel = CreateConVar( "influx_pause_usevelocity", "0", "When player resumes, will their velocity also be set?", FCVAR_NOTIFY, true, 0.0 , true, 1.0 );
     
     AutoExecConfig( true, "pause", "influx" );
     
@@ -244,6 +248,8 @@ stock bool PauseRun( int client )
     
     g_vecContinueAng[client][2] = 0.0;
     
+    GetEntityAbsVelocity( client, g_vecContinueVel[client] );
+    
     GetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client], sizeof( g_szPausedTargetName[] ) );
 
     Influx_PrintToChat( _, client, "Your run is now paused. Type {MAINCLR1}!continue{CHATCLR} to resume." );
@@ -292,7 +298,12 @@ stock bool ContinueRun( int client )
     
     Influx_SetClientStartTick( client, GetGameTickCount() - g_nPausedTicks[client] );
     
-    TeleportEntity( client, g_vecContinuePos[client], g_vecContinueAng[client], ORIGIN_VECTOR );
+    
+    float vel[3];
+    vel = ( g_ConVar_UseVel.BoolValue ) ? g_vecContinueVel[client] : ORIGIN_VECTOR;
+    
+    
+    TeleportEntity( client, g_vecContinuePos[client], g_vecContinueAng[client], vel );
     
     
     g_flPauseLimit[client] = GetEngineTime() + g_ConVar_Cooldown.FloatValue;
