@@ -11,18 +11,19 @@ ADDED:
 - More map zones.
 - influx_version-cvar to track servers running Influx.
 - Cps to TAS.
+- influx_pause_usevelocity-cvar to use previous velocity when resuming.
 
 CHANGES:
 - Influx will now create more bonus run commands (eg. sm_b4/sm_bonus4).
 - Normal-style is now at the top of menus by default.
 - Timer zones are now at the top of menus by default.
-- influx_prespeed_maxjumps-cvar is now by default -1. 0 = no jumping at all, 1 = only one jump, etc.
+- influx_prespeed_maxjumps-cvar is now by default -1 = no jump limit. 0 = no jumping at all, 1 = only one jump, etc.
 
 FIXES:
 - TAS easy control-mode now behaves as intended.
 - Errors when server talks in chat.
 - TAS no longer requires recording-module.
-- New runs not following default prespeed settings.
+- Runs not following default prespeed settings. (eg. changing prespeed cvars through console.)
 
 CODE:
 - Refactored how runs are created.
