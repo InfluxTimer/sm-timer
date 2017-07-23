@@ -253,7 +253,7 @@ forward void Influx_OnPostRunLoad();
 native Handle Influx_GetPostRunLoadForward();
 
 
-forward void Influx_OnRunCreated( int runid ); // New run that wasn't loaded from file.
+forward void Influx_OnRunCreated( int runid ); // When run is loaded from file or a new one is created.
 forward void Influx_OnRunDeleted( int runid );
 forward void Influx_OnRunLoad( int runid, KeyValues kv );
 forward void Influx_OnRunSave( int runid, KeyValues kv );
