@@ -182,46 +182,6 @@ public Action Cmd_Main( int client, int args )
     return Plugin_Handled;
 }
 
-public Action Lstnr_Bonus( int client, const char[] command, int argc )
-{
-    if ( !client ) return Plugin_Continue;
-    
-    if ( argc ) return Plugin_Continue;
-    
-    
-    int pos = 0;
-    
-    // "sm_bonus1"
-    if ( StrContains( command, "sm_bonus" ) == 0 )
-    {
-        pos = 8;
-    }
-    // "sm_b1"
-    else
-    {
-        pos = 4;
-    }
-    
-    
-    int num = StringToInt( command[pos] );
-    
-    if ( !num ) num = 1;
-    
-    
-    int index = FindBonusByNum( num );
-    
-    if ( index != -1 )
-    {
-        AttemptToSet( client, g_hBonuses.Get( index, BONUS_RUN_ID ) );
-    }
-    else
-    {
-        Influx_PrintToChat( _, client, "Bonus %i does not exist!", num );
-    }
-    
-    return Plugin_Stop;
-}
-
 public Action Cmd_Bonus( int client, int args )
 {
     if ( !client ) return Plugin_Handled;
@@ -231,13 +191,21 @@ public Action Cmd_Bonus( int client, int args )
     
     if ( args )
     {
-        char szArg[6];
+        char szArg[32];
         GetCmdArgString( szArg, sizeof( szArg ) );
         
         num = StringToInt( szArg );
         
-        if ( !num ) num = 1;
+        if ( !num ) GetBonusNumFromCmd();
     }
+    else
+    {
+        num = GetBonusNumFromCmd();
+    }
+    
+    
+    if ( !num ) num = 1;
+    
     
     int index = FindBonusByNum( num );
     
@@ -248,7 +216,7 @@ public Action Cmd_Bonus( int client, int args )
     }
     else
     {
-        FakeClientCommand( client, "sm_run" );
+        OpenRunMenu( client );
     }
     
     return Plugin_Handled;
@@ -358,8 +326,6 @@ stock int AddBonus( int num, int runid )
         RegConsoleCmd( szCmdName, Cmd_Bonus );
     }
     
-    HookBonusCmd( szCmdName );
-    
     
     FormatEx( szCmdName, sizeof( szCmdName ), "sm_b%i", num );
     if ( !CommandExists( szCmdName ) )
@@ -367,12 +333,32 @@ stock int AddBonus( int num, int runid )
         RegConsoleCmd( szCmdName, Cmd_Bonus );
     }
     
-    HookBonusCmd( szCmdName );
-    
     return index;
 }
 
-stock void HookBonusCmd( const char[] szCmdName )
+stock void OpenRunMenu( int client )
 {
-    AddCommandListener( Lstnr_Bonus, szCmdName );
+    FakeClientCommand( client, "sm_runs" );
+}
+
+stock int GetBonusNumFromCmd()
+{
+    char szArg[32];
+    GetCmdArg( 0, szArg, sizeof( szArg ) );
+    
+    int pos = 0;
+    
+    // "sm_bonus1"
+    if ( StrContains( szArg, "sm_bonus" ) == 0 )
+    {
+        pos = 8;
+    }
+    // "sm_b1"
+    else if ( StrContains( szArg, "sm_b" ) == 0 )
+    {
+        pos = 4;
+    }
+    
+    
+    return StringToInt( szArg[pos] );
 }
