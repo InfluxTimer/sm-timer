@@ -12,6 +12,7 @@
 
 
 #undef REQUIRE_PLUGIN
+#include <influx/ac_log>
 #include <influx/recording>
 #include <influx/strafes>
 #include <influx/jumps>
@@ -289,6 +290,19 @@ public void OnPluginEnd()
 public void Influx_OnRequestStyles()
 {
     OnAllPluginsLoaded();
+}
+
+public Action Influx_OnLogCheat( int client, const char[] szReasonId, int &punishtime, bool &bNotifyAdmin )
+{
+    if ( Influx_GetClientStyle( client ) == STYLE_TAS )
+    {
+        punishtime = ACLOG_NOPUNISH;
+        bNotifyAdmin = false;
+        
+        return Plugin_Handled;
+    }
+    
+    return Plugin_Continue;
 }
 
 public void Influx_OnTimerStartPost( int client, int runid )
@@ -619,20 +633,6 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
     flLastLegitYaw[client] = wantedyaw;
     
     return Plugin_Continue;
-}
-
-stock float NormalizeAngle( float ang )
-{
-    if ( ang > 180.0 )
-    {
-        ang -= 360.0;
-    }
-    else if ( ang < -180.0 )
-    {
-        ang += 360.0;
-    }
-    
-    return ang;
 }
 
 stock void Playback( int client )

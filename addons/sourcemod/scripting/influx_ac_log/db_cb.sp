@@ -2,7 +2,7 @@ public void Thrd_Empty( Handle db, Handle res, const char[] szError, int client 
 {
     if ( res == null )
     {
-        Inf_DB_LogError( db, "inserting log data" );
+        Inf_DB_LogError( db, "inserting log data", client ? GetClientOfUserId( client ) : 0, "An error occurred saving data!" );
     }
 }
 
@@ -10,7 +10,7 @@ public void Thrd_PrintLog( Handle db, Handle res, const char[] szError, int clie
 {
     if ( res == null )
     {
-        Inf_DB_LogError( db, "printing client cheat log" );
+        Inf_DB_LogError( db, "printing cheat log" );
         return;
     }
     
@@ -25,8 +25,13 @@ public void Thrd_PrintLog( Handle db, Handle res, const char[] szError, int clie
     
     int num = 0;
     
+    int uid;
+    int lastuid = -1;
+    
     while ( SQL_FetchRow( res ) )
     {
+        uid = SQL_FetchInt( res, 0 );
+        
         PunishTimeToName( SQL_FetchInt( res, 1 ), szTime, sizeof( szTime ) );
         
         if ( szTime[0] != 0 ) Format( szTime, sizeof( szTime ), " | %s", szTime );
@@ -37,7 +42,7 @@ public void Thrd_PrintLog( Handle db, Handle res, const char[] szError, int clie
         SQL_FetchString( res, 4, szReason, sizeof( szReason ) );
         
         
-        if ( szName[0] == 0 )
+        if ( lastuid != uid )
         {
             SQL_FetchString( res, 5, szName, sizeof( szName ) );
             
@@ -47,8 +52,32 @@ public void Thrd_PrintLog( Handle db, Handle res, const char[] szError, int clie
         
         PrintToConsole( client, "%s | %s%s | %s", szReason, szDate, szTime, szMap );
         
+        
+        lastuid = uid;
         ++num;
     }
     
-    Influx_PrintToChat( _, client, "Printed %i logged activities to console." );
+    Influx_PrintToChat( _, client, "Printed {MAINCLR1}%i{CHATCLR} logged activities to console.", num );
+}
+
+public void Thrd_PrintUnseenNum( Handle db, Handle res, const char[] szError, int client )
+{
+    if ( res == null )
+    {
+        Inf_DB_LogError( db, "printing unseen activity count" );
+        return;
+    }
+    
+    if ( !(client = GetClientOfUserId( client )) ) return;
+    
+    if ( !SQL_GetRowCount( res ) ) return;
+    
+    if ( !SQL_FetchRow( res ) ) return;
+    
+    
+    int num = SQL_FetchInt( res, 0 );
+    if ( num < 1 ) return;
+    
+    
+    Influx_PrintToChat( _, client, "There are {MAINCLR1}%i{CHATCLR} unseen logged activities.", num );
 }
