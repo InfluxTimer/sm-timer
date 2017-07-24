@@ -11,6 +11,7 @@ public int Hndlr_Rank( Menu menu, MenuAction action, int client, int index )
     if ( i <= -1 )
     {
         SetClientDefRank( client );
+        DB_UpdateClientChosenRank( client, "" );
     }
     else
     {
