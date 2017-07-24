@@ -30,6 +30,7 @@ FIXES:
 - Added missing commands to help menu.
 - Spectating in some cases would display hud incorrectly.
 - Some modules ignoring timer finish flags.
+- Simple ranks not remembering to use default rank.
 
 CODE:
 - Refactored how runs are created. Influx_OnRunCreated-forward is now also called when loading run from a file.
