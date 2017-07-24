@@ -12,12 +12,15 @@ ADDED:
 - influx_version-cvar to track servers running Influx.
 - Cps to TAS.
 - influx_pause_usevelocity-cvar to use previous velocity when resuming.
+- influx_ac_gains-plugin to monitor player's gains. Player will get logged & punished for too high peak gains and avg. per jump gains.
+- influx_ac_log-plugin to log/punish suspicious activity. Use sm_printaclog <name> & sm_printnewaclog to view logged info.
 
 CHANGES:
 - Influx will now create more bonus run commands (eg. sm_b4/sm_bonus4).
 - Normal-style is now at the top of menus by default.
 - Timer zones are now at the top of menus by default.
 - influx_prespeed_maxjumps-cvar is now by default -1 = no jump limit. 0 = no jumping at all, 1 = only one jump, etc.
+- Removed sm_credits & sm_version commands. Both functionality moved to sm_influx instead.
 
 FIXES:
 - TAS easy control-mode now behaves as intended.
