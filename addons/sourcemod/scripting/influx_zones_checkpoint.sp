@@ -335,6 +335,10 @@ public void Influx_OnTimerStartPost( int client, int runid )
 
 public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style, float time, float prev_pb, float prev_best, int flags )
 {
+    // We don't get saved to db.
+    if ( flags & RES_TIME_DONTSAVE ) return;
+    
+    
     if ( flags & (RES_TIME_PB | RES_TIME_FIRSTOWNREC) )
     {
         DB_InsertClientTimes( client, runid, mode, style, flags );

@@ -42,6 +42,10 @@ public void OnPluginStart()
 
 stock bool ShouldPrint( int flags, float time, float prev_pb, float prev_best )
 {
+    // We don't get saved to db.
+    if ( flags & RES_TIME_DONTSAVE ) return false;
+    
+    
     if ( time < prev_pb ) return true;
     
     if ( time < prev_best ) return true;

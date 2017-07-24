@@ -219,6 +219,10 @@ public void Influx_OnClientIdRetrieved( int client, int uid, bool bNew )
 
 public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style, float time, float prev_pb, float prev_best, int flags )
 {
+    // We don't get saved to db.
+    if ( flags & RES_TIME_DONTSAVE ) return;
+    
+
     if ( GetMapRewardPointsSafe( runid ) == 0 )
     {
         return;
