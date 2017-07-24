@@ -24,6 +24,20 @@ stock float GetVectorsAngle( const float vec1[3], const float vec2[3] )
                         vec1[0] * vec2[0] + vec1[1] * vec2[1] );
 }
 
+stock float NormalizeAngle( float ang )
+{
+    if ( ang > 180.0 )
+    {
+        ang -= 360.0;
+    }
+    else if ( ang < -180.0 )
+    {
+        ang += 360.0;
+    }
+    
+    return ang;
+}
+
 stock void CorrectMinsMaxs( float mins_out[3], float maxs_out[3] )
 {
     float temp;
