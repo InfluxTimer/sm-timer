@@ -29,6 +29,7 @@ FIXES:
 - Runs not following prespeed cvar settings. (eg. changing prespeed cvars through console.)
 - Added missing commands to help menu.
 - Spectating in some cases would display hud incorrectly.
+- Some modules ignoring timer finish flags.
 
 CODE:
 - Refactored how runs are created. Influx_OnRunCreated-forward is now also called when loading run from a file.
