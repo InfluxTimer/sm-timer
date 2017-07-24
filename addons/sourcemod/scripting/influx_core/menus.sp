@@ -3,6 +3,9 @@
 
 public Action Cmd_Credits( int client, int args )
 {
+    Inf_ReplyToClient( client, "Server is running {MAINCLR1}"...INF_NAME..."{CHATCLR} version {MAINCLR1}"...INF_VERSION..."{CHATCLR}!" );
+    
+    
     if ( !client ) return Plugin_Handled;
     
     

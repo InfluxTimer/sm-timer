@@ -30,20 +30,6 @@ public Action Cmd_ReloadOverrides( int client, int args )
     return Plugin_Handled;
 }
 
-public Action Cmd_Version( int client, int args )
-{
-    if ( client )
-    {
-        Influx_PrintToChat( _, client, "Server is running {MAINCLR1}"...INF_NAME..."{CHATCLR} version {MAINCLR1}"...INF_VERSION..."{CHATCLR}!" );
-    }
-    else
-    {
-        PrintToServer( "Server is running "...INF_NAME..." version "...INF_VERSION..."!" );
-    }
-    
-    return Plugin_Handled;
-}
-
 public Action Cmd_PrintMyRecords( int client, int args )
 {
     if ( !client ) return Plugin_Handled;

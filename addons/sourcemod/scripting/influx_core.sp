@@ -521,7 +521,7 @@ public void OnPluginStart()
     
     // MENUS
     RegConsoleCmd( "sm_influx", Cmd_Credits );
-    RegConsoleCmd( "sm_credits", Cmd_Credits );
+    //RegConsoleCmd( "sm_credits", Cmd_Credits );
     
     
     RegConsoleCmd( "sm_mode", Cmd_Change_Mode );
@@ -529,10 +529,6 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_style", Cmd_Change_Style );
     RegConsoleCmd( "sm_styles", Cmd_Change_Style );
-    
-    
-    // CMDS
-    RegConsoleCmd( "sm_version", Cmd_Version );
     
     
     // RECORD CMDS
