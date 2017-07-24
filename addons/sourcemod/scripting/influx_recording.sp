@@ -237,7 +237,7 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = false;
 }
 
-public void Influx_RequestHelpCmds()
+public void Influx_OnRequestHelpCmds()
 {
     Influx_AddHelpCommand( "replay", "Open replay menu." );
     Influx_AddHelpCommand( "myreplay", "Play your own recording." );
