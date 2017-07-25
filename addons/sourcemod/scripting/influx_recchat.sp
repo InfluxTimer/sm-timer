@@ -128,7 +128,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
         Inf_FormatSeconds( Inf_GetTimeDif( time, prev_best, c ), szForm, sizeof( szForm ), szFormSec );
         
         FormatEx( szRec, sizeof( szRec ), " {CHATCLR}({%s}%c%s{CHATCLR})",
-            isbest ? "LIGHTRED" : "GREEN", // Is new best?
+            isbest ? "GREEN" : "LIGHTRED", // Is new best?
             c,
             szForm );
     }
@@ -185,7 +185,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     GetClientName( client, szName, sizeof( szName ) );
     Influx_RemoveChatColors( szName, sizeof( szName ) );
     
-    Influx_PrintToChatEx( _, client, clients, nClients, "{MAINCLR1}%s{CHATCLR} finished {MAINCLR1}%s{CHATCLR} in %s!%s%s%s%s%s%s",
+    Influx_PrintToChatEx( _, client, clients, nClients, "{MAINCLR1}%s{CHATCLR} finished {MAINCLR1}%s{CHATCLR} in {MAINCLR1}%s{CHATCLR}!%s%s%s%s%s%s",
         szName,
         szRun,
         szForm,
