@@ -154,6 +154,10 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
         {
             ChangeAutoStrafe( client );
         }
+        case 'g' :
+        {
+            ChangeAimlock( client );
+        }
         case 'c' :
         {
             OpenCmdListMenu( client );

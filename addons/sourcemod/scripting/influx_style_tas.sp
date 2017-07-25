@@ -109,6 +109,16 @@ enum
 
 enum
 {
+    AIMLOCK_NONE = 0,
+    
+    AIMLOCK_FAKEANG,
+    AIMLOCK_ANG,
+    
+    AIMLOCK_MAX
+};
+
+enum
+{
     FRMCP_NUM = 0,
     FRMCP_FRMINDEX,
     
@@ -139,6 +149,8 @@ int g_iCurCP[INF_MAXPLAYERS];
 int g_nCPs[INF_MAXPLAYERS];
 int g_iLastUsedCP[INF_MAXPLAYERS];
 int g_iLastCreatedCP[INF_MAXPLAYERS];
+
+int g_iAimlock[INF_MAXPLAYERS];
 
 
 // CONVARS
@@ -477,6 +489,7 @@ public void OnClientPutInServer( int client )
     SetClientCheats( client, false );
     
     g_iAutoStrafe[client] = AUTOSTRF_OFF;
+    g_iAimlock[client] = AIMLOCK_FAKEANG;
 }
 
 public void OnClientDisconnect( int client )
@@ -527,6 +540,10 @@ public void E_PostThinkPost_Client( int client )
         if ( g_flPlayback[client] != 0.0 && g_bStopped[client] )
         {
             Playback( client );
+        }
+        else if ( g_bStopped[client] )
+        {
+            FreezeAim( client );
         }
         else
         {
@@ -810,6 +827,29 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
     return true;
 }
 
+stock void FreezeAim( int client )
+{
+    if ( g_iAimlock[client] == AIMLOCK_NONE ) return;
+    
+    
+    if ( g_hFrames[client] == null ) return;
+    
+    
+    int i = g_iStoppedFrame[client];
+    
+    if ( i < 0 || i >= g_hFrames[client].Length ) return;
+    
+    
+    int offset = ( g_iAimlock[client] == AIMLOCK_FAKEANG ) ? FRM_ANG : FRM_ANGREAL;
+    
+    float ang[3];
+    ang[0] = g_hFrames[client].Get( i, offset );
+    ang[1] = g_hFrames[client].Get( i, offset + 1 );
+    ang[2] = 0.0;
+    
+    TeleportEntity( client, NULL_VECTOR, ang, NULL_VECTOR );
+}
+
 stock void StopClient( int client )
 {
     g_bStopped[client] = true;
@@ -986,6 +1026,14 @@ stock void ChangeAutoStrafe( int client )
     if ( ++g_iAutoStrafe[client] >= AUTOSTRF_MAX || g_iAutoStrafe[client] < 0 )
     {
         g_iAutoStrafe[client] = AUTOSTRF_OFF;
+    }
+}
+
+stock void ChangeAimlock( int client )
+{
+    if ( ++g_iAimlock[client] >= AIMLOCK_MAX || g_iAimlock[client] < 0 )
+    {
+        g_iAimlock[client] = AIMLOCK_NONE;
     }
 }
 

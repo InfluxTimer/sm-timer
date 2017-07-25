@@ -146,6 +146,7 @@ public Action Cmd_Settings( int client, int args )
     FormatEx( szDisplay, sizeof( szDisplay ), "Timescale: %.2fx", g_flTimescale[client] );
     menu.AddItem( "a", szDisplay );
     
+    
     switch ( g_iAutoStrafe[client] )
     {
         case AUTOSTRF_CONTROL : strcopy( szDisplay, sizeof( szDisplay ), "Easy Control" );
@@ -153,8 +154,20 @@ public Action Cmd_Settings( int client, int args )
         default : strcopy( szDisplay, sizeof( szDisplay ), "Off" );
     }
     
-    Format( szDisplay, sizeof( szDisplay ), "Auto-strafe: %s\n ", szDisplay );
+    Format( szDisplay, sizeof( szDisplay ), "Auto-strafe: %s", szDisplay );
     menu.AddItem( "b", szDisplay );
+    
+    
+    switch ( g_iAimlock[client] )
+    {
+        case AIMLOCK_FAKEANG : strcopy( szDisplay, sizeof( szDisplay ), "Silent Angles" );
+        case AIMLOCK_ANG : strcopy( szDisplay, sizeof( szDisplay ), "Real Angles" );
+        default : strcopy( szDisplay, sizeof( szDisplay ), "Off" );
+    }
+    
+    Format( szDisplay, sizeof( szDisplay ), "Pause Aimlock: %s\n ", szDisplay );
+    menu.AddItem( "g", szDisplay );
+    
     
     menu.AddItem( "c", "Display list of commands\n " );
     
