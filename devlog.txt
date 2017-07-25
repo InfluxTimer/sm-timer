@@ -10,7 +10,7 @@ ADDED:
 - influx_teletorun-plugin (influx_teletorun_restarttocurrent-cvar for sm_restart to set your run to main...)
 - More map zones.
 - influx_version-cvar to track servers running Influx.
-- Cps to TAS.
+- Checkpoints & pause aimlock to TAS.
 - influx_pause_usevelocity-cvar to use previous velocity when resuming.
 - influx_ac_gains-plugin to monitor player's gains. Player will get logged & punished for too high peak gains and avg. per jump gains.
 - influx_ac_log-plugin to log/punish suspicious activity. Use sm_printaclog <name> & sm_printnewaclog to view logged info.
@@ -21,6 +21,7 @@ CHANGES:
 - Timer zones are now at the top of menus by default.
 - influx_prespeed_maxjumps-cvar is now by default -1 = no jump limit. 0 = no jumping at all, 1 = only one jump, etc.
 - Removed sm_credits & sm_version commands. Both functionality moved to sm_influx instead.
+- Switched time difference colors. (aveniccii)
 
 FIXES:
 - TAS easy control-mode now behaves as intended.
