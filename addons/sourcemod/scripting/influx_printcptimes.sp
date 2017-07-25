@@ -85,7 +85,7 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
         
         FormatEx( szSR, sizeof( szSR ), "SR: {MAINCLR1}%s{CHATCLR} ({%s}%c%s{CHATCLR})",
             szTime,
-            ( c == '-' ) ? "LIGHTRED" : "GREEN",
+            ( c == '-' ) ? "GREEN" : "LIGHTRED",
             c,
             szTimeDif );
     }
@@ -97,7 +97,7 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
         
         FormatEx( szPB, sizeof( szPB ), "PB: {MAINCLR1}%s{CHATCLR} ({%s}%c%s{CHATCLR})",
             szTime,
-            ( c == '-' ) ? "LIGHTRED" : "GREEN",
+            ( c == '-' ) ? "GREEN" : "LIGHTRED",
             c,
             szTimeDif );
     }
@@ -109,7 +109,7 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
         
         FormatEx( szBest, sizeof( szBest ), "BEST: {MAINCLR1}%s{CHATCLR} ({%s}%c%s{CHATCLR})",
             szTime,
-            ( c == '-' ) ? "LIGHTRED" : "GREEN",
+            ( c == '-' ) ? "GREEN" : "LIGHTRED",
             c,
             szTimeDif );
     }
