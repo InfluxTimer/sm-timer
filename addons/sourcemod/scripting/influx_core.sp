@@ -206,6 +206,8 @@ ConVar g_ConVar_LadderFreestyle;
 
 ConVar g_ConVar_TeleToStart;
 
+ConVar g_ConVar_ModeActAsStyle;
+
 ConVar g_ConVar_ValidMapNames;
 Regex g_Regex_ValidMapNames;
 
@@ -491,11 +493,11 @@ public void OnPluginStart()
     g_ConVar_SuppressMaxSpdWarning = CreateConVar( "influx_core_suppressmaxwepspdwarning", "0", "Suppress player max weapon speed warning? (one printed to console)", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
-    g_ConVar_DefMode = CreateConVar( "influx_defaultmode", "auto", "Default mode.", FCVAR_NOTIFY );
+    g_ConVar_DefMode = CreateConVar( "influx_defaultmode", "auto", "Default mode. Recommended to not change.", FCVAR_NOTIFY );
     g_ConVar_DefMode.AddChangeHook( E_ConVarChanged_DefMode );
     g_iDefMode = MODE_AUTO;
     
-    g_ConVar_DefStyle = CreateConVar( "influx_defaultstyle", "normal", "Default style.", FCVAR_NOTIFY );
+    g_ConVar_DefStyle = CreateConVar( "influx_defaultstyle", "normal", "Default style. Recommended to not change.", FCVAR_NOTIFY );
     g_ConVar_DefStyle.AddChangeHook( E_ConVarChanged_DefStyle );
     g_iDefStyle = STYLE_NORMAL;
     
@@ -504,6 +506,8 @@ public void OnPluginStart()
     g_ConVar_LadderFreestyle = CreateConVar( "influx_ladderfreestyle", "1", "Whether to allow freestyle on ladders.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     g_ConVar_TeleToStart = CreateConVar( "influx_teletostartonspawn", "1", "0 = Never teleport when spawning, 1 = Only teleport if no spawnpoints are found, 2 = Always teleport to start.", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
+    
+    g_ConVar_ModeActAsStyle = CreateConVar( "influx_modeactstyle", "0", "If true, changing your mode/style will set your mode/style to default, effectively making all modes into a style. (working like other timers where you can't have 400vel hsw, etc.)", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
     g_ConVar_ValidMapNames = CreateConVar( "influx_core_validmapnames", DEF_VALIDMAPNAMES, "Regular expression of all valid map names. Players can only search for these maps." );
@@ -1807,6 +1811,13 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
         SendStatusChanged( client );
     }
     
+    
+    if ( g_ConVar_ModeActAsStyle.BoolValue && mode != GetDefaultMode() && g_iStyleId[client] != GetDefaultStyle() )
+    {
+        SetClientStyle( client, GetDefaultStyle(), false, false );
+    }
+    
+    
     return true;
 }
 
@@ -1873,6 +1884,13 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
     {
         SendStatusChanged( client );
     }
+    
+    
+    if ( g_ConVar_ModeActAsStyle.BoolValue && style != GetDefaultStyle() && g_iModeId[client] != GetDefaultMode() )
+    {
+        SetClientMode( client, GetDefaultMode(), false, false, true );
+    }
+    
     
     return true;
 }
