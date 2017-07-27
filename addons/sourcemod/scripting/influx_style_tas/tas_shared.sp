@@ -152,11 +152,20 @@ int g_iLastCreatedCP[INF_MAXPLAYERS];
 
 int g_iAimlock[INF_MAXPLAYERS];
 
+#if defined USE_LAGGEDMOVEMENTVALUE
+int g_nIgnoredCmds[INF_MAXPLAYERS];
+int g_flLastProcessedButtons[INF_MAXPLAYERS];
+float g_flLastProcessedYaw[INF_MAXPLAYERS];
+float g_flLastProcessedVel[INF_MAXPLAYERS][3];
+#endif
+
 
 // CONVARS
 ConVar g_ConVar_SilentStrafer;
 
+#if !defined USE_LAGGEDMOVEMENTVALUE
 ConVar g_ConVar_Timescale;
+#endif
 ConVar g_ConVar_Cheats;
 
 
@@ -173,7 +182,6 @@ bool g_bLate;
 #include "influx_style_tas/menus.sp"
 #include "influx_style_tas/natives.sp"
 
-
 public Plugin myinfo =
 {
     author = INF_AUTHOR,
@@ -183,33 +191,25 @@ public Plugin myinfo =
     version = INF_VERSION
 };
 
-public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
-{
-    RegPluginLibrary( INFLUX_LIB_STYLE_TAS );
-    
-    
-    g_bLate = late;
-    
-    
-    // NATIVES
-    CreateNative( "Influx_GetClientTASTime", Native_GetClientTASTime );
-}
-
 public void OnPluginStart()
 {
     // CONVARS
+#if !defined USE_LAGGEDMOVEMENTVALUE
     if ( (g_ConVar_Timescale = FindConVar( "host_timescale" )) == null )
     {
         SetFailState( INF_CON_PRE..."Couldn't find handle for host_timescale!" );
     }
+#endif
     
     if ( (g_ConVar_Cheats = FindConVar( "sv_cheats" )) == null )
     {
         SetFailState( INF_CON_PRE..."Couldn't find handle for sv_cheats!" );
     }
     
-    g_ConVar_Timescale.Flags &= ~(FCVAR_REPLICATED | FCVAR_CHEAT);
     
+#if !defined USE_LAGGEDMOVEMENTVALUE
+    g_ConVar_Timescale.Flags &= ~(FCVAR_REPLICATED | FCVAR_CHEAT);
+#endif
     
     
     g_ConVar_SilentStrafer = CreateConVar( "influx_style_tas_silentstrafer", "1", "Do we record the player's wanted angles to a replay?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
@@ -294,9 +294,10 @@ public void OnPluginEnd()
 {
     Influx_RemoveStyle( STYLE_TAS );
     
-    
+#if !defined USE_LAGGEDMOVEMENTVALUE
     g_ConVar_Timescale.FloatValue = 1.0;
     g_ConVar_Timescale.Flags |= (FCVAR_REPLICATED | FCVAR_CHEAT);
+#endif
 }
 
 public void Influx_OnRequestStyles()
@@ -434,11 +435,12 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
         
         UnhookThinks( client );
         
-        
+        /*
         if ( !Inf_SDKHook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client ) )
         {
             return Plugin_Handled;
         }
+        */
         
         if ( !Inf_SDKHook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client ) )
         {
@@ -461,7 +463,7 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
 
 stock void UnhookThinks( int client )
 {
-    SDKUnhook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client );
+    //SDKUnhook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client );
     SDKUnhook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
 }
 
@@ -473,11 +475,6 @@ public void Influx_OnClientStyleChangePost( int client, int style, int laststyle
         
         
         OpenMenu( client );
-        
-        if ( GetEngineVersion() == Engine_CSGO && laststyle != STYLE_TAS )
-        {
-            Influx_PrintToChat( _, client, "Make sure to use {MAINCLR1}cl_clock_correction_force_server_tick/cl_clockdrift_max_ms 0{CHATCLR} to decrease laggy timescale!" );
-        }
     }
 }
 
@@ -510,20 +507,6 @@ public Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &valu
     return Plugin_Continue;
 }
 
-public void E_PreThinkPost_Client( int client )
-{
-#if defined DEBUG_THINK
-    PrintToServer( INF_DEBUG_PRE..."PreThinkPost - TAS (timescale: %.1f)", g_flTimescale[client] );
-#endif
-
-    if ( !IsPlayerAlive( client ) ) return;
-    
-    if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return;
-    
-    
-    g_ConVar_Timescale.FloatValue = g_flTimescale[client];
-}
-
 public void E_PostThinkPost_Client( int client )
 {
 #if defined DEBUG_THINK
@@ -532,8 +515,17 @@ public void E_PostThinkPost_Client( int client )
 
     if ( !IsPlayerAlive( client ) ) return;
     
-    if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return;
+    if ( Influx_GetClientStyle( client ) != STYLE_TAS )
+    {
+        UnhookThinks( client );
+        return;
+    }
     
+#if defined USE_LAGGEDMOVEMENTVALUE
+    if ( g_nIgnoredCmds[client] ) return;
+    
+    g_flLastProcessedButtons[client] = GetClientButtons( client );
+#endif
     
     if ( Influx_GetClientState( client ) == STATE_RUNNING )
     {
@@ -550,8 +542,6 @@ public void E_PostThinkPost_Client( int client )
             InsertFrame( client );
         }
     }
-    
-    g_ConVar_Timescale.FloatValue = 1.0;
     
     // HACK
     Influx_SetClientStartTick( client, GetGameTickCount() - (g_iStoppedFrame[client] + 1) );
@@ -576,6 +566,25 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
     
     
     g_vecLastWantedAngles[client] = angles;
+    
+    
+#if defined USE_LAGGEDMOVEMENTVALUE
+    int ignore_cmds = RoundFloat( 1.0 / g_flTimescale[client] );
+    
+    if ( ++g_nIgnoredCmds[client] < ignore_cmds )
+    {
+        buttons = g_flLastProcessedButtons[client];
+        vel = g_flLastProcessedVel[client];
+        angles[1] = g_flLastProcessedYaw[client];
+        return Plugin_Continue;
+    }
+    
+    g_nIgnoredCmds[client] = 0;
+    
+    g_flLastProcessedVel[client] = vel;
+    g_flLastProcessedYaw[client] = angles[1];
+#endif
+    
     
     if ( g_iAutoStrafe[client] == AUTOSTRF_OFF )
     {
@@ -646,6 +655,11 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
         }
     }
     
+    
+#if defined USE_LAGGEDMOVEMENTVALUE
+    g_flLastProcessedVel[client] = vel;
+    g_flLastProcessedYaw[client] = angles[1];
+#endif
     
     flLastLegitYaw[client] = wantedyaw;
     
@@ -960,8 +974,13 @@ stock void SetTimescale( int client, float value )
     
     if ( !IsFakeClient( client ) )
     {
+#if defined USE_LAGGEDMOVEMENTVALUE
+        SetEntPropFloat( client, Prop_Send, "m_flLaggedMovementValue", value );
+#else
         Inf_SendConVarValueFloat( client, g_ConVar_Timescale, value, "%.2f" );
+#endif
     }
+
 }
 
 stock void IncreaseTimescale( int client )
