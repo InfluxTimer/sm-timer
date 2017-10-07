@@ -9,7 +9,7 @@
 #include <msharedutil/ents>
 
 
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_DIF
 
 
@@ -218,7 +218,7 @@ stock void CalcGains( int client )
     
     
 #if defined DEBUG
-    PrintToServer( "Perc: %.1f | Avg: %.1f | Peak: %.1f",
+    PrintToServer( "Gain: %.1f | Avg: %.1f | Peak: %.3f",
         g,
         (g_flLastGains[client] + g) / 2.0,
         peakg );
