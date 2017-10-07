@@ -248,6 +248,9 @@ stock void DrawHudMsg()
     {
         if ( !IsClientInGame( i ) || IsFakeClient( i ) ) continue;
         
+        if ( g_bLib_Hud && Influx_GetClientHideFlags( i ) & HIDEFLAG_SIDEBAR ) continue;
+        
+        
         int target = GetClientTarget( i );
         if ( !target ) continue;
         
