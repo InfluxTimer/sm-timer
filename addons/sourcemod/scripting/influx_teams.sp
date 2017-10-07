@@ -52,14 +52,6 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_respawn", Cmd_Spawn );
     
     
-    AddCommandListener( Lstnr_Spawn, "sm_r" );
-    AddCommandListener( Lstnr_Spawn, "sm_re" );
-    AddCommandListener( Lstnr_Spawn, "sm_rs" );
-    AddCommandListener( Lstnr_Spawn, "sm_restart" );
-    AddCommandListener( Lstnr_Spawn, "sm_start" );
-    
-    
-    
     // Blocked commands
     // So you can spawn without setting class.
     if ( GetEngineVersion() == Engine_CSS )
@@ -71,6 +63,15 @@ public void OnPluginStart()
     
     
     g_bLib_Pause = LibraryExists( INFLUX_LIB_PAUSE );
+}
+
+public void OnAllPluginsLoaded()
+{
+    ListenToSpawnCommand( "sm_r" );
+    ListenToSpawnCommand( "sm_re" );
+    ListenToSpawnCommand( "sm_rs" );
+    ListenToSpawnCommand( "sm_restart" );
+    ListenToSpawnCommand( "sm_start" );
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -247,6 +248,17 @@ stock void SpawnPlayer( int client )
     {
         CS_RespawnPlayer( client );
     }
+}
+
+stock void ListenToSpawnCommand( const char[] cmd )
+{
+    // Reason why we use a listener is so that we hook before influx_teletorun restart commands.
+    // This makes sure we have the intended behavior: spawn the player -> tele to run.
+    // NOTE: Does no support late-loading.
+    if ( CommandExists( cmd ) )
+        AddCommandListener( Lstnr_Spawn, cmd );
+    else
+        RegConsoleCmd( cmd, Cmd_Spawn );
 }
 
 // NATIVES
