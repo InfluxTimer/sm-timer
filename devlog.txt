@@ -7,6 +7,7 @@ COMPATIBILITY:
 - Updated/added map zones.
 
 ADDED:
+- influx_modeactstyle-cvar for typical timer behavior. (modes = styles, no 400vel hsw, etc.)
 - influx_teletorun-plugin (influx_teletorun_restarttocurrent-cvar for sm_restart to set your run to main...)
 - More map zones.
 - influx_version-cvar to track servers running Influx.
@@ -16,6 +17,7 @@ ADDED:
 - influx_ac_log-plugin to log/punish suspicious activity. Use sm_printaclog <name> & sm_printnewaclog to view logged info.
 
 CHANGES:
+- CS:GO TAS uses laggedmovementvalue.
 - Influx will now create more bonus run commands (eg. sm_b4/sm_bonus4).
 - Normal-style is now at the top of menus by default.
 - Timer zones are now at the top of menus by default.
