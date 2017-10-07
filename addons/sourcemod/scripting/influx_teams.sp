@@ -51,13 +51,11 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_spawn", Cmd_Spawn );
     RegConsoleCmd( "sm_respawn", Cmd_Spawn );
     
-    
-    AddCommandListener( Lstnr_Spawn, "sm_r" );
-    AddCommandListener( Lstnr_Spawn, "sm_re" );
-    AddCommandListener( Lstnr_Spawn, "sm_rs" );
-    AddCommandListener( Lstnr_Spawn, "sm_restart" );
-    AddCommandListener( Lstnr_Spawn, "sm_start" );
-    
+    RegConsoleCmd( "sm_r", Cmd_Spawn );
+    RegConsoleCmd( "sm_re", Cmd_Spawn );
+    RegConsoleCmd( "sm_rs", Cmd_Spawn );
+    RegConsoleCmd( "sm_restart", Cmd_Spawn );
+    RegConsoleCmd( "sm_start", Cmd_Spawn );
     
     
     // Blocked commands
