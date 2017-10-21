@@ -408,7 +408,7 @@ public void OnConfigsExecuted()
 // Only map that you can even come close to this in is bhop_forest_trials where you can use the infinity room.
 stock void SetTeleDistance( float maxvel, float tickrate )
 {
-    float maxtickspd = SquareRoot( maxvel * maxvel + maxvel * maxvel ) * ( 1.0 / tickrate );
+    float maxtickspd = SquareRoot( maxvel * maxvel * 3 ) * ( 1.0 / tickrate );
     
     g_flTeleportDistSq = maxtickspd * maxtickspd;
     
