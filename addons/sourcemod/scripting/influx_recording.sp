@@ -120,6 +120,7 @@ ConVar g_ConVar_AutoPlayback;
 ConVar g_ConVar_Repeat;
 ConVar g_ConVar_BotName;
 ConVar g_ConVar_PreRunTime;
+ConVar g_ConVar_IgnoreDifTickrate;
 
 
 int g_nMaxRecLength;
@@ -197,6 +198,7 @@ public void OnPluginStart()
     g_ConVar_AutoPlayback = CreateConVar( "influx_recording_autoplayback", "1", "Will automatically play replays if players haven't selected one.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     g_ConVar_Repeat = CreateConVar( "influx_recording_repeatplayback", "1", "If no new playback is set, do we keep repeating the same replay?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_IgnoreDifTickrate = CreateConVar( "influx_recording_ignorediftickrate", "0", "0 = Log an error and stop loading recording, 1 = Log an error, 2 = Ignore completely.", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
     
     g_ConVar_BotName = CreateConVar( "influx_recording_botname", DEF_REPLAYBOTNAME, "Replay bot's name.", FCVAR_NOTIFY );
     g_ConVar_BotName.AddChangeHook( E_CvarChange_BotName );
