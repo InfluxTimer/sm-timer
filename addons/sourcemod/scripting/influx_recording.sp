@@ -217,14 +217,6 @@ public void OnPluginStart()
     
     // EVENTS
     HookEvent( "player_spawn", E_PlayerSpawn );
-    
-    
-    // Round it just in case.
-    g_flTickrate = float( RoundFloat( 1.0 / GetTickInterval() ) );
-    
-    SetTeleDistance( 3500.0, g_flTickrate );
-    SetMaxRecordingLength( g_flTickrate );
-    SetMaxPreRunLength();
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -261,6 +253,15 @@ public void Influx_OnPostRunLoad()
     g_iReplayLastFindRun = 0;
     g_iReplayLastFindMode = 0;
     g_iReplayLastFindStyle = -1;
+    
+    
+    // Set settings...
+    // Round it just in case. Must be set OnMapStart.
+    g_flTickrate = float( RoundFloat( 1.0 / GetTickInterval() ) );
+    
+    //SetTeleDistance( 3500.0, g_flTickrate );
+    SetMaxRecordingLength( g_flTickrate );
+    SetMaxPreRunLength();
     
     
     LoadAllRecordings();
