@@ -4,8 +4,10 @@ public void E_PlayerSpawn( Event event, const char[] szEvent, bool bImUselessWhy
     if ( !client ) return;
     
     
-
     if ( GetClientTeam( client ) <= CS_TEAM_SPECTATOR || !IsPlayerAlive( client ) ) return;
+    
+    
+    g_iRunState[client] = STATE_NONE;
     
     
     TeleportOnSpawn( client );
