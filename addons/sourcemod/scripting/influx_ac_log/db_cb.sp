@@ -57,7 +57,7 @@ public void Thrd_PrintLog( Handle db, Handle res, const char[] szError, int clie
         ++num;
     }
     
-    Influx_PrintToChat( _, client, "Printed {MAINCLR1}%i{CHATCLR} logged activities to console.", num );
+    Influx_PrintToChat( _, client, "Printed {MAINCLR1}%i{CHATCLR} logged activities to console. (!markaclogseen)", num );
 }
 
 public void Thrd_PrintUnseenNum( Handle db, Handle res, const char[] szError, int client )
@@ -79,5 +79,5 @@ public void Thrd_PrintUnseenNum( Handle db, Handle res, const char[] szError, in
     if ( num < 1 ) return;
     
     
-    Influx_PrintToChat( _, client, "There are {MAINCLR1}%i{CHATCLR} unseen logged activities.", num );
+    Influx_PrintToChat( _, client, "There are {MAINCLR1}%i{CHATCLR} unseen logged activities. (!printunseenaclog/!printaclog)", num );
 }
