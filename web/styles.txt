@@ -9,6 +9,8 @@
 6=Low Gravity
 7=Backwards
 8=Parkour
+9=TAS
+10=Prespeed
 modes
 0=Scroll
 1=Autobhop

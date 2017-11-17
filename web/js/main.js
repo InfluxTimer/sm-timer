@@ -1,11 +1,12 @@
+'use strict';
 function getURLParamByName( name )
 {
-	var url = window.location.href;
+	const url = window.location.href;
 	
 	name = name.replace( /[\[\]]/g, '\\$&' );
 	
-	var regex = new RegExp( '[?&]' + name + '(=([^&#]*)|&|#|$)' );
-	res = regex.exec( url );
+	const regex = new RegExp( '[?&]' + name + '(=([^&#]*)|&|#|$)' );
+	const res = regex.exec( url );
 	
 	if ( !res ) return null;
 	
@@ -16,7 +17,7 @@ function getURLParamByName( name )
 
 function timerFancyTxt( element, txt, rate, nexttime, stop )
 {
-	var opacity = parseFloat( element.style.opacity );
+	let opacity = parseFloat( element.style.opacity );
 	
 	if ( !stop && opacity <= 0.0 )
 	{
@@ -26,7 +27,11 @@ function timerFancyTxt( element, txt, rate, nexttime, stop )
 		rate = -rate;
 		
 		// We're done. No need to set opacity.
-		if ( txt == '' ) return;
+		if ( txt == '' )
+		{
+			element.fncyTimer = null;
+			return;
+		}
 	}
 	
 	opacity = opacity + rate;
@@ -36,10 +41,11 @@ function timerFancyTxt( element, txt, rate, nexttime, stop )
 	
 	if ( stop && opacity >= 1.0 )
 	{
+		element.fncyTimer = null;
 		return;
 	}
 	
-	setTimeout( timerFancyTxt, nexttime, element, txt, rate, nexttime, stop );
+	element.fncyTimer = setTimeout( timerFancyTxt, nexttime, element, txt, rate, nexttime, stop );
 }
 
 function setElementTxtFancy( element, txt, time )
@@ -47,11 +53,15 @@ function setElementTxtFancy( element, txt, time )
 	// Elements by default may not have opacity set.
 	element.style.opacity = '1.0';
 	
-	var framerate = ( 1.0 / 18.0 );
-	var nexttime = framerate * 1000.0;
+	const framerate = ( 1.0 / 18.0 );
+	const nexttime = framerate * 1000.0;
 	
-	var rate = -(framerate / time) * 2.0;
+	const rate = -(framerate / time) * 2.0;
 	
-	setTimeout( timerFancyTxt, nexttime, element, txt, rate, nexttime, false );
+	if ( element.fncyTimer != null )
+	{
+		clearTimeout( element.fncyTimer );
+	}
+	
+	element.fncyTimer = setTimeout( timerFancyTxt, nexttime, element, txt, rate, nexttime, false );
 }
-
