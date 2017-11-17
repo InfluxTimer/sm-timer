@@ -13,8 +13,6 @@ ADDED:
 - influx_version-cvar to track servers running Influx.
 - Checkpoints & pause aimlock to TAS.
 - influx_pause_usevelocity-cvar to use previous velocity when resuming.
-- influx_ac_gains-plugin to monitor player's gains. Player will get logged & punished for too high peak gains and avg. per jump gains.
-- influx_ac_log-plugin to log/punish suspicious activity. Use sm_printaclog <name> & sm_printnewaclog to view logged info.
 - influx_recording_ignorediftickrate-cvar to ignore tickrate differences in recordings.
 
 CHANGES:
