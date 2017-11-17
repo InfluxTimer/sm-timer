@@ -1,7 +1,7 @@
 1.1.1
 
 COMPATIBILITY:
-- Delete cfg/influx/prespeed.cfg, cfg/influx/pause.cfg to generate new ones with latest cvars.
+- Delete cfg/influx/prespeed.cfg, cfg/influx/pause.cfg, cfg/influx/recording.cfg to generate new ones with latest cvars.
 - If you update any of the following plugins, make sure to also update ALL of them: influx_core/influx_teletorun
 - sm_restart/sm_runs has been migrated to influx_teletorun from influx_core.
 - Updated/added map zones.
