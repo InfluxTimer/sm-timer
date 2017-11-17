@@ -187,13 +187,21 @@ stock bool LoadRecording( const char[] szPath, ArrayList &rec, int &runid, int &
     file.ReadInt32( view_as<int>( flTemp ) );
     if ( flTemp != g_flTickrate )
     {
-        LogError( INF_CON_PRE..."Found recording file '%s' with different tickrate! (Current: %.0f | File: %.0f)",
-            szPath,
-            g_flTickrate,
-            flTemp );
+        int action = g_ConVar_IgnoreDifTickrate.IntValue;
         
-        delete file;
-        return false;
+        if ( action <= 1 )
+        {
+            LogError( INF_CON_PRE..."Found recording file '%s' with different tickrate! (Current: %.0f | File: %.0f)",
+                szPath,
+                g_flTickrate,
+                flTemp );
+        }
+        
+        if ( action == 0 )
+        {
+            delete file;
+            return false;
+        }
     }
     
     

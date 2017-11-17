@@ -140,7 +140,7 @@ public Action Cmd_Practise_Continue( int client, int args )
     if ( !client ) return Plugin_Handled;
     
     
-    if ( Influx_GetClientState( client ) == STATE_RUNNING && g_bPaused[client] )
+    if ( g_bPaused[client] )
     {
         ContinueRun( client );
     }
@@ -295,6 +295,8 @@ stock bool ContinueRun( int client )
         SetEntityMoveType( client, MOVETYPE_WALK );
     }
     
+    
+    Influx_SetClientState( client, STATE_RUNNING );
     
     Influx_SetClientStartTick( client, GetGameTickCount() - g_nPausedTicks[client] );
     

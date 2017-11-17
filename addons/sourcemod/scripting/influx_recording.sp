@@ -120,6 +120,7 @@ ConVar g_ConVar_AutoPlayback;
 ConVar g_ConVar_Repeat;
 ConVar g_ConVar_BotName;
 ConVar g_ConVar_PreRunTime;
+ConVar g_ConVar_IgnoreDifTickrate;
 
 
 int g_nMaxRecLength;
@@ -197,6 +198,7 @@ public void OnPluginStart()
     g_ConVar_AutoPlayback = CreateConVar( "influx_recording_autoplayback", "1", "Will automatically play replays if players haven't selected one.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     g_ConVar_Repeat = CreateConVar( "influx_recording_repeatplayback", "1", "If no new playback is set, do we keep repeating the same replay?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_IgnoreDifTickrate = CreateConVar( "influx_recording_ignorediftickrate", "0", "0 = Log an error and stop loading recording, 1 = Log an error, 2 = Ignore completely.", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
     
     g_ConVar_BotName = CreateConVar( "influx_recording_botname", DEF_REPLAYBOTNAME, "Replay bot's name.", FCVAR_NOTIFY );
     g_ConVar_BotName.AddChangeHook( E_CvarChange_BotName );
@@ -215,14 +217,6 @@ public void OnPluginStart()
     
     // EVENTS
     HookEvent( "player_spawn", E_PlayerSpawn );
-    
-    
-    // Round it just in case.
-    g_flTickrate = float( RoundFloat( 1.0 / GetTickInterval() ) );
-    
-    SetTeleDistance( 3500.0, g_flTickrate );
-    SetMaxRecordingLength( g_flTickrate );
-    SetMaxPreRunLength();
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -259,6 +253,15 @@ public void Influx_OnPostRunLoad()
     g_iReplayLastFindRun = 0;
     g_iReplayLastFindMode = 0;
     g_iReplayLastFindStyle = -1;
+    
+    
+    // Set settings...
+    // Round it just in case. Must be set OnMapStart.
+    g_flTickrate = float( RoundFloat( 1.0 / GetTickInterval() ) );
+    
+    //SetTeleDistance( 3500.0, g_flTickrate );
+    SetMaxRecordingLength( g_flTickrate );
+    SetMaxPreRunLength();
     
     
     LoadAllRecordings();
@@ -406,7 +409,7 @@ public void OnConfigsExecuted()
 // Only map that you can even come close to this in is bhop_forest_trials where you can use the infinity room.
 stock void SetTeleDistance( float maxvel, float tickrate )
 {
-    float maxtickspd = SquareRoot( maxvel * maxvel + maxvel * maxvel ) * ( 1.0 / tickrate );
+    float maxtickspd = SquareRoot( maxvel * maxvel * 3 ) * ( 1.0 / tickrate );
     
     g_flTeleportDistSq = maxtickspd * maxtickspd;
     
