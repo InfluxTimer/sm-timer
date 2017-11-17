@@ -15,9 +15,9 @@ ADDED:
 - influx_pause_usevelocity-cvar to use previous velocity when resuming.
 - influx_ac_gains-plugin to monitor player's gains. Player will get logged & punished for too high peak gains and avg. per jump gains.
 - influx_ac_log-plugin to log/punish suspicious activity. Use sm_printaclog <name> & sm_printnewaclog to view logged info.
+- influx_recording_ignorediftickrate-cvar to ignore tickrate differences in recordings.
 
 CHANGES:
-- CS:GO TAS uses laggedmovementvalue.
 - Influx will now create more bonus run commands (eg. sm_b4/sm_bonus4).
 - Normal-style is now at the top of menus by default.
 - Timer zones are now at the top of menus by default.
@@ -34,6 +34,9 @@ FIXES:
 - Spectating in some cases would display hud incorrectly.
 - Some modules ignoring timer finish flags.
 - Simple ranks not remembering to use default rank.
+- Recordings that go faster than 4950 vel no longer look choppy.
+- Recording-module's tickrate being wrong.
+- Timer sometimes continueing when respawning.
 
 CODE:
 - Refactored how runs are created. Influx_OnRunCreated-forward is now also called when loading run from a file.
