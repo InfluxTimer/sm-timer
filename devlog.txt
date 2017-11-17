@@ -1,4 +1,4 @@
-DEV
+1.1.1
 
 COMPATIBILITY:
 - Delete cfg/influx/prespeed.cfg, cfg/influx/pause.cfg to generate new ones with latest cvars.
