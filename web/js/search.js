@@ -1,4 +1,5 @@
-var input = document.getElementById( 'search-players' );
+'use strict';
+const input = document.getElementById( 'search-players' );
 
 if ( input )
 {

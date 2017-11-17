@@ -1,8 +1,9 @@
-var g_curRecOff = 0;
+'use strict';
+let g_curRecOff = 0;
 
 function clickRecTable( btn, tblname, dir, list )
 {
-	var table = document.getElementById( tblname );
+	const table = document.getElementById( tblname );
 	if ( table == null ) return;
 	
 	
@@ -11,71 +12,74 @@ function clickRecTable( btn, tblname, dir, list )
 		table.curRecordOffset = 0;
 	}
 	
-	var rows = table.getElementsByClassName( 'rectable-data-row' );
+	const rows = table.getElementsByClassName( 'rectable-data-row' );
 	if ( rows == null ) return;
 	
 	
-	var form = new FormData();
+	const form = new FormData();
 	form.append( 'offset', table.curRecordOffset + dir );
 	form.append( 'num', rows.length );
 	form.append( 'type', tblname );
 	
 	
-	var steamid = getURLParamByName( 'u' );
+	const steamid = getURLParamByName( 'u' );
 	if ( steamid != null )
 	{
 		form.append( 'steamid', steamid );
 	}
 	
-	var mapname = getURLParamByName( 'm' );
+	const mapname = getURLParamByName( 'm' );
 	if ( mapname != null )
 	{
 		form.append( 'mapname', mapname );
 	}
 	
-	var search = getURLParamByName( 'q' );
+	const search = getURLParamByName( 'q' );
 	if ( search != null )
 	{
 		form.append( 'search', search );
 	}
 	
+	// Disable button so we don't accidentally click it while waiting for the server.
+	btn.disabled = true;
 	
-	var http = new XMLHttpRequest();
+	const http = new XMLHttpRequest();
 	http.onreadystatechange = function()
 	{
 		if ( http.readyState != 4 || http.status != 200 ) return;
 		
 		
-		var res = http.responseText;
-		if ( !res ) // No response, just disable our button.
-		{
-			btn.disabled = true;
+		let res = http.responseText;
+		if ( !res ) // No response.
 			return;
-		}
 		
 		try { res = JSON.parse( http.responseText ); }
-		catch ( e ){ console.log( 'Something went wrong: ' + http.responseText ); return; }
+		catch ( e ) { console.log( 'Something went wrong: ' + http.responseText ); return; }
 		
 		
-		var btns = table.getElementsByClassName( 'rectable-nav' );
+		btn.disabled = false;
 		
+		const btns = table.getElementsByClassName( 'rectable-nav' );
 		
-		var columns = table.getElementsByClassName( 'rectable-column-name' );
-		if ( columns != null )
+		const btnback = btns[0];
+		const btnfwd = btns[1];
+		
+		//const columns = table.getElementsByClassName( 'rectable-column-name' );
+		//if ( columns != null )
+		//{
+		//	for ( const col of columns )
+		//	{
+		//		setElementTxtFancy( col, col.innerHTML, 1.0 );
+		//	}
+		//}
+		
+		for ( let i = 0; i < rows.length; i++ )
 		{
-			for ( var i = 0; i < columns.length; i++ )
-			{
-				setElementTxtFancy( columns[i], columns[i].innerHTML, 1.0 );
-			}
-		}
-		
-		for ( var i = 0; i < rows.length; i++ )
-		{
-			var values = rows[i].getElementsByClassName( 'rectable-data-value' );
+			const values = rows[i].getElementsByClassName( 'rectable-data-value' );
 			
 			if ( res.length > i )
 			{
-				var j = 0;
+				let j = 0;
 				list.forEach( function( key ) {
 					setElementTxtFancy( values[j], res[i][key], 1.0 );
 					++j;
@@ -83,30 +87,32 @@ function clickRecTable( btn, tblname, dir, list )
 			}
 			else
 			{
-				for ( var j = 0; j < values.length; j++ )
+				// We don't have any more values, just set to nothing.
+				for ( const col of values )
 				{
-					setElementTxtFancy( values[j], '', 1.0 );
+					setElementTxtFancy( col, '', 1.0 );
 				}
 				
-				btns[0].disabled = false;
-				btns[1].disabled = true;
+				btnback.disabled = false;
+				btnfwd.disabled = true;
 			}
 		}
 		
 		table.curRecordOffset += dir;
 		
-		if ( table.curRecordOffset <= 0 )
-		{
-			btns[0].disabled = true;
-		}
 		
 		if ( dir > 0 )
 		{
-			btns[0].disabled = false;
+			btnback.disabled = false;
 		}
 		else
 		{
-			btns[1].disabled = false;
+			btnfwd.disabled = false;
+		}
+		
+		if ( table.curRecordOffset <= 0 )
+		{
+			btnback.disabled = true;
 		}
 	};
 	
