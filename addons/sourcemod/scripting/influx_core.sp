@@ -616,6 +616,11 @@ public void OnPluginStart()
     }
 }
 
+public void OnPluginEnd()
+{
+    UpdateCvars( true );
+}
+
 public void OnLibraryAdded( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = true;
@@ -2209,10 +2214,10 @@ stock int GetDefaultStyle()
     return STYLE_INVALID;
 }
 
-stock void UpdateCvars()
+stock void UpdateCvars( bool bForceReset = false )
 {
     // If we remove all modes, aa and enablebunnyhopping should be reset back to normal.
-    if ( !g_hModes || g_hModes.Length == 0 )
+    if ( bForceReset || !g_hModes || g_hModes.Length == 0 )
     {
         g_ConVar_AirAccelerate.Flags |= (FCVAR_NOTIFY | FCVAR_REPLICATED);
         
