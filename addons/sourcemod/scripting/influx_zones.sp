@@ -10,6 +10,7 @@
 #include <msharedutil/misc>
 
 #undef REQUIRE_PLUGIN
+#include <adminmenu>
 #include <influx/zones_beams>
 #include <influx/help>
 
@@ -106,6 +107,10 @@ Handle g_hForward_OnRequestZoneTypes;
 
 // LIBRARIES
 bool g_bLib_Zones_Beams;
+
+
+// ADMIN MENU
+TopMenu g_hTopMenu;
 
 
 #include "influx_zones/menus.sp"
@@ -238,6 +243,16 @@ public void OnPluginStart()
     
     g_hZones = new ArrayList( ZONE_SIZE );
     g_hZoneTypes = new ArrayList( ZTYPE_SIZE );
+    
+    
+    if ( g_bLate )
+    {
+        TopMenu topmenu;
+        if ( LibraryExists( "adminmenu" ) && (topmenu = GetAdminTopMenu()) != null )
+        {
+            OnAdminMenuReady( topmenu );
+        }
+    }
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -256,6 +271,37 @@ public void OnAllPluginsLoaded()
     {
         Call_StartForward( g_hForward_OnRequestZoneTypes );
         Call_Finish();
+    }
+}
+
+public void OnAdminMenuReady( Handle hTopMenu )
+{
+    TopMenu topmenu = TopMenu.FromHandle( hTopMenu );
+    
+    if ( topmenu == g_hTopMenu )
+        return;
+    
+    TopMenuObject res = topmenu.FindCategory( INFLUX_ADMMENU );
+    
+    if ( res == INVALID_TOPMENUOBJECT )
+    {
+        return;
+    }
+    
+    
+    g_hTopMenu = topmenu;
+    g_hTopMenu.AddItem( "sm_zones", AdmMenu_ZoneMenu, res, INF_PRIVCOM_CONFZONES, 0 );
+}
+
+public void AdmMenu_ZoneMenu( TopMenu topmenu, TopMenuAction action, TopMenuObject object_id, int client, char[] buffer, int maxlength )
+{
+    if ( action == TopMenuAction_DisplayOption )
+    {
+        strcopy( buffer, maxlength, "Zone Menu" );
+    }
+    else if ( action == TopMenuAction_SelectOption )
+    {
+        FakeClientCommand( client, "sm_zones" );
     }
 }
 

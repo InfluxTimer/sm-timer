@@ -23,6 +23,8 @@
 
 #define INFLUX_RUNDIR           "influxruns"
 
+#define INFLUX_ADMMENU          "InfluxCommands"	
+
 
 
 #define INVALID_RUN_TIME            0.0

@@ -10,6 +10,7 @@
 
 
 #undef REQUIRE_PLUGIN
+#include <adminmenu>
 #include <influx/help>
 #include <influx/pause>
 #include <influx/practise>
@@ -131,6 +132,13 @@ bool g_bLib_Pause;
 bool g_bLib_Practise;
 
 
+// ADMIN MENU
+TopMenu g_hTopMenu;
+
+
+bool g_bLate;
+
+
 #include "influx_recording/cmds.sp"
 #include "influx_recording/file.sp"
 #include "influx_recording/menus.sp"
@@ -158,6 +166,9 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_GetReplayStyle", Native_GetReplayStyle );
     CreateNative( "Influx_GetReplayTime", Native_GetReplayTime );
     CreateNative( "Influx_GetReplayName", Native_GetReplayName );
+    
+    
+    g_bLate = late;
 }
 
 public void OnPluginStart()
@@ -217,6 +228,16 @@ public void OnPluginStart()
     
     // EVENTS
     HookEvent( "player_spawn", E_PlayerSpawn );
+    
+    
+    if ( g_bLate )
+    {
+        TopMenu topmenu;
+        if ( LibraryExists( "adminmenu" ) && (topmenu = GetAdminTopMenu()) != null )
+        {
+            OnAdminMenuReady( topmenu );
+        }
+    }
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -229,6 +250,38 @@ public void OnLibraryRemoved( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = false;
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = false;
+}
+
+public void OnAdminMenuReady( Handle hTopMenu )
+{
+    TopMenu topmenu = TopMenu.FromHandle( hTopMenu );
+    
+    if ( topmenu == g_hTopMenu )
+        return;
+    
+    
+    TopMenuObject res = g_hTopMenu.FindCategory( INFLUX_ADMMENU );
+    
+    if ( res == INVALID_TOPMENUOBJECT )
+    {
+        return;
+    }
+    
+    
+    g_hTopMenu = topmenu;
+    g_hTopMenu.AddItem( "sm_deleterecordings", AdmMenu_DeleteRecordings, res, INF_PRIVCOM_DELETERECS, 0 );
+}
+
+public void AdmMenu_DeleteRecordings( TopMenu topmenu, TopMenuAction action, TopMenuObject object_id, int client, char[] buffer, int maxlength )
+{
+    if ( action == TopMenuAction_DisplayOption )
+    {
+        strcopy( buffer, maxlength, "Recording Deletion Menu" );
+    }
+    else if ( action == TopMenuAction_SelectOption )
+    {
+        FakeClientCommand( client, "sm_deleterecordings" );
+    }
 }
 
 public void Influx_OnRequestHelpCmds()
