@@ -867,6 +867,7 @@ public void Influx_RequestHelpCmds()
     Influx_AddHelpCommand( "setrunname <name>", "Set current run's name.", true );
     //Influx_AddHelpCommand( "settelepos", "Set current run's tele position and yaw.", true );
     Influx_AddHelpCommand( "deleterun <id>", "Delete a run.", true );
+    Influx_AddHelpCommand( "deleterunmenu", "Run deletion menu.", true );
     Influx_AddHelpCommand( "deleterecords", "Delete a specific run's records.", true );
     
     
