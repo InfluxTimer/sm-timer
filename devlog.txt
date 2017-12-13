@@ -12,6 +12,7 @@ CHANGES:
 - Start zone will now look for more entities (info_player_terrorist/counterterrorist/info_target) for teleport locations.
 
 FIXES:
+- Players cheating the start zone with noclip. (thanks e-slut!)
 - Unloading core will now reset sv_airaccelerate and sv_enablebunnyhopping cvars.
 
 
