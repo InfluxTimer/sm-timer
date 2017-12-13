@@ -96,6 +96,7 @@ public Action Cmd_DeleteRecordings( int client, int args )
     decl String:szInfo[32];
     decl String:szDisplay[64];
     ArrayList rec;
+    int num = 0;
     
     
     Menu menu = new Menu( Hndlr_DeleteRecording );
@@ -138,8 +139,15 @@ public Action Cmd_DeleteRecordings( int client, int args )
                         ( rec == g_hReplay ) ? " (ACTIVE)" : "" );
                     
                     menu.AddItem( szInfo, szDisplay );
+                    
+                    ++num;
                 }
         }
+    }
+    
+    if ( !num )
+    {
+        menu.AddItem( "", "No recordings exist! :(", ITEMDRAW_DISABLED );
     }
     
     menu.Display( client, MENU_TIME_FOREVER );
