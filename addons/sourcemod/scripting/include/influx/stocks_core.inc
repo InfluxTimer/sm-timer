@@ -12,7 +12,7 @@
 #define INF_AUTHOR              "Mehis"
 #define INF_URL                 "http://influxtimer.com/"
 // If a plugin doesn't have the same version number, it may need a recompile.
-#define INF_VERSION             "1.1.2 (DEV)"
+#define INF_VERSION             "1.1.1 Hotfix"
 
 
 #define INF_MAXPLAYERS          MAXPLAYERS + 1

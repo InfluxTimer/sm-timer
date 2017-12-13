@@ -1,4 +1,4 @@
-DEV
+1.1.1 Hotfix
 
 COMPATIBILITY:
 - Delete cfg/influx/style_tas.cfg to generate new ones with latest cvars.
