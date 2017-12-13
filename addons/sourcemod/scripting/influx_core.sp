@@ -563,6 +563,9 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_deleterecords", Cmd_Admin_DeleteRecords );
     
+    RegConsoleCmd( "sm_deleterunsmenu", Cmd_Admin_DeleteRunMenu );
+    RegConsoleCmd( "sm_deleterunmenu", Cmd_Admin_DeleteRunMenu );
+    
     
     // ADMIN CMDS
     RegAdminCmd( INF_UPDATE_CMD, Cmd_UpdateDB, ADMFLAG_ROOT );
@@ -576,6 +579,7 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_settelepos", Cmd_Admin_SetTelePos );
     
+    RegConsoleCmd( "sm_deleteruns", Cmd_Admin_DeleteRun );
     RegConsoleCmd( "sm_deleterun", Cmd_Admin_DeleteRun );
     
     
@@ -2778,4 +2782,56 @@ stock int AddRun(   int runid,
     
     
     return runid;
+}
+
+stock void RemoveRunById( int runid, int client = 0 )
+{
+    int irun = FindRunById( runid );
+    
+    if ( irun == -1 )
+    {
+        Inf_ReplyToClient( client, "Run with an ID of {MAINCLR1}%i{CHATCLR} does not exist!", runid );
+        return;
+    }
+    
+    
+    char szRun[MAX_RUN_NAME];
+    GetRunNameByIndex( irun, szRun, sizeof( szRun ) );
+    
+    TeleportClientsOutOfRun( runid );
+    
+    g_hRuns.Erase( irun );
+
+    
+    Call_StartForward( g_hForward_OnRunDeleted );
+    Call_PushCell( runid );
+    Call_Finish();
+    
+    
+    Inf_ReplyToClient( client, "Run {MAINCLR1}%s{CHATCLR} has been deleted! Remember to {MAINCLR1}!saveruns{CHATCLR}.", szRun );
+}
+
+stock void TeleportClientsOutOfRun( int runid )
+{
+    int reset_run = GetDefaultRun();
+    
+    if ( reset_run == runid )
+    {
+        
+    }
+    
+    for ( int client = 1; client <= MaxClients; client++ )
+    {
+        if ( IsClientInGame( client ) && g_iRunId[client] == runid )
+        {
+            if ( reset_run != -1 )
+            {
+                TeleClientToStart_Safe( client, reset_run );
+            }
+            else
+            {
+                InvalidateClientRun( client );
+            }
+        }
+    }
 }

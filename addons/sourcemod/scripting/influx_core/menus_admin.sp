@@ -13,17 +13,22 @@ public Action Cmd_Admin_RunMenu( int client, int args )
     menu.SetTitle( "Run Menu\n " );
     
     menu.AddItem( "-1", "Save Runs\n ", len ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
+    menu.AddItem( "-2", "Run deletion menu", len ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
     menu.AddItem( "0", "Record deletion menu\n " );
     
     
     char szInfo[8];
-    char szDisplay[MAX_RUN_NAME];
+    char szDisplay[MAX_RUN_NAME + 16];
+    int runid;
     
     for ( int i = 0; i < len; i++ )
     {
-        GetRunNameByIndex( i, szDisplay, sizeof( szDisplay ) );
+        runid = GetRunIdByIndex( i );
         
-        FormatEx( szInfo, sizeof( szInfo ), "%i", GetRunIdByIndex( i ) );
+        GetRunNameByIndex( i, szDisplay, sizeof( szDisplay ) );
+        Format( szDisplay, sizeof( szDisplay ), "%s (%i)", szDisplay, runid );
+        
+        FormatEx( szInfo, sizeof( szInfo ), "%i", runid );
         
         menu.AddItem( szInfo, szDisplay );
     }
@@ -124,6 +129,38 @@ public Action Cmd_Admin_RunSettings( int client, int args )
             ( flags & (1 << mode) ) ? "BLOCKED" : "ALLOWED" );
         
         FormatEx( szInfo, sizeof( szInfo ), "%i_d_%i", runid, mode );
+        
+        menu.AddItem( szInfo, szDisplay );
+    }
+    
+    menu.Display( client, MENU_TIME_FOREVER );
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_Admin_DeleteRunMenu( int client, int args )
+{
+    if ( !CanUserRemoveRecords( client ) ) return Plugin_Handled;
+    if ( !client ) return Plugin_Handled;
+    
+    
+    int len = g_hRuns.Length;
+    
+    Menu menu = new Menu( Hndlr_DeleteRunMenu );
+    menu.SetTitle( "Run Deletion Menu\n " );
+    
+    char szInfo[8];
+    char szDisplay[MAX_RUN_NAME + 16];
+    int runid;
+    
+    for ( int i = 0; i < len; i++ )
+    {
+        runid = GetRunIdByIndex( i );
+        
+        GetRunNameByIndex( i, szDisplay, sizeof( szDisplay ) );
+        Format( szDisplay, sizeof( szDisplay ), "%s (%i)", szDisplay, runid );
+        
+        FormatEx( szInfo, sizeof( szInfo ), "%i", runid );
         
         menu.AddItem( szInfo, szDisplay );
     }
