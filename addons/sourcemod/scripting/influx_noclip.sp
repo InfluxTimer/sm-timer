@@ -164,6 +164,14 @@ stock void ToggleNoclip( int client, bool bPrint = false )
     
     SetEntityMoveType( client, ( prevmove == MOVETYPE_NOCLIP ) ? MOVETYPE_WALK : MOVETYPE_NOCLIP );
     
+    
+    // Don't let players cheat with noclip!
+    if ( prevmove == MOVETYPE_NOCLIP && Influx_GetClientState( client ) == STATE_START )
+    {
+        Influx_InvalidateClientRun( client );
+    }
+    
+    
     if ( bPrint )
     {
         Influx_PrintToChat( _, client, "Noclip: {MAINCLR1}%s",
