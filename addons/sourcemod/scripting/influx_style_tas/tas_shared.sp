@@ -34,6 +34,7 @@
 
 
 #define INF_PRIVCOM_LOADSAVETAS         "sm_inf_loadsavetas"
+#define INF_PRIVCOM_USETIMESCALE        "sm_inf_tastimescale"
 
 
 
@@ -162,6 +163,7 @@ float g_flLastProcessedVel[INF_MAXPLAYERS][3];
 
 // CONVARS
 ConVar g_ConVar_SilentStrafer;
+ConVar g_ConVar_EnableTimescale;
 
 #if !defined USE_LAGGEDMOVEMENTVALUE
 ConVar g_ConVar_Timescale;
@@ -213,6 +215,8 @@ public void OnPluginStart()
     
     
     g_ConVar_SilentStrafer = CreateConVar( "influx_style_tas_silentstrafer", "1", "Do we record the player's wanted angles to a replay?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_EnableTimescale = CreateConVar( "influx_style_tas_timescale", "1", "Is timescale enabled?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    
     
     
     AutoExecConfig( true, "style_tas", "influx" );
@@ -220,6 +224,7 @@ public void OnPluginStart()
     
     // PRIVILEGE CMDS
     RegAdminCmd( INF_PRIVCOM_LOADSAVETAS, Cmd_Empty, ADMFLAG_ROOT );
+    RegConsoleCmd( INF_PRIVCOM_USETIMESCALE, Cmd_Empty );
     
     
     // CMDS
@@ -1018,6 +1023,21 @@ stock void DecreaseTimescale( int client )
 stock bool CanUserLoadSaveTas( int client )
 {
     return CheckCommandAccess( client, INF_PRIVCOM_LOADSAVETAS, ADMFLAG_ROOT );
+}
+
+stock bool CanUserUseTimescale( int client )
+{
+    if ( !g_ConVar_EnableTimescale.BoolValue )
+        return false;
+    
+    
+    int flags;
+    if ( !GetCommandOverride( INF_PRIVCOM_USETIMESCALE, Override_Command, flags ) )
+    {
+        return true; // No override, just allow.
+    }
+    
+    return CheckCommandAccess( client, INF_PRIVCOM_USETIMESCALE, flags, true );
 }
 
 stock void SaveFramesMsg( int client )

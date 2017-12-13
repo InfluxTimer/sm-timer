@@ -1,3 +1,22 @@
+1.1.1 Hotfix
+
+COMPATIBILITY:
+- Delete cfg/influx/style_tas.cfg to generate new ones with latest cvars.
+
+ADDED:
+- Admin menu support (!admin will display most admin commands)
+- Ability to toggle and restrict timescale. (influx_style_tas_timescale)
+- Run deletion menu (sm_deleterunsmenu). sm_deleterun still works and will redirect to the menu if no arguments given.
+
+CHANGES:
+- Start zone will now look for more entities (info_player_terrorist/counterterrorist/info_target) for teleport locations.
+
+FIXES:
+- Players cheating the start zone with noclip. (thanks e-slut!)
+- Unloading core will now reset sv_airaccelerate and sv_enablebunnyhopping cvars.
+
+
+
 1.1.1
 
 COMPATIBILITY:

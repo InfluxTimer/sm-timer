@@ -9,6 +9,7 @@
 #include <msharedutil/misc>
 
 #undef REQUIRE_PLUGIN
+#include <adminmenu>
 #include <influx/help>
 
 
@@ -101,6 +102,12 @@ float g_flLastCmdTime[INF_MAXPLAYERS];
 Handle g_hForward_OnClientCPSavePost;
 
 
+// ADMIN MENU
+TopMenu g_hTopMenu;
+
+
+bool g_bLate;
+
 
 #include "influx_zones_checkpoint/db.sp"
 #include "influx_zones_checkpoint/menus.sp"
@@ -134,6 +141,9 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_GetClientLastCPPBTime", Native_GetClientLastCPPBTime );
     CreateNative( "Influx_GetClientLastCPBestTime", Native_GetClientLastCPBestTime );
     CreateNative( "Influx_GetClientLastCPSRTime", Native_GetClientLastCPSRTime );
+    
+    
+    g_bLate = late;
 }
 
 public void OnPluginStart()
@@ -170,6 +180,16 @@ public void OnPluginStart()
     
     // MENUS
     RegConsoleCmd( "sm_deletecptimes", Cmd_DeleteCpTimes );
+    
+    
+    if ( g_bLate )
+    {
+        TopMenu topmenu;
+        if ( LibraryExists( "adminmenu" ) && (topmenu = GetAdminTopMenu()) != null )
+        {
+            OnAdminMenuReady( topmenu );
+        }
+    }
 }
 
 public void OnAllPluginsLoaded()
@@ -177,6 +197,38 @@ public void OnAllPluginsLoaded()
     AddZoneType();
     
     DB_Init();
+}
+
+public void OnAdminMenuReady( Handle hTopMenu )
+{
+    TopMenu topmenu = TopMenu.FromHandle( hTopMenu );
+    
+    if ( topmenu == g_hTopMenu )
+        return;
+    
+    
+    TopMenuObject res = topmenu.FindCategory( INFLUX_ADMMENU );
+    
+    if ( res == INVALID_TOPMENUOBJECT )
+    {
+        return;
+    }
+    
+    
+    g_hTopMenu = topmenu;
+    g_hTopMenu.AddItem( "sm_deletecptimes", AdmMenu_DeleteCpTimes, res, INF_PRIVCOM_REMOVECPRECORDS, 0 );
+}
+
+public void AdmMenu_DeleteCpTimes( TopMenu topmenu, TopMenuAction action, TopMenuObject object_id, int client, char[] buffer, int maxlength )
+{
+    if ( action == TopMenuAction_DisplayOption )
+    {
+        strcopy( buffer, maxlength, "CP Times Deletion Menu" );
+    }
+    else if ( action == TopMenuAction_SelectOption )
+    {
+        FakeClientCommand( client, "sm_deletecptimes" );
+    }
 }
 
 public void Influx_OnRequestZoneTypes()

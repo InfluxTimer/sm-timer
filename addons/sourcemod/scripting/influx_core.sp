@@ -12,6 +12,7 @@
 
 
 #undef REQUIRE_PLUGIN
+#include <adminmenu>
 #include <influx/help>
 #include <influx/pause>
 #include <influx/practise>
@@ -213,6 +214,7 @@ Regex g_Regex_ValidMapNames;
 
 
 // LIBRARIES
+bool g_bLib_AdminMenu;
 bool g_bLib_Pause;
 bool g_bLib_Practise;
 bool g_bLib_Zones_Fs;
@@ -238,6 +240,11 @@ int g_iDefStyle;
 bool g_bIsCSGO;
 bool g_bLate;
 int g_iCurDBVersion;
+
+
+// ADMIN MENU
+TopMenu g_hTopMenu;
+TopMenuObject g_InfluxAdminMenu = INVALID_TOPMENUOBJECT;
 
 
 #include "influx_core/modestyle_ovrs.sp"
@@ -556,6 +563,9 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_deleterecords", Cmd_Admin_DeleteRecords );
     
+    RegConsoleCmd( "sm_deleterunsmenu", Cmd_Admin_DeleteRunMenu );
+    RegConsoleCmd( "sm_deleterunmenu", Cmd_Admin_DeleteRunMenu );
+    
     
     // ADMIN CMDS
     RegAdminCmd( INF_UPDATE_CMD, Cmd_UpdateDB, ADMFLAG_ROOT );
@@ -569,6 +579,7 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_settelepos", Cmd_Admin_SetTelePos );
     
+    RegConsoleCmd( "sm_deleteruns", Cmd_Admin_DeleteRun );
     RegConsoleCmd( "sm_deleterun", Cmd_Admin_DeleteRun );
     
     
@@ -594,6 +605,7 @@ public void OnPluginStart()
     
     
     // LIBRARIES
+    g_bLib_AdminMenu = LibraryExists( "adminmenu" );
     g_bLib_Pause = LibraryExists( INFLUX_LIB_PAUSE );
     g_bLib_Practise = LibraryExists( INFLUX_LIB_PRACTISE );
     g_bLib_Zones_Fs = LibraryExists( INFLUX_LIB_ZONES_FS );
@@ -613,11 +625,34 @@ public void OnPluginStart()
                 ResetClient( i );
             }
         }
+        
+        // Register admin menu late.
+        TopMenu topmenu;
+        if ( g_bLib_AdminMenu && (topmenu = GetAdminTopMenu()) != null )
+        {
+            OnAdminMenuCreated( topmenu );
+            
+            OnAdminMenuReady( topmenu );
+        }
     }
+}
+
+public void OnPluginEnd()
+{
+    UpdateCvars( true );
+    
+    if ( g_bLib_AdminMenu && g_hTopMenu != null && g_InfluxAdminMenu != INVALID_TOPMENUOBJECT )
+    {
+        g_hTopMenu.Remove( g_InfluxAdminMenu );
+    }
+    
+    g_hTopMenu = null;
+    g_InfluxAdminMenu = INVALID_TOPMENUOBJECT;
 }
 
 public void OnLibraryAdded( const char[] lib )
 {
+    if ( StrEqual( lib, "adminmenu" ) ) g_bLib_AdminMenu = true;
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = true;
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = true;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = true;
@@ -627,6 +662,7 @@ public void OnLibraryAdded( const char[] lib )
 
 public void OnLibraryRemoved( const char[] lib )
 {
+    if ( StrEqual( lib, "adminmenu" ) ) g_bLib_AdminMenu = false;
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = false;
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = false;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = false;
@@ -673,6 +709,91 @@ public void OnAllPluginsLoaded()
         LogError( INF_CON_PRE..."No modes were found! Assuming scroll as default mode!!! Freeing sv_airaccelerate and sv_enablebunnyhopping." );
     }
     */
+}
+
+public void OnAdminMenuCreated( Handle hTopMenu )
+{
+    TopMenu topmenu = TopMenu.FromHandle( hTopMenu );
+    
+    if ( topmenu == g_hTopMenu )
+        return;
+    
+    
+    g_InfluxAdminMenu = topmenu.FindCategory( INFLUX_ADMMENU );
+    
+    if ( g_InfluxAdminMenu == INVALID_TOPMENUOBJECT )
+    {
+        g_InfluxAdminMenu = topmenu.AddCategory( INFLUX_ADMMENU, Hndlr_AdminMenu );
+    }
+}
+
+public void Hndlr_AdminMenu(TopMenu topmenu, 
+                            TopMenuAction action,
+                            TopMenuObject object_id,
+                            int param,
+                            char[] buffer,
+                            int maxlength)
+{
+    if ( object_id != g_InfluxAdminMenu )
+        return;
+    
+    
+    if ( action == TopMenuAction_DisplayTitle )
+    {
+        strcopy( buffer, maxlength, "Influx Commands" );
+    }
+    else if ( action == TopMenuAction_DisplayOption )
+    {
+        strcopy( buffer, maxlength, "Influx Commands" );
+    }
+}
+
+public void OnAdminMenuReady( Handle hTopMenu )
+{
+    TopMenu topmenu = TopMenu.FromHandle( hTopMenu );
+    
+    if ( topmenu == g_hTopMenu )
+        return;
+    
+    
+    TopMenuObject res = topmenu.FindCategory( INFLUX_ADMMENU );
+    
+    if ( res == INVALID_TOPMENUOBJECT )
+    {
+        return;
+    }
+    
+    
+    g_hTopMenu = topmenu;
+    g_InfluxAdminMenu = res;
+    
+    
+    g_hTopMenu.AddItem( "sm_manageruns", AdmMenu_ManageRuns, res, INF_PRIVCOM_RUNSETTINGS, 0 );
+    g_hTopMenu.AddItem( "sm_runsettings", AdmMenu_RunSettings, res, INF_PRIVCOM_RUNSETTINGS, 0 );
+}
+
+public void AdmMenu_ManageRuns( TopMenu topmenu, TopMenuAction action, TopMenuObject object_id, int client, char[] buffer, int maxlength )
+{
+    if ( action == TopMenuAction_DisplayOption )
+    {
+        strcopy( buffer, maxlength, "Manage Runs" );
+    }
+    else if ( action == TopMenuAction_SelectOption )
+    {
+        FakeClientCommand( client, "sm_manageruns" );
+    }
+}
+
+public void AdmMenu_RunSettings( TopMenu topmenu, TopMenuAction action, TopMenuObject object_id, int client, char[] buffer, int maxlength )
+{
+    if ( action == TopMenuAction_DisplayOption )
+    {
+        strcopy( buffer, maxlength, "Run Settings" );
+    }
+    else if ( action == TopMenuAction_SelectOption )
+    {
+        FakeClientCommand( client, "sm_runsettings" );
+    }
 }
 
 public void Influx_OnClientStatusChanged( int client )
@@ -746,6 +867,7 @@ public void Influx_RequestHelpCmds()
     Influx_AddHelpCommand( "setrunname <name>", "Set current run's name.", true );
     //Influx_AddHelpCommand( "settelepos", "Set current run's tele position and yaw.", true );
     Influx_AddHelpCommand( "deleterun <id>", "Delete a run.", true );
+    Influx_AddHelpCommand( "deleterunmenu", "Run deletion menu.", true );
     Influx_AddHelpCommand( "deleterecords", "Delete a specific run's records.", true );
     
     
@@ -2209,10 +2331,10 @@ stock int GetDefaultStyle()
     return STYLE_INVALID;
 }
 
-stock void UpdateCvars()
+stock void UpdateCvars( bool bForceReset = false )
 {
     // If we remove all modes, aa and enablebunnyhopping should be reset back to normal.
-    if ( !g_hModes || g_hModes.Length == 0 )
+    if ( bForceReset || !g_hModes || g_hModes.Length == 0 )
     {
         g_ConVar_AirAccelerate.Flags |= (FCVAR_NOTIFY | FCVAR_REPLICATED);
         
@@ -2661,4 +2783,56 @@ stock int AddRun(   int runid,
     
     
     return runid;
+}
+
+stock void RemoveRunById( int runid, int client = 0 )
+{
+    int irun = FindRunById( runid );
+    
+    if ( irun == -1 )
+    {
+        Inf_ReplyToClient( client, "Run with an ID of {MAINCLR1}%i{CHATCLR} does not exist!", runid );
+        return;
+    }
+    
+    
+    char szRun[MAX_RUN_NAME];
+    GetRunNameByIndex( irun, szRun, sizeof( szRun ) );
+    
+    TeleportClientsOutOfRun( runid );
+    
+    g_hRuns.Erase( irun );
+
+    
+    Call_StartForward( g_hForward_OnRunDeleted );
+    Call_PushCell( runid );
+    Call_Finish();
+    
+    
+    Inf_ReplyToClient( client, "Run {MAINCLR1}%s{CHATCLR} has been deleted! Remember to {MAINCLR1}!saveruns{CHATCLR}.", szRun );
+}
+
+stock void TeleportClientsOutOfRun( int runid )
+{
+    int reset_run = GetDefaultRun();
+    
+    if ( reset_run == runid )
+    {
+        
+    }
+    
+    for ( int client = 1; client <= MaxClients; client++ )
+    {
+        if ( IsClientInGame( client ) && g_iRunId[client] == runid )
+        {
+            if ( reset_run != -1 )
+            {
+                TeleClientToStart_Safe( client, reset_run );
+            }
+            else
+            {
+                InvalidateClientRun( client );
+            }
+        }
+    }
 }

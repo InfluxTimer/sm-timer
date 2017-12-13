@@ -274,7 +274,16 @@ public Action Cmd_Admin_SetRunName( int client, int args )
 public Action Cmd_Admin_DeleteRun( int client, int args )
 {
     if ( !CanUserRemoveRecords( client ) ) return Plugin_Handled;
-    if ( !args ) return Plugin_Handled;
+    
+    if ( !args )
+    {
+        if ( client )
+        {
+            FakeClientCommand( client, "sm_deleterunsmenu" );
+        }
+        
+        return Plugin_Handled;
+    }
     
     
     char szArg[6];
@@ -282,50 +291,7 @@ public Action Cmd_Admin_DeleteRun( int client, int args )
     
     int runid = StringToInt( szArg );
     
-    int irun = FindRunById( runid );
-    
-    if ( irun != -1 )
-    {
-        char szRun[MAX_RUN_NAME];
-        GetRunNameByIndex( irun, szRun, sizeof( szRun ) );
-        
-        
-        g_hRuns.Erase( irun );
-        
-        for ( int i = 1; i <= MaxClients; i++ )
-        {
-            if ( IsClientInGame( i ) && g_iRunId[i] == runid )
-            {
-                
-                TeleClientToStart_Safe( i, MAIN_RUN_ID );
-            }
-        }
-        
-        Call_StartForward( g_hForward_OnRunDeleted );
-        Call_PushCell( runid );
-        Call_Finish();
-        
-        
-        if ( client )
-        {
-            Influx_PrintToChat( _, client, "Run {MAINCLR1}%s{CHATCLR} has been deleted!", szRun );
-        }
-        else
-        {
-            PrintToServer( INF_CON_PRE..."Run %s has been deleted!", szRun );
-        }
-    }
-    else
-    {
-        if ( client )
-        {
-            Influx_PrintToChat( _, client, "Run with an ID of {MAINCLR1}%i{CHATCLR} does not exist!", runid );
-        }
-        else
-        {
-            PrintToServer( INF_CON_PRE..."Run with an ID of %i does not exist!", runid );
-        }
-    }
+    RemoveRunById( runid, client );
     
     return Plugin_Handled;
 }

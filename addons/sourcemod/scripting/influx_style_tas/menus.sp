@@ -144,7 +144,7 @@ public Action Cmd_Settings( int client, int args )
     menu.SetTitle( "TAS Settings (!tas_settings)\n " );
     
     FormatEx( szDisplay, sizeof( szDisplay ), "Timescale: %.2fx", g_flTimescale[client] );
-    menu.AddItem( "a", szDisplay );
+    menu.AddItem( "a", szDisplay, CanUserUseTimescale( client ) ? 0 : ITEMDRAW_DISABLED );
     
     
     switch ( g_iAutoStrafe[client] )

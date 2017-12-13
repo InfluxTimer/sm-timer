@@ -12,7 +12,7 @@
 #define INF_AUTHOR              "Mehis"
 #define INF_URL                 "http://influxtimer.com/"
 // If a plugin doesn't have the same version number, it may need a recompile.
-#define INF_VERSION             "1.1.1"
+#define INF_VERSION             "1.1.1 Hotfix"
 
 
 #define INF_MAXPLAYERS          MAXPLAYERS + 1
@@ -120,20 +120,31 @@ stock void Inf_TelePosFromMinsMaxs( const float mins[3], const float maxs[3], fl
 stock bool Inf_FindTelePos( const float mins[3], const float maxs[3], float out[3], float &yaw_out )
 {
     float pos[3], ang[3];
+    int ent;
     
-    int ent = -1;
-    while ( (ent = FindEntityByClassname( ent, "info_teleport_destination" )) != -1 )
+    static const char szClasses[][] = {
+        "info_teleport_destination",
+        "info_player_counterterrorist",
+        "info_player_terrorist",
+        "info_target" // Try info_targets last. Yes, some maps actually use it.
+    };
+    
+    for ( int i = 0; i < sizeof( szClasses ); i++ )
     {
-        GetEntityOrigin( ent, pos );
-        
-        if ( IsInsideBounds( pos, mins, maxs ) )
+        ent = -1;
+        while ( (ent = FindEntityByClassname( ent, szClasses[i] )) != -1 )
         {
-            GetEntPropVector( ent, Prop_Data, "m_angRotation", ang );
+            GetEntityOrigin( ent, pos );
             
-            out = pos;
-            yaw_out = ang[1];
-            
-            return true;
+            if ( IsInsideBounds( pos, mins, maxs ) )
+            {
+                GetEntPropVector( ent, Prop_Data, "m_angRotation", ang );
+                
+                out = pos;
+                yaw_out = ang[1];
+                
+                return true;
+            }
         }
     }
     

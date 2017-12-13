@@ -124,6 +124,8 @@ public Action Cmd_IncTimescale( int client, int args )
 {
     if ( !client ) return Plugin_Handled;
     
+    if ( !CanUserUseTimescale( client ) ) return Plugin_Handled;
+    
     if ( !IsPlayerAlive( client ) ) return Plugin_Handled;
     
     if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return Plugin_Handled;
@@ -137,6 +139,8 @@ public Action Cmd_IncTimescale( int client, int args )
 public Action Cmd_DecTimescale( int client, int args )
 {
     if ( !client ) return Plugin_Handled;
+    
+    if ( !CanUserUseTimescale( client ) ) return Plugin_Handled;
     
     if ( !IsPlayerAlive( client ) ) return Plugin_Handled;
     
