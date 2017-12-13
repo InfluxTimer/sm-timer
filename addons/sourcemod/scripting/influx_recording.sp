@@ -260,7 +260,7 @@ public void OnAdminMenuReady( Handle hTopMenu )
         return;
     
     
-    TopMenuObject res = g_hTopMenu.FindCategory( INFLUX_ADMMENU );
+    TopMenuObject res = topmenu.FindCategory( INFLUX_ADMMENU );
     
     if ( res == INVALID_TOPMENUOBJECT )
     {
