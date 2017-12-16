@@ -86,7 +86,7 @@ stock void DB_Init()
         kv.SetString( "driver", "sqlite" );
         kv.SetString( "database", SQLITE_DB_NAME );
         
-        g_hDB = SQL_ConnectCustom( kv, szError, sizeof( szError ), false );
+        g_hDB = SQL_ConnectCustom( kv, szError, sizeof( szError ), true );
         
         delete kv;
     }
