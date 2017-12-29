@@ -453,15 +453,6 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
             return Plugin_Handled;
         }
     }
-    else if ( laststyle == STYLE_TAS )
-    {
-        UnhookThinks( client );
-        
-        UnfreezeClient( client );
-        
-        
-        SetClientCheats( client, false );
-    }
     
     return Plugin_Continue;
 }
@@ -480,6 +471,10 @@ public void Influx_OnClientStyleChangePost( int client, int style, int laststyle
         
         
         OpenMenu( client );
+    }
+    else if ( laststyle == STYLE_TAS )
+    {
+        DisableTas( client );
     }
 }
 
@@ -522,7 +517,7 @@ public void E_PostThinkPost_Client( int client )
     
     if ( Influx_GetClientStyle( client ) != STYLE_TAS )
     {
-        UnhookThinks( client );
+        DisableTas( client );
         return;
     }
     
@@ -1257,4 +1252,14 @@ stock void GotoCP( int client, int num )
         
         g_iLastUsedCP[client] = num;
     }
+}
+
+stock void DisableTas( int client )
+{
+    UnhookThinks( client );
+    
+    UnfreezeClient( client );
+    
+    
+    SetClientCheats( client, false );
 }
