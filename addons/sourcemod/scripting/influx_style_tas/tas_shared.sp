@@ -478,6 +478,13 @@ public void Influx_OnClientStyleChangePost( int client, int style, int laststyle
     }
 }
 
+public void Influx_OnClientModeChangePost( int client, int mode, int lastmode )
+{
+    // Reset timescale when we change mode.
+    if ( Influx_GetClientStyle( client ) == STYLE_TAS )
+        SetTimescale( client, 1.0 );
+}
+
 public void OnClientPutInServer( int client )
 {
     ResetClient( client );
