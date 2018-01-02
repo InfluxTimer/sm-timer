@@ -803,8 +803,6 @@ public void Influx_OnTimerStartPost( int client, int runid )
 
 public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style, float time, float prev_pb, float prev_best, int flags )
 {
-    if ( g_hRec[client] == null ) return;
-    
     if ( !FinishRecording( client, true ) ) return;
     
     if ( g_hRec[client].Length < 1 ) return;
@@ -1079,6 +1077,10 @@ stock bool StartRecording( int client, bool bInsertFrame = false )
 stock bool FinishRecording( int client, bool bInsertFrame = false )
 {
     g_bIsRec[client] = false;
+    
+    // Create a dummy recording if we have none. OnTimerStart isn't guaranteed to be called (eg. with TAS)
+    if ( g_hRec[client] == null )
+        g_hRec[client] = new ArrayList( REC_SIZE );
     
     
     Action res = Plugin_Continue;
