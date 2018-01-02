@@ -39,6 +39,8 @@ enum
     RANK_POINTS,
     RANK_UNLOCK,
     
+    RANK_FLAGS,
+    
     RANK_SIZE
 };
 
@@ -247,6 +249,8 @@ stock int GetRankClosest( int points, bool bIgnoreUnlock = true )
         
         if ( bIgnoreUnlock && g_hRanks.Get( i, RANK_UNLOCK ) ) continue;
         
+        if ( GetRankFlags( i ) != 0 ) continue;
+        
         if ( p > points ) continue;
         
         
@@ -257,11 +261,52 @@ stock int GetRankClosest( int points, bool bIgnoreUnlock = true )
             continue;
         }
         
+        
         closest_index = i;
         closest_dif = dif;
     }
     
     return closest_index;
+}
+
+stock bool CanUseRankFlags( int client, const any data[RANK_SIZE] )
+{
+    return ( data[RANK_FLAGS] == 0 || CheckCommandAccess( client, "", data[RANK_FLAGS], true ) );
+}
+
+stock bool CanUseRankByIndex( int client, int index )
+{
+    if ( index == -1 ) return false;
+    
+    decl data[RANK_SIZE];
+    g_hRanks.GetArray( index, data, sizeof( data ) );
+    
+    return CanUseRank( client, data );
+}
+
+stock bool CanUseRank( int client, const any data[RANK_SIZE] )
+{
+    if ( g_nPoints[client] < data[RANK_POINTS] )
+        return false;
+    
+    
+    return CanUseRankFlags( client, data );
+}
+
+stock bool ShouldDisplayRankByIndex( int client, int index )
+{
+    if ( index == -1 ) return false;
+    
+    
+    decl data[RANK_SIZE];
+    g_hRanks.GetArray( index, data, sizeof( data ) );
+    
+    return CanUseRankFlags( client, data );
+}
+
+stock bool ShouldDisplayRank( int client, const any data[RANK_SIZE] )
+{
+    return CanUseRankFlags( client, data );
 }
 
 stock int FindRankByName( const char[] szName )
@@ -295,6 +340,13 @@ stock void GetRankName( int index, char[] out, int len )
     
     
     g_hRanks.GetString( index, out, len );
+}
+
+stock int GetRankFlags( int index )
+{
+    if ( index == -1 ) return 0;
+    
+    return g_hRanks.Get( index, RANK_FLAGS );
 }
 
 stock void SetClientDefRank( int client )
