@@ -10,6 +10,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
+#include <influx/recordsmenu>
 #include <influx/help>
 
 

@@ -5,6 +5,7 @@
 #include <influx/jumps>
 
 #undef REQUIRE_PLUGIN
+#include <influx/recordsmenu>
 #include <influx/pause>
 
 
