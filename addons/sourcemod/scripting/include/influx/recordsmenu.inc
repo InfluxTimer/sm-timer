@@ -7,6 +7,16 @@
 #define INFLUX_LIB_RECORDSMENU      "influx_recordsmenu"
 
 
+// Displays record menu to client.
+native bool Influx_PrintRecords(int client,
+                                bool bDisplayAll = false, // Display all records with the parameters you've given. Will bypass run and style category menus.
+                                int uid = -1,
+                                int mapid = -1, // Will default to current map id if none given.
+                                int runid = -1, // If display all is true, will default to client's run id.
+                                int mode = -1,
+                                int style = -1 );
+
+
 // When record info is being printed to client.
 // Use this to add items onto the menu.
 // Item list is max 64 characters. (incl null terminator)
@@ -34,7 +44,7 @@ public SharedPlugin __pl_influx_recordsmenu =
 #if !defined REQUIRE_PLUGIN
 public void __pl_influx_recordsmenu_SetNTVOptional()
 {
-    //MarkNativeAsOptional( "Influx_PrintRecords" );
+    MarkNativeAsOptional( "Influx_PrintRecords" );
 }
 #endif
 

@@ -35,12 +35,12 @@ stock void DB_PrintRunSelect(
     Handle db = Influx_GetDB();
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
     
-    
+    // TODO: Hasn't been tested with MySQL!
     static char szQuery[512];
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT runid," ...
         "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_t.mapid AND runid=_t.runid) AS numrunrecs " ...
-        "FROM "...INF_TABLE_TIMES..." AS _t WHERE mapid=%i GROUP BY runid ORDER BY numrunrecs", mapid );
+        "FROM "...INF_TABLE_TIMES..." AS _t WHERE mapid=%i GROUP BY runid ORDER BY numrunrecs DESC", mapid );
     
     
     decl data[2];
@@ -62,12 +62,12 @@ stock void DB_PrintStyleSelect(
     Handle db = Influx_GetDB();
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
     
-    
+    // TODO: Hasn't been tested with MySQL!
     static char szQuery[512];
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT mode,style," ...
         "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_t.mapid AND runid=_t.runid AND mode=_t.mode AND style=_t.style) AS numrecs " ...
-        "FROM "...INF_TABLE_TIMES..." WHERE mapid=%i AND runid=%i GROUP BY mode,style ORDER BY numrecs", mapid, runid );
+        "FROM "...INF_TABLE_TIMES..." AS _t WHERE mapid=%i AND runid=%i GROUP BY mode,style ORDER BY numrecs DESC", mapid, runid );
     
     
     decl data[3];

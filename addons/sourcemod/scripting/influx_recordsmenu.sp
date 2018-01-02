@@ -52,8 +52,8 @@ public Plugin myinfo =
 {
     author = INF_AUTHOR,
     url = INF_URL,
-    name = INF_NAME..." - Display Records",
-    description = "Displays all records with !top/!wr/!mytop commands.",
+    name = INF_NAME..." - Records Menu",
+    description = "Displays record menu with !top/!wr/!mytop commands.",
     version = INF_VERSION
 };
 
@@ -64,7 +64,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     
     
     // NATIVES
-    //CreateNative( "Influx_PrintRecords", Native_PrintRecords );
+    CreateNative( "Influx_PrintRecords", Native_PrintRecords );
     
     
     return APLRes_Success;
@@ -99,4 +99,42 @@ public void OnPluginStart()
 public void OnClientPutInServer( int client )
 {
     g_flLastRecPrintTime[client] = 0.0;
+}
+
+public int Native_PrintRecords( Handle hPlugin, int nParms )
+{
+    int client = GetNativeCell( 1 );
+    
+    if ( Inf_HandleCmdSpam( client, 3.0, g_flLastRecPrintTime[client], true ) )
+    {
+        return 0;
+    }
+    
+    
+    bool bForceDisplay = GetNativeCell( 2 );
+    
+    int uid = GetNativeCell( 3 );
+    int mapid = GetNativeCell( 4 );
+    int runid = GetNativeCell( 5 );
+    int mode = GetNativeCell( 6 );
+    int style = GetNativeCell( 7 );
+    
+    
+    if ( bForceDisplay )
+    {
+        if ( mapid < 1 )
+            mapid = Influx_GetCurrentMapId();
+        
+        if ( runid < 1 )
+            runid = Influx_GetClientRunId( client );
+        
+        DB_PrintRecords( client, uid, mapid, runid, mode, style );
+        
+        return 1;
+    }
+    
+    
+    DB_PrintRunSelect( client, mapid > 0 ? mapid : Influx_GetCurrentMapId() );
+    
+    return 1;
 }

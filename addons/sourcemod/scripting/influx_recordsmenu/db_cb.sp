@@ -79,11 +79,15 @@ public void Thrd_PrintRunSelect( Handle db, Handle res, const char[] szError, Ar
     decl String:szInfo[32];
     decl String:szDisplay[64];
     
+    decl String:szRun[MAX_RUN_NAME];
+    
     int mapid = data[1];
     int runid;
     int numrecs;
     
     int num = 0;
+    
+    int curmapid = Influx_GetCurrentMapId();
     
     
     Menu menu = new Menu( Hndlr_RecordRunSelect );
@@ -94,8 +98,17 @@ public void Thrd_PrintRunSelect( Handle db, Handle res, const char[] szError, Ar
         numrecs = SQL_FetchInt( res, 1 );
         
         
+        if ( mapid == curmapid )
+        {
+            Influx_GetRunName( runid, szRun, sizeof( szRun ) );
+        }
+        else
+        {
+            FormatEx( szRun, sizeof( szRun ), "Run #%i", runid );
+        }
+        
         FormatEx( szInfo, sizeof( szInfo ), "%i_%i", mapid, runid );
-        FormatEx( szDisplay, sizeof( szDisplay ), "Run ID: %i (%i)", runid, numrecs );
+        FormatEx( szDisplay, sizeof( szDisplay ), "%s (%i)", szRun, numrecs );
         
         menu.AddItem( szInfo, szDisplay );
         
@@ -112,7 +125,7 @@ public void Thrd_PrintRunSelect( Handle db, Handle res, const char[] szError, Ar
     }
     
     
-    menu.SetTitle( "Records - Run Select" );
+    menu.SetTitle( "Records - Run Select\n " );
     
     if ( !num )
     {
@@ -143,6 +156,10 @@ public void Thrd_PrintStyleSelect( Handle db, Handle res, const char[] szError, 
     decl String:szInfo[32];
     decl String:szDisplay[64];
     
+    decl String:szRun[MAX_RUN_NAME];
+    decl String:szMode[MAX_MODE_NAME];
+    decl String:szStyle[MAX_STYLE_NAME];
+    
     int mapid = data[1];
     int runid = data[2];
     int mode, style;
@@ -150,6 +167,15 @@ public void Thrd_PrintStyleSelect( Handle db, Handle res, const char[] szError, 
     
     int num = 0;
     
+    
+    if ( mapid == Influx_GetCurrentMapId() )
+    {
+        Influx_GetRunName( runid, szRun, sizeof( szRun ) );
+    }
+    else
+    {
+        FormatEx( szRun, sizeof( szRun ), "Run #%i", runid );
+    }
     
     Menu menu = new Menu( Hndlr_RecordStyleSelect );
     
@@ -161,7 +187,33 @@ public void Thrd_PrintStyleSelect( Handle db, Handle res, const char[] szError, 
         
         
         FormatEx( szInfo, sizeof( szInfo ), "%i_%i_%i_%i", mapid, runid, mode, style );
-        FormatEx( szDisplay, sizeof( szDisplay ), "%i %i (%i)", mode, style, numrecs );
+        
+        
+        if ( Influx_ShouldModeDisplay( mode ) )
+        {
+            Influx_GetModeName( mode, szMode, sizeof( szMode ) );
+        }
+        else
+        {
+            szMode[0] = 0;
+        }
+        
+        if ( Influx_ShouldStyleDisplay( style ) )
+        {
+            Influx_GetStyleName( style, szStyle, sizeof( szStyle ) );
+        }
+        else
+        {
+            szStyle[0] = 0;
+        }
+        
+        
+        
+        FormatEx( szDisplay, sizeof( szDisplay ), "%s%s%s (%i)",
+            szStyle,
+            ( szStyle[0] != 0 && szMode[0] != 0 ) ? " " : "",
+            szMode,
+            numrecs );
         
         menu.AddItem( szInfo, szDisplay );
         
@@ -178,7 +230,7 @@ public void Thrd_PrintStyleSelect( Handle db, Handle res, const char[] szError, 
     }
     
     
-    menu.SetTitle( "Records - Style Select - Run ID: %i", runid );
+    menu.SetTitle( "Records - Style Select | Run: %s\n ", szRun );
     
     if ( !num )
     {
