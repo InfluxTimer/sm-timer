@@ -227,6 +227,7 @@ public Action Cmd_LoadRun( int client, int args )
     
     decl String:szMap[64];
     decl String:szPath[PLATFORM_MAX_PATH];
+    decl String:szFullPath[PLATFORM_MAX_PATH];
     decl String:szInfo[32];
     
     int runid;
@@ -274,9 +275,9 @@ public Action Cmd_LoadRun( int client, int args )
             if ( !StrEqual( szFile[dotpos], ".tas", false ) ) continue;
             
             
-            Format( szPath, sizeof( szPath ), "%s/%s", szPath, szFile );
+            FormatEx( szFullPath, sizeof( szFullPath ), "%s/%s", szPath, szFile );
             
-            File file = OpenFile( szPath, "rb" );
+            File file = OpenFile( szFullPath, "rb" );
             
             if ( file == null )
             {
@@ -288,6 +289,10 @@ public Action Cmd_LoadRun( int client, int args )
             
             
             file.ReadInt32( runid );
+            
+#if defined DEBUG
+            PrintToServer( INF_DEBUG_PRE..."Read run id %i (current: %i) from file '%s'", runid, currunid, szFile );
+#endif
             
             if ( currunid == runid )
             {

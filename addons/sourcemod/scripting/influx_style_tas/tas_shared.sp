@@ -20,7 +20,7 @@
 #include <influx/practise>
 
 
-
+//#define DEBUG
 //#define DEBUG_THINK
 
 
