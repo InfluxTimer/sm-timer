@@ -4,6 +4,11 @@
 #include <influx/core>
 #include <influx/simpleranks>
 
+#undef REQUIRE_PLUGIN
+#include <basecomm>
+
+
+bool g_bLib_BaseComm;
 
 
 public Plugin myinfo =
@@ -17,7 +22,18 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-    
+    // LIBRARIES
+    g_bLib_BaseComm = LibraryExists( "basecomm" );
+}
+
+public void OnLibraryAdded( const char[] lib )
+{
+    if ( StrEqual( lib, "basecomm" ) ) g_bLib_BaseComm = true;
+}
+
+public void OnLibraryRemoved( const char[] lib )
+{
+    if ( StrEqual( lib, "basecomm" ) ) g_bLib_BaseComm = false;
 }
 
 public Action OnClientSayCommand( int client, const char[] szCommand, const char[] szMsg )
@@ -26,6 +42,11 @@ public Action OnClientSayCommand( int client, const char[] szCommand, const char
     
     if ( !IsClientInGame( client ) ) return Plugin_Continue;
     
+    // Gagged?
+    if ( g_bLib_BaseComm && BaseComm_IsClientGagged( client ) )
+    {
+        return Plugin_Handled;
+    }
     
     static char szRank[256];
     static char szName[MAX_NAME_LENGTH];
