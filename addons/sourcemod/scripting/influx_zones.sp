@@ -313,24 +313,17 @@ public void Influx_RequestHelpCmds()
 
 public void Influx_OnPreRunLoad()
 {
-    // OnMapStart but make sure it's done before zones are loaded.
-    if ( !PrecacheModel( MAGIC_BRUSH_MODEL ) )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't precache brush model '%s'!", MAGIC_BRUSH_MODEL );
-    }
-    
-    if ( !(g_iBuildBeamMat = PrecacheModel( BUILD_MAT )) )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't precache building beam material '%s'!", BUILD_MAT );
-    }
-    
-    if ( !(g_iBuildSprite = PrecacheModel( BUILD_SPRITE_MAT )) )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't precache building sprite material '%s'!", BUILD_SPRITE_MAT );
-    }
+    // OnMapStart but make sure to do it before loading files.
+    PrecacheEverything();
     
     
     g_hZones.Clear();
+}
+
+public void OnMapStart()
+{
+    // If we're late-loaded the above may not be called.
+    PrecacheEverything();
 }
 
 public void OnMapEnd()
@@ -1102,6 +1095,9 @@ stock void HandleTraceDist( int client )
 
 stock int CreateTriggerEnt( const float mins[3], const float maxs[3] )
 {
+    PrecacheZoneModel();
+    
+    
     int ent = CreateEntityByName( "trigger_multiple" );
     
     if ( ent < 1 )
@@ -1336,5 +1332,32 @@ stock void ImportantTypesToHead()
             
             ++j;
         }
+    }
+}
+
+stock void PrecacheZoneModel()
+{
+    if ( IsModelPrecached( MAGIC_BRUSH_MODEL ) )
+        return;
+    
+    
+    if ( !PrecacheModel( MAGIC_BRUSH_MODEL ) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't precache zone model '%s'!", MAGIC_BRUSH_MODEL );
+    }
+}
+
+stock void PrecacheEverything()
+{
+    PrecacheZoneModel();
+    
+    if ( !(g_iBuildBeamMat = PrecacheModel( BUILD_MAT )) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't precache building beam material '%s'!", BUILD_MAT );
+    }
+    
+    if ( !(g_iBuildSprite = PrecacheModel( BUILD_SPRITE_MAT )) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't precache building sprite material '%s'!", BUILD_SPRITE_MAT );
     }
 }
