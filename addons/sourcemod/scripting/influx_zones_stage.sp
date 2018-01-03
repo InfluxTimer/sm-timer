@@ -63,6 +63,9 @@ ConVar g_ConVar_DisplayOnlyMain;
 bool g_bLib_Zones_CP;
 
 
+bool g_bLate;
+
+
 public Plugin myinfo =
 {
     author = INF_AUTHOR,
@@ -74,6 +77,9 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
 {
+    g_bLate = late;
+    
+    
     // LIBRARIES
     RegPluginLibrary( INFLUX_LIB_ZONES_STAGE );
     
@@ -118,6 +124,20 @@ public void OnPluginStart()
     
     // LIBRARIES
     g_bLib_Zones_CP = LibraryExists( INFLUX_LIB_ZONES_CP );
+    
+    
+    if ( g_bLate )
+    {
+        Influx_OnPreRunLoad();
+        
+        ArrayList runs = Influx_GetRunsArray();
+        int len = runs.Length;
+        
+        for ( int i = 0; i < len; i++ )
+        {
+            Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+        }
+    }
 }
 
 public void OnAllPluginsLoaded()

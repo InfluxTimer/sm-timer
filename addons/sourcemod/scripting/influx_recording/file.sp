@@ -32,6 +32,14 @@ stock void FormatRecordingPath( char[] sz, int len, int runid, int mode, int sty
 
 stock void LoadAllRecordings()
 {
+    if ( g_bRecordingsLoaded )
+    {
+        return;
+    }
+    
+    g_bRecordingsLoaded = true;
+    
+    
     char szPath[PLATFORM_MAX_PATH];
     BuildPath( Path_SM, szPath, sizeof( szPath ), RECORDS_DIR );
 

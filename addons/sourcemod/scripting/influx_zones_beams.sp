@@ -110,6 +110,9 @@ ConVar g_ConVar_DrawInterval;
 bool g_bLib_Hud;
 
 
+bool g_bLate;
+
+
 public Plugin myinfo =
 {
     author = INF_AUTHOR,
@@ -121,6 +124,9 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
 {
+    g_bLate = late;
+    
+    
     // LIBRARIES
     RegPluginLibrary( INFLUX_LIB_ZONES_BEAMS );
     
@@ -167,6 +173,12 @@ public void OnPluginStart()
     
     
     g_bLib_Hud = LibraryExists( INFLUX_LIB_HUD );
+    
+    
+    if ( g_bLate )
+    {
+        Influx_OnPreRunLoad();
+    }
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -306,10 +318,8 @@ public void OnMapEnd()
 
 public void Influx_OnPreRunLoad()
 {
-    if ( !(g_iDefBeamMat = PrecacheModel( DEF_MAT )) )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't precache default beam material '%s'!", DEF_MAT );
-    }
+    PrecacheDefault();
+    
     
     g_hBeams.Clear();
     
@@ -1029,6 +1039,14 @@ stock bool IsInvisibleColor( const int clr[4] )
     
     
     return ( (clr[0] + clr[1] + clr[2]) <= 0 );
+}
+
+stock void PrecacheDefault()
+{
+    if ( !(g_iDefBeamMat = PrecacheModel( DEF_MAT )) )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't precache default beam material '%s'!", DEF_MAT );
+    }
 }
 
 // NATIVES

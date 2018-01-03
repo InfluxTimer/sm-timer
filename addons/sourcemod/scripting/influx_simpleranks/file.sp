@@ -52,6 +52,10 @@ stock void ReadRanks()
         data[RANK_POINTS] = points;
         data[RANK_UNLOCK] = kv.GetNum( "unlock", 0 );
         
+        kv.GetString( "flags", szTemp, sizeof( szTemp ), "" );
+        
+        data[RANK_FLAGS] = ReadFlagString( szTemp );
+        
         
         g_hRanks.PushArray( data );
     }

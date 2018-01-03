@@ -17,6 +17,7 @@
 
 //#define DEBUG
 //#define DEBUG_CHECKZONES
+//#define DEBUG_LOADZONES
 
 
 // Exists for both CSS and CS:GO
@@ -71,6 +72,7 @@ int g_iBuildBeamMat;
 int g_iBuildSprite;
 
 
+bool g_bZonesLoaded = false;
 bool g_bLate;
 
 
@@ -267,6 +269,8 @@ public void OnAllPluginsLoaded()
 {
     if ( g_bLate )
     {
+        g_hZoneTypes.Clear();
+        
         Call_StartForward( g_hForward_OnRequestZoneTypes );
         Call_Finish();
     }
@@ -313,9 +317,6 @@ public void Influx_OnPreRunLoad()
 {
     // OnMapStart but make sure to do it before loading files.
     PrecacheEverything();
-    
-    
-    g_hZones.Clear();
 }
 
 public void OnMapStart()
@@ -330,6 +331,9 @@ public void OnMapEnd()
     {
         WriteZoneFile();
     }
+    
+    g_bZonesLoaded = false;
+    g_hZones.Clear();
 }
 
 public void Influx_OnPostRunLoad()
@@ -366,10 +370,30 @@ public Action T_RoundRestart_Delay( Handle hTimer )
 
 stock void ReadZoneFile()
 {
+#if defined DEBUG_LOADZONES
+    PrintToServer( INF_DEBUG_PRE..."Attempting to load zone file with %i zonestypes.", g_hZoneTypes.Length );
+#endif
+
+    // We've already loaded zones for this map.
+    if ( g_bZonesLoaded )
+    {
+#if defined DEBUG_LOADZONES
+        PrintToServer( INF_DEBUG_PRE..."Zones are already loaded!" );
+#endif
+        return;
+    }
+    
+    g_bZonesLoaded = true;
+    
+    
     char szPath[PLATFORM_MAX_PATH];
     BuildPath( Path_SM, szPath, sizeof( szPath ), "influxzones" );
     
-    if ( !DirExistsEx( szPath ) ) return;
+    if ( !DirExistsEx( szPath ) )
+    {
+        LogError( INF_CON_PRE..."Couldn't build path to zone files '%s'!", szPath );
+        return;
+    }
     
     
     char szMap[64];
@@ -382,6 +406,9 @@ stock void ReadZoneFile()
     
     if ( !kv.GotoFirstSubKey() )
     {
+#if defined DEBUG_LOADZONES
+        PrintToServer( INF_DEBUG_PRE..."No zone file exists '%s'!", szPath );
+#endif
         delete kv;
         return;
     }
@@ -394,6 +421,7 @@ stock void ReadZoneFile()
     int zoneid;
     
     char szType[32];
+    bool bInvalidZoneType;
     
     do
     {
@@ -408,9 +436,15 @@ stock void ReadZoneFile()
             zonetype = FindZoneTypeByShortName( szType );
         }
         
-        if ( zonetype == ZONETYPE_INVALID || FindZoneType( zonetype ) == -1 )
+        bInvalidZoneType = zonetype == ZONETYPE_INVALID || FindZoneType( zonetype ) == -1;
+        
+        if ( bInvalidZoneType )
         {
-            //LogError( INF_CON_PRE..."Found invalid zone type %i!", zonetype );
+            if ( !g_bLate )
+            {
+                //LogError( INF_CON_PRE..."Found invalid zone type %i!", zonetype );
+            }
+            
             continue;
         }
         
@@ -442,7 +476,7 @@ stock void ReadZoneFile()
         
         
         // Ask other plugins what to load.
-        Action res;
+        Action res = Plugin_Handled;
         
         Call_StartForward( g_hForward_OnZoneLoad );
         Call_PushCell( zoneid );
@@ -452,6 +486,10 @@ stock void ReadZoneFile()
         
         if ( res != Plugin_Handled )
         {
+#if defined DEBUG_LOADZONES
+            PrintToServer( INF_DEBUG_PRE..."OnZoneLoad failed (id: %i)!", zoneid );
+#endif
+
             if ( res == Plugin_Stop )
             {
                 LogError( INF_CON_PRE..."Couldn't load zone %s with type %i from file! (id: %i)", data[ZONE_NAME], zonetype, zoneid );
@@ -482,6 +520,8 @@ stock void ReadZoneFile()
     
     delete kv;
     
+    
+    PrintToServer( INF_CON_PRE..."Loaded %i zones from file!", g_hZones.Length );
     
     //CheckRuns();
 }
@@ -616,7 +656,7 @@ stock int WriteZoneFile()
 #if defined DEBUG_CHECKZONES
 public Action Cmd_Debug_CheckZones( int client, int args )
 {
-    CheckZones( client );
+    CheckZones( client, true );
     
     return Plugin_Handled;
 }
@@ -647,13 +687,17 @@ public Action Cmd_Debug_PrintZoneTypes( int client, int args )
 }
 #endif
 
-stock void CheckZones( int issuer = 0 )
+stock void CheckZones( int issuer = 0, bool bForcePrint = false )
 {
     int num = 0;
     
     int len = g_hZones.Length;
     for ( int i = 0; i < len; i++ )
     {
+        if ( FindZoneType( view_as<ZoneType_t>( g_hZones.Get( i, ZONE_TYPE ) ) ) == -1 )
+            continue;
+        
+        
         if ( EntRefToEntIndex( g_hZones.Get( i, ZONE_ENTREF ) ) < 1 )
         {
             if ( CreateZoneEntityByIndex( i ) != -1 )
@@ -661,14 +705,9 @@ stock void CheckZones( int issuer = 0 )
         }
     }
     
-    if ( num )
+    if ( num || bForcePrint )
     {
-        PrintToServer( INF_CON_PRE..."Spawned %i zones!", num );
-        
-        if ( IS_ENT_PLAYER( issuer ) && IsClientInGame( issuer ) )
-        {
-            Influx_PrintToChat( _, issuer, "Spawned {MAINCLR1}%i{CHATCLR} zones!", num );
-        }
+        Inf_ReplyToClient( issuer, "Spawned {MAINCLR1}%i{CHATCLR} zones!", num );
     }
 }
 
@@ -799,6 +838,13 @@ stock int CreateZoneEntity( int zoneid )
 
 stock int CreateZoneEntityByIndex( int index )
 {
+#if defined DEBUG
+    char szName[32];
+    GetZoneNameByIndex( index, szName, sizeof( szName ) );
+    
+    PrintToServer( INF_DEBUG_PRE..."Creating zone entity ('%s')...", szName );
+#endif
+
     float mins[3], maxs[3];
     GetZoneMinsMaxsByIndex( index, mins, maxs );
     
@@ -1359,3 +1405,12 @@ stock void PrecacheEverything()
         SetFailState( INF_CON_PRE..."Couldn't precache building sprite material '%s'!", BUILD_SPRITE_MAT );
     }
 }
+
+stock void ReloadZones()
+{
+    g_bZonesLoaded = false;
+    g_hZones.Clear();
+    
+    ReadZoneFile();
+}
+

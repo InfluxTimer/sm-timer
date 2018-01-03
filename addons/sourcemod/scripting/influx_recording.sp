@@ -136,6 +136,7 @@ bool g_bLib_Practise;
 TopMenu g_hTopMenu;
 
 
+bool g_bRecordingsLoaded = false;
 bool g_bLate;
 
 
@@ -237,6 +238,19 @@ public void OnPluginStart()
         {
             OnAdminMenuReady( topmenu );
         }
+        
+        
+        Influx_OnPreRunLoad();
+        
+        ArrayList runs = Influx_GetRunsArray();
+        int len = runs.Length;
+        
+        for ( int i = 0; i < len; i++ )
+        {
+            Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+        }
+        
+        Influx_OnPostRunLoad();
     }
 }
 
@@ -322,6 +336,8 @@ public void Influx_OnPostRunLoad()
 
 public void OnMapEnd()
 {
+    g_bRecordingsLoaded = false;
+    
     g_bReplayActionTimerClose = true;
     g_hReplayActionTimer = null;
     

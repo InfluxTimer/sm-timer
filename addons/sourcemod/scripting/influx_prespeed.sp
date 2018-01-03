@@ -60,6 +60,9 @@ ConVar g_ConVar_Noclip;
 Handle g_hForward_OnLimitClientPrespeed;
 
 
+bool g_bLate;
+
+
 public Plugin myinfo =
 {
     author = INF_AUTHOR,
@@ -71,6 +74,9 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
 {
+    g_bLate = late;
+    
+    
     // LIBRARIES
     RegPluginLibrary( INFLUX_LIB_PRESPEED );
 }
@@ -97,6 +103,20 @@ public void OnPluginStart()
     
     // EVENTS
     HookEvent( "player_jump", E_PlayerJump );
+    
+    
+    if ( g_bLate )
+    {
+        Influx_OnPreRunLoad();
+        
+        ArrayList runs = Influx_GetRunsArray();
+        int len = runs.Length;
+        
+        for ( int i = 0; i < len; i++ )
+        {
+            Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+        }
+    }
 }
 
 public void OnClientPutInServer( int client )

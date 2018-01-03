@@ -15,7 +15,7 @@ public int Hndlr_Rank( Menu menu, MenuAction action, int client, int index )
     }
     else
     {
-        if ( i < g_hRanks.Length && g_nPoints[client] >= GetRankPoints( i ) )
+        if ( i < g_hRanks.Length && g_nPoints[client] >= GetRankPoints( i ) && CanUseRankByIndex( client, i ) )
         {
             SetClientRank( client, i, true, _, true );
             

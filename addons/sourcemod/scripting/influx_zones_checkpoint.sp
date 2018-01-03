@@ -189,6 +189,17 @@ public void OnPluginStart()
         {
             OnAdminMenuReady( topmenu );
         }
+        
+        
+        Influx_OnPreRunLoad();
+        
+        ArrayList runs = Influx_GetRunsArray();
+        int len = runs.Length;
+        
+        for ( int i = 0; i < len; i++ )
+        {
+            Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+        }
     }
 }
 

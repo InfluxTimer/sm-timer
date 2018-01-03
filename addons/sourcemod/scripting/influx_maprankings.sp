@@ -29,6 +29,8 @@ int g_nCurrentRankCount[INF_MAXPLAYERS];
 
 bool g_bCachedNumRecs;
 
+bool g_bLate;
+
 
 public Plugin myinfo =
 {
@@ -41,6 +43,9 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
 {
+    g_bLate = late;
+    
+    
     // LIBRARIES
     RegPluginLibrary( INFLUX_LIB_MAPRANKS );
     
@@ -57,6 +62,32 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 public void OnPluginStart()
 {
     g_hRunRanks = new ArrayList( RANK_SIZE );
+    
+    
+    if ( g_bLate )
+    {
+        Influx_OnPreRunLoad();
+        
+        ArrayList runs = Influx_GetRunsArray();
+        int len = runs.Length;
+        
+        for ( int i = 0; i < len; i++ )
+        {
+            Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+        }
+        
+        
+        if ( Influx_GetCurrentMapId() > 0 )
+            Influx_OnMapIdRetrieved( Influx_GetCurrentMapId(), false );
+        
+        for ( int i = 1; i <= MaxClients; i++ )
+        {
+            if ( IsClientInGame( i ) && Influx_GetClientId( i ) > 0 && !IsFakeClient( i ) )
+            {
+                Influx_OnClientIdRetrieved( i, Influx_GetClientId( i ), false );
+            }
+        }
+    }
 }
 
 public void OnClientPutInServer( int client )
@@ -118,17 +149,6 @@ public void Influx_OnPreRunLoad()
     g_bCachedNumRecs = false;
     
     g_hRunRanks.Clear();
-}
-
-public void Influx_OnRunLoad( int runid, KeyValues kv )
-{
-    if ( FindRunRankById( runid ) != -1 ) return;
-    
-    
-    int data[RANK_SIZE];
-    data[RANK_RUN_ID] = runid;
-    
-    g_hRunRanks.PushArray( data );
 }
 
 public void Influx_OnRunCreated( int runid )
