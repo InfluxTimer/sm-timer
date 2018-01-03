@@ -39,6 +39,7 @@ enum ZoneType_t
     ZONETYPE_CP,
     ZONETYPE_STAGE,
     ZONETYPE_AUTOBHOP,
+    ZONETYPE_VALIDATOR,
     
     ZONETYPE_MAX
 };
