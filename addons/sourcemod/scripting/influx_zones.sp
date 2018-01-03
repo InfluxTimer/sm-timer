@@ -19,12 +19,10 @@
 //#define DEBUG_CHECKZONES
 
 
+// Exists for both CSS and CS:GO
 #define BUILD_MAT                   "materials/sprites/laserbeam.vmt"
 #define BUILD_SPRITE_MAT            "materials/sprites/glow01.vmt"
-
-
-// Exists for both CSS and CS:GO
-#define MAGIC_BRUSH_MODEL       "models/props/cs_office/vending_machine.mdl"
+#define MAGIC_ZONE_MODEL            "models/props/cs_office/vending_machine.mdl"
 
 
 #define ZONE_BUILDDRAW_INTERVAL     0.1
@@ -1129,7 +1127,7 @@ stock int CreateTriggerEnt( const float mins[3], const float maxs[3] )
     ActivateEntity( ent );
     
     
-    SetEntityModel( ent, MAGIC_BRUSH_MODEL );
+    SetEntityModel( ent, MAGIC_ZONE_MODEL );
     
     
 #define EF_NODRAW   32
@@ -1337,13 +1335,13 @@ stock void ImportantTypesToHead()
 
 stock void PrecacheZoneModel()
 {
-    if ( IsModelPrecached( MAGIC_BRUSH_MODEL ) )
+    if ( IsModelPrecached( MAGIC_ZONE_MODEL ) )
         return;
     
     
-    if ( !PrecacheModel( MAGIC_BRUSH_MODEL ) )
+    if ( !PrecacheModel( MAGIC_ZONE_MODEL ) )
     {
-        SetFailState( INF_CON_PRE..."Couldn't precache zone model '%s'!", MAGIC_BRUSH_MODEL );
+        SetFailState( INF_CON_PRE..."Couldn't precache zone model '%s'!", MAGIC_ZONE_MODEL );
     }
 }
 
