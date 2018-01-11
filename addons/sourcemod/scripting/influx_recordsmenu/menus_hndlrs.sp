@@ -59,7 +59,7 @@ public int Hndlr_MapList( Menu menu, MenuAction action, int client, int index )
     int mapid = StringToInt( szInfo );
     
     if ( mapid > 0 )
-        DB_PrintRecords( client, _, mapid, MAIN_RUN_ID );
+        DB_DetermineRunMenu( client, _, mapid, Influx_GetClientRunId( client ) );
     
     return 0;
 }
@@ -72,17 +72,18 @@ public int Hndlr_RecordRunSelect( Menu menu, MenuAction action, int client, int 
     char szInfo[32];
     if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
     
-    char buffer[2][16];
+    char buffer[3][16];
     if ( ExplodeString( szInfo, "_", buffer, sizeof( buffer ), sizeof( buffer[] ) ) != sizeof( buffer ) )
     {
         return 0;
     }
     
     
-    int mapid = StringToInt( buffer[0] );
-    int runid = StringToInt( buffer[1] );
+    int uid = StringToInt( buffer[0] );
+    int mapid = StringToInt( buffer[1] );
+    int runid = StringToInt( buffer[2] );
     
-    DB_PrintStyleSelect( client, mapid, runid );
+    DB_DetermineStyleMenu( client, uid, mapid, runid );
     
     return 0;
 }
@@ -95,19 +96,20 @@ public int Hndlr_RecordStyleSelect( Menu menu, MenuAction action, int client, in
     char szInfo[32];
     if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
     
-    char buffer[4][16];
+    char buffer[5][16];
     if ( ExplodeString( szInfo, "_", buffer, sizeof( buffer ), sizeof( buffer[] ) ) != sizeof( buffer ) )
     {
         return 0;
     }
     
     
-    int mapid = StringToInt( buffer[0] );
-    int runid = StringToInt( buffer[1] );
-    int mode = StringToInt( buffer[2] );
-    int style = StringToInt( buffer[3] );
+    int uid = StringToInt( buffer[0] );
+    int mapid = StringToInt( buffer[1] );
+    int runid = StringToInt( buffer[2] );
+    int mode = StringToInt( buffer[3] );
+    int style = StringToInt( buffer[4] );
     
-    DB_PrintRecords( client, _, mapid, runid, mode, style );
+    DB_PrintRecords( client, uid, mapid, runid, mode, style );
     
     return 0;
 }

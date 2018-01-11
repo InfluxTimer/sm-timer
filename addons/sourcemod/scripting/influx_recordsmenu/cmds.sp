@@ -48,7 +48,7 @@ public Action Cmd_PrintMyRecords( int client, int args )
     }
     else
     {
-        DB_PrintRecords( client, uid, mapid, runid );
+        DB_DetermineRunMenu( client, uid, mapid, runid );
     }
     
     return Plugin_Handled;
@@ -98,7 +98,7 @@ public Action Cmd_PrintRecords( int client, int args )
     }
     else
     {
-        DB_PrintRunSelect( client, mapid );
+        DB_DetermineRunMenu( client, _, mapid, runid );
     }
     
     return Plugin_Handled;

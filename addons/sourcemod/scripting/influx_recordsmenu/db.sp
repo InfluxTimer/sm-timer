@@ -6,6 +6,83 @@
 #include "influx_recordsmenu/db_cb.sp"
 
 
+
+// Query to see how and if we'll display the run menu at all.
+stock void DB_DetermineRunMenu(
+    int client,
+    int uid = -1,
+    int mapid,
+    int runid )
+{
+    Handle db = Influx_GetDB();
+    if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
+    
+    
+    static char szWhere[192];
+    FormatEx( szWhere, sizeof( szWhere ), "WHERE mapid=%i", mapid );
+    
+    if ( uid > 0 )
+    {
+        Format( szWhere, sizeof( szWhere ), "%s AND uid=%i", szWhere, uid );
+    }
+    
+    // TODO: Hasn't been tested with MySQL!
+    static char szQuery[512];
+    FormatEx( szQuery, sizeof( szQuery ),
+        "SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." %s AND runid!=%i GROUP BY mode,style",
+        szWhere, runid );
+    
+    
+    decl data[4];
+    ArrayList array = new ArrayList( sizeof( data ) );
+    data[0] = GetClientUserId( client );
+    data[1] = uid;
+    data[2] = mapid;
+    data[3] = runid;
+    
+    array.PushArray( data );
+    
+    SQL_TQuery( db, Thrd_DetermineRunMenu, szQuery, array, DBPrio_Normal );
+}
+
+// Query to see how and if we'll display the style menu at all.
+stock void DB_DetermineStyleMenu(
+    int client,
+    int uid = -1,
+    int mapid,
+    int runid )
+{
+    Handle db = Influx_GetDB();
+    if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
+    
+    
+    static char szWhere[192];
+    szWhere[0] = 0;
+    
+    if ( uid > 0 )
+    {
+        FormatEx( szWhere, sizeof( szWhere ), " AND uid=%i", uid );
+    }
+    
+    // TODO: Hasn't been tested with MySQL!
+    static char szQuery[512];
+    FormatEx( szQuery, sizeof( szQuery ),
+        "SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=%i AND runid=%i%s",
+        mapid, runid, szWhere );
+    
+    
+    decl data[4];
+    ArrayList array = new ArrayList( sizeof( data ) );
+    data[0] = GetClientUserId( client );
+    data[1] = uid;
+    data[2] = mapid;
+    data[3] = runid;
+    
+    array.PushArray( data );
+    
+    SQL_TQuery( db, Thrd_DetermineStyleMenu, szQuery, array, DBPrio_Normal );
+}
+
 stock void DB_PrintMaps( int client )
 {
     Handle db = Influx_GetDB();
@@ -30,23 +107,41 @@ stock void DB_PrintMaps( int client )
 
 stock void DB_PrintRunSelect(
     int client,
+    int uid = -1,
     int mapid )
 {
+#if defined DEBUG_DB
+    PrintToServer( INF_DEBUG_PRE..."Printing run select for %i (%i, %i)",
+        client,
+        uid,
+        mapid );
+#endif
+
     Handle db = Influx_GetDB();
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
+    
+    
+    static char szWhere[128];
+    szWhere[0] = 0;
+    
+    if ( uid > 0 )
+    {
+        FormatEx( szWhere, sizeof( szWhere ), " AND uid=%i", uid );
+    }
     
     // TODO: Hasn't been tested with MySQL!
     static char szQuery[512];
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT runid," ...
         "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_t.mapid AND runid=_t.runid) AS numrunrecs " ...
-        "FROM "...INF_TABLE_TIMES..." AS _t WHERE mapid=%i GROUP BY runid ORDER BY numrunrecs DESC", mapid );
+        "FROM "...INF_TABLE_TIMES..." AS _t WHERE mapid=%i%s GROUP BY runid ORDER BY numrunrecs DESC", mapid, szWhere );
     
     
-    decl data[2];
+    decl data[3];
     ArrayList array = new ArrayList( sizeof( data ) );
     data[0] = GetClientUserId( client );
-    data[1] = mapid;
+    data[1] = uid;
+    data[2] = mapid;
     
     array.PushArray( data );
     
@@ -56,25 +151,44 @@ stock void DB_PrintRunSelect(
 // Style AND mode select
 stock void DB_PrintStyleSelect(
     int client,
+    int uid = -1,
     int mapid,
     int runid )
 {
+#if defined DEBUG_DB
+    PrintToServer( INF_DEBUG_PRE..."Printing style select for %i (%i, %i, %i)",
+        client,
+        uid,
+        mapid,
+        runid );
+#endif
+
     Handle db = Influx_GetDB();
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
+    
+    
+    static char szWhere[128];
+    szWhere[0] = 0;
+    
+    if ( uid > 0 )
+    {
+        FormatEx( szWhere, sizeof( szWhere ), " AND uid=%i", uid );
+    }
     
     // TODO: Hasn't been tested with MySQL!
     static char szQuery[512];
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT mode,style," ...
         "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_t.mapid AND runid=_t.runid AND mode=_t.mode AND style=_t.style) AS numrecs " ...
-        "FROM "...INF_TABLE_TIMES..." AS _t WHERE mapid=%i AND runid=%i GROUP BY mode,style ORDER BY numrecs DESC", mapid, runid );
+        "FROM "...INF_TABLE_TIMES..." AS _t WHERE mapid=%i AND runid=%i%s GROUP BY mode,style ORDER BY numrecs DESC", mapid, runid, szWhere );
     
     
-    decl data[3];
+    decl data[4];
     ArrayList array = new ArrayList( sizeof( data ) );
     data[0] = GetClientUserId( client );
-    data[1] = mapid;
-    data[2] = runid;
+    data[1] = uid;
+    data[2] = mapid;
+    data[3] = runid;
     
     array.PushArray( data );
     

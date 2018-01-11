@@ -1,3 +1,78 @@
+public void Thrd_DetermineRunMenu( Handle db, Handle res, const char[] szError, ArrayList array )
+{
+    decl data[4];
+    
+    array.GetArray( 0, data, sizeof( data ) );
+    delete array;
+    
+    int client = GetClientOfUserId( data[0] );
+    
+    if ( !client ) return;
+    
+    if ( res == null )
+    {
+        Inf_DB_LogError( db, "determining run menu type to client", client, "Something went wrong." );
+        return;
+    }
+    
+    
+    SQL_FetchRow( res );
+    
+    int uid = data[1];
+    int mapid = data[2];
+    int runid = data[3];
+    int otherruns = SQL_FetchInt( res, 0 );
+    
+    // Go straight to style select if our run is the only run with records.
+    if ( !otherruns )
+    {
+        DB_DetermineStyleMenu( client, uid, mapid, runid );
+    }
+    else
+    {
+        DB_PrintRunSelect( client, uid, mapid );
+    }
+}
+
+public void Thrd_DetermineStyleMenu( Handle db, Handle res, const char[] szError, ArrayList array )
+{
+    decl data[4];
+    
+    array.GetArray( 0, data, sizeof( data ) );
+    delete array;
+    
+    int client = GetClientOfUserId( data[0] );
+    
+    if ( !client ) return;
+    
+    if ( res == null )
+    {
+        Inf_DB_LogError( db, "determining style menu type to client", client, "Something went wrong." );
+        return;
+    }
+    
+    
+    SQL_FetchRow( res );
+    
+    int uid = data[1];
+    int mapid = data[2];
+    int runid = data[3];
+    int numrecs = SQL_FetchInt( res, 0 );
+    
+#if defined DEBUG_DB
+    PrintToServer( INF_DEBUG_PRE..."Number of records (%i, %i, %i): %i", uid, mapid, runid, numrecs );
+#endif
+    
+    // Display the list if our number of records is small.
+    if ( numrecs <= g_ConVar_DisplayFullListMax.IntValue )
+    {
+        DB_PrintRecords( client, uid, mapid, runid );
+    }
+    else
+    {
+        DB_PrintStyleSelect( client, uid, mapid, runid );
+    }
+}
 
 public void Thrd_PrintMaps( Handle db, Handle res, const char[] szError, int client )
 {
@@ -60,7 +135,7 @@ public void Thrd_PrintMaps( Handle db, Handle res, const char[] szError, int cli
 
 public void Thrd_PrintRunSelect( Handle db, Handle res, const char[] szError, ArrayList array )
 {
-    decl data[2];
+    decl data[3];
     
     array.GetArray( 0, data, sizeof( data ) );
     delete array;
@@ -81,7 +156,8 @@ public void Thrd_PrintRunSelect( Handle db, Handle res, const char[] szError, Ar
     
     decl String:szRun[MAX_RUN_NAME];
     
-    int mapid = data[1];
+    int uid = data[1];
+    int mapid = data[2];
     int runid;
     int numrecs;
     
@@ -107,7 +183,7 @@ public void Thrd_PrintRunSelect( Handle db, Handle res, const char[] szError, Ar
             FormatEx( szRun, sizeof( szRun ), "Run #%i", runid );
         }
         
-        FormatEx( szInfo, sizeof( szInfo ), "%i_%i", mapid, runid );
+        FormatEx( szInfo, sizeof( szInfo ), "%i_%i_%i", uid, mapid, runid );
         FormatEx( szDisplay, sizeof( szDisplay ), "%s (%i)", szRun, numrecs );
         
         menu.AddItem( szInfo, szDisplay );
@@ -120,7 +196,7 @@ public void Thrd_PrintRunSelect( Handle db, Handle res, const char[] szError, Ar
     {
         delete menu;
         
-        DB_PrintStyleSelect( client, mapid, runid );
+        DB_DetermineStyleMenu( client, uid, mapid, runid );
         return;
     }
     
@@ -137,7 +213,7 @@ public void Thrd_PrintRunSelect( Handle db, Handle res, const char[] szError, Ar
 
 public void Thrd_PrintStyleSelect( Handle db, Handle res, const char[] szError, ArrayList array )
 {
-    decl data[3];
+    decl data[4];
     
     array.GetArray( 0, data, sizeof( data ) );
     delete array;
@@ -160,8 +236,9 @@ public void Thrd_PrintStyleSelect( Handle db, Handle res, const char[] szError, 
     decl String:szMode[MAX_MODE_NAME];
     decl String:szStyle[MAX_STYLE_NAME];
     
-    int mapid = data[1];
-    int runid = data[2];
+    int uid = data[1];
+    int mapid = data[2];
+    int runid = data[3];
     int mode, style;
     int numrecs;
     
@@ -186,7 +263,7 @@ public void Thrd_PrintStyleSelect( Handle db, Handle res, const char[] szError, 
         numrecs = SQL_FetchInt( res, 2 );
         
         
-        FormatEx( szInfo, sizeof( szInfo ), "%i_%i_%i_%i", mapid, runid, mode, style );
+        FormatEx( szInfo, sizeof( szInfo ), "%i_%i_%i_%i_%i", uid, mapid, runid, mode, style );
         
         
         if ( Influx_ShouldModeDisplay( mode ) )
@@ -225,7 +302,7 @@ public void Thrd_PrintStyleSelect( Handle db, Handle res, const char[] szError, 
     {
         delete menu;
         
-        DB_PrintRecords( client, _, mapid, runid, mode, style );
+        DB_PrintRecords( client, uid, mapid, runid, mode, style );
         return;
     }
     
@@ -499,7 +576,8 @@ public void Thrd_PrintRecordInfo( Handle db, Handle res, const char[] szError, i
         return;
     }
     
-    if ( !SQL_FetchRow( res ) ) return;
+    
+    SQL_FetchRow( res );
     
     
     decl String:szRank[24];

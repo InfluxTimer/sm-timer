@@ -7,6 +7,9 @@
 
 
 
+#define DEBUG_DB
+
+
 // Print records CallBack (PCB)
 
 #define MAX_PCB_PLYNAME             32
@@ -43,6 +46,9 @@ Handle g_hForward_OnPrintRecordInfo;
 Handle g_hForward_OnRecordInfoButtonPressed;
 
 
+// CONVARS
+ConVar g_ConVar_DisplayFullListMax;
+
 
 #include "influx_recordsmenu/cmds.sp"
 #include "influx_recordsmenu/db.sp"
@@ -77,6 +83,12 @@ public void OnPluginStart()
     g_hForward_OnRecordInfoButtonPressed = CreateGlobalForward( "Influx_OnRecordInfoButtonPressed", ET_Hook, Param_Cell, Param_String );
     
     
+    // CONVARS
+    g_ConVar_DisplayFullListMax = CreateConVar( "influx_recordsmenu_displayfulllistmax", "6", "If the number of records to print is less than this, full list is displayed. Otherwise, display style menu.", FCVAR_NOTIFY, true, 0.0, false, 0.0 );
+    
+    AutoExecConfig( true, "recordsmenu", "influx" );
+    
+    
     // RECORD CMDS
     RegConsoleCmd( "sm_top", Cmd_PrintRecords );
     RegConsoleCmd( "sm_worldrecords", Cmd_PrintRecords );
@@ -101,6 +113,7 @@ public void OnClientPutInServer( int client )
     g_flLastRecPrintTime[client] = 0.0;
 }
 
+// NATIVES
 public int Native_PrintRecords( Handle hPlugin, int nParms )
 {
     int client = GetNativeCell( 1 );
@@ -119,22 +132,21 @@ public int Native_PrintRecords( Handle hPlugin, int nParms )
     int mode = GetNativeCell( 6 );
     int style = GetNativeCell( 7 );
     
+    if ( runid < 1 )
+        runid = Influx_GetClientRunId( client );
     
     if ( bForceDisplay )
     {
         if ( mapid < 1 )
             mapid = Influx_GetCurrentMapId();
-        
-        if ( runid < 1 )
-            runid = Influx_GetClientRunId( client );
-        
+                
         DB_PrintRecords( client, uid, mapid, runid, mode, style );
         
         return 1;
     }
     
     
-    DB_PrintRunSelect( client, mapid > 0 ? mapid : Influx_GetCurrentMapId() );
+    DB_DetermineRunMenu( client, uid, mapid > 0 ? mapid : Influx_GetCurrentMapId(), runid );
     
     return 1;
 }
