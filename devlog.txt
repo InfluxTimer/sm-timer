@@ -1,3 +1,25 @@
+DEV
+
+COMPATIBILITY:
+- If you update any of the following plugins, make sure to also update ALL of them: influx_core/influx_recordsmenu/influx_zones_checkpoint/influx_jumps/influx_strafes
+- Records menu has been migrated to influx_recordsmenu from influx_core.
+
+ADDED:
+- !mymaps to display the list of maps you've beaten. (influx_recordsmenu)
+
+CHANGES:
+- Records menu will now segment each run and style/mode to their own menus (select run, style and then display list of records). See cvars influx_recordsmenu_displayfulllistmax
+- Use persistent SQLite connection if possible.
+- TAS timescale is now reset back to 1 when changing mode.
+
+FIXES:
+- Some plugins not functioning correctly when late-loading. (multi-servers, rejoice)
+- Fixed late-loading precache crash.
+- Fixed not being able to load TAS runs.
+- Zones not respawning on round start. (CSS)
+
+
+
 1.1.1 Hotfix
 
 COMPATIBILITY:
