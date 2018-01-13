@@ -190,7 +190,7 @@ public void OnPluginStart()
     }
     else
     {
-        HookEvent( "teamplay_round_start", E_RoundRestart, EventHookMode_PostNoCopy );
+        HookEvent( "round_freeze_end", E_RoundRestart, EventHookMode_PostNoCopy );
     }
     
     
