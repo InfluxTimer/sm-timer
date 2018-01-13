@@ -16,12 +16,10 @@ public void Thrd_DetermineRunMenu( Handle db, Handle res, const char[] szError, 
     }
     
     
-    SQL_FetchRow( res );
-    
     int uid = data[1];
     int mapid = data[2];
     int runid = data[3];
-    int otherruns = SQL_FetchInt( res, 0 );
+    int otherruns = SQL_FetchRow( res ) ? SQL_FetchInt( res, 0 ) : 0;
     
     // Go straight to style select if our run is the only run with records.
     if ( !otherruns )
@@ -52,12 +50,10 @@ public void Thrd_DetermineStyleMenu( Handle db, Handle res, const char[] szError
     }
     
     
-    SQL_FetchRow( res );
-    
     int uid = data[1];
     int mapid = data[2];
     int runid = data[3];
-    int numrecs = SQL_FetchInt( res, 0 );
+    int numrecs = SQL_FetchRow( res ) ? SQL_FetchInt( res, 0 ) : 0;
     
 #if defined DEBUG_DB
     PrintToServer( INF_DEBUG_PRE..."Number of records (%i, %i, %i): %i", uid, mapid, runid, numrecs );
@@ -74,9 +70,16 @@ public void Thrd_DetermineStyleMenu( Handle db, Handle res, const char[] szError
     }
 }
 
-public void Thrd_PrintMaps( Handle db, Handle res, const char[] szError, int client )
+public void Thrd_PrintMaps( Handle db, Handle res, const char[] szError, ArrayList array )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    decl data[2];
+    
+    array.GetArray( 0, data, sizeof( data ) );
+    delete array;
+    
+    int client = GetClientOfUserId( data[0] );
+    
+    if ( !client ) return;
     
     if ( res == null )
     {
@@ -89,11 +92,12 @@ public void Thrd_PrintMaps( Handle db, Handle res, const char[] szError, int cli
     menu.SetTitle( "Maps\n " );
     
     
+    int uid = data[1];
     int num = 0;
     
     char szMap[64];
     
-    char szInfo[6];
+    char szInfo[32];
     char szDisplay[64];
     
     int main_recs, misc_recs;
@@ -112,10 +116,11 @@ public void Thrd_PrintMaps( Handle db, Handle res, const char[] szError, int cli
         // TODO: Change queries to use REGEXP instead.
         if ( !Influx_IsValidMapName( szMap ) ) continue;
         
+        int mapid = SQL_FetchInt( res, 0 );
         
-        FormatEx( szInfo, sizeof( szInfo ), "%i", SQL_FetchInt( res, 0 ) );
+        FormatEx( szInfo, sizeof( szInfo ), "%i_%i", uid, mapid );
         
-        FormatEx( szDisplay, sizeof( szDisplay ), "%s - %02i records (%02i misc.)",
+        FormatEx( szDisplay, sizeof( szDisplay ), "%s - %0i records (%i misc.)",
             szMap,
             main_recs,
             misc_recs );
@@ -163,9 +168,6 @@ public void Thrd_PrintRunSelect( Handle db, Handle res, const char[] szError, Ar
     
     int num = 0;
     
-    int curmapid = Influx_GetCurrentMapId();
-    
-    
     Menu menu = new Menu( Hndlr_RecordRunSelect );
     
     while ( SQL_FetchRow( res ) )
@@ -174,14 +176,8 @@ public void Thrd_PrintRunSelect( Handle db, Handle res, const char[] szError, Ar
         numrecs = SQL_FetchInt( res, 1 );
         
         
-        if ( mapid == curmapid )
-        {
-            Influx_GetRunName( runid, szRun, sizeof( szRun ) );
-        }
-        else
-        {
-            FormatEx( szRun, sizeof( szRun ), "Run #%i", runid );
-        }
+        RunIdToName( runid, mapid, szRun, sizeof( szRun ) );
+        
         
         FormatEx( szInfo, sizeof( szInfo ), "%i_%i_%i", uid, mapid, runid );
         FormatEx( szDisplay, sizeof( szDisplay ), "%s (%i)", szRun, numrecs );
@@ -244,15 +240,8 @@ public void Thrd_PrintStyleSelect( Handle db, Handle res, const char[] szError, 
     
     int num = 0;
     
+    RunIdToName( runid, mapid, szRun, sizeof( szRun ) );
     
-    if ( mapid == Influx_GetCurrentMapId() )
-    {
-        Influx_GetRunName( runid, szRun, sizeof( szRun ) );
-    }
-    else
-    {
-        FormatEx( szRun, sizeof( szRun ), "Run #%i", runid );
-    }
     
     Menu menu = new Menu( Hndlr_RecordStyleSelect );
     
@@ -307,7 +296,7 @@ public void Thrd_PrintStyleSelect( Handle db, Handle res, const char[] szError, 
     }
     
     
-    menu.SetTitle( "Records - Style Select | Run: %s\n ", szRun );
+    menu.SetTitle( "Records - Style Select | %s\n ", szRun );
     
     if ( !num )
     {
@@ -370,6 +359,7 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     //decl recid;
     decl uid, mapid, modeid, styleid, rank;
     decl String:szTime[10];
+    decl String:szPages[32];
     decl String:szInfo[64];
     decl String:szMap[64];
     decl String:szName[64];
@@ -504,23 +494,7 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     
     
     // Find run name.
-    if ( reqmapid == Influx_GetCurrentMapId() )
-    {
-        Influx_GetRunName( runid, szRun, sizeof( szRun ) );
-    }
-    
-    if ( szRun[0] == 0 )
-    {
-        // Display the id at least.
-        if ( runid == MAIN_RUN_ID )
-        {
-            strcopy( szRun, sizeof( szRun ), "Main" );
-        }
-        else
-        {
-            FormatEx( szRun, sizeof( szRun ), "ID: %i", runid );
-        }
-    }
+    RunIdToName( runid, reqmapid, szRun, sizeof( szRun ) );
     
     if ( reqmode != -1 && Influx_ShouldModeDisplay( reqmode ) )
     {
@@ -544,7 +518,17 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     if ( szMap[0] == '\0' ) strcopy( szMap, sizeof( szMap ), "N/A" );
     
     
-    menu.SetTitle( "%s%sRecords | %s%s%s%s%s%s | %s\n \nPages: %i-%i/%i\n---------------------------------\n ",
+    if ( curpage == lastpage )
+    {
+        FormatEx( szPages, sizeof( szPages ), "%i/%i", curpage, totalpages );
+    }
+    else
+    {
+        FormatEx( szPages, sizeof( szPages ), "%i-%i/%i", curpage, lastpage, totalpages );
+    }
+    
+    
+    menu.SetTitle( "%s%sRecords | %s%s%s%s%s%s | %s\n \nPages: %s\n---------------------------------\n ",
         ( requid != -1 && szName[0] != '\0' ) ? szName : "",
         ( requid != -1 && szName[0] != '\0' ) ? "'s " : "",
         szRun,
@@ -554,9 +538,7 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
         ( szMode[0] != '\0' ) ? " " : "",
         szMode,
         szMap,
-        curpage,
-        lastpage,
-        totalpages );
+        szPages );
     
     if ( !numrecsprinted )
     {
@@ -570,14 +552,11 @@ public void Thrd_PrintRecordInfo( Handle db, Handle res, const char[] szError, i
 {
     if ( !(client = GetClientOfUserId( client )) ) return;
     
-    if ( res == null )
+    if ( res == null || !SQL_FetchRow( res ) )
     {
         Inf_DB_LogError( db, "printing record info to client", client, "Something went wrong." );
         return;
     }
-    
-    
-    SQL_FetchRow( res );
     
     
     decl String:szRank[24];

@@ -7,7 +7,7 @@
 
 
 
-#define DEBUG_DB
+//#define DEBUG_DB
 
 
 // Print records CallBack (PCB)
@@ -102,6 +102,12 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_mytop", Cmd_PrintMyRecords );
     RegConsoleCmd( "sm_mywr", Cmd_PrintMyRecords );
     
+    RegConsoleCmd( "sm_mymaps", Cmd_PrintMyMapsRecords );
+    RegConsoleCmd( "sm_mytopmaps", Cmd_PrintMyMapsRecords );
+    RegConsoleCmd( "sm_mytopmap", Cmd_PrintMyMapsRecords );
+    RegConsoleCmd( "sm_mywrmaps", Cmd_PrintMyMapsRecords );
+    RegConsoleCmd( "sm_mywrmap", Cmd_PrintMyMapsRecords );
+    
     RegConsoleCmd( "sm_wrmaps", Cmd_PrintMapsRecords );
     RegConsoleCmd( "sm_wrmap", Cmd_PrintMapsRecords );
     RegConsoleCmd( "sm_topmaps", Cmd_PrintMapsRecords );
@@ -111,6 +117,25 @@ public void OnPluginStart()
 public void OnClientPutInServer( int client )
 {
     g_flLastRecPrintTime[client] = 0.0;
+}
+
+stock void RunIdToName( int runid, int mapid = -1, char[] out, int len )
+{
+    if ( mapid == Influx_GetCurrentMapId() )
+    {
+        Influx_GetRunName( runid, out, len );
+        return;
+    }
+    
+    
+    if ( runid == MAIN_RUN_ID )
+    {
+        strcopy( out, len, "Main" );
+    }
+    else // Display the id at least.
+    {
+        FormatEx( out, len, "Run (ID: %i)", runid );
+    }
 }
 
 // NATIVES

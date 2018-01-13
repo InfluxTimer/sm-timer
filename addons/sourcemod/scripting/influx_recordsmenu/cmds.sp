@@ -54,6 +54,24 @@ public Action Cmd_PrintMyRecords( int client, int args )
     return Plugin_Handled;
 }
 
+public Action Cmd_PrintMyMapsRecords( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( Inf_HandleCmdSpam( client, 3.0, g_flLastRecPrintTime[client], true ) )
+    {
+        return Plugin_Handled;
+    }
+    
+    int uid = Influx_GetClientId( client );
+    if ( uid < 1 ) return Plugin_Handled;
+    
+    
+    DB_PrintMaps( client, uid );
+    
+    return Plugin_Handled;
+}
+
 public Action Cmd_PrintRecords( int client, int args )
 {
     if ( !client ) return Plugin_Handled;

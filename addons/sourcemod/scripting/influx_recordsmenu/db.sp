@@ -12,7 +12,7 @@ stock void DB_DetermineRunMenu(
     int client,
     int uid = -1,
     int mapid,
-    int runid )
+    int runid = MAIN_RUN_ID )
 {
     Handle db = Influx_GetDB();
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
@@ -26,7 +26,6 @@ stock void DB_DetermineRunMenu(
         Format( szWhere, sizeof( szWhere ), "%s AND uid=%i", szWhere, uid );
     }
     
-    // TODO: Hasn't been tested with MySQL!
     static char szQuery[512];
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." %s AND runid!=%i GROUP BY mode,style",
@@ -64,7 +63,6 @@ stock void DB_DetermineStyleMenu(
         FormatEx( szWhere, sizeof( szWhere ), " AND uid=%i", uid );
     }
     
-    // TODO: Hasn't been tested with MySQL!
     static char szQuery[512];
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=%i AND runid=%i%s",
@@ -83,26 +81,42 @@ stock void DB_DetermineStyleMenu(
     SQL_TQuery( db, Thrd_DetermineStyleMenu, szQuery, array, DBPrio_Normal );
 }
 
-stock void DB_PrintMaps( int client )
+stock void DB_PrintMaps(
+    int client,
+    int uid = -1 )
 {
     Handle db = Influx_GetDB();
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
     
+    
+    static char szWhere[128];
+    szWhere[0] = 0;
+    
+    if ( uid > 0 )
+    {
+        FormatEx( szWhere, sizeof( szWhere ), " AND uid=%i", uid );
+    }
     
     static char szQuery[512];
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT " ...
         "mapid," ...
         "mapname," ...
-        "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_m.mapid AND runid=%i) AS main_numrecs," ...
-        "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_m.mapid AND runid>%i) AS misc_numrecs " ...
+        "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_m.mapid AND runid=%i%s) AS main_numrecs," ...
+        "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_m.mapid AND runid>%i%s) AS misc_numrecs " ...
         "FROM "...INF_TABLE_MAPS..." AS _m ORDER BY mapname",
-        // This pissed me off...
-        // WHERE main_numrecs>0 OR misc_numrecs>0
-        MAIN_RUN_ID,
-        MAIN_RUN_ID );
-        
-    SQL_TQuery( db, Thrd_PrintMaps, szQuery, GetClientUserId( client ), DBPrio_Normal );
+        MAIN_RUN_ID, szWhere,
+        MAIN_RUN_ID, szWhere );
+    
+    
+    decl data[2];
+    ArrayList array = new ArrayList( sizeof( data ) );
+    data[0] = GetClientUserId( client );
+    data[1] = uid;
+    
+    array.PushArray( data );
+    
+    SQL_TQuery( db, Thrd_PrintMaps, szQuery, array, DBPrio_Normal );
 }
 
 stock void DB_PrintRunSelect(
@@ -122,19 +136,22 @@ stock void DB_PrintRunSelect(
     
     
     static char szWhere[128];
+    static char szWhere2[128];
     szWhere[0] = 0;
+    szWhere2[0] = 0;
     
     if ( uid > 0 )
     {
         FormatEx( szWhere, sizeof( szWhere ), " AND uid=%i", uid );
+        
+        strcopy( szWhere2, sizeof( szWhere2 ), " AND uid=_t.uid" ); // Subquery
     }
     
-    // TODO: Hasn't been tested with MySQL!
     static char szQuery[512];
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT runid," ...
-        "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_t.mapid AND runid=_t.runid) AS numrunrecs " ...
-        "FROM "...INF_TABLE_TIMES..." AS _t WHERE mapid=%i%s GROUP BY runid ORDER BY numrunrecs DESC", mapid, szWhere );
+        "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_t.mapid AND runid=_t.runid%s) AS numrunrecs " ...
+        "FROM "...INF_TABLE_TIMES..." AS _t WHERE mapid=%i%s GROUP BY runid ORDER BY numrunrecs DESC", szWhere2, mapid, szWhere );
     
     
     decl data[3];
@@ -175,7 +192,6 @@ stock void DB_PrintStyleSelect(
         FormatEx( szWhere, sizeof( szWhere ), " AND uid=%i", uid );
     }
     
-    // TODO: Hasn't been tested with MySQL!
     static char szQuery[512];
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT mode,style," ...

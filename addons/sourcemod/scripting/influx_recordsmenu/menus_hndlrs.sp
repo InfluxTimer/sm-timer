@@ -52,14 +52,20 @@ public int Hndlr_MapList( Menu menu, MenuAction action, int client, int index )
     MENU_HANDLE( menu, action )
     
     
-    char szInfo[6];
+    char szInfo[32];
     if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
     
+    char buffer[2][16];
+    if ( ExplodeString( szInfo, "_", buffer, sizeof( buffer ), sizeof( buffer[] ) ) != sizeof( buffer ) )
+    {
+        return 0;
+    }
     
-    int mapid = StringToInt( szInfo );
     
-    if ( mapid > 0 )
-        DB_DetermineRunMenu( client, _, mapid, Influx_GetClientRunId( client ) );
+    int uid = StringToInt( buffer[0] );
+    int mapid = StringToInt( buffer[1] );
+    
+    DB_DetermineRunMenu( client, uid, mapid );
     
     return 0;
 }
