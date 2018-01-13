@@ -8,6 +8,7 @@
 #include <msharedutil/ents>
 
 #undef REQUIRE_PLUGIN
+#include <influx/recordsmenu>
 #include <influx/pause>
 
 

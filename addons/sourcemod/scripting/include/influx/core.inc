@@ -189,19 +189,6 @@ native bool Influx_IsMySQL();
 forward void Influx_OnRecordRemoved( int issuer, int uid, int mapid, int runid, int mode, int style );
 
 
-// When record info is being printed to client.
-// Use this to add items onto the menu.
-// Item list is max 64 characters. (incl null terminator)
-// Look at strafe/jump counter plugin for an example how info is added.
-// For button items, check the checkpoint plugin.
-forward void Influx_OnPrintRecordInfo( int client, Handle dbres, ArrayList itemlist, Menu menu, int uid, int mapid, int runid, int mode, int style );
-
-// We've pressed a button in the record info menu.
-// Use this if you've added button items.
-// For an example take a look into the checkpoint plugin.
-forward Action Influx_OnRecordInfoButtonPressed( int client, const char[] szInfo );
-
-
 // New if we inserted new record.
 forward void Influx_OnClientIdRetrieved( int client, int uid, bool bNew );
 
