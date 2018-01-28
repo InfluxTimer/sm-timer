@@ -471,6 +471,13 @@ public void Influx_OnClientStyleChangePost( int client, int style, int laststyle
         
         
         OpenMenu( client );
+        
+#if !defined USE_LAGGEDMOVEMENTVALUE
+        if ( laststyle != STYLE_TAS && GetEngineVersion() == Engine_CSGO )
+        {
+            Influx_PrintToChat( _, client, "Make sure to use {MAINCLR1}cl_clock_correction_force_server_tick/cl_clockdrift_max_ms 0{CHATCLR} to decrease laggy timescale!" );
+        }
+#endif
     }
     else if ( laststyle == STYLE_TAS )
     {
