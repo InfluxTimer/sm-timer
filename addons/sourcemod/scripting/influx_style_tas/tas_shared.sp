@@ -246,6 +246,10 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_tas_dectimescale", Cmd_DecTimescale );
     RegConsoleCmd( "sm_tas_autostrafe", Cmd_AutoStrafe );
     
+    RegConsoleCmd( "sm_tas_cp_add", Cmd_CPAdd );
+    RegConsoleCmd( "sm_tas_cp_lastused", Cmd_CPLastUsed );
+    RegConsoleCmd( "sm_tas_cp_lastcreated", Cmd_CPLastCreated );
+    
     
     // MENUS
     RegConsoleCmd( "sm_tas_menu", Cmd_TasMenu );

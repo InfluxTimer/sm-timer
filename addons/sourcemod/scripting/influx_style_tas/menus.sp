@@ -204,6 +204,9 @@ public Action Cmd_ListCmds( int client, int args )
     menu.AddItem( "", "sm_tas_inctimescale", ITEMDRAW_DISABLED );
     menu.AddItem( "", "sm_tas_dectimescale", ITEMDRAW_DISABLED );
     menu.AddItem( "", "sm_tas_advanceframe", ITEMDRAW_DISABLED );
+    menu.AddItem( "", "sm_tas_cp_add", ITEMDRAW_DISABLED );
+    menu.AddItem( "", "sm_tas_cp_lastused", ITEMDRAW_DISABLED );
+    menu.AddItem( "", "sm_tas_cp_lastcreated", ITEMDRAW_DISABLED );
     
     menu.AddItem( "", "sm_tas_menu", ITEMDRAW_DISABLED );
     menu.AddItem( "", "sm_tas_settings", ITEMDRAW_DISABLED );
