@@ -16,6 +16,7 @@
 #include <influx/practise>
 
 
+//#define DEBUG_BOT_MOVEMENT
 //#define DEBUG_LOADRECORDINGS
 //#define DEBUG_INSERTFRAME
 //#define DEBUG
@@ -421,6 +422,13 @@ public void OnConfigsExecuted()
         delete cvar;
     }
     
+    cvar = FindConVar( "bot_quota" );
+    if ( cvar != null )
+    {
+        cvar.SetInt( 1 );
+        delete cvar;
+    }
+    
     cvar = FindConVar( "bot_quota_mode" );
     if ( cvar != null )
     {
@@ -446,13 +454,6 @@ public void OnConfigsExecuted()
     if ( cvar != null )
     {
         cvar.SetString( "any" );
-        delete cvar;
-    }
-    
-    cvar = FindConVar( "bot_quota" );
-    if ( cvar != null )
-    {
-        cvar.SetInt( 1 );
         delete cvar;
     }
     
@@ -549,14 +550,24 @@ public void OnClientPutInServer( int client )
     }
     else
     {
-        if ( g_iReplayBot == client || !IsValidReplayBot() )
-        {
-            SetReplayBot( client );
-        }
+        OnBotPutInServer( client );
     }
     
     
     g_flLastReplayMenu[client] = 0.0;
+}
+
+stock void OnBotPutInServer( int bot )
+{
+    // We already have a valid bot.
+    if ( IsValidReplayBot() )
+        return;
+    
+    
+    if ( IsValidReplayBot( bot ) )
+    {
+        SetReplayBot( bot );
+    }
 }
 
 stock void SetReplayBot( int bot )
@@ -595,9 +606,12 @@ stock void OnClientDisconnect( int client )
     }
 }
 
-stock bool IsValidReplayBot()
+stock bool IsValidReplayBot( int bot = 0 )
 {
-    return ( IS_ENT_PLAYER( g_iReplayBot ) && IsClientInGame( g_iReplayBot ) && IsFakeClient( g_iReplayBot ) );
+    if ( bot < 1 )
+        bot = g_iReplayBot;
+    
+    return ( IS_ENT_PLAYER( bot ) && IsClientInGame( bot ) && IsFakeClient( bot ) && !IsClientSourceTV( bot ) );
 }
 
 stock bool FindNewPlayback()
