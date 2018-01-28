@@ -6,6 +6,7 @@ COMPATIBILITY:
 
 ADDED:
 - !mymaps to display the list of maps you've beaten. (influx_recordsmenu)
+- Ability to restrict ranks by flags. (influx_simpleranks)
 
 CHANGES:
 - Records menu will now segment each run and style/mode to their own menus (select run, style and then display list of records). See cvars influx_recordsmenu_displayfulllistmax
@@ -17,6 +18,10 @@ FIXES:
 - Fixed late-loading precache crash.
 - Fixed not being able to load TAS runs.
 - Zones not respawning on round start. (CSS)
+- Fixed TAS recordings not being saved in some scenarios.
+- Brough back CSGO timescale lag fix msg.
+- SourceTV being used as a replay bot.
+- SourceTV being spawned.
 
 
 
