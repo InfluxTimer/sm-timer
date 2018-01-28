@@ -22,7 +22,7 @@ public Action T_Spawn( Handle hTimer, int client )
 {
     if ( (client = GetClientOfUserId( client )) )
     {
-        if ( !IsPlayerAlive( client ) )
+        if ( !IsPlayerAlive( client ) && !IsClientSourceTV( client ) )
         {
             Influx_SpawnPlayer( client );
         }
