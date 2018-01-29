@@ -7,6 +7,7 @@ COMPATIBILITY:
 ADDED:
 - !mymaps to display the list of maps you've beaten. (influx_recordsmenu)
 - Ability to restrict ranks by flags. (influx_simpleranks)
+- TAS CP commands (sm_tas_cp_add/sm_tas_cp_lastused/sm_tas_cp_lastcreated)
 
 CHANGES:
 - Records menu will now segment each run and style/mode to their own menus (select run, style and then display list of records). See cvars influx_recordsmenu_displayfulllistmax
@@ -22,6 +23,7 @@ FIXES:
 - Brough back CSGO timescale lag fix msg.
 - SourceTV being used as a replay bot.
 - SourceTV being spawned.
+- CSGO Shotgun Shot tempent error when hiding players.
 
 
 
