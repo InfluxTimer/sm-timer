@@ -4,6 +4,8 @@
 #define _influx_stocks_core_included
 
 
+#include <cstrike>
+
 #include <msharedutil/arrayvec>
 #include <msharedutil/ents>
 
@@ -160,6 +162,45 @@ stock float Inf_MinsMaxsToYaw( const float start_mins[3], const float start_maxs
     }
     
     return RadToDeg( ArcTangent2( dir[1], dir[0] ) );
+}
+
+stock int Inf_GetPreferredTeam( int &outspawns_ct, int &outspawns_t )
+{
+    int spawns_ct = 0;
+    int spawns_t = 0;
+    int ent;
+    
+    ent = -1;
+    while ( (ent = FindEntityByClassname( ent, "info_player_counterterrorist" )) != -1 ) spawns_ct++;
+    ent = -1;
+    while ( (ent = FindEntityByClassname( ent, "info_player_terrorist" )) != -1 ) spawns_t++;
+    
+    
+    outspawns_ct = spawns_ct;
+    outspawns_t = spawns_t;
+    
+    if ( GetTeamClientCount( CS_TEAM_CT ) < spawns_ct )
+    {
+        return CS_TEAM_CT;
+    }
+    else if ( GetTeamClientCount( CS_TEAM_T ) < spawns_t )
+    {
+        return CS_TEAM_T;
+    }
+    else // Our spawns are full!
+    {
+        // Check if there are any bots to take over.
+        for ( int i = 1; i <= MaxClients; i++ )
+        {
+            if ( IsClientInGame( i ) && GetClientTeam( i ) > CS_TEAM_SPECTATOR && IsFakeClient( i ) )
+            {
+                return GetClientTeam( i );
+            }
+        }
+    }
+    
+    
+    return spawns_ct >= spawns_t ? CS_TEAM_CT : CS_TEAM_T;
 }
 
 // Delete the menu handle if ending, return if cancelling.

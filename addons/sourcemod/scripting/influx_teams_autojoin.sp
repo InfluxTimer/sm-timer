@@ -1,7 +1,7 @@
 #include <sourcemod>
 
 #include <influx/core>
-#include <influx/teams>
+//#include <influx/teams>
 
 
 public Plugin myinfo =
@@ -24,7 +24,33 @@ public Action T_Spawn( Handle hTimer, int client )
     {
         if ( !IsPlayerAlive( client ) && !IsClientSourceTV( client ) )
         {
-            Influx_SpawnPlayer( client );
+            SpawnPlayer( client );
         }
+    }
+}
+
+stock void SpawnPlayer( int client )
+{
+    if ( IsPlayerAlive( client ) ) return;
+    
+    
+    int spawns_ct, spawns_t;
+    int team = Inf_GetPreferredTeam( spawns_ct, spawns_t );
+    
+    if ( !spawns_ct && !spawns_t )
+    {
+        LogError( INF_CON_PRE..."No spawnpoints, can't spawn player!" );
+        return;
+    }
+    
+    
+    if ( GetClientTeam( client ) != team )
+    {
+        ChangeClientTeam( client, team );
+    }
+    
+    if ( !IsPlayerAlive( client ) )
+    {
+        CS_RespawnPlayer( client );
     }
 }
