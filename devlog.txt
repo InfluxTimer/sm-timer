@@ -13,6 +13,7 @@ CHANGES:
 - Records menu will now segment each run and style/mode to their own menus (select run, style and then display list of records). See cvars influx_recordsmenu_displayfulllistmax
 - Use persistent SQLite connection if possible.
 - TAS timescale is now reset back to 1 when changing mode.
+- influx_teams_autojoin-plugin no longer requires influx_teams-plugin.
 
 FIXES:
 - Some plugins not functioning correctly when late-loading. (multi-servers, rejoice)
@@ -21,9 +22,10 @@ FIXES:
 - Zones not respawning on round start. (CSS)
 - Fixed TAS recordings not being saved in some scenarios.
 - Brough back CSGO timescale lag fix msg.
-- SourceTV being used as a replay bot.
+- SourceTV being used as a replay bot. (fixes laggy replay)
 - SourceTV being spawned.
 - CSGO Shotgun Shot tempent error when hiding players.
+- Fixed spawning functionality not taking into account plugin created spawn points.
 
 
 
