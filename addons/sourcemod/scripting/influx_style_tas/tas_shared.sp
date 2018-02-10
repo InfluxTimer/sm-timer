@@ -164,6 +164,7 @@ float g_flLastProcessedVel[INF_MAXPLAYERS][3];
 // CONVARS
 ConVar g_ConVar_SilentStrafer;
 ConVar g_ConVar_EnableTimescale;
+ConVar g_ConVar_MOTDFix;
 
 #if !defined USE_LAGGEDMOVEMENTVALUE
 ConVar g_ConVar_Timescale;
@@ -216,7 +217,7 @@ public void OnPluginStart()
     
     g_ConVar_SilentStrafer = CreateConVar( "influx_style_tas_silentstrafer", "1", "Do we record the player's wanted angles to a replay?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_EnableTimescale = CreateConVar( "influx_style_tas_timescale", "1", "Is timescale enabled?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-    
+    g_ConVar_MOTDFix = CreateConVar( "influx_style_tas_motdfix", "1", "Workaround to make MOTD display in CS:GO.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
     AutoExecConfig( true, "style_tas", "influx" );
@@ -500,11 +501,30 @@ public void OnClientPutInServer( int client )
 {
     ResetClient( client );
     
+    // HACK: Client doesn't like when cheats cvar gets updated before displaying the MOTD.
+    if ( GetEngineVersion() == Engine_CSGO && g_ConVar_MOTDFix.BoolValue )
+    {
+        // The MOTD gets automatically shown after 5 seconds.
+        CreateTimer( 6.0, T_MotdFix, GetClientUserId( client ), TIMER_FLAG_NO_MAPCHANGE );
+    }
+    else
+    {
+        SetClientCheats( client, false );
+    }
     
-    SetClientCheats( client, false );
     
     g_iAutoStrafe[client] = AUTOSTRF_OFF;
     g_iAimlock[client] = AIMLOCK_FAKEANG;
+    g_flTimescale[client] = 1.0;
+}
+
+public Action T_MotdFix( Handle hTimer, int client )
+{
+    if ( (client = GetClientOfUserId( client )) )
+    {
+        if ( Influx_GetClientStyle( client ) != STYLE_TAS || g_flTimescale[client] == 1.0 )
+            SetClientCheats( client, false );
+    }
 }
 
 public void OnClientDisconnect( int client )
