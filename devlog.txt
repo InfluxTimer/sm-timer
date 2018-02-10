@@ -26,6 +26,7 @@ FIXES:
 - SourceTV being spawned.
 - CSGO Shotgun Shot tempent error when hiding players.
 - Fixed spawning functionality not taking into account plugin created spawn points.
+- Fixed MOTD not displaying in CSGO when joining the server. (Increase influx_teams_autojoin_delay to fix)
 
 
 
