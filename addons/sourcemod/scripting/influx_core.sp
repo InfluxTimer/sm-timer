@@ -1085,7 +1085,10 @@ stock bool TeleClientToStart_Safe( int client, int runid )
     }
     
     
-    TeleClientToSpawn( client );
+    if ( !TeleClientToSpawn( client ) )
+    {
+        LogError( INF_CON_PRE..."Couldn't teleport client %i to spawn as a fallback!", client );
+    }
     
     return false;
 }
@@ -1117,12 +1120,18 @@ stock bool TeleClientToStart( int client, int runid )
 
 stock bool TeleClientToSpawn( int client )
 {
+    int ent;
     char szSpawn[32];
-    FormatEx( szSpawn, sizeof( szSpawn ), "%s",
-        ( GetClientTeam( client ) == CS_TEAM_CT ) ? "info_player_counterterrorist" : "info_player_terrorist" );
+    char szFallbackSpawn[32];
     
+    strcopy( szSpawn, sizeof( szSpawn ), ( GetClientTeam( client ) == CS_TEAM_CT ) ? "info_player_counterterrorist" : "info_player_terrorist" );
+    strcopy( szFallbackSpawn, sizeof( szFallbackSpawn ), ( GetClientTeam( client ) != CS_TEAM_CT ) ? "info_player_counterterrorist" : "info_player_terrorist" );
     
-    int ent = FindEntityByClassname( -1, szSpawn );
+    ent = FindEntityByClassname( -1, szSpawn );
+    if ( ent == -1 )
+    {
+        ent = FindEntityByClassname( -1, szFallbackSpawn );
+    }
     
     if ( ent != -1 )
     {
