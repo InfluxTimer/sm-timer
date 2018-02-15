@@ -1,4 +1,4 @@
-DEV
+1.2
 
 COMPATIBILITY:
 - If you update any of the following plugins, make sure to also update ALL of them: influx_core/influx_recordsmenu/influx_zones_checkpoint/influx_jumps/influx_strafes
