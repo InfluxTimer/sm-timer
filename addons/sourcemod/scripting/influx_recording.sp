@@ -16,6 +16,7 @@
 #include <influx/practise>
 
 
+//#define DEBUG_BOT_MOVEMENT
 //#define DEBUG_LOADRECORDINGS
 //#define DEBUG_INSERTFRAME
 //#define DEBUG
@@ -136,6 +137,7 @@ bool g_bLib_Practise;
 TopMenu g_hTopMenu;
 
 
+bool g_bRecordingsLoaded = false;
 bool g_bLate;
 
 
@@ -237,6 +239,19 @@ public void OnPluginStart()
         {
             OnAdminMenuReady( topmenu );
         }
+        
+        
+        Influx_OnPreRunLoad();
+        
+        ArrayList runs = Influx_GetRunsArray();
+        int len = runs.Length;
+        
+        for ( int i = 0; i < len; i++ )
+        {
+            Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+        }
+        
+        Influx_OnPostRunLoad();
     }
 }
 
@@ -322,6 +337,8 @@ public void Influx_OnPostRunLoad()
 
 public void OnMapEnd()
 {
+    g_bRecordingsLoaded = false;
+    
     g_bReplayActionTimerClose = true;
     g_hReplayActionTimer = null;
     
@@ -405,6 +422,13 @@ public void OnConfigsExecuted()
         delete cvar;
     }
     
+    cvar = FindConVar( "bot_quota" );
+    if ( cvar != null )
+    {
+        cvar.SetInt( 1 );
+        delete cvar;
+    }
+    
     cvar = FindConVar( "bot_quota_mode" );
     if ( cvar != null )
     {
@@ -430,13 +454,6 @@ public void OnConfigsExecuted()
     if ( cvar != null )
     {
         cvar.SetString( "any" );
-        delete cvar;
-    }
-    
-    cvar = FindConVar( "bot_quota" );
-    if ( cvar != null )
-    {
-        cvar.SetInt( 1 );
         delete cvar;
     }
     
@@ -533,14 +550,24 @@ public void OnClientPutInServer( int client )
     }
     else
     {
-        if ( g_iReplayBot == client || !IsValidReplayBot() )
-        {
-            SetReplayBot( client );
-        }
+        OnBotPutInServer( client );
     }
     
     
     g_flLastReplayMenu[client] = 0.0;
+}
+
+stock void OnBotPutInServer( int bot )
+{
+    // We already have a valid bot.
+    if ( IsValidReplayBot() )
+        return;
+    
+    
+    if ( IsValidReplayBot( bot ) )
+    {
+        SetReplayBot( bot );
+    }
 }
 
 stock void SetReplayBot( int bot )
@@ -579,9 +606,12 @@ stock void OnClientDisconnect( int client )
     }
 }
 
-stock bool IsValidReplayBot()
+stock bool IsValidReplayBot( int bot = 0 )
 {
-    return ( IS_ENT_PLAYER( g_iReplayBot ) && IsClientInGame( g_iReplayBot ) && IsFakeClient( g_iReplayBot ) );
+    if ( bot < 1 )
+        bot = g_iReplayBot;
+    
+    return ( IS_ENT_PLAYER( bot ) && IsClientInGame( bot ) && IsFakeClient( bot ) && !IsClientSourceTV( bot ) );
 }
 
 stock bool FindNewPlayback()
@@ -803,8 +833,6 @@ public void Influx_OnTimerStartPost( int client, int runid )
 
 public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style, float time, float prev_pb, float prev_best, int flags )
 {
-    if ( g_hRec[client] == null ) return;
-    
     if ( !FinishRecording( client, true ) ) return;
     
     if ( g_hRec[client].Length < 1 ) return;
@@ -1079,6 +1107,10 @@ stock bool StartRecording( int client, bool bInsertFrame = false )
 stock bool FinishRecording( int client, bool bInsertFrame = false )
 {
     g_bIsRec[client] = false;
+    
+    // Create a dummy recording if we have none. OnTimerStart isn't guaranteed to be called (eg. with TAS)
+    if ( g_hRec[client] == null )
+        g_hRec[client] = new ArrayList( REC_SIZE );
     
     
     Action res = Plugin_Continue;

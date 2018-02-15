@@ -86,7 +86,16 @@ public int Native_RegZoneType( Handle hPlugin, int nParms )
     char szShortName[MAX_ZONE_NAME];
     GetNativeString( 3, szShortName, sizeof( szShortName ) );
     
-    return AddZoneType( type, szName, szShortName, GetNativeCell( 4 ) ? true : false );
+    int ret = AddZoneType( type, szName, szShortName, GetNativeCell( 4 ) ? true : false );
+    
+    
+    // We have to reload all zones if late-loading, since this module and possibly others require zonetypes to exist to load zones properly.
+    if ( g_bLate )
+    {
+        ReloadZones();
+    }
+    
+    return ret;
 }
 
 public int Native_RemoveZoneType( Handle hPlugin, int nParms )

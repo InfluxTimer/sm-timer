@@ -113,6 +113,19 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
                 temp[i] = ( pos[i] - temp[i] ) * g_flTickrate;
             }
             
+#if defined DEBUG_BOT_MOVEMENT
+            float veclen = GetVectorLength( temp, false );
+            
+            if ( veclen > 3500.0 )
+            {
+                PrintToServer( INF_DEBUG_PRE..."Replay exceeded maximum velocity (%.1f)! Movetype: %i | Grav Mult: %.1f | EntFlags: %i",
+                    veclen,
+                    GetEntityMoveType( client ),
+                    GetEntityGravity( client ),
+                    GetEntityFlags( client ) );
+            }
+#endif
+            
             TeleportEntity( client, NULL_VECTOR, angles, temp );
         }
         else

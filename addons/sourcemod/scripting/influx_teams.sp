@@ -12,10 +12,6 @@
 
 
 //#define DEBUG
-//#define USE_LEVELINIT
-
-int g_nSpawns_CT;
-int g_nSpawns_T;
 
 
 bool g_bLib_Pause;
@@ -82,19 +78,6 @@ public void OnLibraryAdded( const char[] lib )
 public void OnLibraryRemoved( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = false;
-}
-
-#if defined USE_LEVELINIT
-public Action OnLevelInit( const char[] mapName, char mapEntities[2097152] )
-#else
-public void OnMapStart()
-#endif
-{
-    GetSpawnCounts();
-    
-#if defined USE_LEVELINIT
-    return Plugin_Continue;
-#endif
 }
 
 public Action Cmd_Spec( int client, int args )
@@ -181,52 +164,10 @@ public Action Lstnr_JoinTeam( int client, const char[] command, int argc )
     return ( IsPlayerAlive( client ) ) ? Plugin_Handled : Plugin_Continue;
 }
 
-stock void GetSpawnCounts()
-{
-    g_nSpawns_CT = 0;
-    g_nSpawns_T = 0;
-    
-    int ent = -1;
-    while ( (ent = FindEntityByClassname( ent, "info_player_counterterrorist" )) != -1 ) g_nSpawns_CT++;
-    ent = -1;
-    while ( (ent = FindEntityByClassname( ent, "info_player_terrorist" )) != -1 ) g_nSpawns_T++;
-    
-#if defined DEBUG
-    PrintToServer( INF_DEBUG_PRE..."Found %i CT and %i T spawns!", g_nSpawns_CT, g_nSpawns_T );
-#endif
-}
-
 stock int GetPreferredTeam()
 {
-    if ( g_nSpawns_CT <= 0 && g_nSpawns_T <= 0 )
-    {
-        GetSpawnCounts();
-    }
-    
-    if ( GetTeamClientCount( CS_TEAM_CT ) < g_nSpawns_CT )
-    {
-        return CS_TEAM_CT;
-    }
-    else if ( GetTeamClientCount( CS_TEAM_T ) < g_nSpawns_T )
-    {
-        return CS_TEAM_T;
-    }
-    else // Our spawns are full!
-    {
-        // Check if there are any bots to take over.
-        for ( int i = 1; i <= MaxClients; i++ )
-        {
-            if ( IsClientInGame( i ) && GetClientTeam( i ) > CS_TEAM_SPECTATOR && IsFakeClient( i ) )
-            {
-                return GetClientTeam( i );
-            }
-        }
-    }
-    
-    LogError( INF_CON_PRE..."Couldn't find optimal team to join! Assuming CT." );
-    
-    // Else, return default.
-    return CS_TEAM_CT;
+    int spawns_ct, spawns_t;
+    return Inf_GetPreferredTeam( spawns_ct, spawns_t );
 }
 
 stock void SpawnPlayer( int client )

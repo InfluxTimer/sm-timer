@@ -9,6 +9,8 @@
 
 int g_iLastShot[INF_MAXPLAYERS];
 
+bool g_bIsGO;
+
 
 public Plugin myinfo =
 {
@@ -21,6 +23,9 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    g_bIsGO = GetEngineVersion() == Engine_CSGO;
+    
+    
     AddTempEntHook( "Shotgun Shot", E_ShotgunShot );
 }
 
@@ -91,7 +96,12 @@ public Action E_ShotgunShot( const char[] te_name, const int[] Players, int numC
         TE_WriteVector( "m_vecOrigin", temp );
         TE_WriteFloat( "m_vecAngles[0]", TE_ReadFloat( "m_vecAngles[0]" ) );
         TE_WriteFloat( "m_vecAngles[1]", TE_ReadFloat( "m_vecAngles[1]" ) );
-        TE_WriteNum( "m_iWeaponID", TE_ReadNum( "m_iWeaponID" ) );
+        
+        if ( g_bIsGO )
+            TE_WriteNum( "m_weapon", TE_ReadNum( "m_weapon" ) ); // Thanks Valve...
+        else
+            TE_WriteNum( "m_iWeaponID", TE_ReadNum( "m_iWeaponID" ) );
+        
         TE_WriteNum( "m_iMode", TE_ReadNum( "m_iMode" ) );
         TE_WriteNum( "m_iSeed", TE_ReadNum( "m_iSeed" ) );
         TE_WriteNum( "m_iPlayer", player - 1 );

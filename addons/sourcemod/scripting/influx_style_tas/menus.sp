@@ -204,6 +204,9 @@ public Action Cmd_ListCmds( int client, int args )
     menu.AddItem( "", "sm_tas_inctimescale", ITEMDRAW_DISABLED );
     menu.AddItem( "", "sm_tas_dectimescale", ITEMDRAW_DISABLED );
     menu.AddItem( "", "sm_tas_advanceframe", ITEMDRAW_DISABLED );
+    menu.AddItem( "", "sm_tas_cp_add", ITEMDRAW_DISABLED );
+    menu.AddItem( "", "sm_tas_cp_lastused", ITEMDRAW_DISABLED );
+    menu.AddItem( "", "sm_tas_cp_lastcreated", ITEMDRAW_DISABLED );
     
     menu.AddItem( "", "sm_tas_menu", ITEMDRAW_DISABLED );
     menu.AddItem( "", "sm_tas_settings", ITEMDRAW_DISABLED );
@@ -227,6 +230,7 @@ public Action Cmd_LoadRun( int client, int args )
     
     decl String:szMap[64];
     decl String:szPath[PLATFORM_MAX_PATH];
+    decl String:szFullPath[PLATFORM_MAX_PATH];
     decl String:szInfo[32];
     
     int runid;
@@ -274,9 +278,9 @@ public Action Cmd_LoadRun( int client, int args )
             if ( !StrEqual( szFile[dotpos], ".tas", false ) ) continue;
             
             
-            Format( szPath, sizeof( szPath ), "%s/%s", szPath, szFile );
+            FormatEx( szFullPath, sizeof( szFullPath ), "%s/%s", szPath, szFile );
             
-            File file = OpenFile( szPath, "rb" );
+            File file = OpenFile( szFullPath, "rb" );
             
             if ( file == null )
             {
@@ -288,6 +292,10 @@ public Action Cmd_LoadRun( int client, int args )
             
             
             file.ReadInt32( runid );
+            
+#if defined DEBUG
+            PrintToServer( INF_DEBUG_PRE..."Read run id %i (current: %i) from file '%s'", runid, currunid, szFile );
+#endif
             
             if ( currunid == runid )
             {

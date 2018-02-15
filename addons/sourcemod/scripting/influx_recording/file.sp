@@ -32,6 +32,14 @@ stock void FormatRecordingPath( char[] sz, int len, int runid, int mode, int sty
 
 stock void LoadAllRecordings()
 {
+    if ( g_bRecordingsLoaded )
+    {
+        return;
+    }
+    
+    g_bRecordingsLoaded = true;
+    
+    
     char szPath[PLATFORM_MAX_PATH];
     BuildPath( Path_SM, szPath, sizeof( szPath ), RECORDS_DIR );
 
@@ -142,9 +150,7 @@ stock bool LoadRecording( const char[] szPath, ArrayList &rec, int &runid, int &
     
     if ( file == null )
     {
-#if defined DEBUG_LOADRECORDINGS
-        PrintToServer( INF_DEBUG_PRE..."Can't open file for writing!" );
-#endif
+        LogError( INF_CON_PRE..."Couldn't open recording file for reading '%s'!", szPath );
         return false;
     }
     
@@ -300,7 +306,7 @@ stock bool DeleteRecording( int runid, int mode, int style, const char[] szMap =
     
     if ( !FileExists( szPath ) )
     {
-        LogError( INF_CON_PRE..."Recording file '%s' does not exist. Cannot remove!" );
+        LogError( INF_CON_PRE..."Recording file '%s' does not exist. Cannot remove!", szPath );
         return false;
     }
     
@@ -310,19 +316,9 @@ stock bool DeleteRecording( int runid, int mode, int style, const char[] szMap =
 
 stock bool SaveRecording( int client, ArrayList rec, int runid, int mode, int style, float time )
 {
-    if ( rec == null )
+    if ( rec == null || rec.Length < 1 )
     {
-#if defined DEBUG
-        PrintToServer( INF_DEBUG_PRE..."Invalid recording!" );
-#endif
-        return false;
-    }
-    
-    if ( rec.Length < 1 )
-    {
-#if defined DEBUG
-        PrintToServer( INF_DEBUG_PRE..."Invalid recording length %i!", rec.Length );
-#endif
+        LogError( INF_CON_PRE..."Can't save a recording file with no frames!" );
         return false;
     }
     
@@ -338,9 +334,7 @@ stock bool SaveRecording( int client, ArrayList rec, int runid, int mode, int st
     File file = OpenFile( szPath, "wb" );
     if ( file == null )
     {
-#if defined DEBUG
-        PrintToServer( INF_DEBUG_PRE..."Can't open file for writing!" );
-#endif
+        LogError( INF_CON_PRE..."Couldn't open recording file for writing '%s'!", szPath );
         return false;
     }
     

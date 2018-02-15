@@ -13,6 +13,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
+#include <influx/recordsmenu>
 #include <influx/help>
 #include <influx/pause>
 #include <influx/practise>
@@ -48,36 +49,6 @@
 
 #define INF_PRIVCOM_REMOVERECORDS   "sm_inf_removerecords"
 #define INF_PRIVCOM_RUNSETTINGS     "sm_inf_runsettings"
-
-
-// Print records CallBack (PCB)
-
-#define MAX_PCB_PLYNAME             32
-#define MAX_PCB_PLYNAME_CELL        MAX_PCB_PLYNAME / 4
-
-#define PCB_NUM_ELEMENTS            7 // This is for menu string parsing.
-
-enum
-{
-    PCB_USERID = 0,
-    
-    PCB_UID,
-    PCB_MAPID,
-    PCB_RUNID,
-    PCB_MODE,
-    PCB_STYLE,
-    PCB_OFFSET,
-    PCB_TOTALRECORDS,
-    
-    
-    // For now ignore player names
-    //PCB_PLYNAME[MAX_PCB_PLYNAME_CELL],
-    //PCB_MAPNAME[], // Map name is not necessary since we ALWAYS retrieve the map id.
-    
-    PCB_SIZE
-};
-
-
 
 #define INVALID_MAXSPEED        -1.0
 
@@ -122,7 +93,6 @@ float g_flNextMenuTime[INF_MAXPLAYERS];
 
 
 // ANTI-SPAM
-float g_flLastRecPrintTime[INF_MAXPLAYERS];
 float g_flNextWepSpdPrintTime[INF_MAXPLAYERS];
 float g_flLastValidWepSpd[INF_MAXPLAYERS];
 
@@ -152,9 +122,6 @@ Handle g_hForward_OnTimerResetPost;
 
 Handle g_hForward_OnPreRunLoad;
 Handle g_hForward_OnPostRunLoad;
-
-Handle g_hForward_OnPrintRecordInfo;
-Handle g_hForward_OnRecordInfoButtonPressed;
 
 Handle g_hForward_OnRecordRemoved;
 Handle g_hForward_OnClientIdRetrieved;
@@ -437,9 +404,6 @@ public void OnPluginStart()
     
     
     
-    g_hForward_OnPrintRecordInfo = CreateGlobalForward( "Influx_OnPrintRecordInfo", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
-    g_hForward_OnRecordInfoButtonPressed = CreateGlobalForward( "Influx_OnRecordInfoButtonPressed", ET_Hook, Param_Cell, Param_String );
-    
     
     g_hForward_OnRecordRemoved = CreateGlobalForward( "Influx_OnRecordRemoved", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
     
@@ -540,19 +504,6 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_style", Cmd_Change_Style );
     RegConsoleCmd( "sm_styles", Cmd_Change_Style );
-    
-    
-    // RECORD CMDS
-    RegConsoleCmd( "sm_top", Cmd_PrintRecords );
-    RegConsoleCmd( "sm_wr", Cmd_PrintRecords );
-    RegConsoleCmd( "sm_records", Cmd_PrintRecords );
-    
-    RegConsoleCmd( "sm_myrecords", Cmd_PrintMyRecords );
-    RegConsoleCmd( "sm_myrec", Cmd_PrintMyRecords );
-    RegConsoleCmd( "sm_mytop", Cmd_PrintMyRecords );
-    
-    RegConsoleCmd( "sm_wrmaps", Cmd_PrintMapsRecords );
-    RegConsoleCmd( "sm_topmaps", Cmd_PrintMapsRecords );
     
     
     // ADMIN MENUS
@@ -882,6 +833,44 @@ public void Influx_RequestHelpCmds()
     Influx_AddHelpCommand( "mode", "Display mode selector menu." );
 }
 
+public void Influx_OnPrintRecordInfo( int client, Handle dbres, ArrayList itemlist, Menu menu, int uid, int mapid, int runid, int mode, int style )
+{
+    // Add item to delete this record.
+    if ( CanUserRemoveRecords( client ) )
+    {
+        // Note: first character will determine the action.
+        decl String:szInfo[64];
+        FormatEx( szInfo, sizeof( szInfo ), "d%i_%i_%i_%i_%i", uid, mapid, runid, mode, style );
+        
+        menu.AddItem( szInfo, "Delete this record" );
+    }
+}
+
+public Action Influx_OnRecordInfoButtonPressed( int client, const char[] szInfo )
+{
+    if ( szInfo[0] == 'd' ) // We want to delete
+    {
+        if ( !CanUserRemoveRecords( client ) ) return Plugin_Stop;
+        
+        
+        // Display confirmation menu.
+        Menu menu = new Menu( Hndlr_Delete_Confirm );
+        menu.SetTitle( "Sure you want to delete this record?\n " );
+        
+        menu.AddItem( szInfo[1], "Yes" );
+        menu.AddItem( "", "No" );
+        
+        menu.ExitButton = false;
+        
+        menu.Display( client, MENU_TIME_FOREVER );
+        
+        
+        return Plugin_Stop;
+    }
+    
+    return Plugin_Continue;
+}
+
 public void OnMapStart()
 {
     g_hRuns.Clear();
@@ -1096,7 +1085,10 @@ stock bool TeleClientToStart_Safe( int client, int runid )
     }
     
     
-    TeleClientToSpawn( client );
+    if ( !TeleClientToSpawn( client ) )
+    {
+        LogError( INF_CON_PRE..."Couldn't teleport client %i to spawn as a fallback!", client );
+    }
     
     return false;
 }
@@ -1128,12 +1120,18 @@ stock bool TeleClientToStart( int client, int runid )
 
 stock bool TeleClientToSpawn( int client )
 {
+    int ent;
     char szSpawn[32];
-    FormatEx( szSpawn, sizeof( szSpawn ), "%s",
-        ( GetClientTeam( client ) == CS_TEAM_CT ) ? "info_player_counterterrorist" : "info_player_terrorist" );
+    char szFallbackSpawn[32];
     
+    strcopy( szSpawn, sizeof( szSpawn ), ( GetClientTeam( client ) == CS_TEAM_CT ) ? "info_player_counterterrorist" : "info_player_terrorist" );
+    strcopy( szFallbackSpawn, sizeof( szFallbackSpawn ), ( GetClientTeam( client ) != CS_TEAM_CT ) ? "info_player_counterterrorist" : "info_player_terrorist" );
     
-    int ent = FindEntityByClassname( -1, szSpawn );
+    ent = FindEntityByClassname( -1, szSpawn );
+    if ( ent == -1 )
+    {
+        ent = FindEntityByClassname( -1, szFallbackSpawn );
+    }
     
     if ( ent != -1 )
     {
@@ -2176,7 +2174,6 @@ stock void ResetClient( int client )
     g_flNextMenuTime[client] = 0.0;
     
     
-    g_flLastRecPrintTime[client] = 0.0;
     g_flNextWepSpdPrintTime[client] = 0.0;
     g_flLastValidWepSpd[client] = 0.0;
     

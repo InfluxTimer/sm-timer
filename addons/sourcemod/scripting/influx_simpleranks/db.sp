@@ -132,6 +132,25 @@ stock void DB_IncClientPoints( int client, int runid, int mode, int style, int r
     SQL_TQuery( db, Thrd_Empty, szQuery, userid, DBPrio_Normal );
 }
 
+stock void DB_IncCachedPoints( int client, int reward )
+{
+    Handle db = Influx_GetDB();
+    
+    static char szQuery[512];
+    
+    
+    int userid = GetClientUserId( client );
+    
+    int uid = Influx_GetClientId( client );
+    
+    FormatEx( szQuery, sizeof( szQuery ),
+        "UPDATE "...INF_TABLE_SIMPLERANKS..." SET cachedpoints=cachedpoints+%i WHERE uid=%i",
+        reward,
+        uid );
+    
+    SQL_TQuery( db, Thrd_Empty, szQuery, userid, DBPrio_Normal );
+}
+
 stock void DB_UpdateMapReward( int mapid, int runid, int reward, int issuer = 0 )
 {
     Handle db = Influx_GetDB();

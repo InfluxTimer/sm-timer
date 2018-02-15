@@ -20,7 +20,7 @@
 #include <influx/practise>
 
 
-
+//#define DEBUG
 //#define DEBUG_THINK
 
 
@@ -164,6 +164,7 @@ float g_flLastProcessedVel[INF_MAXPLAYERS][3];
 // CONVARS
 ConVar g_ConVar_SilentStrafer;
 ConVar g_ConVar_EnableTimescale;
+ConVar g_ConVar_MOTDFix;
 
 #if !defined USE_LAGGEDMOVEMENTVALUE
 ConVar g_ConVar_Timescale;
@@ -216,7 +217,7 @@ public void OnPluginStart()
     
     g_ConVar_SilentStrafer = CreateConVar( "influx_style_tas_silentstrafer", "1", "Do we record the player's wanted angles to a replay?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_EnableTimescale = CreateConVar( "influx_style_tas_timescale", "1", "Is timescale enabled?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-    
+    g_ConVar_MOTDFix = CreateConVar( "influx_style_tas_motdfix", "1", "Workaround to make MOTD display in CS:GO.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
     AutoExecConfig( true, "style_tas", "influx" );
@@ -245,6 +246,10 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_tas_inctimescale", Cmd_IncTimescale );
     RegConsoleCmd( "sm_tas_dectimescale", Cmd_DecTimescale );
     RegConsoleCmd( "sm_tas_autostrafe", Cmd_AutoStrafe );
+    
+    RegConsoleCmd( "sm_tas_cp_add", Cmd_CPAdd );
+    RegConsoleCmd( "sm_tas_cp_lastused", Cmd_CPLastUsed );
+    RegConsoleCmd( "sm_tas_cp_lastcreated", Cmd_CPLastCreated );
     
     
     // MENUS
@@ -453,15 +458,6 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
             return Plugin_Handled;
         }
     }
-    else if ( laststyle == STYLE_TAS )
-    {
-        UnhookThinks( client );
-        
-        UnfreezeClient( client );
-        
-        
-        SetClientCheats( client, false );
-    }
     
     return Plugin_Continue;
 }
@@ -480,18 +476,55 @@ public void Influx_OnClientStyleChangePost( int client, int style, int laststyle
         
         
         OpenMenu( client );
+        
+#if !defined USE_LAGGEDMOVEMENTVALUE
+        if ( laststyle != STYLE_TAS && GetEngineVersion() == Engine_CSGO )
+        {
+            Influx_PrintToChat( _, client, "Make sure to use {MAINCLR1}cl_clock_correction_force_server_tick/cl_clockdrift_max_ms 0{CHATCLR} to decrease laggy timescale!" );
+        }
+#endif
     }
+    else if ( laststyle == STYLE_TAS )
+    {
+        DisableTas( client );
+    }
+}
+
+public void Influx_OnClientModeChangePost( int client, int mode, int lastmode )
+{
+    // Reset timescale when we change mode.
+    if ( Influx_GetClientStyle( client ) == STYLE_TAS )
+        SetTimescale( client, 1.0 );
 }
 
 public void OnClientPutInServer( int client )
 {
     ResetClient( client );
     
+    // HACK: Client doesn't like when cheats cvar gets updated before displaying the MOTD.
+    if ( GetEngineVersion() == Engine_CSGO && g_ConVar_MOTDFix.BoolValue )
+    {
+        // The MOTD gets automatically shown after 5 seconds.
+        CreateTimer( 6.0, T_MotdFix, GetClientUserId( client ), TIMER_FLAG_NO_MAPCHANGE );
+    }
+    else
+    {
+        SetClientCheats( client, false );
+    }
     
-    SetClientCheats( client, false );
     
     g_iAutoStrafe[client] = AUTOSTRF_OFF;
     g_iAimlock[client] = AIMLOCK_FAKEANG;
+    g_flTimescale[client] = 1.0;
+}
+
+public Action T_MotdFix( Handle hTimer, int client )
+{
+    if ( (client = GetClientOfUserId( client )) )
+    {
+        if ( Influx_GetClientStyle( client ) != STYLE_TAS || g_flTimescale[client] == 1.0 )
+            SetClientCheats( client, false );
+    }
 }
 
 public void OnClientDisconnect( int client )
@@ -522,7 +555,7 @@ public void E_PostThinkPost_Client( int client )
     
     if ( Influx_GetClientStyle( client ) != STYLE_TAS )
     {
-        UnhookThinks( client );
+        DisableTas( client );
         return;
     }
     
@@ -1257,4 +1290,14 @@ stock void GotoCP( int client, int num )
         
         g_iLastUsedCP[client] = num;
     }
+}
+
+stock void DisableTas( int client )
+{
+    UnhookThinks( client );
+    
+    UnfreezeClient( client );
+    
+    
+    SetClientCheats( client, false );
 }

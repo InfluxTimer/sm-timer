@@ -31,6 +31,9 @@ public Action Cmd_Menu_Rank( int client, int args )
     {
         g_hRanks.GetArray( i, data );
         
+        if ( !ShouldDisplayRank( client, data ) )
+            continue;
+        
         FormatEx( szDisplay, sizeof( szDisplay ), "%s (%i)", data[RANK_NAME], data[RANK_POINTS] );
         FormatEx( szInfo, sizeof( szInfo ), "%i", i );
         
@@ -39,7 +42,7 @@ public Action Cmd_Menu_Rank( int client, int args )
         menu.AddItem(
             szInfo,
             szDisplay,
-            ( g_nPoints[client] < data[RANK_POINTS] || g_iCurRank[client] == i ) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT );
+            ( !CanUseRank( client, data ) || g_iCurRank[client] == i ) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT );
     }
     
     menu.Display( client, MENU_TIME_FOREVER );

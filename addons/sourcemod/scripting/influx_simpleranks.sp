@@ -39,6 +39,8 @@ enum
     RANK_POINTS,
     RANK_UNLOCK,
     
+    RANK_FLAGS,
+    
     RANK_SIZE
 };
 
@@ -144,6 +146,7 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_rankmenu", Cmd_Menu_Rank );
     RegConsoleCmd( "sm_customrank", Cmd_CustomRank );
     RegConsoleCmd( "sm_setmapreward", Cmd_SetMapReward );
+    RegConsoleCmd( "sm_givesimplepoints", Cmd_GivePoints );
     
     
     // CONVARS
@@ -205,6 +208,7 @@ public void Influx_OnRequestHelpCmds()
     Influx_AddHelpCommand( "rankmenu", "Choose your chat rank." );
     Influx_AddHelpCommand( "customrank", "Ability to set your own custom rank. (Flag access)" );
     Influx_AddHelpCommand( "setmapreward <name (optional)> <reward>", "Set map's reward.", true );
+    Influx_AddHelpCommand( "givesimplepoints <target (optional)> <reward>", "Give points to target.", true );
 }
 
 public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
@@ -247,6 +251,8 @@ stock int GetRankClosest( int points, bool bIgnoreUnlock = true )
         
         if ( bIgnoreUnlock && g_hRanks.Get( i, RANK_UNLOCK ) ) continue;
         
+        if ( GetRankFlags( i ) != 0 ) continue;
+        
         if ( p > points ) continue;
         
         
@@ -257,11 +263,52 @@ stock int GetRankClosest( int points, bool bIgnoreUnlock = true )
             continue;
         }
         
+        
         closest_index = i;
         closest_dif = dif;
     }
     
     return closest_index;
+}
+
+stock bool CanUseRankFlags( int client, const any data[RANK_SIZE] )
+{
+    return ( data[RANK_FLAGS] == 0 || CheckCommandAccess( client, "", data[RANK_FLAGS], true ) );
+}
+
+stock bool CanUseRankByIndex( int client, int index )
+{
+    if ( index == -1 ) return false;
+    
+    decl data[RANK_SIZE];
+    g_hRanks.GetArray( index, data, sizeof( data ) );
+    
+    return CanUseRank( client, data );
+}
+
+stock bool CanUseRank( int client, const any data[RANK_SIZE] )
+{
+    if ( g_nPoints[client] < data[RANK_POINTS] )
+        return false;
+    
+    
+    return CanUseRankFlags( client, data );
+}
+
+stock bool ShouldDisplayRankByIndex( int client, int index )
+{
+    if ( index == -1 ) return false;
+    
+    
+    decl data[RANK_SIZE];
+    g_hRanks.GetArray( index, data, sizeof( data ) );
+    
+    return CanUseRankFlags( client, data );
+}
+
+stock bool ShouldDisplayRank( int client, const any data[RANK_SIZE] )
+{
+    return CanUseRankFlags( client, data );
 }
 
 stock int FindRankByName( const char[] szName )
@@ -295,6 +342,13 @@ stock void GetRankName( int index, char[] out, int len )
     
     
     g_hRanks.GetString( index, out, len );
+}
+
+stock int GetRankFlags( int index )
+{
+    if ( index == -1 ) return 0;
+    
+    return g_hRanks.Get( index, RANK_FLAGS );
 }
 
 stock void SetClientDefRank( int client )
@@ -367,12 +421,25 @@ stock void RewardClient(int client,
     if ( reward <= 0 ) return;
     
     
+    IncClientPoints( client, reward );
+    
+    DB_IncClientPoints( client, runid, mode, style, reward, bFirst );
+}
+
+stock bool IncClientPoints( int client, int reward, bool allownegative = false, bool print = true )
+{
+    // Nothing to update!
+    if ( reward == 0 ) return;
+    
+    if ( !allownegative && reward < 0 ) return;
+    
+    
     int oldrank = GetRankClosest( g_nPoints[client] );
     int newrank = GetRankClosest( g_nPoints[client] + reward );
     
     g_nPoints[client] += reward;
     
-    if ( g_ConVar_NotifyReward.BoolValue )
+    if ( g_ConVar_NotifyReward.BoolValue && print )
     {
         Influx_PrintToChat( _, client, "You've received {MAINCLR1}%i{CHATCLR} points! You now have {MAINCLR1}%i{CHATCLR} points!", reward, g_nPoints[client] );
     }
@@ -385,8 +452,6 @@ stock void RewardClient(int client,
             SetClientRank( client, newrank, false, _, g_ConVar_NotifyNewRank.BoolValue );
         }
     }
-    
-    DB_IncClientPoints( client, runid, mode, style, reward, bFirst );
 }
 
 stock bool IsValidReward( int reward, int issuer = 0, bool bPrint = false )
@@ -567,6 +632,40 @@ stock int CalcReward( int runid, int mode, int style, bool bFirst )
     
     
     return reward + GetModePoints( mode ) + GetStylePoints( style );
+}
+
+// NOTE: Only increments cached value.
+stock void GivePoints( const int[] targets, int nTargets, int points, int issuer = -1 )
+{
+    int valids = 0;
+    
+    for ( int i = 0; i < nTargets; i++ )
+    {
+        int target = targets[i];
+        
+        if ( target && IsClientInGame( target ) && !IsFakeClient( target ) && Influx_GetClientId( target ) > 0 )
+        {
+            IncClientPoints( target, points, true, false );
+            
+            DB_IncCachedPoints( target, points );
+            
+            if ( points > 0 )
+            {
+                Inf_ReplyToClient( target, "The universe gave you {MAINCLR1}%i{CHATCLR} points!", points, nTargets );
+            }
+            else
+            {
+                Inf_ReplyToClient( target, "The universe doesn't like you and took {MAINCLR1}%i{CHATCLR} points from you!", points, nTargets );
+            }
+            
+            ++valids;
+        }
+    }
+    
+    if ( issuer >= 0 && (nTargets > 1 || targets[0] != issuer) )
+    {
+        Inf_ReplyToClient( issuer, "Gave {MAINCLR1}%i{CHATCLR} points to {MAINCLR1}%i{CHATCLR} player(s)!", points, valids );
+    }
 }
 
 // NATIVES

@@ -10,6 +10,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
+#include <influx/recordsmenu>
 #include <influx/help>
 
 
@@ -188,6 +189,17 @@ public void OnPluginStart()
         if ( LibraryExists( "adminmenu" ) && (topmenu = GetAdminTopMenu()) != null )
         {
             OnAdminMenuReady( topmenu );
+        }
+        
+        
+        Influx_OnPreRunLoad();
+        
+        ArrayList runs = Influx_GetRunsArray();
+        int len = runs.Length;
+        
+        for ( int i = 0; i < len; i++ )
+        {
+            Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
         }
     }
 }

@@ -165,3 +165,45 @@ public Action Cmd_AutoStrafe( int client, int args )
     
     return Plugin_Handled;
 }
+
+public Action Cmd_CPAdd( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !IsPlayerAlive( client ) ) return Plugin_Handled;
+    
+    if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return Plugin_Handled;
+    
+    
+    AddCP( client );
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_CPLastUsed( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !IsPlayerAlive( client ) ) return Plugin_Handled;
+    
+    if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return Plugin_Handled;
+    
+    
+    GotoCP( client, g_iLastUsedCP[client] );
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_CPLastCreated( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !IsPlayerAlive( client ) ) return Plugin_Handled;
+    
+    if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return Plugin_Handled;
+    
+    
+    GotoCP( client, g_iLastCreatedCP[client] );
+    
+    return Plugin_Handled;
+}

@@ -74,6 +74,72 @@ public Action Cmd_SetMapReward( int client, int args )
     return Plugin_Handled;
 }
 
+public Action Cmd_GivePoints( int client, int args )
+{
+    if ( !CanUserSetMapReward( client ) ) return Plugin_Handled;
+    
+    if ( !args )
+    {
+        Inf_ReplyToClient( client, "Usage: sm_givesimplepoints <target (optional)> <amount> (Note: can be negative)" );
+        return Plugin_Handled;
+    }
+    
+    
+    // Attempt to find a name.
+    int targets[INF_MAXPLAYERS];
+    int nTargets = 0;
+    int points = 0;
+    
+    char szArg[64];
+    
+    if ( args >= 2 )
+    {
+        GetCmdArg( 2, szArg, sizeof( szArg ) );
+        points = StringToInt( szArg );
+        
+        GetCmdArg( 1, szArg, sizeof( szArg ) );
+        
+        char szTemp[1];
+        bool bUseless;
+        
+        nTargets = ProcessTargetString(
+            szArg,
+            client,
+            targets,
+            sizeof( targets ),
+            COMMAND_FILTER_NO_BOTS,
+            szTemp,
+            sizeof( szTemp ),
+            bUseless );
+    }
+    else // We're targeting ourselves.
+    {
+        targets[0] = client;
+        nTargets = 1;
+        
+        GetCmdArgString( szArg, sizeof( szArg ) );
+        points = StringToInt( szArg );
+    }
+    
+    if ( nTargets < 1 )
+    {
+        Inf_ReplyToClient( client, "No targets found!" );
+        return Plugin_Handled;
+    }
+    
+    if ( !points )
+    {
+        Inf_ReplyToClient( client, "You can't give zero points!" );
+        return Plugin_Handled;
+    }
+    
+    
+    
+    GivePoints( targets, nTargets, points, client );
+    
+    return Plugin_Handled;
+}
+
 /*public Action Cmd_Admin_RecalcRanks( int client, int args )
 {
     DB_RecalcRanks( client );

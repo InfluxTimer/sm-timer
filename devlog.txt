@@ -1,3 +1,37 @@
+1.2
+
+COMPATIBILITY:
+- If you update any of the following plugins, make sure to also update ALL of them: influx_core/influx_recordsmenu/influx_zones_checkpoint/influx_jumps/influx_strafes
+- Records menu has been migrated to influx_recordsmenu from influx_core.
+
+ADDED:
+- !mymaps to display the list of maps you've beaten. (influx_recordsmenu)
+- Ability to restrict ranks by flags. (influx_simpleranks)
+- TAS CP commands (sm_tas_cp_add/sm_tas_cp_lastused/sm_tas_cp_lastcreated)
+- Zone type: Validator. (Players are required to hit all validator zones) (ie. anti-cheat)
+- !givesimplepoints to give simplerank points to players.
+
+CHANGES:
+- Records menu will now segment each run and style/mode to their own menus (select run, style and then display list of records). See cvars influx_recordsmenu_displayfulllistmax
+- Use persistent SQLite connection if possible.
+- TAS timescale is now reset back to 1 when changing mode.
+- influx_teams_autojoin-plugin no longer requires influx_teams-plugin.
+
+FIXES:
+- Some plugins not functioning correctly when late-loading. (multi-servers, rejoice)
+- Fixed late-loading precache crash.
+- Fixed not being able to load TAS runs.
+- Zones not respawning on round start. (CSS)
+- Fixed TAS recordings not being saved in some scenarios.
+- Brough back CSGO timescale lag fix msg.
+- SourceTV being used as a replay bot. (fixes laggy replay)
+- SourceTV being spawned.
+- CSGO Shotgun Shot tempent error when hiding players.
+- Fixed spawning functionality not taking into account plugin created spawn points.
+- Fixed MOTD not displaying in CSGO when joining the server. (Increase influx_teams_autojoin_delay to fix)
+
+
+
 1.1.1 Hotfix
 
 COMPATIBILITY:
