@@ -8,6 +8,8 @@ ADDED:
 - !mymaps to display the list of maps you've beaten. (influx_recordsmenu)
 - Ability to restrict ranks by flags. (influx_simpleranks)
 - TAS CP commands (sm_tas_cp_add/sm_tas_cp_lastused/sm_tas_cp_lastcreated)
+- Zone type: Validator. (Players are required to hit all validator zones) (ie. anti-cheat)
+- !givesimplepoints to give simplerank points to players.
 
 CHANGES:
 - Records menu will now segment each run and style/mode to their own menus (select run, style and then display list of records). See cvars influx_recordsmenu_displayfulllistmax
