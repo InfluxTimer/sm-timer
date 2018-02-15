@@ -115,7 +115,7 @@ public Action Influx_OnTimerFinish( int client, int runid, int mode, int style, 
 {
     int nNeeded = GetNumValidators( runid );
     
-    if ( nNeeded )
+    if ( nNeeded && AppliesToClient( client ) )
     {
         ArrayList touched = g_hValidatorsTouched[client];
         if ( !touched || touched.Length < nNeeded )
@@ -288,4 +288,10 @@ stock void AddValidatorTouchedByIndex( int client, int ival )
             touched.Length,
             GetNumValidators( Influx_GetClientRunId( client ) ) );
     }
+}
+
+stock bool AppliesToClient( int client )
+{
+    // No TAS for now. No way to check if it's a valid run (reloaded run, rewind, etc.).
+    return Influx_GetClientStyle( client ) != STYLE_TAS;
 }
