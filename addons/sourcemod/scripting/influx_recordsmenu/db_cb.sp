@@ -264,7 +264,7 @@ public void Thrd_PrintStyleSelect( Handle db, Handle res, const char[] szError, 
             szMode[0] = 0;
         }
         
-        if ( Influx_ShouldStyleDisplay( style ) )
+        if ( szMode[0] == 0 || Influx_ShouldStyleDisplay( style ) )
         {
             Influx_GetStyleName( style, szStyle, sizeof( szStyle ) );
         }
