@@ -23,6 +23,10 @@
 //#include <influx/colorchat>
 
 
+// Uncomment this to test out SQL performance on map start.
+//#define DISABLE_CREATE_SQL_TABLES			bool _bUseless = true; if ( _bUseless ) return;
+
+
 //#define DEBUG
 //#define DEBUG_TIMER
 //#define DEBUG_WEPSPD

@@ -64,6 +64,7 @@ stock void DB_Init()
     g_bIsMySQL = false;
     
     
+    // TODO: Threaded connection?
     if ( SQL_CheckConfig( MYSQL_CONFIG_NAME ) )
     {
         g_bIsMySQL = true;
@@ -87,6 +88,12 @@ stock void DB_Init()
         delete kv;
     }
     
+    
+    DB_OnConnected();
+}
+
+stock void DB_OnConnected()
+{
     if ( g_hDB == null )
     {
         SetFailState( INF_CON_PRE..."Unable to establish connection to %s database! (Error: %s)",
@@ -98,6 +105,20 @@ stock void DB_Init()
     PrintToServer( INF_CON_PRE..."Established connection to %s database!", szDriver );
     
     
+    DB_InitTables();
+    
+    
+    // Tell other plugins we're ready!
+    //OnConnectedDB();
+}
+
+stock void DB_InitTables()
+{
+#if defined DISABLE_CREATE_SQL_TABLES
+    DB_CheckVersion();
+    DISABLE_CREATE_SQL_TABLES
+#endif
+	
     if ( g_bIsMySQL )
     {
         SQL_TQuery( g_hDB, Thrd_Empty, QUERY_CREATETABLE_USERS_MYSQL, _, DBPrio_High );

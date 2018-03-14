@@ -3,6 +3,10 @@
 
 stock void DB_Init()
 {
+#if defined DISABLE_CREATE_SQL_TABLES
+    DISABLE_CREATE_SQL_TABLES
+#endif
+
     Handle db = Influx_GetDB();
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
     
