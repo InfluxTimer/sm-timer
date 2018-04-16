@@ -2,6 +2,7 @@
 
 Handle g_hDB;
 bool g_bIsMySQL;
+char g_szDriver[32];
 
 
 #define MYSQL_CONFIG_NAME           "influx-mysql"
@@ -60,7 +61,7 @@ stock bool DB_UpdateQuery( int ver, const char[] szQuery )
 
 stock void DB_Init()
 {
-    char szError[1024], szDriver[32];
+    char szError[1024];
     g_bIsMySQL = false;
     
     
@@ -69,14 +70,14 @@ stock void DB_Init()
     {
         g_bIsMySQL = true;
         
-        strcopy( szDriver, sizeof( szDriver ), "MySQL" );
+        strcopy( g_szDriver, sizeof( g_szDriver ), "MySQL" );
         
         
         g_hDB = SQL_Connect( MYSQL_CONFIG_NAME, true, szError, sizeof( szError ) );
     }
     else
     {
-        strcopy( szDriver, sizeof( szDriver ), "SQLite" );
+        strcopy( g_szDriver, sizeof( g_szDriver ), "SQLite" );
         
         
         KeyValues kv = CreateKeyValues( "" );
@@ -88,21 +89,20 @@ stock void DB_Init()
         delete kv;
     }
     
+    if ( g_hDB == null )
+    {
+        SetFailState( INF_CON_PRE..."Unable to establish connection to %s database! (Error: %s)",
+            g_szDriver,
+            szError );
+    }
+    
     
     DB_OnConnected();
 }
 
 stock void DB_OnConnected()
 {
-    if ( g_hDB == null )
-    {
-        SetFailState( INF_CON_PRE..."Unable to establish connection to %s database! (Error: %s)",
-            szDriver,
-            szError );
-    }
-    
-    
-    PrintToServer( INF_CON_PRE..."Established connection to %s database!", szDriver );
+    PrintToServer( INF_CON_PRE..."Established connection to %s database!", g_szDriver );
     
     
     DB_InitTables();
