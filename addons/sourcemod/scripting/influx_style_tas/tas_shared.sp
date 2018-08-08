@@ -1155,6 +1155,8 @@ stock void EraseFutureCPs( int client, int index )
     }
     
     g_iCurCP[client] = FindHighestCPNum( client ) + 1;
+	if ( g_iCurCP[client] >= MAX_FRMCP ) // Our highest CP is the last one, loop back to start.
+        g_iCurCP[client] = 0;
 }
 
 stock int FindHighestCPNum( int client )
