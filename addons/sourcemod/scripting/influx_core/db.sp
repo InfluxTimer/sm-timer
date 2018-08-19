@@ -63,38 +63,51 @@ stock void DB_Init()
 {
     char szError[1024];
     g_bIsMySQL = false;
+    Database db = null;
     
     
     // TODO: Threaded connection?
     if ( SQL_CheckConfig( MYSQL_CONFIG_NAME ) )
     {
-        g_bIsMySQL = true;
-        
-        strcopy( g_szDriver, sizeof( g_szDriver ), "MySQL" );
-        
-        
-        g_hDB = SQL_Connect( MYSQL_CONFIG_NAME, true, szError, sizeof( szError ) );
+        db = SQL_Connect( MYSQL_CONFIG_NAME, true, szError, sizeof( szError ) );
     }
     else
     {
-        strcopy( g_szDriver, sizeof( g_szDriver ), "SQLite" );
-        
-        
         KeyValues kv = CreateKeyValues( "" );
         kv.SetString( "driver", "sqlite" );
         kv.SetString( "database", SQLITE_DB_NAME );
         
-        g_hDB = SQL_ConnectCustom( kv, szError, sizeof( szError ), true );
+        db = SQL_ConnectCustom( kv, szError, sizeof( szError ), true );
         
         delete kv;
     }
     
-    if ( g_hDB == null )
+    if ( db == null )
     {
-        SetFailState( INF_CON_PRE..."Unable to establish connection to %s database! (Error: %s)",
-            g_szDriver,
+        SetFailState( INF_CON_PRE..."Unable to establish connection to database! (Error: %s)",
             szError );
     }
+    
+    
+    // Determine what kind of database we're using by checking the name.
+    db.Driver.GetProduct( g_szDriver, sizeof( g_szDriver ) );
+    char szIdent[64];
+    db.Driver.GetIdentifier( szIdent, sizeof( szIdent ) );
+    
+    g_bIsMySQL = StrContains( szIdent, "mysql", false ) != -1;
+    
+    // SM only supports MySQL & SQLite currently, but you never know.
+    if ( !g_bIsMySQL && StrContains( szIdent, "sqlite", false ) == -1 )
+    {
+        LogError( INF_CON_PRE..."Possibly invalid SQL driver %s (Identifier: %s)! Assuming SQLite.", g_szDriver, szIdent );
+    }
+    
+#if defined DEBUG_DB
+    PrintToServer( INF_DEBUG_PRE..."Driver: %s | Identifier: %s | Is MySQL: %i", g_szDriver, szIdent, g_bIsMySQL );
+#endif
+    
+    
+    g_hDB = db;
     
     
     DB_OnConnected();
