@@ -7,6 +7,8 @@
 #define INFLUX_LIB_MAPRANKS         "influx_maprankings"
 
 
+forward void Influx_OnClientRankingsCached( int client );
+
 native int Influx_GetClientCurrentMapRank( int client );
 native int Influx_GetClientCurrentMapRankCount( int client );
 
