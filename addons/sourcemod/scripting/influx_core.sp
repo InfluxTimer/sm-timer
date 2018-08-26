@@ -2322,7 +2322,7 @@ stock int GetDefaultMode()
 
 stock int GetDefaultStyle()
 {
-    if ( FindModeById( g_iDefStyle ) != -1 )
+    if ( FindStyleById( g_iDefStyle ) != -1 )
     {
         return g_iDefStyle;
     }
