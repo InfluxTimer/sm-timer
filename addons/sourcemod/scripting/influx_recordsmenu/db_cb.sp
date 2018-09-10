@@ -648,7 +648,7 @@ public void Thrd_PrintRecordInfo( Handle db, Handle res, const char[] szError, i
         numrecs = SQL_FetchInt( res, field );
     }
     
-    if ( SQL_FieldNameToNum( res, "rank", field ) )
+    if ( SQL_FieldNameToNum( res, "plyrank", field ) )
     {
         rank = SQL_FetchInt( res, field );
     }
