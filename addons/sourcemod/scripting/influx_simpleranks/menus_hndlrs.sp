@@ -26,3 +26,10 @@ public int Hndlr_Rank( Menu menu, MenuAction action, int client, int index )
     
     return 0;
 }
+
+public int Hndlr_TopRanks( Menu menu, MenuAction action, int client, int index )
+{
+    MENU_HANDLE( menu, action )
+    
+    return 0;
+}

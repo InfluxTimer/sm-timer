@@ -91,6 +91,7 @@ ConVar g_ConVar_DefMapReward;
 ConVar g_ConVar_NotifyReward;
 ConVar g_ConVar_NotifyNewRank;
 ConVar g_ConVar_NotFirst;
+ConVar g_ConVar_TopRankNumToPrint;
 
 
 ArrayList g_hRanks;
@@ -151,12 +152,15 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_setmapreward", Cmd_SetMapReward );
     RegConsoleCmd( "sm_givesimplepoints", Cmd_GivePoints );
     
+    RegConsoleCmd( "sm_toprank", Cmd_Menu_TopRank );
+    
     
     // CONVARS
     g_ConVar_DefMapReward = CreateConVar( "influx_simpleranks_defmapreward", "8", "Default map reward.", FCVAR_NOTIFY, true, 0.0 );
     g_ConVar_NotifyReward = CreateConVar( "influx_simpleranks_displayreward", "1", "Do we notify the player with the amount of points they get?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_NotifyNewRank = CreateConVar( "influx_simpleranks_displaynewrank", "1", "Do we notify the player with the new rank they receive?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_NotFirst = CreateConVar( "influx_simpleranks_reward_notfirst_perc", "0.1", "Percentage of the normal amount we give to players. 0 = Disable", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_TopRankNumToPrint = CreateConVar( "influx_simpleranks_toprank_printnum", "10", "How many ranks to print with !toprank command. 0 = Disable", FCVAR_NOTIFY, true, 0.0, true, 25.0 );
     
     AutoExecConfig( true, "simpleranks", "influx" );
     
@@ -210,6 +214,7 @@ public void Influx_OnRequestHelpCmds()
 {
     Influx_AddHelpCommand( "rankmenu", "Choose your chat rank." );
     Influx_AddHelpCommand( "customrank", "Ability to set your own custom rank. (Flag access)" );
+    Influx_AddHelpCommand( "toprank", "Show top ranks." );
     Influx_AddHelpCommand( "setmapreward <name (optional)> <reward>", "Set map's reward.", true );
     Influx_AddHelpCommand( "givesimplepoints <target (optional)> <reward>", "Give points to target.", true );
 }

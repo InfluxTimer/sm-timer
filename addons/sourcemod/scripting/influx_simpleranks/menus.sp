@@ -50,3 +50,19 @@ public Action Cmd_Menu_Rank( int client, int args )
     return Plugin_Handled;
 }
 
+public Action Cmd_Menu_TopRank( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    
+    int num = g_ConVar_TopRankNumToPrint.IntValue;
+    
+    if ( num > 0 )
+    {
+        DB_DisplayTopRanks( client, g_ConVar_TopRankNumToPrint.IntValue );
+    }
+    
+    return Plugin_Handled;
+}
+
+
