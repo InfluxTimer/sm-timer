@@ -95,7 +95,7 @@ public void OnPluginStart()
     
     g_ConVar_MsgClass = CreateConVar( "influx_hud_draw_msgclass", "fontSize-l", "You'll have to google CSGO Panorama fonts, sorry.", FCVAR_NOTIFY );
     
-    g_ConVar_TabSize = CreateConVar( "influx_hud_draw_tabsize", "5", "Amount of characters a tab is. If you increase/decrease font size you need to tweak this.", FCVAR_NOTIFY, true, 1.0 );
+    g_ConVar_TabSize = CreateConVar( "influx_hud_draw_tabsize", "6", "Amount of characters a tab is. If you increase/decrease font size you need to tweak this.", FCVAR_NOTIFY, true, 1.0 );
     
     g_ConVar_Pos = CreateConVar( "influx_hud_draw_pos", "0 0.4", "Set the position where the sidebar is drawn.", FCVAR_NOTIFY );
     g_ConVar_Pos.AddChangeHook( E_ConVarChanged_Pos );
