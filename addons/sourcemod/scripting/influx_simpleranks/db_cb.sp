@@ -225,11 +225,12 @@ public void Thrd_DisplayTopRanks( Handle db, Handle res, const char[] szError, A
     
     int points;
     decl String:szPlyName[64];
+    decl String:szRankName[128];
     
 
     
     Menu menu = new Menu( Hndlr_TopRanks );
-    menu.SetTitle( "Top %i ranks\n ", nToPrint );
+    menu.SetTitle( "Top %i ranked players\n ", nToPrint );
     
     
     while ( SQL_FetchRow( res ) )
@@ -239,7 +240,19 @@ public void Thrd_DisplayTopRanks( Handle db, Handle res, const char[] szError, A
         points = SQL_FetchInt( res, 0 );
         SQL_FetchString( res, 1, szPlyName, sizeof( szPlyName ) );
         
-        FormatEx( szDisplay, sizeof( szDisplay ), "#%i | %i - %s", num, points, szPlyName );
+        szRankName[0] = 0;
+        GetRankName( GetRankClosest( points, false ), szRankName, sizeof( szRankName ) );
+        if ( szRankName[0] != 0 )
+        {
+            Influx_RemoveChatColors( szRankName, sizeof( szRankName ) );
+            Format( szRankName, sizeof( szRankName ), " %s", szRankName );
+        }
+        
+        FormatEx( szDisplay, sizeof( szDisplay ), "#%i | %i - %s%s",
+            num,
+            points,
+            szPlyName,
+            szRankName );
         
         menu.AddItem(
             "",
