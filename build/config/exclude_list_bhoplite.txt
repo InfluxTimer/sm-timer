@@ -3,7 +3,9 @@ influx_comp_standup.*
 influx_fixtimelimit.*
 influx_fpscheck.*
 influx_maprankings.*
+influx_mvpstar.*
 influx_recsounds.*
+influx_silent_chatcmds.*
 influx_simpleranks.*
 influx_simpleranks_chat.*
 influx_zones_stage.*
@@ -15,6 +17,8 @@ influx_simpleranks_style_points.cfg
 influx_sounds.cfg
 ac_leftright.cfg
 fpscheck.cfg
+mvpstar.cfg
+silent_chatcmds.cfg
 simpleranks.cfg
 zones_stage.cfg
 zones_validator.cfg

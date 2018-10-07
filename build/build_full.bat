@@ -1,3 +1,3 @@
 @ECHO OFF
 
-main.bat full .\config\exclude_list_full.txt .\add_bhop\*
+main.bat full .\config\exclude_list_full.txt
