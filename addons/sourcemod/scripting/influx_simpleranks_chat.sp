@@ -3,12 +3,15 @@
 
 #include <influx/core>
 #include <influx/simpleranks>
+#include <influx/simpleranks_chat>
 
 #undef REQUIRE_PLUGIN
+#include <influx/silent_chatcmds>
 #include <basecomm>
 
 
 bool g_bLib_BaseComm;
+bool g_bLib_SilentChatCmds;
 
 
 public Plugin myinfo =
@@ -20,20 +23,29 @@ public Plugin myinfo =
     version = INF_VERSION
 };
 
+public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
+{
+    // LIBRARIES
+    RegPluginLibrary( INFLUX_LIB_SIMPLERANKS_CHAT );
+}
+
 public void OnPluginStart()
 {
     // LIBRARIES
     g_bLib_BaseComm = LibraryExists( "basecomm" );
+    g_bLib_SilentChatCmds = LibraryExists( INFLUX_LIB_SILENT_CHATCMDS );
 }
 
 public void OnLibraryAdded( const char[] lib )
 {
     if ( StrEqual( lib, "basecomm" ) ) g_bLib_BaseComm = true;
+    if ( StrEqual( lib, INFLUX_LIB_SILENT_CHATCMDS ) ) g_bLib_SilentChatCmds = true;
 }
 
 public void OnLibraryRemoved( const char[] lib )
 {
     if ( StrEqual( lib, "basecomm" ) ) g_bLib_BaseComm = false;
+    if ( StrEqual( lib, INFLUX_LIB_SILENT_CHATCMDS ) ) g_bLib_SilentChatCmds = false;
 }
 
 public Action OnClientSayCommand( int client, const char[] szCommand, const char[] szMsg )
@@ -44,6 +56,12 @@ public Action OnClientSayCommand( int client, const char[] szCommand, const char
     
     // Gagged?
     if ( g_bLib_BaseComm && BaseComm_IsClientGagged( client ) )
+    {
+        return Plugin_Handled;
+    }
+    
+    // This message should be silenced.
+    if ( g_bLib_SilentChatCmds && IsChatTrigger() && Influx_ShouldSilenceCmd( szMsg ) )
     {
         return Plugin_Handled;
     }

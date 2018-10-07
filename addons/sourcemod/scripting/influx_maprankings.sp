@@ -27,6 +27,11 @@ int g_nCurrentRank[INF_MAXPLAYERS];
 int g_nCurrentRankCount[INF_MAXPLAYERS];
 
 
+// FORWARDS
+Handle g_hForward_OnClientRankingsCached;
+
+
+
 bool g_bCachedNumRecs;
 
 bool g_bLate;
@@ -62,6 +67,10 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 public void OnPluginStart()
 {
     g_hRunRanks = new ArrayList( RANK_SIZE );
+    
+    
+    // FORWARDS
+    g_hForward_OnClientRankingsCached = CreateGlobalForward( "Influx_OnClientRankingsCached", ET_Ignore, Param_Cell );
     
     
     if ( g_bLate )
@@ -234,7 +243,7 @@ stock void DB_InitClientRanks( int client, int runid = -1, int mode = MODE_INVAL
         "runid, " ...
         "mode, " ...
         "style, " ...
-        "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_t.mapid AND runid=_t.runid AND mode=_t.mode AND style=_t.style AND rectime<_t.rectime) AS rank " ...
+        "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_t.mapid AND runid=_t.runid AND mode=_t.mode AND style=_t.style AND rectime<_t.rectime) AS plyrank " ...
         "FROM "...INF_TABLE_TIMES..." AS _t WHERE uid=%i AND mapid=%i%s " ...
         "GROUP BY runid,mode,style " ...
         "ORDER BY runid",
@@ -356,6 +365,10 @@ public void Thrd_InitClientRanks( Handle db, Handle res, const char[] szError, i
     
     
     Influx_OnClientStatusChanged( client );
+    
+    Call_StartForward( g_hForward_OnClientRankingsCached );
+    Call_PushCell( client );
+    Call_Finish();
 }
 
 stock void FormatWhereClause( char[] clause, int len, int runid, int mode, int style )

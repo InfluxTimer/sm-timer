@@ -198,3 +198,72 @@ public void Thrd_SetMapReward( Handle db, Handle res, const char[] szError, Arra
         reward );
 }
 
+public void Thrd_DisplayTopRanks( Handle db, Handle res, const char[] szError, ArrayList array )
+{
+    decl data[2];
+    
+    array.GetArray( 0, data, sizeof( data ) );
+    delete array;
+    
+    
+    int client = data[0];
+    int nToPrint = data[1];
+    
+    
+    if ( client && !(client = GetClientOfUserId( client )) ) return;
+    
+    if ( res == null )
+    {
+        Inf_DB_LogError( db, "printing top ranks to client", client, "Something went wrong." );
+        return;
+    }
+    
+    
+    
+    decl String:szDisplay[128];
+    int num = 0;
+    
+    int points;
+    decl String:szPlyName[64];
+    decl String:szRankName[128];
+    
+
+    
+    Menu menu = new Menu( Hndlr_TopRanks );
+    menu.SetTitle( "Top %i ranked players\n ", nToPrint );
+    
+    
+    while ( SQL_FetchRow( res ) )
+    {
+        ++num;
+        
+        points = SQL_FetchInt( res, 0 );
+        SQL_FetchString( res, 1, szPlyName, sizeof( szPlyName ) );
+        
+        szRankName[0] = 0;
+        GetRankName( GetRankClosest( points, false ), szRankName, sizeof( szRankName ) );
+        if ( szRankName[0] != 0 )
+        {
+            Influx_RemoveChatColors( szRankName, sizeof( szRankName ) );
+            Format( szRankName, sizeof( szRankName ), " %s", szRankName );
+        }
+        
+        FormatEx( szDisplay, sizeof( szDisplay ), "#%i | %i - %s%s",
+            num,
+            points,
+            szPlyName,
+            szRankName );
+        
+        menu.AddItem(
+            "",
+            szDisplay,
+            ITEMDRAW_DISABLED ); // ITEMDRAW_DEFAULT
+    }
+    
+    if ( !num )
+    {
+        menu.AddItem( "", "No ranks :(", ITEMDRAW_DISABLED );
+    }
+    
+    menu.Display( client, MENU_TIME_FOREVER );
+}

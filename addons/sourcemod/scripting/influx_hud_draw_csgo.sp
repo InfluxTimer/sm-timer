@@ -33,7 +33,7 @@ float g_flJoin[INF_MAXPLAYERS];
 ConVar g_ConVar_Title;
 ConVar g_ConVar_TitleDisplayAlways;
 ConVar g_ConVar_Font;
-ConVar g_ConVar_FontSize;
+ConVar g_ConVar_MsgClass;
 ConVar g_ConVar_TabSize;
 ConVar g_ConVar_Pos;
 ConVar g_ConVar_Clr;
@@ -93,7 +93,7 @@ public void OnPluginStart()
     g_ConVar_Font.AddChangeHook( E_ConVarChanged_Font );
     g_ConVar_Font.GetString( g_szFont, sizeof( g_szFont ) );
     
-    g_ConVar_FontSize = CreateConVar( "influx_hud_draw_fontsize", "22", "Font size. 22 recommended.", FCVAR_NOTIFY );
+    g_ConVar_MsgClass = CreateConVar( "influx_hud_draw_msgclass", "fontSize-l", "You'll have to google CSGO Panorama fonts, sorry.", FCVAR_NOTIFY );
     
     g_ConVar_TabSize = CreateConVar( "influx_hud_draw_tabsize", "6", "Amount of characters a tab is. If you increase/decrease font size you need to tweak this.", FCVAR_NOTIFY, true, 1.0 );
     
@@ -468,7 +468,10 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
         
         if ( szMsg[0] != 0 )
         {
-            Format( szMsg, sizeof( szMsg ), "<font size='%i' face='%s'>%s</font>", g_ConVar_FontSize.IntValue, g_szFont, szMsg );
+            static char szClass[256];
+            g_ConVar_MsgClass.GetString( szClass, sizeof( szClass ) );
+            
+            Format( szMsg, sizeof( szMsg ), "<pre><span class='%s' face='%s'>%s</span></pre>", szClass, g_szFont, szMsg );
             
             PrintHintText( client, szMsg );
         }
@@ -662,7 +665,7 @@ stock void GetTabs( int linelen, char[] out, int len, int numtabs = 3 )
 {
     out[0] = 0;
     
-    int num = numtabs - linelen / g_ConVar_TabSize.IntValue;
+    int num = numtabs - RoundToFloor( linelen / g_ConVar_TabSize.FloatValue );
 
     for ( int i = 0; i < num; i++ )
     {

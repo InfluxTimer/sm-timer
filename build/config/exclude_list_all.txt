@@ -1,0 +1,8 @@
+.git/
+build/
+examples/
+web/
+README.md
+devlog.txt
+.gitignore
+addons/sourcemod/plugins/readme.txt

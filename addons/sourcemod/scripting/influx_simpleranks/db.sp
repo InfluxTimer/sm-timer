@@ -3,6 +3,10 @@
 
 stock void DB_Init()
 {
+#if defined DISABLE_CREATE_SQL_TABLES
+    DISABLE_CREATE_SQL_TABLES
+#endif
+
     Handle db = Influx_GetDB();
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
     
@@ -207,4 +211,25 @@ stock void DB_SetMapRewardByName( int client, int runid, int reward, const char[
     FormatEx( szQuery, sizeof( szQuery ), "SELECT mapid,mapname FROM "...INF_TABLE_MAPS..." WHERE mapname LIKE '%%%s%%'", szSafe );
     
     SQL_TQuery( db, Thrd_SetMapReward, szQuery, array, DBPrio_Normal );
+}
+
+stock void DB_DisplayTopRanks( int client, int nToPrint )
+{
+    Handle db = Influx_GetDB();
+    
+    decl data[2];
+    data[0] = GetClientUserId( client );
+    data[1] = nToPrint;
+    
+    ArrayList array = new ArrayList( sizeof( data ) );
+    array.PushArray( data );
+    
+    
+    static char szQuery[256];
+    FormatEx( szQuery, sizeof( szQuery ),
+        "SELECT cachedpoints,_u.name " ...
+        "FROM "...INF_TABLE_SIMPLERANKS..." AS _s INNER JOIN "...INF_TABLE_USERS..." AS _u ON _s.uid=_u.uid " ...
+        "ORDER BY cachedpoints DESC LIMIT %i", nToPrint );
+    
+    SQL_TQuery( db, Thrd_DisplayTopRanks, szQuery, array, DBPrio_Normal );
 }

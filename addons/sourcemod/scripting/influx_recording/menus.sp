@@ -32,7 +32,7 @@ public Action Cmd_Replay( int client, int args )
     
     
     menu.AddItem( "z", "Own Replay\n ", CanReplayOwn( client ) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
-    
+    int num = 0;
 
     int len = g_hRunRec.Length;
     for ( irun = 0; irun < len; irun++ )
@@ -71,8 +71,21 @@ public Action Cmd_Replay( int client, int args )
                         ( rec == g_hReplay ) ? " (ACTIVE)" : "" );
                     
                     menu.AddItem( szInfo, szDisplay );
+                    ++num;
                 }
         }
+    }
+    
+    // Only one recording exists. Go to it.
+    if ( num == 1 )
+    {
+        if ( CanChangeReplay( client ) )
+        {
+            FindNewPlayback();
+        }
+        
+        delete menu;
+        return Plugin_Handled;
     }
     
     menu.Display( client, MENU_TIME_FOREVER );

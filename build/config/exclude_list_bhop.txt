@@ -1,0 +1,2 @@
+influx_zones_stage.*
+zones_stage.cfg

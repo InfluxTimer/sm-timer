@@ -39,6 +39,10 @@ stock void FormatWhereClause( char[] sz, int len, const char[] table, int runid,
 
 public void DB_Init()
 {
+#if defined DISABLE_CREATE_SQL_TABLES
+    DISABLE_CREATE_SQL_TABLES
+#endif
+	
     Handle db = Influx_GetDB();
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
     

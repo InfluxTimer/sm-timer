@@ -23,6 +23,10 @@
 //#include <influx/colorchat>
 
 
+// Uncomment this to test out SQL performance on map start.
+//#define DISABLE_CREATE_SQL_TABLES			bool _bUseless = true; if ( _bUseless ) return;
+
+
 //#define DEBUG
 //#define DEBUG_TIMER
 //#define DEBUG_WEPSPD
@@ -1189,7 +1193,12 @@ stock bool SetRunTelePos( int irun, const float pos[3], bool bForce = false )
     {
         if ( bForce )
         {
-            LogError( INF_CON_PRE..."Run's %i teleport destination is not valid! (%.1f, %.1f, %.1f)", GetRunIdByIndex( irun ), pos[0], pos[1], pos[2] );
+            char szRunName[MAX_RUN_NAME];
+            GetRunNameByIndex( irun, szRunName, sizeof( szRunName ) );
+            LogError( INF_CON_PRE..."Run %s (%i) teleport destination is not valid! (%.1f, %.1f, %.1f)",
+                szRunName,
+                GetRunIdByIndex( irun ),
+                pos[0], pos[1], pos[2] );
         }
         else
         {
@@ -2318,7 +2327,7 @@ stock int GetDefaultMode()
 
 stock int GetDefaultStyle()
 {
-    if ( FindModeById( g_iDefStyle ) != -1 )
+    if ( FindStyleById( g_iDefStyle ) != -1 )
     {
         return g_iDefStyle;
     }
@@ -2718,7 +2727,9 @@ stock int AddRun(   int runid,
     // That run already exists!
     if ( FindRunById( runid ) != -1 )
     {
-        LogError( INF_CON_PRE..."Attempted to add an already existing run! (%i)", runid );
+        char szOldRunName[MAX_RUN_NAME];
+        GetRunName( runid, szOldRunName, sizeof( szOldRunName ) );
+        LogError( INF_CON_PRE..."Attempted to add an already existing run! (%s (%i))", szOldRunName, runid );
         return -1;
     }
     
