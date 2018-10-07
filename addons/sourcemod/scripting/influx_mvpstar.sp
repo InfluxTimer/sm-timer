@@ -8,7 +8,7 @@
 
 
 
-#define DEBUG
+//#define DEBUG
 
 
 #define MVPTYPE_MAPSBEATEN          1
