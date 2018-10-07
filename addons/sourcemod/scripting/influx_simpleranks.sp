@@ -638,8 +638,16 @@ stock int CalcReward( int runid, int mode, int style, bool bFirst )
         reward = GetSecondReward( reward );
     }
     
+    int modepoints = GetModePoints( mode );
+    int stylepoints = GetStylePoints( style );
     
-    return reward + GetModePoints( mode ) + GetStylePoints( style );
+    // Setting it to a negative value will disable rewards entirely.
+    if ( modepoints < 0 )
+        return 0;
+    if ( stylepoints < 0 )
+        return 0;
+    
+    return reward + modepoints + stylepoints;
 }
 
 // NOTE: Only increments cached value.
