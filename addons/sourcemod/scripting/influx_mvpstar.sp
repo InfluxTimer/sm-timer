@@ -86,8 +86,11 @@ stock void PostStatusChanged( int client )
 
 public void Influx_OnClientStatusChanged( int client )
 {
-    // We need to wait, because our rank plugin uses this forward to set the rank. 
-    RequestFrame( PostStatusChanged, GetClientUserId( client ) );
+    if ( GetMVPType() == MVPTYPE_RUNRANK )
+    {
+        // We need to wait, because our rank plugin uses this forward to set the rank. 
+        RequestFrame( PostStatusChanged, GetClientUserId( client ) );
+    }
 }
 
 stock void InitClientStars( int client, bool bIsLate = false )
