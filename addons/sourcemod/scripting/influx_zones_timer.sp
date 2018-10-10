@@ -9,10 +9,6 @@
 #include <msharedutil/arrayvec>
 
 
-#undef REQUIRE_PLUGIN
-#include <influx/teletoend>
-
-
 //#define DEBUG
 
 
@@ -84,24 +80,27 @@ public void OnClientPutInServer( int client )
     g_iBuildingRunId[client] = -1;
 }
 
-public Action Influx_OnSearchEnd( int runid, float pos[3] )
+public Action Influx_OnSearchTelePos( float pos[3], float &yaw, int runid, int telepostype )
 {
-    int i = 0;
-    while ( (i = FindByRunId( runid, i )) != -1 )
+    if ( telepostype == TELEPOSTYPE_START )
     {
-        if ( g_hTimer.Get( i, TIMER_ZONE_TYPE ) == ZONETYPE_END )
+        if ( GetRunStartTelePos( runid, pos, yaw ) )
         {
-            float mins[3];
-            float maxs[3];
-            
-            Influx_GetZoneMinsMaxs( g_hTimer.Get( i, TIMER_ZONE_ID ), mins, maxs );
-            
-            Inf_TelePosFromMinsMaxs( mins, maxs, pos );
-            
             return Plugin_Stop;
         }
         
-        ++i;
+        return Plugin_Continue;
+    }
+    
+    
+    if ( telepostype == TELEPOSTYPE_END )
+    {
+        if ( GetRunEndTelePos( runid, pos ) )
+        {
+            return Plugin_Stop;
+        }
+        
+        return Plugin_Continue;
     }
     
     return Plugin_Continue;
@@ -695,3 +694,54 @@ stock ZoneType_t TimerCharToType( int c )
     
     return ZONETYPE_INVALID;
 }
+
+stock bool GetRunStartTelePos( int runid, float pos[3], float &yaw )
+{
+    int i = 0;
+    while ( (i = FindByRunId( runid, i )) != -1 )
+    {
+        if ( g_hTimer.Get( i, TIMER_ZONE_TYPE ) == ZONETYPE_START )
+        {
+            float start_mins[3];
+            float start_maxs[3];
+            
+            Influx_GetZoneMinsMaxs( g_hTimer.Get( i, TIMER_ZONE_ID ), start_mins, start_maxs );
+            
+            
+            if ( !Inf_FindTelePos( start_mins, start_maxs, pos, yaw ) )
+            {
+                Inf_TelePosFromMinsMaxs( start_mins, start_maxs, pos );
+            }
+            
+            return true;
+        }
+        
+        ++i;
+    }
+    
+    return false;
+}
+
+stock bool GetRunEndTelePos( int runid, float pos[3] )
+{
+    int i = 0;
+    while ( (i = FindByRunId( runid, i )) != -1 )
+    {
+        if ( g_hTimer.Get( i, TIMER_ZONE_TYPE ) == ZONETYPE_END )
+        {
+            float mins[3];
+            float maxs[3];
+            
+            Influx_GetZoneMinsMaxs( g_hTimer.Get( i, TIMER_ZONE_ID ), mins, maxs );
+            
+            Inf_TelePosFromMinsMaxs( mins, maxs, pos );
+            
+            return true;
+        }
+        
+        ++i;
+    }
+    
+    return false;
+}
+
