@@ -1128,13 +1128,11 @@ stock bool TeleClientToStart( int client, int runid )
     
     // Make sure our teleport location is ok.
     // If not, ask other plugins to tell it to us and save it.
-    if (pos[0] == INVALID_TELEAXIS
-    &&  pos[1] == INVALID_TELEAXIS
-    &&  pos[2] == INVALID_TELEAXIS)
+    if ( !Inf_IsValidTelePos( pos ) )
     {
         ResetRunTelePosByIndex( irun, pos, ang[1] );
     }
-    else if ( ang[1] == INVALID_TELEANG )
+    else if ( !Inf_IsValidTeleAngle( ang[1] ) )
     {
         ResetRunTeleYawByIndex( irun, ang[1] );
     }

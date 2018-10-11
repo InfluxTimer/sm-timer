@@ -219,10 +219,6 @@ forward void Influx_OnRequestModes();
 forward void Influx_OnRequestStyles();
 
 
-// HACK: Pass these if you don't know the teleport pos / yaw.
-#define INVALID_TELEAXIS    -1.0
-#define INVALID_TELEPOS     view_as<float>( { INVALID_TELEAXIS, INVALID_TELEAXIS, INVALID_TELEAXIS } )
-#define INVALID_TELEANG     -181.0
 
 // If forward, OnRunCreated is called.
 native bool Influx_AddRun( int id = -1, const char[] szName = "", const float vecTelePos[3], float flTeleYaw = 0.0, bool bDoForward = true );

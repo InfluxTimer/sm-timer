@@ -854,9 +854,7 @@ stock void TeleportToStage( int client, int stagenum )
     
     
     // Make sure our teleport location is ok.
-    if (pos[0] == INVALID_TELEAXIS
-    &&  pos[1] == INVALID_TELEAXIS
-    &&  pos[2] == INVALID_TELEAXIS)
+    if ( Inf_IsValidTelePos( pos ) )
     {
         ResetStageTelePosByIndex( index, pos, ang[1] );
     }
