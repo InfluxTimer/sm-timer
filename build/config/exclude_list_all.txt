@@ -1,7 +1,7 @@
-.git/
-build/
-examples/
-web/
+.git/*
+build/*
+examples/*
+web/*
 README.md
 devlog.txt
 .gitignore

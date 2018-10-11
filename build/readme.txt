@@ -1,7 +1,11 @@
 ------------
 Requirements:
+	(WINDOWS)
 	spcomp.exe (scripting folder WITH ALL stock SM includes) in PATH
 	7-Zip (also added to PATH)
+
+	(LINUX)
+	spcomp in PATH
 ------------
 
 
@@ -17,11 +21,11 @@ Steps:
 		build_full			- Doesn't exclude anything
 		build_surf			- Targets surf (Sets default mode to scroll, prespeed changes, etc.)
 		
-	2. The ZIP archive is now in output-directory
+	3. The ZIP archive is now in output-directory
 ------------
 
 
 ------------
 NOTE:
-	Exclude lists are recursive, but exclude_list_all is not!!
+	Exclude lists are NOT recursive!!
 ------------

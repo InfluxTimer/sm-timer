@@ -1,2 +1,8 @@
-influx_zones_stage.*
-zones_stage.cfg
+addons/sourcemod/influxruns/surf_*.ini
+addons/sourcemod/influxzones/surf_*.ini
+
+addons/sourcemod/plugins/influx_zones_stage.smx
+
+addons/sourcemod/scripting/influx_zones_stage.sp
+
+cfg/influx/zones_stage.cfg

@@ -16,7 +16,7 @@ SET SCRIPT_OUTPUT=..\addons\sourcemod\plugins
 COPY ".\smx\*.smx" "%SCRIPT_OUTPUT%"
 
 
-SET ZIP_EXECUTE=7z a -tzip %OUTPUT_STR% -x@.\config\exclude_list_all.txt -xr@%2
+SET ZIP_EXECUTE=7z a -tzip %OUTPUT_STR% -x@.\config\exclude_list_all.txt -x@%2
 
 %ZIP_EXECUTE% ..\
 %ZIP_EXECUTE% .\add_all\*
