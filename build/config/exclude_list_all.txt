@@ -1,6 +1,10 @@
+.git/
 .git/*
+build/
 build/*
+examples/
 examples/*
+web/
 web/*
 README.md
 devlog.txt
