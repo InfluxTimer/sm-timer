@@ -1,5 +1,3 @@
-#include "influx_simpleranks/db_cb.sp"
-
 
 stock void DB_Init()
 {

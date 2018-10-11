@@ -3,8 +3,6 @@
 
 #define ZONE_MENU_FORMAT        "Name [Type] [Zone Id]"
 
-#include "influx_zones/menus_hndlrs.sp"
-
 
 stock int FillZoneMenu( Menu menu, bool bReqSettings = true, bool bZoneYouAreIn = true )
 {

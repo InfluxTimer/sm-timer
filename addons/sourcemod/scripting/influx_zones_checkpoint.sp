@@ -115,6 +115,7 @@ bool g_bLate;
 
 
 #include "influx_zones_checkpoint/db.sp"
+#include "influx_zones_checkpoint/db_cb.sp"
 #include "influx_zones_checkpoint/menus.sp"
 #include "influx_zones_checkpoint/menus_admin.sp"
 #include "influx_zones_checkpoint/menus_hndlrs_admin.sp"

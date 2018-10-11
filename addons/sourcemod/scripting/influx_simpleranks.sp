@@ -101,8 +101,10 @@ bool g_bLate;
 
 #include "influx_simpleranks/cmds.sp"
 #include "influx_simpleranks/db.sp"
+#include "influx_simpleranks/db_cb.sp"
 #include "influx_simpleranks/file.sp"
 #include "influx_simpleranks/menus.sp"
+#include "influx_simpleranks/menus_hndlrs.sp"
 
 public Plugin myinfo =
 {

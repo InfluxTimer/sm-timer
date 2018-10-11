@@ -114,6 +114,7 @@ TopMenu g_hTopMenu;
 
 
 #include "influx_zones/menus.sp"
+#include "influx_zones/menus_hndlrs.sp"
 #include "influx_zones/timers.sp"
 #include "influx_zones/natives.sp"
 

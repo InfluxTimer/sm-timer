@@ -1,5 +1,3 @@
-#include "influx_simpleranks/menus_hndlrs.sp"
-
 
 public Action Cmd_Menu_Rank( int client, int args )
 {

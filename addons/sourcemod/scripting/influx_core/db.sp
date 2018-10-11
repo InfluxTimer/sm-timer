@@ -14,9 +14,7 @@ char g_szDriver[32];
 
 
 
-// Threaded callbacks
-#include "influx_core/db_cb.sp"
-
+// Threaded callbacks recide in db_cb.sp
 
 
 #define QUERY_CREATETABLE_USERS         "CREATE TABLE IF NOT EXISTS "...INF_TABLE_USERS..." (\

@@ -179,12 +179,6 @@ bool g_bLib_Practise;
 bool g_bLate;
 
 
-
-#include "influx_style_tas/cmds.sp"
-#include "influx_style_tas/file.sp"
-#include "influx_style_tas/menus.sp"
-#include "influx_style_tas/natives.sp"
-
 public Plugin myinfo =
 {
     author = INF_AUTHOR,
