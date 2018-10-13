@@ -4,11 +4,21 @@
 #undef REQUIRE_PLUGIN
 #include <influx/core>
 
+#include <msharedutil/arrayvec>
 #include <msharedutil/misc>
 
 
 
-#define DB_CONFIG_NAME          "ck2influx"
+#define DB_CONFIG_NAME              "ck2influx"
+#define DB_CONFIG_NAME_FALLBACK     "cksurf"
+
+enum
+{
+    RUNDATA_RUN_ID = 0,
+    RUNDATA_IS_SPEEDSTART,
+    
+    RUNDATA_SIZE
+};
 
 
 bool g_bLib_Core;
@@ -25,7 +35,7 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-    RegAdminCmd( "sm_cksurf2influx", Cmd_Transfer, ADMFLAG_ROOT );
+    RegAdminCmd( "sm_ck2influx", Cmd_Transfer, ADMFLAG_ROOT );
     
     // LIBRARIES
     g_bLib_Core = LibraryExists( INFLUX_LIB_CORE );
@@ -48,19 +58,43 @@ stock Handle GetDB()
     
     char szError[1024];
     
+    char szConfig[64];
+    
     if ( SQL_CheckConfig( DB_CONFIG_NAME ) )
     {
-        db = SQL_Connect( DB_CONFIG_NAME, true, szError, sizeof( szError ) );
+        strcopy( szConfig, sizeof( szConfig ), DB_CONFIG_NAME );
+    }
+    else
+    {
+        LogMessage( INF_CON_PRE..."'%s' does not exist in databases.cfg ...", DB_CONFIG_NAME );
         
-        if ( db == null )
-            PrintToServer( INF_CON_PRE..."DB error: %s", szError );
+        
+        strcopy( szConfig, sizeof( szConfig ), DB_CONFIG_NAME_FALLBACK );
+        
+        if ( !SQL_CheckConfig( DB_CONFIG_NAME_FALLBACK ) )
+        {
+            LogMessage( INF_CON_PRE..."'%s' does neither, failure incoming...", DB_CONFIG_NAME_FALLBACK );
+        }
     }
     
-    if ( db == null && g_bLib_Core )
+    
+    db = SQL_Connect( szConfig, true, szError, sizeof( szError ) );
+    
+    if ( db == null )
     {
-        db = Influx_GetDB();
+        LogMessage( INF_CON_PRE..."DB error: %s", szError );
         
-        PrintToServer( INF_CON_PRE..."Failed to connect to config '%s', defaulting to Influx config...", DB_CONFIG_NAME );
+        
+        if ( g_bLib_Core )
+        {
+            db = Influx_GetDB();
+            
+            LogMessage( INF_CON_PRE..."Failed to connect to config '%s', defaulting to Influx config...", DB_CONFIG_NAME );
+        }
+        else
+        {
+            LogMessage( INF_CON_PRE..."Nothing to fallback on..." );
+        }
     }
     
     
@@ -82,7 +116,7 @@ public Action Cmd_Transfer( int client, int args )
     SQL_TQuery(
         GetDB(),
         Thrd_Zones,
-        "SELECT mapname,zonegroup,zonetype,pointa_x,pointa_y,pointa_z,pointb_x,pointb_y,pointb_z FROM ck_zones ORDER BY mapname",
+        "SELECT mapname,zonegroup,zonetype,zonetypeid,pointa_x,pointa_y,pointa_z,pointb_x,pointb_y,pointb_z FROM ck_zones ORDER BY mapname",
         _, DBPrio_High );
         
     
@@ -118,7 +152,7 @@ stock void SaveFiles( KeyValues zonefilekv, ArrayList runs, const char[] szCurSa
     }
     else
     {
-        PrintToServer( INF_CON_PRE..."File %s already exists, not saving...", szPath );
+        LogMessage( INF_CON_PRE..."File %s already exists, not saving...", szPath );
     }
     
     
@@ -135,7 +169,7 @@ stock void SaveFiles( KeyValues zonefilekv, ArrayList runs, const char[] szCurSa
         
         for ( int i = 0; i < runs.Length; i++ )
         {
-            int runid = runs.Get( i, 0 );
+            int runid = runs.Get( i, RUNDATA_RUN_ID );
             
             if ( runid == MAIN_RUN_ID )
             {
@@ -148,6 +182,15 @@ stock void SaveFiles( KeyValues zonefilekv, ArrayList runs, const char[] szCurSa
             
             runkv.JumpToKey( szRunName, true );
             
+            
+            if ( runs.Get( i, RUNDATA_IS_SPEEDSTART ) )
+            {
+                runkv.SetFloat( "prespeed_max", 0.0 );
+                
+                // Just assume they want no jump limit either.
+                runkv.SetNum( "prespeed_maxjumps", -1 );
+            }
+            
             runkv.SetNum( "id", runid );
             
             runkv.GoBack();
@@ -159,7 +202,7 @@ stock void SaveFiles( KeyValues zonefilekv, ArrayList runs, const char[] szCurSa
     }
     else
     {
-        PrintToServer( INF_CON_PRE..."File %s already exists, not saving...", szPath );
+        LogMessage( INF_CON_PRE..."File %s already exists, not saving...", szPath );
     }
 }
 
@@ -188,7 +231,9 @@ public void Thrd_Zones( Handle db, Handle res, const char[] szError, any data )
     
     decl String:szMapName[256];
     decl String:szZoneName[256];
+    decl String:szTempZoneName[256];
     int zonetype;
+    int zonetypeid;
     int zonegroup;
     float mins[3];
     float maxs[3];
@@ -202,7 +247,7 @@ public void Thrd_Zones( Handle db, Handle res, const char[] szError, any data )
     int nMaps = 0;
     
     
-    PrintToServer( INF_CON_PRE..."Reading zone query results..." );
+    LogMessage( INF_CON_PRE..."Reading zone query results..." );
     
     
    
@@ -215,12 +260,13 @@ public void Thrd_Zones( Handle db, Handle res, const char[] szError, any data )
         SQL_FetchString( res, 0, szMapName, sizeof( szMapName ) );
         zonegroup = SQL_FetchInt( res, 1 );
         zonetype = SQL_FetchInt( res, 2 );
+        zonetypeid = SQL_FetchInt( res, 3 );
         
         for ( i = 0; i < 3; i++ )
-            mins[i] = SQL_FetchFloat( res, 3 + i );
+            mins[i] = SQL_FetchFloat( res, 4 + i );
         
         for ( i = 0; i < 3; i++ )
-            maxs[i] = SQL_FetchFloat( res, 6 + i );
+            maxs[i] = SQL_FetchFloat( res, 7 + i );
         
         
         // Madness check
@@ -234,15 +280,15 @@ public void Thrd_Zones( Handle db, Handle res, const char[] szError, any data )
         // We've ordered it by map, so start a new kv each map.
         if ( !StrEqual( szPrevMapName, szMapName, false ) )
         {
-            strcopy( szCurSafeMap, sizeof( szCurSafeMap ), szMapName );
-            SafeMapName( szCurSafeMap, sizeof( szCurSafeMap ) );
-            
-            
             // New map, save the old one
             if ( kv != null )
             {
                 SaveFiles( kv, runs, szCurSafeMap );
             }
+            
+            
+            strcopy( szCurSafeMap, sizeof( szCurSafeMap ), szMapName );
+            SafeMapName( szCurSafeMap, sizeof( szCurSafeMap ) );
             
             delete kv;
             delete runs;
@@ -250,7 +296,7 @@ public void Thrd_Zones( Handle db, Handle res, const char[] szError, any data )
             
             
             kv = new KeyValues( "Zones" );
-            runs = new ArrayList( 1 ); // Save the run id
+            runs = new ArrayList( RUNDATA_SIZE ); // Save run data here
             zoneid = 1;
             
             ++nMaps;
@@ -295,11 +341,11 @@ public void Thrd_Zones( Handle db, Handle res, const char[] szError, any data )
             }
             case 8 : // Checker
             {
-                PrintToServer( "Ignoring map's %s Checker zone!", szCurSafeMap );
+                LogMessage( "Ignoring map's %s Checker zone!", szCurSafeMap );
             }
             case 9 : // No Pause
             {
-                PrintToServer( "Ignoring map's %s No Pause zone!", szCurSafeMap );
+                LogMessage( "Ignoring map's %s No Pause zone!", szCurSafeMap );
             }
             case 0 : // Stop
             {
@@ -307,7 +353,7 @@ public void Thrd_Zones( Handle db, Handle res, const char[] szError, any data )
             }
             default :
             {
-                PrintToServer( "Unaccounted zone type %i (group: %i)!!", zonetype, zonegroup );
+                LogMessage( "Unaccounted zone type %i (group: %i) in %s!!", zonetype, zonegroup, szCurSafeMap );
             }
         }
         
@@ -317,11 +363,12 @@ public void Thrd_Zones( Handle db, Handle res, const char[] szError, any data )
         
         // We might have a zone with the same name, find a free one
         int j = 2;
+        strcopy( szTempZoneName, sizeof( szTempZoneName ), szZoneName );
         while ( kv.JumpToKey( szZoneName, false ) )
         {
             kv.GoBack();
             
-            Format( szZoneName, sizeof( szZoneName ), "%s (%i)", szZoneName, j++ );
+            Format( szZoneName, sizeof( szZoneName ), "%s (%i)", szTempZoneName, j++ );
         }
         
         kv.JumpToKey( szZoneName, true );
@@ -369,8 +416,11 @@ public void Thrd_Zones( Handle db, Handle res, const char[] szError, any data )
             
             if ( !bHasRunId )
             {
-                any rundata[1];
-                rundata[0] = runid;
+                bool bIsSpeedStart = zonetype == 5;
+                
+                any rundata[RUNDATA_SIZE];
+                rundata[RUNDATA_RUN_ID] = runid;
+                rundata[RUNDATA_IS_SPEEDSTART] = bIsSpeedStart ? 1 : 0;
                 
                 runs.PushArray( rundata );
             }
@@ -394,11 +444,15 @@ public void Thrd_Zones( Handle db, Handle res, const char[] szError, any data )
             {
                 kv.SetNum( "run_id", runid );
                 kv.SetString( "type", "stage" );
+                
+                kv.SetNum( "stage_num", zonetypeid+2 );
             }
             case 4 : // Checkpoint
             {
                 kv.SetNum( "run_id", runid );
                 kv.SetString( "type", "checkpoint" );
+                
+                kv.SetNum( "cp_num", zonetypeid+1 );
             }
             case 5 : // Start Speed
             {
@@ -408,6 +462,7 @@ public void Thrd_Zones( Handle db, Handle res, const char[] szError, any data )
             case 6 : // TeleToStart
             {
                 kv.SetString( "type", "block" );
+                kv.SetString( "punishtype", "teletostart" );
             }
             case 7 : // Validator
             {
@@ -417,13 +472,17 @@ public void Thrd_Zones( Handle db, Handle res, const char[] szError, any data )
             case 0 : // Stop
             {
                 kv.SetString( "type", "block" );
+                kv.SetString( "punishtype", "disabletimer" );
             }
         }
         
         
-        FormatEx( szCoords, sizeof( szCoords ), "%.0f %.0f %.0f", mins[0], mins[1], mins[2] );
+        // Yea, apparently these aren't corrected...
+        CorrectMinsMaxs( mins, maxs );
+        
+        FormatEx( szCoords, sizeof( szCoords ), "%.1f %.1f %.1f", mins[0], mins[1], mins[2] );
         kv.SetString( "mins", szCoords );
-        FormatEx( szCoords, sizeof( szCoords ), "%.0f %.0f %.0f", maxs[0], maxs[1], maxs[2] );
+        FormatEx( szCoords, sizeof( szCoords ), "%.1f %.1f %.1f", maxs[0], maxs[1], maxs[2] );
         kv.SetString( "maxs", szCoords );
         
         
