@@ -9,6 +9,8 @@ addons/sourcemod/plugins/influx_mode_auto_css.smx
 addons/sourcemod/plugins/influx_mode_stockcap.smx
 addons/sourcemod/plugins/influx_mode_velcap.smx
 addons/sourcemod/plugins/influx_strafes.smx
+addons/sourcemod/plugins/influx_strfsync.smx
+addons/sourcemod/plugins/influx_zones_freestyle.smx
 
 addons/sourcemod/scripting/influx_fpscheck.sp
 addons/sourcemod/scripting/influx_mode_auto_csgo.sp
@@ -16,6 +18,8 @@ addons/sourcemod/scripting/influx_mode_auto_css.sp
 addons/sourcemod/scripting/influx_mode_stockcap.sp
 addons/sourcemod/scripting/influx_mode_velcap.sp
 addons/sourcemod/scripting/influx_strafes.sp
+addons/sourcemod/scripting/influx_strfsync.sp
+addons/sourcemod/scripting/influx_zones_freestyle.sp
 
 cfg/influx/fpscheck.cfg
 cfg/influx/mode_auto_css.cfg
