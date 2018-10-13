@@ -174,8 +174,14 @@ public void Thrd_Result( Handle db, Handle res, const char[] szError, int client
     }
     
     
-    SQL_FetchRow( res );
-    SetStars( client, SQL_FetchInt( res, 0 ) );
+    if ( SQL_FetchRow( res ) )
+    {
+        SetStars( client, SQL_FetchInt( res, 0 ) );
+    }
+    else
+    {
+        SetStars( client, 0 );
+    }
 }
 
 stock int SetStars( int client, int realstars )
