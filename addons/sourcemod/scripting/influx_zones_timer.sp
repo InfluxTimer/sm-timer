@@ -31,6 +31,10 @@ ArrayList g_hTimer;
 g_iBuildingRunId[INF_MAXPLAYERS];
 
 
+ConVar g_ConVar_SetRunOnTouch;
+
+
+
 public Plugin myinfo =
 {
     author = INF_AUTHOR,
@@ -48,6 +52,12 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 public void OnPluginStart()
 {
     g_hTimer = new ArrayList( TIMER_SIZE );
+    
+    
+    // CONVARS
+    g_ConVar_SetRunOnTouch = CreateConVar( "influx_zones_timer_setrunontouch", "1", "When player touches the start zone, we set player's run to it.", FCVAR_NOTIFY );
+    
+    AutoExecConfig( true, "zones_timer", "influx" );
 }
 
 public void OnAllPluginsLoaded()
@@ -622,7 +632,12 @@ public void E_StartTouchPost_Start( int ent, int activator )
     if ( !IsPlayerAlive( activator ) ) return;
     
     
-    Influx_ResetTimer( activator, Inf_GetZoneProp( ent ) );
+    int runid = Inf_GetZoneProp( ent );
+
+    if ( Influx_GetClientRunId( activator ) == runid || g_ConVar_SetRunOnTouch.BoolValue )
+    {
+        Influx_ResetTimer( activator, runid );
+    }
 }
 
 public void E_EndTouchPost_Start( int ent, int activator )
@@ -632,7 +647,12 @@ public void E_EndTouchPost_Start( int ent, int activator )
     if ( !IsPlayerAlive( activator ) ) return;
     
     
-    Influx_StartTimer( activator, Inf_GetZoneProp( ent ) );
+    int runid = Inf_GetZoneProp( ent );
+    
+    if ( Influx_GetClientRunId( activator ) == runid )
+    {
+        Influx_StartTimer( activator, runid );
+    }
 }
 
 public void E_StartTouchPost_End( int ent, int activator )
@@ -642,7 +662,12 @@ public void E_StartTouchPost_End( int ent, int activator )
     if ( !IsPlayerAlive( activator ) ) return;
     
     
-    Influx_FinishTimer( activator, Inf_GetZoneProp( ent ) );
+    int runid = Inf_GetZoneProp( ent );
+    
+    if ( Influx_GetClientRunId( activator ) == runid )
+    {
+        Influx_FinishTimer( activator, runid );
+    }
 }
 
 stock int FindTimerById( int id )
