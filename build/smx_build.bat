@@ -2,7 +2,7 @@
 @ECHO OFF
 
 
-CD .\smx
+CD %~dp0\smx
 
 
 :: IMPORTANT: The spcomp directory has to have the default SourceMod includes!!!!

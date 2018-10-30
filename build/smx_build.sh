@@ -1,7 +1,8 @@
 #!/bin/bash
 
 
-cd ./smx
+MYPATH=$(dirname "$0")
+cd $MYPATH/smx
 
 SCRIPT_WILDCARD=influx_*
 SCRIPT_PATH=../../addons/sourcemod/scripting

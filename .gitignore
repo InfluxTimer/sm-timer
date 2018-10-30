@@ -1,2 +1,3 @@
 build/output/*.zip
 build/smx/*.smx
+build/version

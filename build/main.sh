@@ -1,9 +1,9 @@
 #!/bin/bash
 
 OUTPUT_PREFIX=influx_v1_3
+OUTPUT_PREFIX2=$(<version)
 
-
-OUTPUT_FILENAME=output/$OUTPUT_PREFIX'_'$1.zip
+OUTPUT_FILENAME=output/$OUTPUT_PREFIX$OUTPUT_PREFIX2'_'$1.zip
 
 
 
@@ -38,6 +38,8 @@ if [ ! -z "$2" ] ; then
 	zip -rq "$MY_PATH/$OUTPUT_FILENAME" * $EXCLUDE_ARGS
 fi
 
+
+cd $MY_PATH
 
 # We no longer need the plugins, they're archived.
 rm ../addons/sourcemod/plugins/*.smx
