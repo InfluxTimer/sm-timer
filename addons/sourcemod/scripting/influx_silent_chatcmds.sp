@@ -72,8 +72,6 @@ public void OnPluginStart()
     
     if ( g_bLate )
         ReadConfig();
-    
-    ReadCmds();
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -84,6 +82,11 @@ public void OnLibraryAdded( const char[] lib )
 public void OnLibraryRemoved( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_SIMPLERANKS_CHAT ) ) g_bLib_SimpleRanksChat = false;
+}
+
+public void OnConfigsExecuted()
+{
+    ReadCmds();
 }
 
 public void OnMapStart()
