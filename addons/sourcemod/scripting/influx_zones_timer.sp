@@ -632,11 +632,14 @@ public void E_StartTouchPost_Start( int ent, int activator )
     if ( !IsPlayerAlive( activator ) ) return;
     
     
-    int runid = Inf_GetZoneProp( ent );
+    int myrunid = Inf_GetZoneProp( ent );
+    int runid = Influx_GetClientRunId( activator );
 
-    if ( Influx_GetClientRunId( activator ) == runid || g_ConVar_SetRunOnTouch.BoolValue )
+    if (myrunid == runid
+    ||  Influx_FindRunById( runid ) == -1 // Player has no run?
+    ||  g_ConVar_SetRunOnTouch.BoolValue )
     {
-        Influx_ResetTimer( activator, runid );
+        Influx_ResetTimer( activator, myrunid );
     }
 }
 
