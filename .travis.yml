@@ -1,0 +1,30 @@
+language: minimal
+sudo: false
+
+addons:
+    apt_packages:
+    - lib32stdc++6
+
+branches:
+  only:
+  - actual_travis
+
+#deploy:
+#  skip_cleanup: true
+
+
+before_script:
+  # SM
+  - wget "https://sourcemod.net/latest.php?os=linux&version=1.10" -O /tmp/sourcemod.tar.gz
+  - tar xzf /tmp/sourcemod.tar.gz addons/sourcemod/scripting
+  # SM Builder
+  - git clone "https://github.com/splewis/sm-builder" ~/sm-builder
+  - cd ~/sm-builder
+  - pip install --user -r requirements.txt
+  - python setup.py install --prefix=~/.local
+
+  - PATH+=:$TRAVIS_BUILD_DIR/addons/sourcemod/scripting
+  - cd $TRAVIS_BUILD_DIR
+
+script:
+  - smbuilder

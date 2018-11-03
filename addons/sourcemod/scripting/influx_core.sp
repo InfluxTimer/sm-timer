@@ -234,7 +234,6 @@ TopMenuObject g_InfluxAdminMenu = INVALID_TOPMENUOBJECT;
 #include "influx_core/natives.sp"
 #include "influx_core/natives_chat.sp"
 #include "influx_core/runcmd.sp"
-//#include "influx_core/timers.sp"
 
 
 public Plugin myinfo =
