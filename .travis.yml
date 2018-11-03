@@ -7,7 +7,8 @@ addons:
 
 branches:
   only:
-  - actual_travis
+  - master
+  - dev
 
 #deploy:
 #  skip_cleanup: true
