@@ -52,6 +52,9 @@ class MyPluginList:
 		# Add script include files, we kinda need these
 		self.addFileToList(mylist, 'addons/sourcemod/scripting/include/influx/*')
 		self.addFileToList(mylist, 'addons/sourcemod/scripting/include/msharedutil/*')
+		# Misc
+		self.addFileToList(mylist, 'addons/sourcemod/gamedata/*')
+		self.addFileToList(mylist, 'addons/sourcemod/translations/*')
 		# Add files depending on the package we want to build
 		if not self.flags & EXCLUDE_LITE:
 			self.addFileToList(mylist, './influx_chatcolors.txt')
