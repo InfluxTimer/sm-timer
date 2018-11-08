@@ -10,22 +10,34 @@ branches:
   - master
   - dev
 
-#deploy:
-#  skip_cleanup: true
+env:
+  global:
+    # INF_DEPLOY_KEY
+    - secure: "DivseCDr0SqeS/KVf2BJaAGkLRY+hwTu4E1Skhvuawjdb5nyOEQIsoY1y4oVLFKQ3j/2b5nU24zZrIPYIt+4UhUKYmEUgjoWPYIMNRMJoqsBqTQv3zEethIslyj17gTSFeSxcbKIQb2VvSfRlMQoKEMYV7PVCjU6mFJyYcwgGzWsI3oRYojmBzRnYxzO/zNp9cSncX53IhaK0W6yv0azell6Zi/zTSiZJtnuHl1Mz40ndkPO5pWdtNutzzZnEQhvQ9scmg2YiWDAvyta1iVm7Ov9MpDzFJ8aLwRbG729+UvF4EcF/+tuR8PcKCKslvhWhAdfrJVchne7/3JlYzkyZLrgRJlKsZG2pwqRqr2fqKHiPAttPhaAg2oRgHBfg4uuUWcCPGDCTtx1Ms+Gnzj4+6Jv/bM6KjAKqJPQ1QO9cK/jQCiw6G/3U+lClwEPXXFDJm0KqGC6+Eytp6HpOBkU+fMRb6NyOGmUc3r0lZAAU78ZUknNHKod6f+KdL7PGNvnJG3r07fQ/sx4nP9J0uRY1VtCfYj0HhXhQVDO7NGkCbmNcbATZ1cfwJ2TMMk+pUaOu0U78K5ItSKXGJaAf5EhEaRsAQ2oKAyumA/fbd6nn8wcOFpZu4JdMXorvcpaxanikZy9Mdd3aztoPxPPpuf2YzERiinGM0ypuWI+uqRtcXo="
+    # INF_DEPLOY_URL
+    - secure: "EpATUe0GYOscnx/bl/AC7bmYblZCgVpy5gVmgYYx1xM2Yghw59VQTiSiRtZxzTkvEQrgqrtHPbk7kiQauXU9IpUwsRHluFtKdcekQgkd7c8YwLTqlBd3zQEIgqykDZ7k5lmJdjRy6w1g6/CSFXB9szOUd4piorZllORTVi7H2pqeWfTKwKsQUnQK+xzqcN3Y+SHddXg1SHKNupTAFZZpROYtdrqOKVRmkeQmuKNdNKkWz1UGLWreMq4+kRlWO8n7IcZTPbzVvvKHDRpGS3IXFL2AR9/eH7mZYqed7XzAHjRNZRk/vki0SSWPLJXbjymDqEBBBqNY5LV553byhfUpDaiBZ1ZFZuymlLjGiOt5hzfI7jiVzS4X4plJ2vXdsur+/beeikfZfTepWvFgrWDzWNYFYGepHo4UGlh5U08Z4ZbjGQriAwUxVh/6jCK929zJ6DjHq1xCqK4Mihb5TfTle2//bfVvJ7x2EKkpaQnsjYNp915W3GxOL2fevblQIYBzrJHalSTFmzLe8skrFfaHNFAs0G3972CKsmsRvEKiozdPqOEk2qeXeQczErGDPjXeNCB+ptraDoISYtTlDFpez8JhnEZvdhOXLYZDIcdqZJGZEYUz7ud7ZI8msonreUJFJ2b/j58q3hxgoGlNkVOpKaOw5plbvRgXi2sjy6A1TDI="
 
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: bash deploy.sh
+  on:
+    all_branches: true
+    condition: $TRAVIS_BRANCH =~ ^dev|master$
 
 before_script:
   # SM
-  - wget "https://sourcemod.net/latest.php?os=linux&version=1.10" -O /tmp/sourcemod.tar.gz
+  - wget "https://sourcemod.net/latest.php?os=linux&version=1.9" -O /tmp/sourcemod.tar.gz
+  - mkdir ~/sm && cd ~/sm
   - tar xzf /tmp/sourcemod.tar.gz addons/sourcemod/scripting
+  - PATH+=:$PWD/addons/sourcemod/scripting
   # SM Builder
   - git clone "https://github.com/splewis/sm-builder" ~/sm-builder
   - cd ~/sm-builder
   - pip install --user -r requirements.txt
   - python setup.py install --prefix=~/.local
 
-  - PATH+=:$TRAVIS_BUILD_DIR/addons/sourcemod/scripting
   - cd $TRAVIS_BUILD_DIR
 
 script:
-  - smbuilder
+  - smbuilder --flags " -i=addons/sourcemod/scripting/include"
