@@ -1,5 +1,5 @@
 Remember to add them inside {}-characters. Eg {RED}
-CSS can have any color by using hex values. Eg #FF0000 for red. In practice {#FF0000}
+CSS can have any color by using hex values. Eg #FF0000 for red.
 
 
 These colors are supported by both CSS and CS:GO

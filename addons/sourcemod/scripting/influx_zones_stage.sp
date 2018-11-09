@@ -186,6 +186,31 @@ public void OnClientPutInServer( int client )
     g_iBuildingNum[client] = 0;
 }
 
+public Action Influx_OnSearchTelePos( float pos[3], float &yaw, int runid, int telepostype )
+{
+    // Return stage tele pos
+    if ( telepostype >= TELEPOSTYPE_STAGE_START && telepostype <= TELEPOSTYPE_STAGE_END )
+    {
+        int stagenum = telepostype - TELEPOSTYPE_STAGE_START + 2;
+        
+        int index = FindStageByNum( runid, stagenum );
+        
+        if ( index == -1 )
+        {
+            return Plugin_Continue;
+        }
+        
+        
+        GetStageTelePos( index, pos );
+        
+        yaw = GetStageTeleYaw( index );
+        
+        return Plugin_Stop;
+    }
+    
+    return Plugin_Continue;
+}
+
 public void Influx_OnTimerStartPost( int client, int runid )
 {
     g_iStage[client] = 1;
@@ -260,7 +285,7 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     
     float pos[3];
-    kv.GetVector( "stage_telepos", pos, ORIGIN_VECTOR );
+    kv.GetVector( "stage_telepos", pos, INVALID_TELEPOS );
     
     float yaw = kv.GetFloat( "stage_teleyaw", 0.0 );
     
@@ -828,6 +853,13 @@ stock void TeleportToStage( int client, int stagenum )
     ang[1] = GetStageTeleYaw( index );
     
     
+    // Make sure our teleport location is ok.
+    if ( Inf_IsValidTelePos( pos ) )
+    {
+        ResetStageTelePosByIndex( index, pos, ang[1] );
+    }
+    
+    
     Influx_InvalidateClientRun( client );
     
     TeleportEntity( client, pos, ang, ORIGIN_VECTOR );
@@ -1022,6 +1054,28 @@ stock void SetStageTeleYaw( int index, float yaw )
     
     
     g_hStages.Set( index, yaw, STAGE_TELEYAW );
+}
+
+stock void ResetStageTelePosByIndex( int istage, float pos[3], float &yaw )
+{
+    int istagezone = FindStageZoneByNum( g_hStages.Get( istage, STAGE_RUN_ID ), g_hStages.Get( istage, STAGE_NUM ) );
+    if ( istagezone == -1 )
+        return;
+    
+    
+    float mins[3], maxs[3];
+    Influx_GetZoneMinsMaxs( g_hStageZones.Get( istagezone, STAGEZONE_ID ), mins, maxs );
+    
+    if ( !Inf_FindTelePos( mins, maxs, pos, yaw ) )
+    {
+        Inf_TelePosFromMinsMaxs( mins, maxs, pos );
+    }
+    else
+    {
+        SetStageTeleYaw( istage, yaw );
+    }
+    
+    SetStageTelePos( istage, pos );
 }
 
 public Action Cmd_PrintStageZones( int client, int args )

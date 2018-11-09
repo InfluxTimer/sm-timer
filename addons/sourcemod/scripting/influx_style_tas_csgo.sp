@@ -2,6 +2,11 @@
 
 
 #include "influx_style_tas/tas_shared.sp"
+#include "influx_style_tas/cmds.sp"
+#include "influx_style_tas/file.sp"
+#include "influx_style_tas/menus.sp"
+#include "influx_style_tas/menus_hndlrs.sp"
+#include "influx_style_tas/natives.sp"
 
 public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
 {

@@ -152,6 +152,7 @@ Handle g_hForward_OnRequestResultFlags;
 Handle g_hForward_OnCheckClientStyle;
 
 Handle g_hForward_OnSearchType;
+Handle g_hForward_OnSearchTelePos;
 
 
 // FUNCS
@@ -223,14 +224,16 @@ TopMenuObject g_InfluxAdminMenu = INVALID_TOPMENUOBJECT;
 #include "influx_core/cmds.sp"
 #include "influx_core/colorchat.sp"
 #include "influx_core/db.sp"
+#include "influx_core/db_cb.sp"
 #include "influx_core/events.sp"
 #include "influx_core/file.sp"
 #include "influx_core/menus.sp"
+#include "influx_core/menus_hndlrs.sp"
 #include "influx_core/menus_admin.sp"
+#include "influx_core/menus_hndlrs_admin.sp"
 #include "influx_core/natives.sp"
 #include "influx_core/natives_chat.sp"
 #include "influx_core/runcmd.sp"
-//#include "influx_core/timers.sp"
 
 
 public Plugin myinfo =
@@ -356,6 +359,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_RemoveStyle", Native_RemoveStyle );
     
     CreateNative( "Influx_SearchType", Native_SearchType );
+    CreateNative( "Influx_SearchTelePos", Native_SearchTelePos );
+    
     CreateNative( "Influx_IsValidMapName", Native_IsValidMapName );
     
     
@@ -446,6 +451,8 @@ public void OnPluginStart()
     g_hForward_OnCheckClientStyle = CreateGlobalForward( "Influx_OnCheckClientStyle", ET_Hook, Param_Cell, Param_Cell, Param_Array );
     
     g_hForward_OnSearchType = CreateGlobalForward( "Influx_OnSearchType", ET_Hook, Param_String, Param_CellByRef, Param_CellByRef );
+    
+    g_hForward_OnSearchTelePos = CreateGlobalForward( "Influx_OnSearchTelePos", ET_Hook, Param_Array, Param_CellByRef, Param_Cell, Param_Cell );
     
     
     // CONVARS
@@ -1116,6 +1123,19 @@ stock bool TeleClientToStart( int client, int runid )
     
     float ang[3];
     ang[1] = GetRunTeleYaw( irun );
+    
+    
+    // Make sure our teleport location is ok.
+    // If not, ask other plugins to tell it to us and save it.
+    if ( !Inf_IsValidTelePos( pos ) )
+    {
+        ResetRunTelePosByIndex( irun, pos, ang[1] );
+    }
+    else if ( !Inf_IsValidTeleAngle( ang[1] ) )
+    {
+        ResetRunTeleYawByIndex( irun, ang[1] );
+    }
+    
     
     TeleportEntity( client, pos, ang, ORIGIN_VECTOR );
     
@@ -2301,6 +2321,20 @@ stock void SearchType( const char[] sz, Search_t &type, int &value )
     Call_Finish();
 }
 
+stock bool SearchTelePos( float pos[3], float &yaw, int runid, int telepostype )
+{
+    Action res = Plugin_Continue;
+    
+    Call_StartForward( g_hForward_OnSearchTelePos );
+    Call_PushArrayEx( pos, sizeof( pos ), SM_PARAM_COPYBACK );
+    Call_PushCellRef( view_as<int>( yaw ) );
+    Call_PushCell( runid );
+    Call_PushCell( telepostype );
+    Call_Finish( res );
+    
+    return res != Plugin_Continue;
+}
+
 stock int GetDefaultRun()
 {
     if ( FindRunById( MAIN_RUN_ID ) != -1 )
@@ -2776,7 +2810,7 @@ stock int AddRun(   int runid,
     
     
     SetRunTelePos( irun, telepos, true );
-    SetRunTeleYaw( irun, Inf_SnapTo( teleyaw ) );
+    SetRunTeleYaw( irun, teleyaw != INVALID_TELEANG ? Inf_SnapTo( teleyaw ) : teleyaw );
     
     
     if ( bDoForward )
@@ -2842,5 +2876,31 @@ stock void TeleportClientsOutOfRun( int runid )
                 InvalidateClientRun( client );
             }
         }
+    }
+}
+
+stock void ResetRunTelePosByIndex( int irun, float pos[3], float &yaw )
+{
+    if ( SearchTelePos(
+            pos,
+            yaw,
+            g_hRuns.Get( irun, RUN_ID ),
+            TELEPOSTYPE_START ) )
+    {
+        SetRunTelePos( irun, pos, true );
+        SetRunTeleYaw( irun, yaw );
+    }
+}
+
+stock void ResetRunTeleYawByIndex( int irun, float &yaw )
+{
+    float pos[3];
+    if ( SearchTelePos(
+            pos,
+            yaw,
+            g_hRuns.Get( irun, RUN_ID ),
+            TELEPOSTYPE_START ) )
+    {
+        SetRunTeleYaw( irun, yaw );
     }
 }

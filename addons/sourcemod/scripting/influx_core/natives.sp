@@ -691,6 +691,25 @@ public int Native_SearchType( Handle hPlugin, int nParms )
     return view_as<int>( search );
 }
 
+public int Native_SearchTelePos( Handle hPlugin, int nParms )
+{
+    decl Float:pos[3];
+    GetNativeArray( 1, pos, sizeof( pos ) );
+    
+    
+    float yaw = GetNativeCellRef( 2 );
+    
+    bool ret = SearchTelePos( pos, yaw, GetNativeCell( 3 ), GetNativeCell( 4 ) );
+    
+    if ( ret )
+    {
+        SetNativeArray( 1, pos, sizeof( pos ) );
+        SetNativeCellRef( 2, yaw );
+    }
+    
+    return ret;
+}
+
 public int Native_IsValidMapName( Handle hPlugin, int nParms )
 {
     decl String:szMap[128];

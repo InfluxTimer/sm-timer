@@ -9,10 +9,6 @@
 #include <msharedutil/arrayvec>
 
 
-#undef REQUIRE_PLUGIN
-#include <influx/teletoend>
-
-
 //#define DEBUG
 
 
@@ -35,6 +31,10 @@ ArrayList g_hTimer;
 g_iBuildingRunId[INF_MAXPLAYERS];
 
 
+ConVar g_ConVar_SetRunOnTouch;
+
+
+
 public Plugin myinfo =
 {
     author = INF_AUTHOR,
@@ -52,6 +52,12 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 public void OnPluginStart()
 {
     g_hTimer = new ArrayList( TIMER_SIZE );
+    
+    
+    // CONVARS
+    g_ConVar_SetRunOnTouch = CreateConVar( "influx_zones_timer_setrunontouch", "1", "When player touches the start zone, we set player's run to it.", FCVAR_NOTIFY );
+    
+    AutoExecConfig( true, "zones_timer", "influx" );
 }
 
 public void OnAllPluginsLoaded()
@@ -84,24 +90,27 @@ public void OnClientPutInServer( int client )
     g_iBuildingRunId[client] = -1;
 }
 
-public Action Influx_OnSearchEnd( int runid, float pos[3] )
+public Action Influx_OnSearchTelePos( float pos[3], float &yaw, int runid, int telepostype )
 {
-    int i = 0;
-    while ( (i = FindByRunId( runid, i )) != -1 )
+    if ( telepostype == TELEPOSTYPE_START )
     {
-        if ( g_hTimer.Get( i, TIMER_ZONE_TYPE ) == ZONETYPE_END )
+        if ( GetRunStartTelePos( runid, pos, yaw ) )
         {
-            float mins[3];
-            float maxs[3];
-            
-            Influx_GetZoneMinsMaxs( g_hTimer.Get( i, TIMER_ZONE_ID ), mins, maxs );
-            
-            Inf_TelePosFromMinsMaxs( mins, maxs, pos );
-            
             return Plugin_Stop;
         }
         
-        ++i;
+        return Plugin_Continue;
+    }
+    
+    
+    if ( telepostype == TELEPOSTYPE_END )
+    {
+        if ( GetRunEndTelePos( runid, pos ) )
+        {
+            return Plugin_Stop;
+        }
+        
+        return Plugin_Continue;
     }
     
     return Plugin_Continue;
@@ -623,7 +632,15 @@ public void E_StartTouchPost_Start( int ent, int activator )
     if ( !IsPlayerAlive( activator ) ) return;
     
     
-    Influx_ResetTimer( activator, Inf_GetZoneProp( ent ) );
+    int myrunid = Inf_GetZoneProp( ent );
+    int runid = Influx_GetClientRunId( activator );
+
+    if (myrunid == runid
+    ||  Influx_FindRunById( runid ) == -1 // Player has no run?
+    ||  g_ConVar_SetRunOnTouch.BoolValue )
+    {
+        Influx_ResetTimer( activator, myrunid );
+    }
 }
 
 public void E_EndTouchPost_Start( int ent, int activator )
@@ -633,7 +650,12 @@ public void E_EndTouchPost_Start( int ent, int activator )
     if ( !IsPlayerAlive( activator ) ) return;
     
     
-    Influx_StartTimer( activator, Inf_GetZoneProp( ent ) );
+    int runid = Inf_GetZoneProp( ent );
+    
+    if ( Influx_GetClientRunId( activator ) == runid )
+    {
+        Influx_StartTimer( activator, runid );
+    }
 }
 
 public void E_StartTouchPost_End( int ent, int activator )
@@ -643,7 +665,12 @@ public void E_StartTouchPost_End( int ent, int activator )
     if ( !IsPlayerAlive( activator ) ) return;
     
     
-    Influx_FinishTimer( activator, Inf_GetZoneProp( ent ) );
+    int runid = Inf_GetZoneProp( ent );
+    
+    if ( Influx_GetClientRunId( activator ) == runid )
+    {
+        Influx_FinishTimer( activator, runid );
+    }
 }
 
 stock int FindTimerById( int id )
@@ -695,3 +722,54 @@ stock ZoneType_t TimerCharToType( int c )
     
     return ZONETYPE_INVALID;
 }
+
+stock bool GetRunStartTelePos( int runid, float pos[3], float &yaw )
+{
+    int i = 0;
+    while ( (i = FindByRunId( runid, i )) != -1 )
+    {
+        if ( g_hTimer.Get( i, TIMER_ZONE_TYPE ) == ZONETYPE_START )
+        {
+            float start_mins[3];
+            float start_maxs[3];
+            
+            Influx_GetZoneMinsMaxs( g_hTimer.Get( i, TIMER_ZONE_ID ), start_mins, start_maxs );
+            
+            
+            if ( !Inf_FindTelePos( start_mins, start_maxs, pos, yaw ) )
+            {
+                Inf_TelePosFromMinsMaxs( start_mins, start_maxs, pos );
+            }
+            
+            return true;
+        }
+        
+        ++i;
+    }
+    
+    return false;
+}
+
+stock bool GetRunEndTelePos( int runid, float pos[3] )
+{
+    int i = 0;
+    while ( (i = FindByRunId( runid, i )) != -1 )
+    {
+        if ( g_hTimer.Get( i, TIMER_ZONE_TYPE ) == ZONETYPE_END )
+        {
+            float mins[3];
+            float maxs[3];
+            
+            Influx_GetZoneMinsMaxs( g_hTimer.Get( i, TIMER_ZONE_ID ), mins, maxs );
+            
+            Inf_TelePosFromMinsMaxs( mins, maxs, pos );
+            
+            return true;
+        }
+        
+        ++i;
+    }
+    
+    return false;
+}
+

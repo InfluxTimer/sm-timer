@@ -32,6 +32,7 @@ ArrayList g_hValidators;
 
 // CONVARS
 ConVar g_ConVar_MsgWhenTouched;
+ConVar g_ConVar_ForceOrder;
 
 
 bool g_bLate;
@@ -62,6 +63,7 @@ public void OnPluginStart()
     
     // CONVARS
     g_ConVar_MsgWhenTouched = CreateConVar( "influx_validator_msg", "1", "Do we tell the player that they have entered a validator zone?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_ForceOrder = CreateConVar( "influx_validator_forceorder", "0", "Does the player have to go through the validators in order?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 
     AutoExecConfig( true, "zones_validator", "influx" );
     
@@ -205,9 +207,27 @@ public void E_StartTouchPost_Validator( int ent, int activator )
         return;
     }
     
-    // We've already been here.
+    
+    int myrunid = g_hValidators.Get( ival, VAL_RUN_ID );
+    int runid = Influx_GetClientRunId( activator );
+    
+    if ( myrunid != runid )
+        return;
+    
+    
+    // We've already been here?
     if ( FindClientValidatorById( activator, zoneid ) != -1 )
         return;
+    
+    
+    if ( g_ConVar_ForceOrder.BoolValue )
+    {
+        // We want to force the order of validator zones.
+        // Is this not the supposed next validator zone?
+        if ( FindClientNextValidatorIndex( activator ) != ival )
+            return;
+    }
+    
     
     
     AddValidatorTouchedByIndex( activator, ival );
@@ -269,6 +289,53 @@ stock int FindClientValidatorById( int client, int id )
     }
     
     return -1;
+}
+
+stock int FindClientNextValidator( int client )
+{
+    int ival = FindClientNextValidatorIndex( client );
+    if ( ival == -1 )
+        return -1;
+    
+    
+    return g_hValidators.Get( ival, VAL_ID );
+}
+
+stock int FindClientNextValidatorIndex( int client )
+{
+    int len;
+    
+    int runid = Influx_GetClientRunId( client );
+    ArrayList validator = g_hValidatorsTouched[client];
+    len = GetArrayLength_Safe( validator );
+    
+    // Get the last id we touched
+    int lastzoneid = -1;
+    if ( len > 0 )
+    {
+        lastzoneid = validator.Get( len -1, CVAL_ID );
+    }
+    
+    // Just find the next highest zone id.
+    int zoneid = -1;
+    int index = -1;
+    len = g_hValidators.Length;
+    for ( int i = 0; i < len; i++ )
+    {
+        if ( g_hValidators.Get( i, VAL_RUN_ID ) != runid )
+            continue;
+        
+        
+        int myzoneid = g_hValidators.Get( i, VAL_ID );
+        
+        if ( myzoneid > lastzoneid && (zoneid == -1 || myzoneid < zoneid) )
+        {
+            zoneid = myzoneid;
+            index = i;
+        }
+    }
+    
+    return index;
 }
 
 stock void AddValidatorTouchedByIndex( int client, int ival )

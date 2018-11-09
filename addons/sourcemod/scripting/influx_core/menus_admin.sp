@@ -1,4 +1,3 @@
-#include "influx_core/menus_hndlrs_admin.sp"
 
 public Action Cmd_Admin_RunMenu( int client, int args )
 {

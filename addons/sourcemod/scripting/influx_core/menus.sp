@@ -1,5 +1,3 @@
-#include "influx_core/menus_hndlrs.sp"
-
 
 public Action Cmd_Credits( int client, int args )
 {

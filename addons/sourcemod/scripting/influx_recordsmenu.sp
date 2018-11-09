@@ -52,6 +52,7 @@ ConVar g_ConVar_DisplayFullListMax;
 
 #include "influx_recordsmenu/cmds.sp"
 #include "influx_recordsmenu/db.sp"
+#include "influx_recordsmenu/db_cb.sp"
 #include "influx_recordsmenu/menus_hndlrs.sp"
 
 public Plugin myinfo =

@@ -218,6 +218,8 @@ native int Influx_GetClientId( int client );
 forward void Influx_OnRequestModes();
 forward void Influx_OnRequestStyles();
 
+
+
 // If forward, OnRunCreated is called.
 native bool Influx_AddRun( int id = -1, const char[] szName = "", const float vecTelePos[3], float flTeleYaw = 0.0, bool bDoForward = true );
 // NOTE: Safe name is used for folders and to identify mode/style.
@@ -392,6 +394,26 @@ forward Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &val
 
 // Call above. Used in Inf_ParseSearchArg stock.
 native Search_t Influx_SearchType( const char[] szArg, int &value );
+
+
+enum
+{
+    TELEPOSTYPE_START = 0,
+    TELEPOSTYPE_END,
+    
+    
+    // From this point on it's reserved for stages
+    TELEPOSTYPE_STAGE_START, // ie. Stage 2
+    
+    TELEPOSTYPE_STAGE_END = 64,
+    
+    
+    TELEPOSTYPE_MISC,
+};
+// When a plugin wants to find out where the teleport position is for a given run and type
+forward Action Influx_OnSearchTelePos( float pos[3], float &yaw, int runid, int telepostype );
+// Call above.
+native bool Influx_SearchTelePos( float pos[3], float &yaw, int runid, int telepostype );
 
 
 // Tries to match given string with map name regex.

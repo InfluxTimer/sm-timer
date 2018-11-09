@@ -97,12 +97,12 @@ stock void ReadMapFile()
         Call_Finish();
         
         
-        kv.GetVector( "telepos", telepos, ORIGIN_VECTOR );
+        kv.GetVector( "telepos", telepos, INVALID_TELEPOS );
         
         AddRun( runid,
                 szRun,
                 telepos,
-                kv.GetFloat( "teleyaw", 0.0 ),
+                kv.GetFloat( "teleyaw", INVALID_TELEANG ),
                 kv.GetNum( "resflags", 0 ),
                 kv.GetNum( "modeflags", 0 ),
                 true,
@@ -151,8 +151,15 @@ stock int WriteMapFile()
         kv.SetNum( "modeflags", data[RUN_MODEFLAGS] );
         
         
-        kv.SetVector( "telepos", vec );
-        kv.SetFloat( "teleyaw", view_as<float>( data[RUN_TELEYAW] ) );
+        // Make sure we're not saving invalid teleport locations
+        if (vec[0] != INVALID_TELEAXIS
+        ||  vec[1] != INVALID_TELEAXIS
+        ||  vec[2] != INVALID_TELEAXIS)
+            kv.SetVector( "telepos", vec );
+        
+        float teleyaw = view_as<float>( data[RUN_TELEYAW] );
+        if ( teleyaw != INVALID_TELEANG )
+            kv.SetFloat( "teleyaw", view_as<float>( data[RUN_TELEYAW] ) );
         
         
         Call_StartForward( g_hForward_OnRunSave );

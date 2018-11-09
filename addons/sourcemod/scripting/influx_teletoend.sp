@@ -1,12 +1,6 @@
 #include <sourcemod>
 
 #include <influx/core>
-#include <influx/teletoend>
-
-
-
-// FORWARDS
-Handle g_hForward_OnSearchEnd;
 
 
 public Plugin myinfo =
@@ -18,17 +12,8 @@ public Plugin myinfo =
     version = INF_VERSION
 };
 
-public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
-{
-    RegPluginLibrary( INFLUX_LIB_TELETOEND );
-}
-
 public void OnPluginStart()
 {
-    // FORWARDS
-    g_hForward_OnSearchEnd = CreateGlobalForward( "Influx_OnSearchEnd", ET_Hook, Param_Cell, Param_Array );
-    
-    
     // CMDS
     RegConsoleCmd( "sm_end", Cmd_GotoEnd );
     RegConsoleCmd( "sm_goend", Cmd_GotoEnd );
@@ -51,7 +36,8 @@ public Action Cmd_GotoEnd( int client, int args )
     
     
     float pos[3];
-    if ( SearchEnd( runid, pos ) )
+    float yaw = 0.0;
+    if ( Influx_SearchTelePos( pos, yaw, runid, TELEPOSTYPE_END ) )
     {
         Influx_SetClientState( client, STATE_NONE );
         
@@ -71,13 +57,5 @@ public Action Cmd_GotoEnd( int client, int args )
 
 stock bool SearchEnd( int runid, float pos[3] )
 {
-    Action res = Plugin_Continue;
-    
-    Call_StartForward( g_hForward_OnSearchEnd );
-    Call_PushCell( runid );
-    Call_PushArrayEx( pos, 3, SM_PARAM_COPYBACK );
-    Call_Finish( res );
-    
-    
-    return ( res != Plugin_Continue );
+    return ;
 }

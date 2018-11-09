@@ -2,10 +2,6 @@
 #define PRINTREC_MENU_LIMIT         19 // Radio menus allow for 7 items per page (-2 for last and next page items)
 
 
-// Threaded callbacks
-#include "influx_recordsmenu/db_cb.sp"
-
-
 
 // Query to see how and if we'll display the run menu at all.
 stock void DB_DetermineRunMenu(

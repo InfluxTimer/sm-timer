@@ -25,6 +25,21 @@
 //#define PRE_ORANGEBOX
 
 
+// HACK: Pass these if you don't know the teleport pos / yaw.
+#define INVALID_TELEAXIS    -1.0
+#define INVALID_TELEPOS     view_as<float>( { INVALID_TELEAXIS, INVALID_TELEAXIS, INVALID_TELEAXIS } )
+#define INVALID_TELEANG     -181.0
+
+stock bool Inf_IsValidTelePos( const float pos[3] )
+{
+    return pos[0] != INVALID_TELEAXIS || pos[1] != INVALID_TELEAXIS || pos[2] != INVALID_TELEAXIS;
+}
+
+stock bool Inf_IsValidTeleAngle( const float yaw )
+{
+    return yaw != INVALID_TELEANG;
+}
+
 stock void Inf_FormatSeconds( float secs, char[] out, int len, const char[] secform = "%05.2f" )
 {
     // "00:00.00"

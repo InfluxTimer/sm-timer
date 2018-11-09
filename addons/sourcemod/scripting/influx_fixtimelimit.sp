@@ -54,7 +54,7 @@ public Action T_CheckTime( Handle hTimer )
     // If we're unlucky and miss time left == 0, we'll never get a map change.
     // Therefore just skip -1...
     // Fuck this m8
-    if ( bSupported && (timeleft == 0 || timeleft < -1) )
+    if ( bSupported && ((timeleft <= 3 && timeleft >= 0) || timeleft < -1) )
     {
 #if defined DEBUG
         PrintToServer( INF_DEBUG_PRE..."Timelimit reached! Ending round..." );
@@ -63,7 +63,8 @@ public Action T_CheckTime( Handle hTimer )
         g_ConVar_IgnoreCond.BoolValue = false;
         
         // Round termination requires some delay or otherwise the server will not go into intermission and change the map.
-        CreateTimer( 5.0, T_EndRound, _, TIMER_FLAG_NO_MAPCHANGE );
+        // Keep repeating this timer until the map is changed.
+        CreateTimer( 5.0, T_EndRound, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT );
         
         return Plugin_Stop;
     }

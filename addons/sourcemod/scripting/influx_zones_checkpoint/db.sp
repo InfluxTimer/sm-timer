@@ -22,10 +22,6 @@ enum
 };
 
 
-// Callbacks
-#include "influx_zones_checkpoint/db_cb.sp"
-
-
 #define CUR_DB_VERSION          1
 
 
