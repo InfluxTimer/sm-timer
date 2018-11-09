@@ -5,6 +5,8 @@
 #include <msharedutil/ents>
 
 
+//#define DEBUG
+
 
 #define T_SPAWN             "info_player_terrorist"
 #define CT_SPAWN            "info_player_counterterrorist"
@@ -18,10 +20,13 @@
 ConVar g_ConVar_Num;
 ConVar g_ConVar_RemoveOthers;
 ConVar g_ConVar_Prefer;
+ConVar g_ConVar_CreateInMain;
 
 
 
 //bool g_bIsCS;
+bool g_bLate;
+
 
 public Plugin myinfo =
 {
@@ -32,26 +37,48 @@ public Plugin myinfo =
     version = INF_VERSION
 };
 
+public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
+{
+    g_bLate = late;
+}
+
 public void OnPluginStart()
 {
     g_ConVar_Num = CreateConVar( "influx_spawnpoints_num", "32", "How many spawn points we need.", FCVAR_NOTIFY );
     g_ConVar_RemoveOthers = CreateConVar( "influx_spawnpoints_removeothers", "1", "If true, all other spawn point entities are removed. Don't use outside skill surf/bhop.", FCVAR_NOTIFY );
     g_ConVar_Prefer = CreateConVar( "influx_spawnpoints_prefer", "0", "Which spawn point to prefer first. 0 = CT, 1 = T, 2 = Balance both", FCVAR_NOTIFY );
-
+    g_ConVar_CreateInMain = CreateConVar( "influx_spawnpoints_createinmain", "1", "", FCVAR_NOTIFY );
+    
+    AutoExecConfig( true, "spawnpoints", "influx" );
+    
+    
     //EngineVersion ver = GetEngineVersion();
     //g_bIsCS = ver == Engine_CSS || ver == Engine_CSGO;
+    
+    if ( g_bLate )
+    {
+        CheckSpawns( false );
+    }
 }
 
 public void OnMapStart()
 {
-    CheckSpawns();
+    CheckSpawns( true );
 }
 
-stock void CheckSpawns()
+stock void CheckSpawns( bool bOnMapStart )
 {
     if ( g_ConVar_Num.IntValue <= 0 )
         return;
     
+    
+    // Want to create at main run?
+    // Only allow one-sided.
+    if ( !bOnMapStart && g_ConVar_Prefer.IntValue != 2 && g_ConVar_CreateInMain.BoolValue )
+    {
+        if ( CreateSpawnsAtMain() )
+            return;
+    }
     
     if ( g_ConVar_Prefer.IntValue == 2 )
     {
@@ -66,6 +93,10 @@ stock void CheckSpawns()
 // Both teams get equal amount of spawns.
 stock void CreateBalanced()
 {
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Creating balanced spawns..." );
+#endif
+
     int ent;
     
     int copy_ent_ct = -1;
@@ -119,29 +150,76 @@ stock void CreateBalanced()
     CreateSpawns( nWanted - num_t, T_SPAWN, pos_t, ang_t );
 }
 
+stock bool CreateSpawnsAtMain()
+{
+    int irun = Influx_FindRunById( MAIN_RUN_ID );
+    if ( irun == -1 )
+        return false;
+    
+    
+    ArrayList runs = Influx_GetRunsArray();
+    
+    float pos[3];
+    float yaw;
+    
+    for ( int i = 0; i < 3; i++ )
+        pos[i] = runs.Get( irun, RUN_TELEPOS + i );
+    yaw = runs.Get( irun, RUN_TELEYAW );
+    
+    
+    if ( !Inf_IsValidTelePos( pos ) || !Inf_IsValidTeleAngle( yaw ) )
+        return false;
+    
+    
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Creating spawns in main..." );
+#endif
+    
+    CreateSpawnsAtPos( pos, yaw );
+    return true;
+}
+
+stock void CreateSpawnsAtPos( const float pos[3], float yaw )
+{
+    char szSpawn[64];
+    GetPreferredSpawnClass( szSpawn, sizeof( szSpawn ) );
+    
+    
+    
+    // Remove others before starting to create
+    if ( g_ConVar_RemoveOthers.BoolValue )
+    {
+        RemoveSpawns();
+    }
+    
+    
+    float ang[3];
+    ang[1] = yaw;
+    
+    
+    int nWanted = g_ConVar_Num.IntValue;
+    
+    int num = GetEntityCountByClassname( szSpawn );
+    
+    
+    CreateSpawns( nWanted - num, szSpawn, pos, ang );
+}
+
 // We only care about the number of spawns. ie. for skill surf/bhop servers
 stock void CreateOneSided()
 {
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Creating one-sided spawns..." );
+#endif
+
     int copy_ent = -1;
     int ent = -1;
     
     
     char szSpawn[64];
     char szFallbackSpawn[64];
-    
-    if ( g_ConVar_Prefer.IntValue != 1 )
-    {
-        // Use CT
-        strcopy( szSpawn, sizeof( szSpawn ), CT_SPAWN );
-        strcopy( szFallbackSpawn, sizeof( szFallbackSpawn ), T_SPAWN );
-    }
-    else
-    {
-        // Use T
-        strcopy( szSpawn, sizeof( szSpawn ), T_SPAWN );
-        strcopy( szFallbackSpawn, sizeof( szFallbackSpawn ), CT_SPAWN );
-    }
-    
+    GetPreferredSpawnClass( szSpawn, sizeof( szSpawn ) );
+    GetFallbackSpawnClass( szFallbackSpawn, sizeof( szFallbackSpawn ) );
     
     
     if ( (ent = FindEntityByClassname( ent, szSpawn )) != -1 )
@@ -235,12 +313,19 @@ stock void GetSpawnData( int ent, float pos[3], float ang[3] )
     ang[2] = 0.0;
 }
 
-stock void RemoveSpawns()
+stock int RemoveSpawns()
 {
-    RemoveAllByClassname( CT_SPAWN );
-    RemoveAllByClassname( T_SPAWN );
-    RemoveAllByClassname( TF_SPAWN );
-    RemoveAllByClassname( GAME_SPAWN );
+    int total = 0;
+    total += RemoveAllByClassname( CT_SPAWN );
+    total += RemoveAllByClassname( T_SPAWN );
+    total += RemoveAllByClassname( TF_SPAWN );
+    total += RemoveAllByClassname( GAME_SPAWN );
+    
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Removed %i spawns...", total );
+#endif
+    
+    return total;
 }
 
 stock int GetEntityCountByClassname( const char[] szClass )
@@ -249,17 +334,59 @@ stock int GetEntityCountByClassname( const char[] szClass )
     int ent = -1;
     while ( (ent = FindEntityByClassname( ent, szClass )) != -1 )
     {
+        // Ignore dying entities.
+        if ( GetEntityFlags( ent ) & FL_KILLME )
+            continue;
+        
         ++num;
     }
     
     return num;
 }
 
-stock void RemoveAllByClassname( const char[] szClass )
+stock int RemoveAllByClassname( const char[] szClass )
 {
+    int num = 0;
+    
     int ent = -1;
     while ( (ent = FindEntityByClassname( ent, szClass )) != -1 )
     {
+        // Ignore dying entities.
+        if ( GetEntityFlags( ent ) & FL_KILLME )
+            continue;
+        
         KillEntity( ent );
+        
+        ++num;
+    }
+    
+    return num;
+}
+
+stock void GetPreferredSpawnClass( char[] szSpawn, int len )
+{
+    if ( g_ConVar_Prefer.IntValue != 1 )
+    {
+        // Use CT
+        strcopy( szSpawn, len, CT_SPAWN );
+    }
+    else
+    {
+        // Use T
+        strcopy( szSpawn, len, T_SPAWN );
+    }
+}
+
+stock void GetFallbackSpawnClass( char[] szFallbackSpawn, int len )
+{
+    if ( g_ConVar_Prefer.IntValue != 1 )
+    {
+        // Use CT
+        strcopy( szFallbackSpawn, len, T_SPAWN );
+    }
+    else
+    {
+        // Use T
+        strcopy( szFallbackSpawn, len, CT_SPAWN );
     }
 }
