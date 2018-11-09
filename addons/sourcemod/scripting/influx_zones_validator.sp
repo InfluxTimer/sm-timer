@@ -208,6 +208,13 @@ public void E_StartTouchPost_Validator( int ent, int activator )
     }
     
     
+    int myrunid = g_hValidators.Get( ival, VAL_RUN_ID );
+    int runid = Influx_GetClientRunId( activator );
+    
+    if ( myrunid != runid )
+        return;
+    
+    
     // We've already been here?
     if ( FindClientValidatorById( activator, zoneid ) != -1 )
         return;
