@@ -124,7 +124,7 @@ stock void DB_IncClientPoints( int client, int runid, int mode, int style, int r
     // We're updating an old reward, just set the reward.
     if ( bAdjustOld )
     {
-        reward = CalcReward( runid, mode, style, false );
+        reward = CalcReward( runid, mode, style, bFirst );
     }
     
     FormatEx( szQuery, sizeof( szQuery ),
