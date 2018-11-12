@@ -404,7 +404,8 @@ stock void RewardClient(int client,
                         int mode,
                         int style,
                         int override_reward = -1,
-                        bool bFirst = true )
+                        bool bFirst = true,
+                        bool bAdjustOld = false)
 {
     int reward;
     
@@ -433,7 +434,7 @@ stock void RewardClient(int client,
     
     IncClientPoints( client, reward );
     
-    DB_IncClientPoints( client, runid, mode, style, reward, bFirst );
+    DB_IncClientPoints( client, runid, mode, style, reward, bFirst, bAdjustOld );
 }
 
 stock bool IncClientPoints( int client, int reward, bool allownegative = false, bool print = true )

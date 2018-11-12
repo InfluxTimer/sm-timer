@@ -140,7 +140,8 @@ public void Thrd_CheckClientRecCount( Handle db, Handle res, const char[] szErro
         reqmode,
         reqstyle,
         override_reward,
-        bFirst );
+        bFirst,
+        override_reward != -1 );
 }
 
 public void Thrd_SetMapReward( Handle db, Handle res, const char[] szError, ArrayList array )
