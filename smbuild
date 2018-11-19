@@ -97,6 +97,7 @@ pluginlist=MyPluginList([
 	MyPlugin('influx_fixtimelimit', excldflgs=EXCLUDE_LITE),
 	MyPlugin('influx_fpscheck', 'fpscheck', EXCLUDE_SURF|EXCLUDE_LITE),
 	MyPlugin('influx_help', 'help'),
+	MyPlugin('influx_hud'),
 	MyPlugin('influx_hud_draw', 'hud_draw'),
 	MyPlugin('influx_hud_draw_csgo', 'hud_draw_csgo'),
 	MyPlugin('influx_hud_draw_css'),
