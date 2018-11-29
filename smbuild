@@ -167,7 +167,11 @@ pluginlist=MyPluginList([
 	MyPlugin('influx_wepgive'),
 	MyPlugin('influx_zones', 'zones'),
 	MyPlugin('influx_zones_autobhop'),
-	MyPlugin('influx_zones_beams', 'beams'),
+	MyPlugin(	'influx_zones_beams', 'beams',
+			files=[
+				'addons/sourcemod/configs/influx_beams.cfg'
+			]
+	),
 	MyPlugin('influx_zones_block', 'zones_block'),
 	MyPlugin('influx_zones_checkpoint'),
 	MyPlugin('influx_zones_freestyle'),
