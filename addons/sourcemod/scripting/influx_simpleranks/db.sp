@@ -101,7 +101,7 @@ stock void DB_CheckClientRecCount( int client, int runid, int mode, int style )
     SQL_TQuery( db, Thrd_CheckClientRecCount, szQuery, array, DBPrio_Normal );
 }
 
-stock void DB_IncClientPoints( int client, int runid, int mode, int style, int reward, bool bFirst )
+stock void DB_IncClientPoints( int client, int runid, int mode, int style, int reward, bool bFirst, bool bAdjustOld = false )
 {
     Handle db = Influx_GetDB();
     
@@ -120,6 +120,12 @@ stock void DB_IncClientPoints( int client, int runid, int mode, int style, int r
     
     SQL_TQuery( db, Thrd_Empty, szQuery, userid, DBPrio_Normal );
     
+    
+    // We're updating an old reward, just set the reward.
+    if ( bAdjustOld )
+    {
+        reward = CalcReward( runid, mode, style, bFirst );
+    }
     
     FormatEx( szQuery, sizeof( szQuery ),
         "REPLACE INTO "...INF_TABLE_SIMPLERANKS_HISTORY..." (uid,mapid,runid,mode,style,rewardpoints,wasfirst) VALUES (%i,%i,%i,%i,%i,%i,%i)",

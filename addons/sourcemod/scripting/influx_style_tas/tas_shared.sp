@@ -204,7 +204,7 @@ public void OnPluginStart()
     }
     
     
-#if !defined USE_LAGGEDMOVEMENTVALUE
+#if !defined USE_LAGGEDMOVEMENTVALUE && !defined USE_SERVER_TIMESCALE
     g_ConVar_Timescale.Flags &= ~(FCVAR_REPLICATED | FCVAR_CHEAT);
 #endif
     
@@ -1009,8 +1009,16 @@ stock void SetTimescale( int client, float value )
 #if defined USE_LAGGEDMOVEMENTVALUE
         SetEntPropFloat( client, Prop_Send, "m_flLaggedMovementValue", value );
 #else
+    
+
+#if defined USE_SERVER_TIMESCALE
+        g_ConVar_Timescale.FloatValue = value;
+#else
         Inf_SendConVarValueFloat( client, g_ConVar_Timescale, value, "%.2f" );
-#endif
+#endif // USE_SERVER_TIMESCALE
+        
+        
+#endif // USE_LAGGEDMOVEMENTVALUE
     }
 
 }

@@ -18,9 +18,9 @@
 		{
 			"GetPlayerMaxSpeed"
 			{
-				"windows"		"496"
-				"linux"		"497"
-				"mac"		"497"
+				"windows"		"504"
+				"linux"		"505"
+				"mac"		"505"
 			}
 		}
 	}

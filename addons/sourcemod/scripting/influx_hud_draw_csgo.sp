@@ -35,6 +35,7 @@ ConVar g_ConVar_TitleDisplayAlways;
 ConVar g_ConVar_Font;
 ConVar g_ConVar_MsgClass;
 ConVar g_ConVar_TabSize;
+ConVar g_ConVar_TabAmount;
 ConVar g_ConVar_Pos;
 ConVar g_ConVar_Clr;
 
@@ -96,6 +97,7 @@ public void OnPluginStart()
     g_ConVar_MsgClass = CreateConVar( "influx_hud_draw_msgclass", "fontSize-l", "You'll have to google CSGO Panorama fonts, sorry.", FCVAR_NOTIFY );
     
     g_ConVar_TabSize = CreateConVar( "influx_hud_draw_tabsize", "6", "Amount of characters a tab is. If you increase/decrease font size you need to tweak this.", FCVAR_NOTIFY, true, 1.0 );
+    g_ConVar_TabAmount = CreateConVar( "influx_hud_draw_tabnum", "5", "Amount of tabs to insert between columns.", FCVAR_NOTIFY, true, 0.0 );
     
     g_ConVar_Pos = CreateConVar( "influx_hud_draw_pos", "0 0.4", "Set the position where the sidebar is drawn.", FCVAR_NOTIFY );
     g_ConVar_Pos.AddChangeHook( E_ConVarChanged_Pos );
@@ -203,6 +205,9 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
     
     if ( hudtype == HUDTYPE_TIMER )
     {
+        int nTabAmount = g_ConVar_TabAmount.IntValue;
+        
+        
         Influx_GetSecondsFormat_Timer( szSecFormat, sizeof( szSecFormat ) );
         
         curlinelen = 0;
@@ -232,7 +237,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
             
             if ( state == STATE_RUNNING && g_bLib_StrfSync )
             {
-                GetTabs( curlinelen, szTemp2, sizeof( szTemp2 ) );
+                GetTabs( curlinelen, szTemp2, sizeof( szTemp2 ), nTabAmount );
                 
                 Format( szMsg, sizeof( szMsg ), "%s%sSync: %.1f﹪",
                     szMsg,
@@ -258,7 +263,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
                     strcopy( szTemp, sizeof( szTemp ), "SR: N/A" );
                 }
                 
-                GetTabs( curlinelen, szTemp2, sizeof( szTemp2 ) );
+                GetTabs( curlinelen, szTemp2, sizeof( szTemp2 ), nTabAmount );
                 
                 Format( szMsg, sizeof( szMsg ), "%s%s%s",
                     szMsg,
@@ -378,7 +383,7 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
         }
         
         
-        GetTabs( curlinelen, szTemp, sizeof( szTemp ) );
+        GetTabs( curlinelen, szTemp, sizeof( szTemp ), nTabAmount );
         
         Format( szMsg, sizeof( szMsg ), "%s%sSpeed: <font color='#4286f4'>%03.0f</font>",
             szMsg,
@@ -455,7 +460,7 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
             strcopy( szTemp2, sizeof( szTemp2 ), "N/A" );
         }
         
-        GetTabs( curlinelen, szTemp, sizeof( szTemp ) );
+        GetTabs( curlinelen, szTemp, sizeof( szTemp ), nTabAmount );
         
         Format( szMsg, sizeof( szMsg ), "%s%sStyle: %s%s%s",
             szMsg,
