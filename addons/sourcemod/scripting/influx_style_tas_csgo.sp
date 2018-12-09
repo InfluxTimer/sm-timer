@@ -1,5 +1,8 @@
 //#define USE_LAGGEDMOVEMENTVALUE
 
+// Changing host_timescale affects everybody but helps with laggy timescale (CSGO). Use in LAN only.
+//#define USE_SERVER_TIMESCALE
+
 
 #include "influx_style_tas/tas_shared.sp"
 #include "influx_style_tas/cmds.sp"
