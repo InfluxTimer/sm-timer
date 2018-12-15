@@ -11,6 +11,9 @@ public void E_PlayerSpawn( Event event, const char[] szEvent, bool bImUselessWhy
     
     
     TeleportOnSpawn( client );
+    
+    
+    ChangeToWantedStyles( client );
 }
 
 public void E_ConVarChanged_DefMode( ConVar convar, const char[] oldValue, const char[] newValue )

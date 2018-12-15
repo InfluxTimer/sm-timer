@@ -314,6 +314,7 @@ public int Native_ResetTimer( Handle hPlugin, int nParms )
     }
     
     
+    ChangeToWantedStyles( client );
     
     
     Call_StartForward( g_hForward_OnTimerResetPost );

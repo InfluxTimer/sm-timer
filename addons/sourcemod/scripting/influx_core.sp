@@ -68,6 +68,9 @@ int g_iModeId[INF_MAXPLAYERS];
 int g_iRunStartTick[INF_MAXPLAYERS];
 RunState_t g_iRunState[INF_MAXPLAYERS];
 
+int g_iWantedStyleId[INF_MAXPLAYERS];
+int g_iWantedModeId[INF_MAXPLAYERS];
+
 
 float g_flFinishedTime[INF_MAXPLAYERS];
 
@@ -178,6 +181,7 @@ ConVar g_ConVar_DefMaxWeaponSpeed;
 ConVar g_ConVar_LadderFreestyle;
 
 ConVar g_ConVar_TeleToStart;
+ConVar g_ConVar_TeleOnStyleChange;
 
 ConVar g_ConVar_ModeActAsStyle;
 
@@ -488,6 +492,7 @@ public void OnPluginStart()
     g_ConVar_LadderFreestyle = CreateConVar( "influx_ladderfreestyle", "1", "Whether to allow freestyle on ladders.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     g_ConVar_TeleToStart = CreateConVar( "influx_teletostartonspawn", "1", "0 = Never teleport when spawning, 1 = Only teleport if no spawnpoints are found, 2 = Always teleport to start.", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
+    g_ConVar_TeleOnStyleChange = CreateConVar( "influx_teleonstylechange", "1", "Do we teleport player to start on style/mode change?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     g_ConVar_ModeActAsStyle = CreateConVar( "influx_modeactstyle", "0", "If true, changing your mode/style will set your mode/style to default, effectively making all modes into a style. (working like other timers where you can't have 400vel hsw, etc.)", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
@@ -1859,7 +1864,12 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
     int imode = FindModeById( mode );
     if ( imode == -1 ) return false;
     
-    if ( bTele && !ChangeTele( client ) ) return false;
+    if ( bTele && !ChangeTele( client ) )
+    {
+        g_iWantedModeId[client] = mode;
+        return false;
+    }
+    
     
     // Check if allowed for our run!
     int irun = FindRunById( g_iRunId[client] );
@@ -1975,7 +1985,11 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
     int istyle = FindStyleById( style );
     if ( istyle == -1 ) return false;
     
-    if ( bTele && !ChangeTele( client ) ) return false;
+    if ( bTele && !ChangeTele( client ) )
+    {
+        g_iWantedStyleId[client] = style;
+        return false;
+    }
     
     
     if ( !CheckCommandAccess( client, "", GetStyleFlagsByIndex( istyle ), true ) )
@@ -2072,6 +2086,27 @@ stock bool IsClientModeValidForRun( int client, int imode, int irun, bool bPrint
 // When changing mode/style
 stock bool ChangeTele( int client )
 {
+    // We don't need to teleport a dead player.
+    if ( !IsPlayerAlive( client ) )
+        return true;
+    
+    
+    // We don't want teleporting on change.
+    if ( g_ConVar_TeleOnStyleChange.IntValue == 0 )
+    {
+        // If we're in start, it's all good.
+        if ( g_iRunState[client] == STATE_START )
+        {
+            g_iRunState[client] = STATE_NONE;
+            return true;
+        }
+        
+        
+        Influx_PrintToChat( _, client, "You must enter a start zone/wait till next spawn." );
+        return false;
+    }
+    
+    
     // Ignore if we're practising.
     // If we are paused at the same time, we have to get teleported.
     if ( IS_PRAC( g_bLib_Practise, client ) && !IS_PAUSED( g_bLib_Pause, client ) ) return true;
@@ -2090,6 +2125,29 @@ stock bool ChangeTele( int client )
     LogError( INF_CON_PRE..."Couldn't teleport client %i when changing mode/style!", client );
     
     return false;
+}
+
+stock bool ChangeToWantedStyles( int client )
+{
+    // Player wanted to change their mode/style, nows the chance to do it SAFELY.
+    bool ret = false;
+    
+    
+    if ( g_iWantedModeId[client] != MODE_INVALID )
+    {
+        ret = SetClientMode( client, g_iWantedModeId[client], false );
+        
+        g_iWantedModeId[client] = MODE_INVALID;
+    }
+    
+    if ( g_iWantedStyleId[client] != STYLE_INVALID )
+    {
+        ret = SetClientStyle( client, g_iWantedStyleId[client], false ) || ret;
+        
+        g_iWantedStyleId[client] = STYLE_INVALID;
+    }
+    
+    return ret;
 }
 
 stock bool CanUserRemoveRecords( int client )
@@ -2224,6 +2282,10 @@ stock void ResetClient( int client )
     ResetClientMode( client );
     
     g_iStyleId[client] = STYLE_INVALID;
+    
+    
+    g_iWantedModeId[client] = MODE_INVALID;
+    g_iWantedStyleId[client] = STYLE_INVALID;
     
     
     g_flFinishedTime[client] = INVALID_RUN_TIME;
