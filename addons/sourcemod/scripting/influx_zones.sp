@@ -78,6 +78,7 @@ bool g_bLate;
 
 // CONVARS
 ConVar g_ConVar_SaveZonesOnMapEnd;
+ConVar g_ConVar_PreferDb;
 
 ConVar g_ConVar_MinSize;
 ConVar g_ConVar_HeightGrace;
@@ -228,6 +229,7 @@ public void OnPluginStart()
     
     // CONVARS
     g_ConVar_SaveZonesOnMapEnd = CreateConVar( "influx_zones_savezones", "0", "Do we automatically save zones on map end?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_PreferDb = CreateConVar( "influx_zones_preferdb", "1", "Is database preferred method of saving zones?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
     g_ConVar_MinSize = CreateConVar( "influx_zones_minzonesize", "4", "Minimum size of a zone in X, Y and Z.", FCVAR_NOTIFY, true, 1.0 );
@@ -1254,7 +1256,7 @@ stock bool LoadZoneFromKv( KeyValues kv )
 
 stock void LoadZones( bool bForceType = false, bool bUseDb = false )
 {
-    bool usedb = (bForceType && bUseDb) || !bForceType;
+    bool usedb = (bForceType && bUseDb) || (!bForceType && WantsZonesToDb());
     
     
     PrintToServer( INF_CON_PRE..."Loading zones from %s...", usedb ? "database" : "file" );
@@ -1284,7 +1286,7 @@ stock int SaveZones( bool bForceType = false, bool bUseDb = false )
     BuildZoneKvs( kvs );
     
     
-    bool usedb = (bForceType && bUseDb) || !bForceType;
+    bool usedb = (bForceType && bUseDb) || (!bForceType && WantsZonesToDb());
     
     int num = 0;
     
@@ -1399,3 +1401,9 @@ stock void BuildZoneKvs( ArrayList kvs )
         kvs.PushArray( arr );
     }
 }
+
+stock bool WantsZonesToDb()
+{
+    return g_ConVar_PreferDb.BoolValue;
+}
+

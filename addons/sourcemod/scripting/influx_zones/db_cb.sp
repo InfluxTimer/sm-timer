@@ -15,6 +15,14 @@ public void Thrd_GetZones( Handle db, Handle res, const char[] szError, any data
     }
     
     
+    // Attempt to load em from file if we have none in db.
+    if ( !SQL_GetRowCount( res ) )
+    {
+        LoadZones( true, false );
+        return;
+    }
+    
+    
     decl String:zonedata[1024];
     KeyValues kv;
     

@@ -473,7 +473,7 @@ public void OnPluginStart()
     
     
     g_ConVar_SaveRunsOnMapEnd = CreateConVar( "influx_core_saveruns", "1", "Do we automatically save runs on map end?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-    g_ConVar_PreferDb = CreateConVar( "influx_preferdb", "1", "", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_PreferDb = CreateConVar( "influx_core_preferdb", "1", "Is database preferred method of saving runs?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
     g_ConVar_SuppressMaxSpdMsg = CreateConVar( "influx_core_suppressmaxwepspdmsg", "0", "Suppress player max weapon speed message? (one printed to client)", FCVAR_NOTIFY, true, 0.0, true, 1.0 );

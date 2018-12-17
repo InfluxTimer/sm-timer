@@ -300,7 +300,14 @@ public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, any data 
     }
     
     
-    //int runid;
+    // Attempt to load em from file if we have none in db.
+    if ( !SQL_GetRowCount( res ) )
+    {
+        LoadRuns( true, false );
+        return;
+    }
+    
+    
     decl String:rundata[1024];
     KeyValues kv;
     
