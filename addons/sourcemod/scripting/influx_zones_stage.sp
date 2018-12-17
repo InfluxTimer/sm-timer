@@ -54,10 +54,13 @@ int g_nStages[INF_MAXPLAYERS];
 int g_iBuildingNum[INF_MAXPLAYERS];
 int g_iBuildingRunId[INF_MAXPLAYERS];
 
+bool g_bLeftStageZone[INF_MAXPLAYERS];
+
 
 ConVar g_ConVar_ActAsCP;
 ConVar g_ConVar_DisplayType;
 ConVar g_ConVar_DisplayOnlyMain;
+ConVar g_ConVar_AllowStageBackTeleport;
 
 
 bool g_bLib_Zones_CP;
@@ -103,6 +106,8 @@ public void OnPluginStart()
     // CONVARS
     g_ConVar_ActAsCP = CreateConVar( "influx_zones_stage_actascp", "1", "Stage zones act as checkpoints if checkpoints module is loaded.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
+    g_ConVar_AllowStageBackTeleport = CreateConVar( "influx_zones_stage_allowstagebacktele", "1", "Can players use !back/!teleport to go back to stage start?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    
     g_ConVar_DisplayType = CreateConVar( "influx_zones_stage_displaytype", "2", "0 = Don't display stages, 1 = Display stages if non-linear, 2 = Display all stages", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
     g_ConVar_DisplayOnlyMain = CreateConVar( "influx_zones_stage_displayonlymain", "1", "Only display stage count if player's run is main.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
@@ -120,6 +125,9 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_stage", Cmd_StageSelect );
     RegConsoleCmd( "sm_s", Cmd_StageSelect );
+    
+    RegConsoleCmd( "sm_back", Cmd_Back );
+    RegConsoleCmd( "sm_teleport", Cmd_Back );
     
     
     // LIBRARIES
@@ -184,6 +192,8 @@ public void OnClientPutInServer( int client )
     g_nStages[client] = 0;
     
     g_iBuildingNum[client] = 0;
+    
+    g_bLeftStageZone[client] = false;
 }
 
 public Action Influx_OnSearchTelePos( float pos[3], float &yaw, int runid, int telepostype )
@@ -383,6 +393,7 @@ public void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent )
     
     
     SDKHook( ent, SDKHook_StartTouchPost, E_StartTouchPost_Stage );
+    SDKHook( ent, SDKHook_EndTouchPost, E_EndTouchPost_Stage );
     
     
     Inf_SetZoneProp( ent, zoneid );
@@ -617,10 +628,42 @@ public void E_StartTouchPost_Stage( int ent, int activator )
     
     g_iStage[activator] = stagenum;
     
+    g_bLeftStageZone[activator] = false;
+    
+    
     if ( g_bLib_Zones_CP && g_ConVar_ActAsCP.BoolValue )
     {
         Influx_SaveClientCP( activator, stagenum - 1 );
     }
+}
+
+public void E_EndTouchPost_Stage( int ent, int activator )
+{
+    if ( !IS_ENT_PLAYER( activator ) ) return;
+    
+    if ( !IsPlayerAlive( activator ) ) return;
+    
+    
+    int zoneid = Inf_GetZoneProp( ent );
+    
+    
+    int zindex = FindStageZoneById( zoneid );
+    if ( zindex == -1 )
+        return;
+    
+    
+    int runid = g_hStageZones.Get( zindex, STAGEZONE_RUN_ID );
+    if ( runid != Influx_GetClientRunId( activator ) )
+        return;
+    
+    
+    int stagenum = g_hStageZones.Get( zindex, STAGEZONE_NUM );
+    
+    if ( g_iStage[activator] != stagenum )
+        return;
+    
+    
+    g_bLeftStageZone[activator] = true;
 }
 
 stock int AddStageZone( int zoneid, int runid, int stagenum )
@@ -1016,6 +1059,52 @@ public int Hndlr_ChooseStage( Menu menu, MenuAction action, int client, int inde
     
     
     return 0;
+}
+
+public Action Cmd_Back( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    
+    // Not allowed?
+    if ( g_ConVar_AllowStageBackTeleport.IntValue == 0 )
+        return Plugin_Handled;
+    
+    
+    if ( Influx_GetClientState( client ) != STATE_RUNNING )
+    {
+        Influx_PrintToChat( _, client, "Can't go back if you're not running!" );
+        return Plugin_Handled;
+    }
+    
+    
+    // Go back to start.
+    if ( g_iStage[client] <= 1 )
+    {
+        Influx_TeleportToStart( client, false );
+        return Plugin_Handled;
+    }
+    
+    
+    if ( !g_bLeftStageZone[client] )
+    {
+        Influx_PrintToChat( _, client, "You must leave the zone first!" );
+        return Plugin_Handled;
+    }
+    
+    
+    int sindex = FindStageByNum( Influx_GetClientRunId( client ), g_iStage[client] );
+    if ( sindex != -1 )
+    {
+        float pos[3];
+        float ang[3];
+        GetStageTelePos( sindex, pos );
+        ang[1] = GetStageTeleYaw( sindex );
+        
+        TeleportEntity( client, pos, ang, ORIGIN_VECTOR );
+    }
+    
+    return Plugin_Handled;
 }
 
 stock void GetStageTelePos( int index, float out[3] )
