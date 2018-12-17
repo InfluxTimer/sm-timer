@@ -3,9 +3,6 @@
 #include <influx/core>
 #include <influx/prespeed>
 
-#undef REQUIRE_PLUGIN
-#include <influx/runs_sql>
-
 
 
 #define INVALID_MAXSPD          -1.0
@@ -159,34 +156,6 @@ public void Influx_OnRunDeleted( int runid )
     {
         g_hPre.Erase( index );
     }
-}
-
-public void Influx_OnRunLoad_SQL( int runid, Handle res )
-{
-    int index = FindPreById( runid );
-    if ( index == -1 ) return;
-    
-    
-    
-    int field;
-    
-    
-    decl data[PRESPEED_SIZE];
-    g_hPre.GetArray( index, data );
-    
-    
-    data[PRESPEED_RUN_ID] = runid;
-    
-    SQL_FieldNameToNum( res, "prespeed_max", field );
-    data[PRESPEED_MAX] = view_as<int>( SQL_FetchFloat( res, field ) );
-    
-    SQL_FieldNameToNum( res, "prespeed_usetruevel", field );
-    data[PRESPEED_USETRUEVEL] = SQL_FetchInt( res, field ) ? 1 : 0;
-    
-    SQL_FieldNameToNum( res, "prespeed_cap", field );
-    data[PRESPEED_CAP] = SQL_FetchInt( res, field ) ? 1 : 0;
-    
-    g_hPre.PushArray( data );
 }
 
 public void Influx_OnRunLoad( int runid, KeyValues kv )
