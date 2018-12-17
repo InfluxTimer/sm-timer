@@ -177,6 +177,7 @@ enum
 #define INF_TABLE_MAPS              "inf_maps"
 #define INF_TABLE_TIMES             "inf_times"
 #define INF_TABLE_DBVER             "inf_dbversion"
+#define INF_TABLE_RUNS              "inf_runs"
 
 // Not using the sql type since it's missing features.
 native Handle Influx_GetDB();

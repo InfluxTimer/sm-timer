@@ -291,6 +291,38 @@ public void Thrd_GetBestRecords( Handle db, Handle res, const char[] szError, an
     Call_Finish();
 }
 
+public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, any data )
+{
+    if ( res == null )
+    {
+        Inf_DB_LogError( db, "getting run data" );
+        return;
+    }
+    
+    
+    //int runid;
+    decl String:rundata[1024];
+    KeyValues kv;
+    
+    
+    SendRunLoadPre();
+    
+    while ( SQL_FetchRow( res ) )
+    {
+        SQL_FetchString( res, 1, rundata, sizeof( rundata ) );
+        
+        kv = new KeyValues( "" );
+        kv.ImportFromString( rundata, "" );
+        
+        
+        LoadRunFromKv( kv );
+        
+        delete kv;
+    }
+    
+    SendRunLoadPost();
+}
+
 /*public void Thrd_GetNumRecords( Handle db, Handle res, const char[] szError, any data )
 {
     if ( res == null )

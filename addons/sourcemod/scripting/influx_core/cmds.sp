@@ -94,16 +94,9 @@ public Action Cmd_Admin_SaveRuns( int client, int args )
     if ( !CanUserModifyRun( client ) ) return Plugin_Handled;
     
     
-    int num = WriteMapFile();
+    int num = SaveRuns();
     
-    if ( client )
-    {
-        Influx_PrintToChat( _, client, "Wrote {MAINCLR1}%i{CHATCLR} runs to file!", num );
-    }
-    else
-    {
-        PrintToServer( INF_CON_PRE..."Wrote %i runs to file!", num );
-    }
+    Inf_ReplyToClient( client, "Wrote {MAINCLR1}%i{CHATCLR} runs to %s!", num, WantsRunsToDb() ? "database" : "file" );
     
     return Plugin_Handled;
 }

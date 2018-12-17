@@ -164,6 +164,14 @@ stock void DB_InitTables()
         "PRIMARY KEY(uid,mapid,runid,mode,style))", _, DBPrio_High );
     
     
+    SQL_TQuery( g_hDB, Thrd_Empty,
+        "CREATE TABLE IF NOT EXISTS "...INF_TABLE_RUNS..." (" ...
+        "mapid INT NOT NULL," ...
+        "runid INT NOT NULL," ...
+        "rundata VARCHAR(512)," ...
+        "PRIMARY KEY(mapid,runid))", _, DBPrio_High );
+    
+    
     
     // Track our database's version since it'll become handy if we ever need to update the database structure.
     SQL_TQuery( g_hDB, Thrd_Empty,
@@ -458,4 +466,65 @@ stock void DB_DeleteRecords( int issuer, int mapid, int uid = -1, int runid = -1
     Call_PushCell( mode );
     Call_PushCell( style );
     Call_Finish();
+}
+
+stock void DB_LoadRuns()
+{
+    decl String:szQuery[192];
+    FormatEx( szQuery, sizeof( szQuery ),
+        "SELECT " ...
+        "runid,rundata " ...
+        "FROM "...INF_TABLE_RUNS..." " ...
+        "WHERE mapid=%i " ...
+        "ORDER BY runid ASC",
+        g_iCurMapId );
+        
+    SQL_TQuery( g_hDB, Thrd_GetRuns, szQuery, _, DBPrio_High );
+}
+
+stock int DB_SaveRuns( ArrayList kvs )
+{
+    static char szQuery[2048];
+    
+    decl String:szRunData[1024];
+    
+    int num = 0;
+    
+    for ( int i = 0; i < kvs.Length; i++ )
+    {
+        KeyValues rundata = view_as<KeyValues>( kvs.Get( i, 0 ) );
+        int runid = kvs.Get( i, 1 );
+        
+        
+        rundata.ExportToString( szRunData, sizeof( szRunData ) );
+        
+#if defined DEBUG_DB_RUN
+        PrintToServer( INF_DEBUG_PRE..."Saving run data:\n%s", szRunData );
+#endif
+        
+        if ( !DB_GetEscaped( szRunData, sizeof( szRunData ), "" ) )
+        {
+            LogError( INF_CON_PRE..."Failed to escape run data string! (%i)", runid );
+            continue;
+        }
+        
+#if defined DEBUG_DB_RUN
+        PrintToServer( INF_DEBUG_PRE..."Escaped:\n%s", szRunData );
+#endif
+        
+        
+        FormatEx(
+            szQuery,
+            sizeof( szQuery ),
+            "REPLACE INTO "...INF_TABLE_RUNS..." (mapid,runid,rundata) VALUES (%i,%i,'%s')",
+            g_iCurMapId,
+            runid,
+            szRunData );
+            
+        SQL_TQuery( g_hDB, Thrd_Empty, szQuery, _, DBPrio_Normal );
+        
+        ++num;
+    }
+    
+    return num;
 }

@@ -43,7 +43,7 @@ stock void ReadGameConfig()
     delete config;
 }
 
-stock void ReadMapFile()
+stock void ReadRunFile()
 {
     char szPath[PLATFORM_MAX_PATH];
     BuildPath( Path_SM, szPath, sizeof( szPath ), INFLUX_RUNDIR );
@@ -64,113 +64,40 @@ stock void ReadMapFile()
     }
     
     
-    char szRun[MAX_RUN_NAME];
     
-    float telepos[3];
-    int runid;
     
     do
     {
-        runid = kv.GetNum( "id", -1 );
-        if ( !VALID_RUN( runid ) )
-        {
-            LogError( INF_CON_PRE..."Found invalid run id %i! (0-%i)", runid, MAX_RUNS );
-            continue;
-        }
-        
-        if ( FindRunById( runid ) != -1 )
-        {
-            LogError( INF_CON_PRE..."Found duplicate run id %i!", runid );
-            continue;
-        }
-        
-        if ( !kv.GetSectionName( szRun, sizeof( szRun ) ) )
-        {
-            LogError( INF_CON_PRE..."Couldn't read run name!" );
-            continue;
-        }
-        
-        
-        Call_StartForward( g_hForward_OnRunLoad );
-        Call_PushCell( runid );
-        Call_PushCell( view_as<int>( kv ) );
-        Call_Finish();
-        
-        
-        kv.GetVector( "telepos", telepos, INVALID_TELEPOS );
-        
-        AddRun( runid,
-                szRun,
-                telepos,
-                kv.GetFloat( "teleyaw", INVALID_TELEANG ),
-                kv.GetNum( "resflags", 0 ),
-                kv.GetNum( "modeflags", 0 ),
-                true,
-                false );
+        LoadRunFromKv( kv );
     }
     while ( kv.GotoNextKey() );
     
     delete kv;
 }
 
-stock int WriteMapFile()
+stock int WriteRunFile( ArrayList kvs )
 {
-    // Nothing to write.
-    int len = g_hRuns.Length;
-    if ( len < 1 ) return 0;
-    
-    
     // TODO: Change to .cfg instead of .ini?
     char szPath[PLATFORM_MAX_PATH];
-    BuildPath( Path_SM, szPath, sizeof( szPath ), "influxruns/%s.ini", g_szCurrentMap );
+    BuildPath( Path_SM, szPath, sizeof( szPath ), INFLUX_RUNDIR..."/%s.ini", g_szCurrentMap );
     
     
     KeyValues kv = new KeyValues( "Runs" );
     
     
-    int num = 0;
+    char szRunName[64];
     
-    
-    decl data[RUN_SIZE];
-    float vec[3];
-    
+    int len = kvs.Length;
     
     for ( int i = 0; i < len; i++ )
     {
-        g_hRuns.GetArray( i, data );
+        KeyValues runkv = view_as<KeyValues>( kvs.Get( i, 0 ) );
         
-        CopyArray( data[RUN_TELEPOS], vec, 3 );
+        runkv.GetSectionName( szRunName, sizeof( szRunName ) );
+        kv.JumpToKey( szRunName, true );
         
-        
-        kv.JumpToKey( view_as<char>( data[RUN_NAME] ), true );
-        
-        kv.SetNum( "id", data[RUN_ID] );
-        
-        
-        kv.SetNum( "resflags", data[RUN_RESFLAGS] );
-        kv.SetNum( "modeflags", data[RUN_MODEFLAGS] );
-        
-        
-        // Make sure we're not saving invalid teleport locations
-        if (vec[0] != INVALID_TELEAXIS
-        ||  vec[1] != INVALID_TELEAXIS
-        ||  vec[2] != INVALID_TELEAXIS)
-            kv.SetVector( "telepos", vec );
-        
-        float teleyaw = view_as<float>( data[RUN_TELEYAW] );
-        if ( teleyaw != INVALID_TELEANG )
-            kv.SetFloat( "teleyaw", view_as<float>( data[RUN_TELEYAW] ) );
-        
-        
-        Call_StartForward( g_hForward_OnRunSave );
-        Call_PushCell( data[RUN_ID] );
-        Call_PushCell( view_as<int>( kv ) );
-        Call_Finish();
-        
+        kv.Import( runkv );
         kv.GoBack();
-        
-        
-        ++num;
     }
     
     
@@ -184,7 +111,7 @@ stock int WriteMapFile()
     
     delete kv;
     
-    return num;
+    return len;
 }
 
 stock void ReadModeOverrides()

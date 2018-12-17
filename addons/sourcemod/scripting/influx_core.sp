@@ -18,7 +18,6 @@
 #include <influx/pause>
 #include <influx/practise>
 #include <influx/zones_freestyle>
-#include <influx/runs_sql>
 #include <influx/hud_draw>
 //#include <influx/colorchat>
 
@@ -36,6 +35,7 @@
 //#define DEBUG_DB_VER
 //#define DEBUG_DB_CBRECS
 //#define DEBUG_DB_MAPID
+//#define DEBUG_DB_RUN
 //#define TEST_REGEX
 //#define TEST_MODESTYLES
 
@@ -172,6 +172,7 @@ ConVar g_ConVar_ChatPrefix;
 ConVar g_ConVar_ChatClr;
 ConVar g_ConVar_ChatMainClr1;
 ConVar g_ConVar_SaveRunsOnMapEnd;
+ConVar g_ConVar_PreferDb;
 ConVar g_ConVar_SuppressMaxSpdWarning;
 ConVar g_ConVar_SuppressMaxSpdMsg;
 ConVar g_ConVar_DefMode;
@@ -194,7 +195,6 @@ bool g_bLib_AdminMenu;
 bool g_bLib_Pause;
 bool g_bLib_Practise;
 bool g_bLib_Zones_Fs;
-bool g_bLib_Runs_SQL;
 bool g_bLib_Hud_Draw;
 
 
@@ -473,6 +473,7 @@ public void OnPluginStart()
     
     
     g_ConVar_SaveRunsOnMapEnd = CreateConVar( "influx_core_saveruns", "1", "Do we automatically save runs on map end?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_PreferDb = CreateConVar( "influx_preferdb", "1", "", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
     g_ConVar_SuppressMaxSpdMsg = CreateConVar( "influx_core_suppressmaxwepspdmsg", "0", "Suppress player max weapon speed message? (one printed to client)", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
@@ -576,7 +577,6 @@ public void OnPluginStart()
     g_bLib_Pause = LibraryExists( INFLUX_LIB_PAUSE );
     g_bLib_Practise = LibraryExists( INFLUX_LIB_PRACTISE );
     g_bLib_Zones_Fs = LibraryExists( INFLUX_LIB_ZONES_FS );
-    g_bLib_Runs_SQL = LibraryExists( INFLUX_LIB_RUNS_SQL );
     g_bLib_Hud_Draw = LibraryExists( INFLUX_LIB_HUD_DRAW );
     
     
@@ -623,7 +623,6 @@ public void OnLibraryAdded( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = true;
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = true;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = true;
-    if ( StrEqual( lib, INFLUX_LIB_RUNS_SQL ) ) g_bLib_Runs_SQL = true;
     if ( StrEqual( lib, INFLUX_LIB_HUD_DRAW ) ) g_bLib_Hud_Draw = true;
 }
 
@@ -633,7 +632,6 @@ public void OnLibraryRemoved( const char[] lib )
     if ( StrEqual( lib, INFLUX_LIB_PAUSE ) ) g_bLib_Pause = false;
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = false;
     if ( StrEqual( lib, INFLUX_LIB_ZONES_FS ) ) g_bLib_Zones_Fs = false;
-    if ( StrEqual( lib, INFLUX_LIB_RUNS_SQL ) ) g_bLib_Runs_SQL = false;
     if ( StrEqual( lib, INFLUX_LIB_HUD_DRAW ) ) g_bLib_Hud_Draw = false;
 }
 
@@ -809,6 +807,9 @@ public void Influx_OnRecordRemoved( int issuer, int uid, int mapid, int runid, i
 
 public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
 {
+    LoadRuns();
+    
+    
     if ( g_bLate )
     {
         for ( int i = 1; i <= MaxClients; i++ )
@@ -909,16 +910,7 @@ public void OnMapStart()
     DB_InitMap();
     
     
-    Call_StartForward( g_hForward_OnPreRunLoad );
-    Call_Finish();
-    
-    if ( !g_bLib_Runs_SQL )
-    {
-        ReadMapFile();
-        
-        Call_StartForward( g_hForward_OnPostRunLoad );
-        Call_Finish();
-    }
+    //LoadRuns();
     
     
     InitColors();
@@ -928,7 +920,7 @@ public void OnMapEnd()
 {
     if ( g_ConVar_SaveRunsOnMapEnd.BoolValue )
     {
-        WriteMapFile();
+        SaveRuns();
     }
 }
 
@@ -2965,4 +2957,170 @@ stock void ResetRunTeleYawByIndex( int irun, float &yaw )
     {
         SetRunTeleYaw( irun, yaw );
     }
+}
+
+stock void SendRunLoadPre()
+{
+    Call_StartForward( g_hForward_OnPreRunLoad );
+    Call_Finish();
+}
+
+stock void SendRunLoadPost()
+{
+    Call_StartForward( g_hForward_OnPostRunLoad );
+    Call_Finish();
+}
+
+stock void SendRunLoad( int runid, KeyValues kv )
+{
+    Call_StartForward( g_hForward_OnRunLoad );
+    Call_PushCell( runid );
+    Call_PushCell( view_as<int>( kv ) );
+    Call_Finish();
+}
+
+stock bool LoadRunFromKv( KeyValues kv )
+{
+    char szRun[MAX_RUN_NAME];
+    
+    float telepos[3];
+    int runid;
+    
+    
+    runid = kv.GetNum( "id", -1 );
+    if ( !VALID_RUN( runid ) )
+    {
+        LogError( INF_CON_PRE..."Found invalid run id %i! (0-%i)", runid, MAX_RUNS );
+        return false;
+    }
+    
+    if ( FindRunById( runid ) != -1 )
+    {
+        LogError( INF_CON_PRE..."Found duplicate run id %i!", runid );
+        return false;
+    }
+    
+    if ( !kv.GetSectionName( szRun, sizeof( szRun ) ) )
+    {
+        LogError( INF_CON_PRE..."Couldn't read run name!" );
+        return false;
+    }
+    
+    
+    SendRunLoad( runid, kv );
+    
+    
+    kv.GetVector( "telepos", telepos, INVALID_TELEPOS );
+    
+    AddRun( runid,
+            szRun,
+            telepos,
+            kv.GetFloat( "teleyaw", INVALID_TELEANG ),
+            kv.GetNum( "resflags", 0 ),
+            kv.GetNum( "modeflags", 0 ),
+            true,
+            false );
+
+    return true;
+}
+
+stock void BuildRunKvs( ArrayList kvs )
+{
+    decl data[RUN_SIZE];
+    float vec[3];
+    
+    
+    for ( int i = 0; i < g_hRuns.Length; i++ )
+    {
+        g_hRuns.GetArray( i, data );
+        
+        
+        KeyValues kv = new KeyValues( view_as<char>( data[RUN_NAME] ) );
+        
+        
+        kv.SetNum( "id", data[RUN_ID] );
+        
+        
+        kv.SetNum( "resflags", data[RUN_RESFLAGS] );
+        kv.SetNum( "modeflags", data[RUN_MODEFLAGS] );
+        
+        
+        CopyArray( data[RUN_TELEPOS], vec, 3 );
+        // Make sure we're not saving invalid teleport locations
+        if (vec[0] != INVALID_TELEAXIS
+        ||  vec[1] != INVALID_TELEAXIS
+        ||  vec[2] != INVALID_TELEAXIS)
+            kv.SetVector( "telepos", vec );
+        
+        float teleyaw = view_as<float>( data[RUN_TELEYAW] );
+        if ( teleyaw != INVALID_TELEANG )
+            kv.SetFloat( "teleyaw", view_as<float>( data[RUN_TELEYAW] ) );
+        
+        
+        // Ask other plugins if they want to save some data.
+        Call_StartForward( g_hForward_OnRunSave );
+        Call_PushCell( data[RUN_ID] );
+        Call_PushCell( view_as<int>( kv ) );
+        Call_Finish();
+        
+        
+        decl arr[2];
+        arr[0] = view_as<int>( kv );
+        arr[1] = data[RUN_ID];
+        
+        kvs.PushArray( arr );
+    }
+}
+
+stock void LoadRuns( bool bForceType = false, bool bUseDb = false )
+{
+    bool usedb = (bForceType && bUseDb) || (!bForceType && WantsRunsToDb());
+    
+    PrintToServer( INF_CON_PRE..."Loading runs from %s...", usedb ? "database" : "file" );
+    
+    if ( usedb )
+    {
+        DB_LoadRuns();
+    }
+    else
+    {
+        SendRunLoadPre();
+        ReadRunFile();
+        SendRunLoadPost();
+    }
+}
+
+stock int SaveRuns( bool bForceType = false, bool bUseDb = false )
+{
+    int num = 0;
+    
+    ArrayList kvs = new ArrayList( 2 );
+    
+    BuildRunKvs( kvs );
+    
+    bool usedb = (bForceType && bUseDb) || (!bForceType && WantsRunsToDb());
+    
+    
+    if ( usedb )
+    {
+        num = DB_SaveRuns( kvs );
+    }
+    else
+    {
+        num = WriteRunFile( kvs );
+    }
+    
+    
+    // Free the kvs
+    for ( int i = 0; i < kvs.Length; i++ )
+        delete view_as<KeyValues>( kvs.Get( i, 0 ) );
+    
+    delete kvs;
+    
+    return num;
+}
+
+stock bool WantsRunsToDb()
+{
+    return g_ConVar_PreferDb.BoolValue;
 }
