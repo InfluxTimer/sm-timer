@@ -113,6 +113,9 @@ bool g_bLib_Zones_Beams;
 TopMenu g_hTopMenu;
 
 
+#include "influx_zones/db.sp"
+#include "influx_zones/db_cb.sp"
+#include "influx_zones/file.sp"
 #include "influx_zones/menus.sp"
 #include "influx_zones/menus_hndlrs.sp"
 #include "influx_zones/timers.sp"
@@ -275,6 +278,9 @@ public void OnAllPluginsLoaded()
         Call_StartForward( g_hForward_OnRequestZoneTypes );
         Call_Finish();
     }
+    
+    
+    DB_Init();
 }
 
 public void OnAdminMenuReady( Handle hTopMenu )
@@ -330,7 +336,7 @@ public void OnMapEnd()
 {
     if ( g_ConVar_SaveZonesOnMapEnd.BoolValue )
     {
-        WriteZoneFile();
+        SaveZones();
     }
     
     g_bZonesLoaded = false;
@@ -339,12 +345,14 @@ public void OnMapEnd()
 
 public void Influx_OnPostRunLoad()
 {
-    ReadZoneFile();
-    
-    Call_StartForward( g_hForward_OnPostZoneLoad );
-    Call_Finish();
+    LoadZones();
     
     //g_nNewZoneId = FindZoneHighestId() + 1;
+}
+
+public void Influx_OnPostZoneLoad()
+{
+    SpawnZones();
 }
 
 public void OnClientPutInServer( int client )
@@ -367,291 +375,6 @@ public void E_RoundRestart( Event event, const char[] szEvent, bool bImUselessWh
 public Action T_RoundRestart_Delay( Handle hTimer )
 {
     CheckZones();
-}
-
-stock void ReadZoneFile()
-{
-#if defined DEBUG_LOADZONES
-    PrintToServer( INF_DEBUG_PRE..."Attempting to load zone file with %i zonestypes.", g_hZoneTypes.Length );
-#endif
-
-    // We've already loaded zones for this map.
-    if ( g_bZonesLoaded )
-    {
-#if defined DEBUG_LOADZONES
-        PrintToServer( INF_DEBUG_PRE..."Zones are already loaded!" );
-#endif
-        return;
-    }
-    
-    g_bZonesLoaded = true;
-    
-    
-    char szPath[PLATFORM_MAX_PATH];
-    BuildPath( Path_SM, szPath, sizeof( szPath ), "influxzones" );
-    
-    if ( !DirExistsEx( szPath ) )
-    {
-        LogError( INF_CON_PRE..."Couldn't build path to zone files '%s'!", szPath );
-        return;
-    }
-    
-    
-    char szMap[64];
-    GetCurrentMapSafe( szMap, sizeof( szMap ) );
-    Format( szPath, sizeof( szPath ), "%s/%s.ini", szPath, szMap );
-    
-    
-    KeyValues kv = new KeyValues( "Zones" );
-    kv.ImportFromFile( szPath );
-    
-    if ( !kv.GotoFirstSubKey() )
-    {
-#if defined DEBUG_LOADZONES
-        PrintToServer( INF_DEBUG_PRE..."No zone file exists '%s'!", szPath );
-#endif
-        delete kv;
-        return;
-    }
-    
-    
-    decl data[ZONE_SIZE];
-    
-    float mins[3], maxs[3];
-    ZoneType_t zonetype;
-    int zoneid;
-    
-    char szType[32];
-    bool bInvalidZoneType;
-    
-    do
-    {
-        kv.GetString( "type", szType, sizeof( szType ), "" );
-        
-        if ( IsCharNumeric( szType[0] ) )
-        {
-            zonetype = view_as<ZoneType_t>( StringToInt( szType ) );
-        }
-        else
-        {
-            zonetype = FindZoneTypeByShortName( szType );
-        }
-        
-        bInvalidZoneType = zonetype == ZONETYPE_INVALID || FindZoneType( zonetype ) == -1;
-        
-        if ( bInvalidZoneType )
-        {
-            if ( !g_bLate )
-            {
-                //LogError( INF_CON_PRE..."Found invalid zone type %i!", zonetype );
-            }
-            
-            continue;
-        }
-        
-        zoneid = kv.GetNum( "id", -1 );
-        if ( zoneid < 1 )
-        {
-            LogError( INF_CON_PRE..."Found invalid zone id value! (id: %i)", zoneid );
-            continue;
-        }
-        
-        
-        if ( FindZoneById( zoneid ) != -1 )
-        {
-            LogError( INF_CON_PRE..."Found duplicate zone id! (id: %i)", zoneid );
-            continue;
-        }
-        
-        kv.GetVector( "mins", mins, ORIGIN_VECTOR );
-        kv.GetVector( "maxs", maxs, ORIGIN_VECTOR );
-        
-        if ( GetVectorDistance( mins, maxs, false ) < 1.0 )
-        {
-            LogError( INF_CON_PRE..."Invalid zone mins and maxs! (id: %i)", zoneid );
-            continue;
-        }
-        
-        
-        kv.GetSectionName( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME );
-        
-        
-        // Ask other plugins what to load.
-        Action res = Plugin_Handled;
-        
-        Call_StartForward( g_hForward_OnZoneLoad );
-        Call_PushCell( zoneid );
-        Call_PushCell( zonetype );
-        Call_PushCell( view_as<int>( kv ) );
-        Call_Finish( res );
-        
-        if ( res != Plugin_Handled )
-        {
-#if defined DEBUG_LOADZONES
-            PrintToServer( INF_DEBUG_PRE..."OnZoneLoad failed (id: %i)!", zoneid );
-#endif
-
-            if ( res == Plugin_Stop )
-            {
-                LogError( INF_CON_PRE..."Couldn't load zone %s with type %i from file! (id: %i)", data[ZONE_NAME], zonetype, zoneid );
-            }
-            
-            continue;
-        }
-        
-        // Post load (this zone will be loaded)
-        Call_StartForward( g_hForward_OnZoneLoadPost );
-        Call_PushCell( zoneid );
-        Call_PushCell( zonetype );
-        Call_PushCell( view_as<int>( kv ) );
-        Call_Finish();
-        
-        
-        
-        data[ZONE_ID] = zoneid;
-        data[ZONE_TYPE] = view_as<int>( zonetype );
-        
-        CopyArray( mins, data[ZONE_MINS], 3 );
-        CopyArray( maxs, data[ZONE_MAXS], 3 );
-        
-        
-        CreateZoneEntityByIndex( g_hZones.PushArray( data ) );
-    }
-    while( kv.GotoNextKey() );
-    
-    delete kv;
-    
-    
-    PrintToServer( INF_CON_PRE..."Loaded %i zones from file!", g_hZones.Length );
-    
-    //CheckRuns();
-}
-
-stock int WriteZoneFile()
-{
-    int len = g_hZones.Length;
-    if ( len < 1 ) return 0;
-    
-    
-    
-    
-    decl String:szMap[64];
-    decl String:szPath[PLATFORM_MAX_PATH];
-    GetCurrentMapSafe( szMap, sizeof( szMap ) );
-    
-    BuildPath( Path_SM, szPath, sizeof( szPath ), "influxzones/%s.ini", szMap );
-    
-    
-    int num = 0;
-
-    decl data[ZONE_SIZE];
-    decl String:szBuffer[64];
-    decl zoneid;
-    ZoneType_t zonetype;
-    int itype;
-    
-    
-    KeyValues kv = new KeyValues( "Zones" );
-    
-    for ( int i = 0; i < len; i++ )
-    {
-        g_hZones.GetArray( i, data, sizeof( data ) );
-        
-        zoneid = data[ZONE_ID];
-        if ( zoneid < 1 ) continue;
-        
-        
-        zonetype = view_as<ZoneType_t>( data[ZONE_TYPE] );
-        
-        itype = FindZoneType( zonetype );
-        if ( itype == -1 )
-        {
-            continue;
-        }
-        
-        
-        // Forward slashes need to be removed since they create a subkey. WHY?!?!?!
-        ReplaceString( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME, "/", "" );
-        
-        if ( !kv.JumpToKey( view_as<char>( data[ZONE_NAME] ), true ) )
-        {
-            continue;
-        }
-        
-        
-        // Ask other plugins what to save.
-        Action res;
-        
-        Call_StartForward( g_hForward_OnZoneSave );
-        Call_PushCell( zoneid );
-        Call_PushCell( zonetype );
-        Call_PushCell( view_as<int>( kv ) );
-        Call_Finish( res );
-        
-        if ( res != Plugin_Handled )
-        {
-            if ( res == Plugin_Stop )
-            {
-                LogError( INF_CON_PRE..."Couldn't save zone %s (id: %i) with type %i!", data[ZONE_NAME], zoneid, zonetype );
-            }
-            
-            kv.DeleteThis();
-            //kv.GoBack();
-            continue;
-        }
-        
-        // Post save (this zone will be saved)
-        Call_StartForward( g_hForward_OnZoneSavePost );
-        Call_PushCell( zoneid );
-        Call_PushCell( zonetype );
-        Call_PushCell( view_as<int>( kv ) );
-        Call_Finish();
-        
-        
-        
-        kv.SetNum( "id", zoneid );
-        
-        
-        GetZoneTypeShortNameByIndex( itype, szBuffer, sizeof( szBuffer ) );
-        kv.SetString( "type", szBuffer );
-        
-        
-        FormatEx( szBuffer, sizeof( szBuffer ), "%.1f %.1f %.1f",
-            data[ZONE_MINS],
-            data[ZONE_MINS + 1],
-            data[ZONE_MINS + 2] );
-        kv.SetString( "mins", szBuffer );
-        
-        FormatEx( szBuffer, sizeof( szBuffer ), "%.1f %.1f %.1f",
-            data[ZONE_MAXS],
-            data[ZONE_MAXS + 1],
-            data[ZONE_MAXS + 2] );
-        kv.SetString( "maxs", szBuffer );
-        
-        kv.GoBack();
-        
-        ++num;
-    }
-    
-    
-    if ( num )
-    {
-        kv.Rewind();
-        
-        if ( !kv.ExportToFile( szPath ) )
-        {
-            LogError( INF_CON_PRE..."Can't save zone file '%s'!!", szPath );
-        }
-    }
-    else
-    {
-        LogError( INF_CON_PRE..."No valid zones exist to save. Can't save zone file '%s'!", szPath );
-    }
-    
-    
-    delete kv;
-    
-    return num;
 }
 
 #if defined DEBUG_CHECKZONES
@@ -1415,3 +1138,264 @@ stock void ReloadZones()
     ReadZoneFile();
 }
 
+stock void SpawnZones()
+{
+    for ( int i = 0; i < g_hZones.Length; i++ )
+    {
+        CreateZoneEntityByIndex( i );
+    }
+}
+
+stock bool LoadZoneFromKv( KeyValues kv )
+{
+    decl data[ZONE_SIZE];
+    
+    float mins[3], maxs[3];
+    ZoneType_t zonetype;
+    int zoneid;
+    
+    decl String:szType[32];
+    bool bInvalidZoneType;
+    
+    
+    kv.GetString( "type", szType, sizeof( szType ), "" );
+    
+    if ( IsCharNumeric( szType[0] ) )
+    {
+        zonetype = view_as<ZoneType_t>( StringToInt( szType ) );
+    }
+    else
+    {
+        zonetype = FindZoneTypeByShortName( szType );
+    }
+    
+    bInvalidZoneType = zonetype == ZONETYPE_INVALID || FindZoneType( zonetype ) == -1;
+    
+    if ( bInvalidZoneType )
+    {
+        if ( !g_bLate )
+        {
+            //LogError( INF_CON_PRE..."Found invalid zone type %i!", zonetype );
+        }
+        
+        return false;
+    }
+    
+    zoneid = kv.GetNum( "id", -1 );
+    if ( zoneid < 1 )
+    {
+        LogError( INF_CON_PRE..."Found invalid zone id value! (id: %i)", zoneid );
+        return false;
+    }
+    
+    
+    if ( FindZoneById( zoneid ) != -1 )
+    {
+        LogError( INF_CON_PRE..."Found duplicate zone id! (id: %i)", zoneid );
+        return false;
+    }
+    
+    kv.GetVector( "mins", mins, ORIGIN_VECTOR );
+    kv.GetVector( "maxs", maxs, ORIGIN_VECTOR );
+    
+    if ( GetVectorDistance( mins, maxs, false ) < 1.0 )
+    {
+        LogError( INF_CON_PRE..."Invalid zone mins and maxs! (id: %i)", zoneid );
+        return false;
+    }
+    
+    
+    kv.GetSectionName( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME );
+    
+    
+    // Ask other plugins what to load.
+    Action res = Plugin_Handled;
+    
+    Call_StartForward( g_hForward_OnZoneLoad );
+    Call_PushCell( zoneid );
+    Call_PushCell( zonetype );
+    Call_PushCell( view_as<int>( kv ) );
+    Call_Finish( res );
+    
+    if ( res != Plugin_Handled )
+    {
+#if defined DEBUG_LOADZONES
+        PrintToServer( INF_DEBUG_PRE..."OnZoneLoad failed (id: %i)!", zoneid );
+#endif
+
+        if ( res == Plugin_Stop )
+        {
+            LogError( INF_CON_PRE..."Couldn't load zone %s with type %i from file! (id: %i)", data[ZONE_NAME], zonetype, zoneid );
+        }
+        
+        return false;
+    }
+    
+    // Post load (this zone will be loaded)
+    Call_StartForward( g_hForward_OnZoneLoadPost );
+    Call_PushCell( zoneid );
+    Call_PushCell( zonetype );
+    Call_PushCell( view_as<int>( kv ) );
+    Call_Finish();
+    
+    
+    
+    data[ZONE_ID] = zoneid;
+    data[ZONE_TYPE] = view_as<int>( zonetype );
+    
+    CopyArray( mins, data[ZONE_MINS], 3 );
+    CopyArray( maxs, data[ZONE_MAXS], 3 );
+    
+    
+    g_hZones.PushArray( data );
+    
+    return true;
+}
+
+stock void LoadZones( bool bForceType = false, bool bUseDb = false )
+{
+    bool usedb = (bForceType && bUseDb) || !bForceType;
+    
+    
+    PrintToServer( INF_CON_PRE..."Loading zones from %s...", usedb ? "database" : "file" );
+    
+    
+    if ( usedb )
+    {
+        DB_LoadZones();
+    }
+    else
+    {
+        ReadZoneFile();
+        SendZonesLoadPost();
+    }
+}
+
+stock void SendZonesLoadPost()
+{
+    Call_StartForward( g_hForward_OnPostZoneLoad );
+    Call_Finish();
+}
+
+stock int SaveZones( bool bForceType = false, bool bUseDb = false )
+{
+    ArrayList kvs = new ArrayList( 2 );
+    
+    BuildZoneKvs( kvs );
+    
+    
+    bool usedb = (bForceType && bUseDb) || !bForceType;
+    
+    int num = 0;
+    
+    
+    if ( usedb )
+    {
+        num = DB_SaveZones( kvs );
+    }
+    else
+    {
+        num = WriteZoneFile( kvs );
+    }
+    
+    
+    // Free the kvs
+    for ( int i = 0; i < kvs.Length; i++ )
+        delete view_as<KeyValues>( kvs.Get( i, 0 ) );
+    
+    delete kvs;
+    
+    return num;
+}
+
+stock void BuildZoneKvs( ArrayList kvs )
+{
+    decl String:szBuffer[256];
+    
+    decl data[ZONE_SIZE];
+    int zoneid;
+    ZoneType_t zonetype;
+    int itype;
+    
+    
+    for ( int i = 0; i < g_hZones.Length; i++ )
+    {
+        g_hZones.GetArray( i, data, sizeof( data ) );
+        
+        // Forward slashes need to be removed since they create a subkey. WHY?!?!?!
+        ReplaceString( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME, "/", "" );
+        
+        KeyValues kv = new KeyValues( view_as<char>( data[ZONE_NAME] ) );
+        
+        
+        
+        zoneid = data[ZONE_ID];
+        if ( zoneid < 1 ) continue;
+        
+        
+        zonetype = view_as<ZoneType_t>( data[ZONE_TYPE] );
+        
+        itype = FindZoneType( zonetype );
+        if ( itype == -1 )
+        {
+            continue;
+        }
+        
+        
+        // Ask other plugins what to save.
+        Action res;
+        
+        Call_StartForward( g_hForward_OnZoneSave );
+        Call_PushCell( zoneid );
+        Call_PushCell( zonetype );
+        Call_PushCell( view_as<int>( kv ) );
+        Call_Finish( res );
+        
+        if ( res != Plugin_Handled )
+        {
+            if ( res == Plugin_Stop )
+            {
+                LogError( INF_CON_PRE..."Couldn't save zone %s (id: %i) with type %i!", data[ZONE_NAME], zoneid, zonetype );
+            }
+            
+            kv.DeleteThis();
+            //kv.GoBack();
+            continue;
+        }
+        
+        // Post save (this zone will be saved)
+        Call_StartForward( g_hForward_OnZoneSavePost );
+        Call_PushCell( zoneid );
+        Call_PushCell( zonetype );
+        Call_PushCell( view_as<int>( kv ) );
+        Call_Finish();
+        
+        
+        
+        kv.SetNum( "id", zoneid );
+        
+        
+        GetZoneTypeShortNameByIndex( itype, szBuffer, sizeof( szBuffer ) );
+        kv.SetString( "type", szBuffer );
+        
+        
+        FormatEx( szBuffer, sizeof( szBuffer ), "%.1f %.1f %.1f",
+            data[ZONE_MINS],
+            data[ZONE_MINS + 1],
+            data[ZONE_MINS + 2] );
+        kv.SetString( "mins", szBuffer );
+        
+        FormatEx( szBuffer, sizeof( szBuffer ), "%.1f %.1f %.1f",
+            data[ZONE_MAXS],
+            data[ZONE_MAXS + 1],
+            data[ZONE_MAXS + 2] );
+        kv.SetString( "maxs", szBuffer );
+        
+        
+        decl arr[2];
+        arr[0] = view_as<int>( kv );
+        arr[1] = zoneid;
+        
+        kvs.PushArray( arr );
+    }
+}

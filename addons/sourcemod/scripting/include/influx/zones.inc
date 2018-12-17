@@ -6,6 +6,8 @@
 
 #define INFLUX_LIB_ZONES            "influx_zones"
 
+#define INF_TABLE_ZONES             "inf_zones"
+
 
 #define MAX_ZONE_NAME           32
 #define MAX_ZONE_NAME_CELL      MAX_ZONE_NAME / 4

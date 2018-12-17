@@ -57,16 +57,9 @@ public Action Cmd_SaveZones( int client, int args )
 {
     if ( CanUserSaveZones( client ) )
     {
-        int num = WriteZoneFile();
+        int num = SaveZones();
         
-        if ( IS_ENT_PLAYER( client ) )
-        {
-            Influx_PrintToChat( _, client, "Wrote {MAINCLR1}%i{CHATCLR} zones to file!", num );
-        }
-        else
-        {
-            PrintToServer( INF_CON_PRE..."Wrote %i zones to file!", num );
-        }
+        Inf_ReplyToClient( client, "Wrote {MAINCLR1}%i{CHATCLR} zones to file/database!", num );
     }
     
     return Plugin_Handled;
