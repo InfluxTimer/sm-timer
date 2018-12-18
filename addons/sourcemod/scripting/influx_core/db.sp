@@ -30,18 +30,6 @@ char g_szDriver[32];
                                         joindate DATE NOT NULL)"
 
 
-stock bool DB_GetEscaped( char[] out, int len, const char[] def = "" )
-{
-    if ( !SQL_EscapeString( g_hDB, out, out, len ) )
-    {
-        strcopy( out, len, def );
-        
-        return false;
-    }
-    
-    return true;
-}
-
 stock bool DB_UpdateQuery( int ver, const char[] szQuery )
 {
     if ( !SQL_FastQuery( g_hDB, szQuery ) )
@@ -367,7 +355,7 @@ stock void DB_UpdateClient( int client )
     {
         RemoveChars( szName, "`'\"" );
         
-        DB_GetEscaped( szName, sizeof( szName ), "N/A" ); // Just in case.
+        Inf_DB_GetEscaped( g_hDB, szName, sizeof( szName ), "N/A" ); // Just in case.
     }
     
     decl String:szQuery[128];
@@ -502,7 +490,7 @@ stock int DB_SaveRuns( ArrayList kvs )
         PrintToServer( INF_DEBUG_PRE..."Saving run data:\n%s", szRunData );
 #endif
         
-        if ( !DB_GetEscaped( szRunData, sizeof( szRunData ), "" ) )
+        if ( !Inf_DB_GetEscaped( g_hDB, szRunData, sizeof( szRunData ), "" ) )
         {
             LogError( INF_CON_PRE..."Failed to escape run data string! (%i)", runid );
             continue;

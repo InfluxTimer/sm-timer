@@ -60,7 +60,7 @@ stock int DB_SaveZones( ArrayList kvs )
         PrintToServer( INF_DEBUG_PRE..."Saving zone data:\n%s", szZoneData );
 #endif
         
-        if ( !SQL_EscapeString( db, szZoneData, szZoneData, sizeof( szZoneData ) ) )
+        if ( !Inf_DB_GetEscaped( db, szZoneData, sizeof( szZoneData ) ) )
         {
             LogError( INF_CON_PRE..."Failed to escape zone data string! (%i)", zoneid );
             continue;

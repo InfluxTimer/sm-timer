@@ -496,6 +496,21 @@ stock void Inf_DB_LogError( Handle db, const char[] szAdd, int client = 0, const
     }
 }
 
+stock bool Inf_DB_GetEscaped( Handle db, char[] out, int len, const char[] def = "" )
+{
+    char[] temp = new char[len];
+    if ( !SQL_EscapeString( db, out, temp, len ) )
+    {
+        strcopy( out, len, def );
+        
+        return false;
+    }
+    
+    strcopy( out, len, temp );
+    
+    return true;
+}
+
 stock bool Inf_HandleCmdSpam( int client, float delay = 1.0, float &lasttime, bool bPrint = false )
 {
     float dif = (lasttime + delay) - GetEngineTime();
