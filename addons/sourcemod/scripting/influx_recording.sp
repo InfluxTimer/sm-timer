@@ -377,6 +377,9 @@ public void OnMapEnd()
                 }
     
     delete g_hReplay;
+    
+    g_hReplay = null;
+    g_hRunRec.Clear();
 }
 
 public void E_PlayerSpawn( Event event, const char[] szEvent, bool bImUselessWhyDoIExist )
