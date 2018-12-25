@@ -5,6 +5,7 @@
 #include <influx/stocks_core>
 
 
+//#define DEBUG
 //#define DEBUG_THINK
 
 
@@ -15,6 +16,9 @@ ConVar g_ConVar_GravMult;
 
 float g_flDefaultGravity;
 float g_flLowGravGravity;
+
+int g_iCurThinkClient;
+
 
 
 public Plugin myinfo =
@@ -72,6 +76,10 @@ public void OnAllPluginsLoaded()
 
 public void OnPluginEnd()
 {
+    g_ConVar_Gravity.FloatValue = g_flDefaultGravity;
+    g_ConVar_Gravity.Flags |= FCVAR_REPLICATED | FCVAR_NOTIFY;
+    
+    
     Influx_RemoveStyle( STYLE_LOWGRAV );
 }
 
@@ -98,6 +106,10 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
 {
     if ( style == STYLE_LOWGRAV )
     {
+#if defined DEBUG
+        PrintToServer( INF_DEBUG_PRE..."Hooking for low gravity..." );
+#endif
+
         UnhookThinks( client );
         
         
@@ -127,8 +139,23 @@ public Action Influx_OnClientStyleChange( int client, int style, int laststyle )
 
 stock void UnhookThinks( int client )
 {
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Unhooking low gravity..." );
+#endif
+
     SDKUnhook( client, SDKHook_PreThinkPost, E_PreThinkPost_Client );
     SDKUnhook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
+    
+    // We're in the middle of a player think (yea, it's possible for this to get called between prethink and postthink)
+    // We need to reset the gravity...
+    if ( client == g_iCurThinkClient )
+    {
+#if defined DEBUG
+        PrintToServer( INF_DEBUG_PRE..."Manually calling E_PostThinkPost_Client" );
+#endif
+        
+        E_PostThinkPost_Client( client );
+    }
 }
 
 public void E_PreThinkPost_Client( int client )
@@ -136,6 +163,8 @@ public void E_PreThinkPost_Client( int client )
 #if defined DEBUG_THINK
     PrintToServer( INF_DEBUG_PRE..."PreThinkPost - Low Grav (grav: %.0f | low grav: %.0f)", g_flDefaultGravity, g_flLowGravGravity );
 #endif
+    
+    g_iCurThinkClient = client;
     
     g_ConVar_Gravity.FloatValue = g_flLowGravGravity;
 }
@@ -145,6 +174,8 @@ public void E_PostThinkPost_Client( int client )
 #if defined DEBUG_THINK
     PrintToServer( INF_DEBUG_PRE..."PostThinkPost - Low Grav (grav: %.0f | low grav: %.0f)", g_flDefaultGravity, g_flLowGravGravity );
 #endif
+    
+    g_iCurThinkClient = 0;
     
     g_ConVar_Gravity.FloatValue = g_flDefaultGravity;
 }
