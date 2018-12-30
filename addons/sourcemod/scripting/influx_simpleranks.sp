@@ -92,6 +92,7 @@ ConVar g_ConVar_NotifyReward;
 ConVar g_ConVar_NotifyNewRank;
 ConVar g_ConVar_NotFirst;
 ConVar g_ConVar_TopRankNumToPrint;
+ConVar g_ConVar_UseClanTag;
 
 
 ArrayList g_hRanks;
@@ -163,6 +164,7 @@ public void OnPluginStart()
     g_ConVar_NotifyNewRank = CreateConVar( "influx_simpleranks_displaynewrank", "1", "Do we notify the player with the new rank they receive?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_NotFirst = CreateConVar( "influx_simpleranks_reward_notfirst_perc", "0.1", "Percentage of the normal amount we give to players. 0 = Disable", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_TopRankNumToPrint = CreateConVar( "influx_simpleranks_toprank_printnum", "10", "How many ranks to print with !toprank command. 0 = Disable", FCVAR_NOTIFY, true, 0.0, true, 25.0 );
+    g_ConVar_UseClanTag = CreateConVar( "influx_simpleranks_useclantag", "1", "Is player's clan tag replaced with their rank?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     AutoExecConfig( true, "simpleranks", "influx" );
     
@@ -391,6 +393,16 @@ stock void SetClientRank( int client, int index, bool bChose, const char[] szOve
     g_bChose[client] = bChose;
     
     g_iCurRank[client] = index;
+    
+    
+    if ( g_ConVar_UseClanTag.IntValue )
+    {
+        char szClanTag[256];
+        strcopy( szClanTag, sizeof( szClanTag ), g_szCurRank[client] );
+        Influx_RemoveChatColors( szClanTag, sizeof( szClanTag ) );
+        
+        CS_SetClientClanTag( client, szClanTag );
+    }
     
     
     if ( bPrint )
