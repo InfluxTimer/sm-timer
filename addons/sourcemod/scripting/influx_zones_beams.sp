@@ -178,6 +178,43 @@ public void OnPluginStart()
     if ( g_bLate )
     {
         Influx_OnPreRunLoad();
+        
+        
+        ArrayList zones = Influx_GetZonesArray();
+        for ( int i = 0; i < zones.Length; i++ )
+        {
+            float mins[3], maxs[3];
+            
+            int zoneid = zones.Get( i, ZONE_ID );
+            ZoneType_t zonetype = view_as<ZoneType_t>( zones.Get( i, ZONE_TYPE ) );
+            
+            Influx_GetZoneMinsMaxs( zoneid, mins, maxs );
+            
+            InsertBeams(
+                zoneid,
+                zonetype,
+                mins,
+                maxs,
+                _,
+                _,
+                _,
+                _,
+                _,
+                _,
+                _,
+                _ );
+        }
+        
+        
+        for ( int client = 1; client <= MaxClients; client++ )
+        {
+            if ( IsClientInGame( client ) && !IsFakeClient( client ) )
+            {
+                OnClientPutInServer( client );
+            }
+        }
+        
+        StartBeams();
     }
 }
 
@@ -579,7 +616,7 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     
     if ( g_hTimer_Draw == null && g_hBeams.Length )
     {
-        g_hTimer_Draw = CreateTimer( g_ConVar_DrawInterval.FloatValue, T_DrawBeams, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+        StartBeams();
     }
 }
 
@@ -1010,7 +1047,11 @@ stock bool GetZoneTypeDefColor( ZoneType_t zonetype, int clr[4] )
 
 stock void StartBeams()
 {
-    g_hTimer_Draw = CreateTimer( g_ConVar_DrawInterval.FloatValue, T_DrawBeams, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+    if ( g_hTimer_Draw == null )
+    {
+        g_hTimer_Draw = CreateTimer( g_ConVar_DrawInterval.FloatValue, T_DrawBeams, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+    }
+    
 }
 
 stock bool SendBeamAdd( int zoneid, ZoneType_t zonetype, DisplayType_t &displaytype, int &mat, float &width, int &framerate, int &speed, float &offset, float &offset_z, int clr[4] )
