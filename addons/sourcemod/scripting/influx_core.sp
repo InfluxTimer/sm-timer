@@ -2903,6 +2903,10 @@ stock void RemoveRunById( int runid, int client = 0 )
     Call_Finish();
     
     
+    // HACK: Just force a database removal here, otherwise the runs will persistent forever.
+    DB_RemoveRun( runid );
+    
+    
     Inf_ReplyToClient( client, "Run {MAINCLR1}%s{CHATCLR} has been deleted! Remember to {MAINCLR1}!saveruns{CHATCLR}.", szRun );
 }
 

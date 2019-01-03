@@ -753,6 +753,10 @@ stock bool DeleteZoneByIndex( int index )
     Call_PushCell( zonetype );
     Call_Finish();
     
+    
+    // HACK: Just force a database removal here, otherwise the zones will persistent forever.
+    DB_RemoveZone( zoneid );
+    
     return true;
 }
 

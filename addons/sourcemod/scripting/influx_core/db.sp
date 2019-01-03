@@ -470,6 +470,17 @@ stock void DB_LoadRuns()
     SQL_TQuery( g_hDB, Thrd_GetRuns, szQuery, _, DBPrio_High );
 }
 
+stock void DB_RemoveRun( int runid )
+{
+    decl String:szQuery[192];
+    FormatEx( szQuery, sizeof( szQuery ),
+        "DELETE FROM "...INF_TABLE_RUNS..." WHERE mapid=%i AND runid=%i",
+        g_iCurMapId,
+        runid );
+        
+    SQL_TQuery( g_hDB, Thrd_Empty, szQuery, _, DBPrio_Normal );
+}
+
 stock int DB_SaveRuns( ArrayList kvs )
 {
     static char szQuery[2048];
