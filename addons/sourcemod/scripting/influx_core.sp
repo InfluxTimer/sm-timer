@@ -51,8 +51,6 @@
 #define DEF_VALIDMAPNAMES           "^(surf\\_|bhop\\_|kz\\_)\\w+"
 
 
-#define INF_PRIVCOM_REMOVERECORDS   "sm_inf_removerecords"
-#define INF_PRIVCOM_RUNSETTINGS     "sm_inf_runsettings"
 
 #define INVALID_MAXSPEED        -1.0
 

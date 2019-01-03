@@ -25,6 +25,9 @@
 
 #define INFLUX_ADMMENU          "InfluxCommands"	
 
+#define INF_PRIVCOM_REMOVERECORDS   "sm_inf_removerecords"
+#define INF_PRIVCOM_RUNSETTINGS     "sm_inf_runsettings"
+
 
 
 #define INVALID_RUN_TIME            0.0

@@ -3,6 +3,12 @@
 #include <influx/core>
 #include <influx/prespeed>
 
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
+
+
+
+#define PRESPEEDSETTINGS_COMMAND        "sm_prespeedsettings"
 
 
 #define INVALID_MAXSPD          -1.0
@@ -57,6 +63,10 @@ ConVar g_ConVar_Noclip;
 Handle g_hForward_OnLimitClientPrespeed;
 
 
+// ADMIN MENU
+TopMenu g_hTopMenu;
+
+
 bool g_bLate;
 
 
@@ -102,8 +112,19 @@ public void OnPluginStart()
     HookEvent( "player_jump", E_PlayerJump );
     
     
+    // MENUS
+    RegConsoleCmd( PRESPEEDSETTINGS_COMMAND, Cmd_Menu_PrespeedSettings );
+    
+    
     if ( g_bLate )
     {
+        TopMenu topmenu;
+        if ( LibraryExists( "adminmenu" ) && (topmenu = GetAdminTopMenu()) != null )
+        {
+            OnAdminMenuReady( topmenu );
+        }
+        
+        
         Influx_OnPreRunLoad();
         
         ArrayList runs = Influx_GetRunsArray();
@@ -113,6 +134,37 @@ public void OnPluginStart()
         {
             Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
         }
+    }
+}
+
+public void OnAdminMenuReady( Handle hTopMenu )
+{
+    TopMenu topmenu = TopMenu.FromHandle( hTopMenu );
+    
+    if ( topmenu == g_hTopMenu )
+        return;
+    
+    TopMenuObject res = topmenu.FindCategory( INFLUX_ADMMENU );
+    
+    if ( res == INVALID_TOPMENUOBJECT )
+    {
+        return;
+    }
+    
+    
+    g_hTopMenu = topmenu;
+    g_hTopMenu.AddItem( PRESPEEDSETTINGS_COMMAND, AdmMenu_PrespeedMenu, res, INF_PRIVCOM_RUNSETTINGS, 0 );
+}
+
+public void AdmMenu_PrespeedMenu( TopMenu topmenu, TopMenuAction action, TopMenuObject object_id, int client, char[] buffer, int maxlength )
+{
+    if ( action == TopMenuAction_DisplayOption )
+    {
+        strcopy( buffer, maxlength, "Prespeed Settings" );
+    }
+    else if ( action == TopMenuAction_SelectOption )
+    {
+        FakeClientCommand( client, PRESPEEDSETTINGS_COMMAND );
     }
 }
 
@@ -400,4 +452,185 @@ stock bool SendLimitForward( int client, bool bUsedNoclip )
     
     
     return ( res == Plugin_Continue ) ? true : false
+}
+
+stock int GetDefaultMaxJumps()
+{
+    return;
+}
+
+stock void GetMaxJumpsName( int maxjumps, char[] buffer, int len )
+{
+    if ( maxjumps < 0 )
+    {
+        strcopy( buffer, len, "No limit" );
+        return;
+    }
+    
+    FormatEx( buffer, len, "%i jump(s)", maxjumps );
+}
+
+stock int GetMaxJumps( any data[PRESPEED_SIZE] )
+{
+    return data[PRESPEED_MAXJUMPS] == INVALID_MAXJUMPS ? g_ConVar_MaxJumps.IntValue : data[PRESPEED_MAXJUMPS];
+}
+
+stock float GetMaxSpeed( any data[PRESPEED_SIZE] )
+{
+    return view_as<float>( data[PRESPEED_MAX] ) == INVALID_MAXSPD ? g_ConVar_Max.FloatValue : view_as<float>( data[PRESPEED_MAX] );
+}
+
+stock bool CanUserModifyPrespeedSettings( int client )
+{
+    return CheckCommandAccess( client, INF_PRIVCOM_RUNSETTINGS, ADMFLAG_ROOT );
+}
+
+public Action Cmd_Menu_PrespeedSettings( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !CanUserModifyPrespeedSettings( client ) )
+    {
+        return Plugin_Handled;
+    }
+    
+    
+    // Player is not in a valid run.
+    int runid = Influx_GetClientRunId( client );
+    int ipre = FindPreById( runid );
+    if ( ipre == -1 )
+    {
+        return Plugin_Handled;
+    }
+    
+    
+    decl data[PRESPEED_SIZE];
+    g_hPre.GetArray( ipre, data );
+    
+    
+    Menu menu = new Menu( Hndlr_PrespeedSettings );
+    
+    char szRun[MAX_RUN_NAME];
+    char szMaxSpeed[128];
+    char szMaxJumps[128];
+    
+    
+    //
+    // Speed
+    //
+    float maxspd = GetMaxSpeed( data );
+    if ( maxspd <= 0.0 )
+    {
+        strcopy( szMaxSpeed, sizeof( szMaxSpeed ), "No limit" );
+    }
+    else
+    {
+        FormatEx( szMaxSpeed, sizeof( szMaxSpeed ), "%.0f", maxspd );
+    }
+    
+    
+    if ( view_as<float>( data[PRESPEED_MAX] ) == INVALID_MAXSPD )
+    {
+        Format( szMaxSpeed, sizeof( szMaxSpeed ), "Default (%s)", szMaxSpeed );
+    }
+    
+    
+    //
+    // Jumps
+    //
+    int maxjumps = GetMaxJumps( data );
+    GetMaxJumpsName( maxjumps, szMaxJumps, sizeof( szMaxJumps ) );
+    
+    if ( data[PRESPEED_MAXJUMPS] == INVALID_MAXJUMPS )
+    {
+        Format( szMaxJumps, sizeof( szMaxJumps ), "Default (%s)", szMaxJumps );
+    }
+    
+    Influx_GetRunName( runid, szRun, sizeof( szRun ) );
+    menu.SetTitle( "Prespeed Settings: %s\n \nMax Speed: %s\nMax Jumps: %s\n \n ", szRun, szMaxSpeed, szMaxJumps );
+    
+    
+    // ITEMDRAW_DISABLED | ITEMDRAW_DEFAULT
+    menu.AddItem( "a", "> Increase Max Speed" );
+    menu.AddItem( "b", "< Decrease Max Speed" );
+    menu.AddItem( "c", "Use Default Max Speed\n " );
+    
+    menu.AddItem( "d", "> Increase Max Jumps" );
+    menu.AddItem( "e", "< Decrease Max Jumps" );
+    menu.AddItem( "f", "Use Default Max Jumps" );
+    
+    
+    menu.Display( client, MENU_TIME_FOREVER );
+    
+    return Plugin_Handled;
+}
+
+public int Hndlr_PrespeedSettings( Menu menu, MenuAction action, int client, int index )
+{
+    MENU_HANDLE( menu, action )
+    
+    
+    if ( !CanUserModifyPrespeedSettings( client ) )
+        return 0;
+    
+    char szInfo[32];
+    if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) )
+        return 0;
+    
+    
+    int runid = Influx_GetClientRunId( client );
+    int ipre = FindPreById( runid );
+    if ( ipre == -1 )
+        return 0;
+    
+    
+    decl data[PRESPEED_SIZE];
+    g_hPre.GetArray( ipre, data );
+    
+    switch ( szInfo[0] )
+    {
+        case 'a' : // Increase max speed
+        {
+            float maxspd = GetMaxSpeed( data );
+            maxspd += 50.0;
+            
+            g_hPre.Set( ipre, maxspd, PRESPEED_MAX );
+        }
+        case 'b' : // Decrease max speed
+        {
+            float maxspd = GetMaxSpeed( data );
+            maxspd -= 50.0;
+            if ( maxspd < 0.0 )
+                maxspd = 0.0;
+            
+            g_hPre.Set( ipre, maxspd, PRESPEED_MAX );
+        }
+        case 'c' : // Use default max speed
+        {
+            g_hPre.Set( ipre, INVALID_MAXSPD, PRESPEED_MAX );
+        }
+        case 'd' : // Increase max jumps
+        {
+            int maxjumps = GetMaxJumps( data ) + 1;
+            
+            g_hPre.Set( ipre, maxjumps, PRESPEED_MAXJUMPS );
+        }
+        case 'e' : // Decrease max jumps
+        {
+            int maxjumps = GetMaxJumps( data ) - 1;
+            if ( maxjumps < -1 )
+                maxjumps = -1;
+            
+            g_hPre.Set( ipre, maxjumps, PRESPEED_MAXJUMPS );
+        }
+        case 'f' : // Use default max jumps
+        {
+            g_hPre.Set( ipre, INVALID_MAXJUMPS, PRESPEED_MAXJUMPS );
+        }
+    }
+    
+    FakeClientCommand( client, PRESPEEDSETTINGS_COMMAND );
+    
+    
+    return 0;
 }
