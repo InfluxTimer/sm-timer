@@ -38,13 +38,18 @@ stock void DB_LoadZones()
 
 stock void DB_RemoveZone( int zoneid )
 {
+    Handle db = Influx_GetDB();
+    
+    int mapid = Influx_GetCurrentMapId();
+    
+    
     decl String:szQuery[192];
     FormatEx( szQuery, sizeof( szQuery ),
         "DELETE FROM "...INF_TABLE_ZONES..." WHERE mapid=%i AND zoneid=%i",
-        g_iCurMapId,
+        mapid,
         zoneid );
         
-    SQL_TQuery( g_hDB, Thrd_Empty, szQuery, _, DBPrio_Normal );
+    SQL_TQuery( db, Thrd_Empty, szQuery, _, DBPrio_Normal );
 }
 
 stock int DB_SaveZones( ArrayList kvs )
