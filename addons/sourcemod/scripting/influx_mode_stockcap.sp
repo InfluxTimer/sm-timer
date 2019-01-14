@@ -62,7 +62,10 @@ public void OnAllPluginsLoaded()
 {
     AddMode();
     
-    Influx_AddFpsCheck( MODE_STOCKCAP );
+    if ( g_bLib_FpsCheck )
+    {
+        Influx_AddFpsCheck( MODE_STOCKCAP );
+    }
 }
 
 public void OnPluginEnd()
