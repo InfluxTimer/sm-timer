@@ -170,7 +170,11 @@ pluginlist=MyPluginList([
 	MyPlugin('influx_zones_autobhop'),
 	MyPlugin(	'influx_zones_beams', 'beams',
 			files=[
-				'addons/sourcemod/configs/influx_beams.cfg'
+				'addons/sourcemod/configs/influx_beams.cfg',
+				'materials/influx/beam_end.vmt',
+				'materials/influx/beam_end.vtf',
+				'materials/influx/beam_start.vmt',
+				'materials/influx/beam_start.vtf',
 			]
 	),
 	MyPlugin('influx_zones_block', 'zones_block'),
