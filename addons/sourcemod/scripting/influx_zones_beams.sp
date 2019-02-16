@@ -108,6 +108,8 @@ Handle g_hForward_OnBeamAdd;
 
 // CONVARS
 ConVar g_ConVar_DrawInterval;
+ConVar g_ConVar_TraceBeams;
+ConVar g_ConVar_BeamDrawDist;
 
 
 // LIBRARIES
@@ -162,6 +164,8 @@ public void OnPluginStart()
     
     // CONVARS
     g_ConVar_DrawInterval = CreateConVar( "influx_beams_drawinterval", "1.0", "Interval in seconds that zone beams get updated to players.", FCVAR_NOTIFY );
+    g_ConVar_TraceBeams = CreateConVar( "influx_beams_tracedrawbeams", "0", "Do we check if the player can see the zone or not by tracing? May be expensive.", FCVAR_NOTIFY );
+    g_ConVar_BeamDrawDist = CreateConVar( "influx_beams_drawdistance", "1500", "The distance in which we draw the zones to players no matter what.", FCVAR_NOTIFY );
     g_ConVar_DrawInterval.AddChangeHook( E_ConVarChanged_DrawInterval );
     
     AutoExecConfig( true, "beams", "influx" );
@@ -886,6 +890,11 @@ public Action T_DrawBeams( Handle hTimer )
     {
         float drawinterval = g_ConVar_DrawInterval.FloatValue;
         
+        
+        float drawdistsqr = g_ConVar_BeamDrawDist.FloatValue;
+        drawdistsqr *= drawdistsqr;
+        
+        
         float engtime = GetEngineTime();
         
         decl Float:pos[3];
@@ -942,14 +951,16 @@ public Action T_DrawBeams( Handle hTimer )
                     
                     for ( j = 0; j < 3; j++ ) pos[j] = p1[j] + ( p7[j] - p1[j] ) * 0.5;
                     
+                    
+
 #define MAX_DIST        1536.0
 #define MAX_DIST_SQ     MAX_DIST * MAX_DIST
                     
-                    if ( GetVectorDistance( p2, pos, true ) < MAX_DIST_SQ )
+                    if ( GetVectorDistance( p2, pos, true ) < drawdistsqr )
                     {
                         clients[nClients++] = client;
                     }
-                    else
+                    else if ( g_ConVar_TraceBeams.BoolValue )
                     {
                         TR_TraceRayFilter( p2, pos, CONTENTS_SOLID, RayType_EndPoint, TraceFilter_WorldOnly );
                         
