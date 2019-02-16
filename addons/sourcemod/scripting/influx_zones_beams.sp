@@ -14,6 +14,10 @@
 
 
 
+//#define DEBUG
+//#define DEBUG_DRAW
+
+
 #define VALID_DISPLAYTYPE(%0)       ( %0 > DISPLAYTYPE_INVALID && %0 < DISPLAYTYPE_MAX )
 
 
@@ -358,10 +362,19 @@ public void Influx_OnPreRunLoad()
     PrecacheDefault();
     
     
-    g_hBeams.Clear();
+    ClearBeams();
     
     
     ReadDefaultSettingsFile();
+}
+
+stock void ClearBeams()
+{
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Clearing beams..." );
+#endif
+
+    g_hBeams.Clear();
 }
 
 stock void ReadDefaultSettingsFile()
@@ -516,10 +529,7 @@ public void E_ConVarChanged_DrawInterval( ConVar convar, const char[] oldValue, 
 
 public void OnConfigsExecuted()
 {
-    if ( g_hBeams.Length )
-    {
-        StartBeams();
-    }
+    StartBeams();
 }
 
 public void OnClientPutInServer( int client )
@@ -858,6 +868,9 @@ stock bool DeleteBeamsById( int zoneid )
     
     if ( i != -1 )
     {
+#if defined DEBUG
+        PrintToServer( INF_DEBUG_PRE..."Removing beams of zone %i", zoneid );
+#endif
         g_hBeams.Erase( i );
         
         return true;
@@ -950,6 +963,12 @@ public Action T_DrawBeams( Handle hTimer )
             
             if ( !nClients ) continue;
             
+            
+#if defined DEBUG_DRAW
+            PrintToServer( INF_DEBUG_PRE..."Drawing beam of zone %i to %i clients!",
+                data[BEAM_ZONE_ID],
+                nClients );
+#endif
             
             framerate = data[BEAM_FRAMERATE];
             spd = data[BEAM_SPEED];
@@ -1051,7 +1070,6 @@ stock void StartBeams()
     {
         g_hTimer_Draw = CreateTimer( g_ConVar_DrawInterval.FloatValue, T_DrawBeams, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
     }
-    
 }
 
 stock bool SendBeamAdd( int zoneid, ZoneType_t zonetype, DisplayType_t &displaytype, int &mat, float &width, int &framerate, int &speed, float &offset, float &offset_z, int clr[4] )
