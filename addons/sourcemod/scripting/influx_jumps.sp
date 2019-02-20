@@ -150,7 +150,7 @@ public void Thrd_Update( Handle db, Handle res, const char[] szError, int client
 public void E_PlayerJump( Event event, const char[] szEvent, bool bImUselessWhyDoIExist )
 {
     int client;
-    if ( !(client = GetClientOfUserId( GetEventInt( event, "userid" ) )) ) return;
+    if ( (client = GetClientOfUserId( GetEventInt( event, "userid" ) )) < 1 || !IsClientInGame( client ) ) return;
     
     if ( !g_bCount[client] ) return;
     

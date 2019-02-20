@@ -177,7 +177,7 @@ public void E_CvarChange_Auto_AA( ConVar convar, const char[] oldval, const char
 public void E_PlayerJump( Event event, const char[] szEvent, bool dontBroadcast )
 {
     int client = GetClientOfUserId( event.GetInt( "userid" ) );
-    if ( !client ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     if ( Influx_GetClientMode( client ) != MODE_AUTO ) return;
     
@@ -191,7 +191,7 @@ public void E_PlayerJump( Event event, const char[] szEvent, bool dontBroadcast 
 public void E_PlayerHurt( Event event, const char[] szEvent, bool dontBroadcast )
 {
     int client = GetClientOfUserId( event.GetInt( "userid" ) );
-    if ( !client ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     if ( Influx_GetClientMode( client ) != MODE_AUTO ) return;
     

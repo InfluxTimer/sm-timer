@@ -142,7 +142,7 @@ stock void PrintFpsStatus( int client )
 
 public Action T_QueryFps( Handle hTimer, int client )
 {
-    if ( (client = GetClientOfUserId( client )) )
+    if ( (client = GetClientOfUserId( client )) > 0 && IsClientInGame( client ) )
     {
         QueryClientFps( client );
     }

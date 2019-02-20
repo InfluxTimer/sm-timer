@@ -88,7 +88,7 @@ public Action T_Display( Handle hTimer, ArrayList array )
     
     
     int client = GetClientOfUserId( data[PCB_USERID] );
-    if ( client < 1 ) return Plugin_Stop;
+    if ( client < 1 || !IsClientInGame( client ) ) return Plugin_Stop;
     
     
     Handle db = Influx_GetDB();
@@ -127,7 +127,7 @@ public void Thrd_Display( Handle db, Handle res, const char[] szError, int clien
     
     
     client = GetClientOfUserId( client );
-    if ( client < 1 ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     
     decl String:szName[MAX_NAME_LENGTH];

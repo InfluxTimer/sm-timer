@@ -25,7 +25,7 @@ public void Thrd_InitMap( Handle db, Handle res, const char[] szError, any data 
 
 public void Thrd_InitClient( Handle db, Handle res, const char[] szError, int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null )
     {
@@ -94,7 +94,7 @@ public void Thrd_CheckClientRecCount( Handle db, Handle res, const char[] szErro
     
     if ( mapid != Influx_GetCurrentMapId() ) return;
     
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null )
     {
@@ -159,7 +159,12 @@ public void Thrd_SetMapReward( Handle db, Handle res, const char[] szError, Arra
     int reward = data[2];
     
     
-    if ( client && !(client = GetClientOfUserId( client )) ) return;
+    // Allow console to pass.
+    if ( client )
+    {
+        if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) )
+            return;
+    }
     
     if ( res == null )
     {
@@ -213,7 +218,12 @@ public void Thrd_DisplayTopRanks( Handle db, Handle res, const char[] szError, A
     int nToPrint = data[1];
     
     
-    if ( client && !(client = GetClientOfUserId( client )) ) return;
+    // Allow console to pass.
+    if ( client )
+    {
+        if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) )
+            return;
+    }
     
     if ( res == null )
     {

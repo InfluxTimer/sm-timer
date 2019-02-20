@@ -514,7 +514,7 @@ public void OnClientPutInServer( int client )
 
 public Action T_MotdFix( Handle hTimer, int client )
 {
-    if ( (client = GetClientOfUserId( client )) )
+    if ( (client = GetClientOfUserId( client )) > 0 && IsClientInGame( client ) )
     {
         if ( Influx_GetClientStyle( client ) != STYLE_TAS || g_flTimescale[client] == 1.0 )
             SetClientCheats( client, false );
@@ -582,7 +582,7 @@ public void E_PostThinkPost_Client( int client )
 public void E_PlayerTeamNDeath( Event event, const char[] szEvent, bool bImUselessWhyDoIExist )
 {
     int client = GetClientOfUserId( event.GetInt( "userid" ) );
-    if ( !client ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     if ( Influx_GetClientStyle( client ) != STYLE_TAS ) return;
     

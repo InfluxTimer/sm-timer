@@ -317,7 +317,7 @@ public void Thrd_InitNumRecs( Handle db, Handle res, const char[] szError, any d
 
 public void Thrd_InitClientRanks( Handle db, Handle res, const char[] szError, int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null )
     {

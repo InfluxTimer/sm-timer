@@ -99,7 +99,7 @@ public void OnClientPostAdminCheck( int client )
 
 public Action T_Show( Handle hTimer, int client )
 {
-    if ( (client = GetClientOfUserId( client )) )
+    if ( (client = GetClientOfUserId( client )) > 0 && IsClientInGame( client ) )
     {
         Influx_PrintToChat( _, client, "Type {MAINCLR1}!help{CHATCLR} to see a list of commands." );
     }

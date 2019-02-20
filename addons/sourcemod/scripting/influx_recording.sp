@@ -385,7 +385,7 @@ public void OnMapEnd()
 public void E_PlayerSpawn( Event event, const char[] szEvent, bool bImUselessWhyDoIExist )
 {
     int client = GetClientOfUserId( event.GetInt( "userid" ) );
-    if ( !client ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     if ( GetClientTeam( client ) <= CS_TEAM_SPECTATOR || !IsPlayerAlive( client ) ) return;
     
@@ -398,7 +398,7 @@ public void E_PlayerSpawn( Event event, const char[] szEvent, bool bImUselessWhy
 
 public void E_PlayerSpawn_Delay( int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     if ( !IsPlayerAlive( client ) ) return;
     
@@ -768,7 +768,7 @@ public Action T_PlaybackToStart( Handle hTimer, int client )
     
     bool nulltimer = true;
     
-    if ( (client = GetClientOfUserId( client )) != -1 )
+    if ( (client = GetClientOfUserId( client )) > 0 && IsClientInGame( client ) )
     {
         if ( g_nCurRec[client] == PLAYBACK_END )
         {
@@ -803,7 +803,7 @@ public Action T_PlaybackToStart( Handle hTimer, int client )
 
 public Action T_PlaybackStart( Handle hTimer, int client )
 {
-    if ( (client = GetClientOfUserId( client )) != -1 )
+    if ( (client = GetClientOfUserId( client )) > 0 && IsClientInGame( client ) )
     {
         if ( g_nCurRec[client] == PLAYBACK_START )
         {

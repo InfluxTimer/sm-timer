@@ -93,7 +93,7 @@ public void Thrd_NewMapId( Handle db, Handle res, const char[] szError, any data
 
 public void Thrd_GetClientId( Handle db, Handle res, const char[] szError, int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null )
     {
@@ -142,7 +142,7 @@ public void Thrd_GetClientId( Handle db, Handle res, const char[] szError, int c
 
 public void Thrd_InsertNewUser( Handle db, Handle res, const char[] szError, int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null )
     {
@@ -156,7 +156,7 @@ public void Thrd_InsertNewUser( Handle db, Handle res, const char[] szError, int
 
 public void Thrd_GetClientNewId( Handle db, Handle res, const char[] szError, int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null || !SQL_FetchRow( res ) )
     {
@@ -172,7 +172,7 @@ public void Thrd_GetClientNewId( Handle db, Handle res, const char[] szError, in
 
 public void Thrd_GetClientRecords( Handle db, Handle res, const char[] szError, int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null )
     {
@@ -378,7 +378,7 @@ public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, any data 
 
 public void Thrd_PrintDeleteRecords( Handle db, Handle res, const char[] szError, int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null )
     {

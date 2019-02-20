@@ -1,7 +1,7 @@
 public void E_PlayerSpawn( Event event, const char[] szEvent, bool bImUselessWhyDoIExist )
 {
     int client = GetClientOfUserId( event.GetInt( "userid" ) );
-    if ( !client ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     
     if ( GetClientTeam( client ) <= CS_TEAM_SPECTATOR || !IsPlayerAlive( client ) ) return;

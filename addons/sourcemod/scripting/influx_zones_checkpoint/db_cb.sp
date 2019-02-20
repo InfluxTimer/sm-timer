@@ -62,7 +62,7 @@ public void Thrd_GetCPSRTimes( Handle db, Handle res, const char[] szError, any 
 
 public void Thrd_InitClientCPTimes( Handle db, Handle res, const char[] szError, int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     
     if ( res == null )
@@ -187,7 +187,7 @@ public void Thrd_PrintCPTimes( Handle db, Handle res, const char[] szError, Arra
     
     
     int client = GetClientOfUserId( data[PCB_USERID] );
-    if ( !client ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     
     if ( res == null )
@@ -294,7 +294,7 @@ public void Thrd_PrintTopCPTimes( Handle db, Handle res, const char[] szError, A
     
     int client = data[PCBTOP_USERID];
     
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     
     if ( res == null )
@@ -420,7 +420,7 @@ stock void FormatSeconds( float time, float besttime, char[] sz, int len )
 
 public void Thrd_PrintDeleteCpTimes( Handle db, Handle res, const char[] szError, int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     
     if ( res == null )

@@ -77,7 +77,7 @@ public void Influx_OnClientIdRetrieved( int client, int uid, bool bNew )
 
 stock void PostStatusChanged( int client )
 {
-    if ( !(client = GetClientOfUserId( client )) )
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) )
         return;
     
     
@@ -164,7 +164,7 @@ stock void DB_TopRecords( int client )
 
 public void Thrd_Result( Handle db, Handle res, const char[] szError, int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     
     if ( res == null )

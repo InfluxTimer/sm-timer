@@ -57,7 +57,7 @@ public void E_ConVarChanged_Type( ConVar convar, const char[] oldValue, const ch
 public void E_PlayerSpawn( Event event, const char[] szEvent, bool bImUselessWhyDoIExist )
 {
     int client = GetClientOfUserId( event.GetInt( "userid" ) );
-    if ( !client ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     if ( GetClientTeam( client ) <= CS_TEAM_SPECTATOR || !IsPlayerAlive( client ) ) return;
     
@@ -67,7 +67,7 @@ public void E_PlayerSpawn( Event event, const char[] szEvent, bool bImUselessWhy
 
 public void E_PlayerSpawn_Delay( int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     if ( !IsPlayerAlive( client ) ) return;
     

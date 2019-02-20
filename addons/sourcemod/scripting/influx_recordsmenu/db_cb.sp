@@ -7,7 +7,7 @@ public void Thrd_DetermineRunMenu( Handle db, Handle res, const char[] szError, 
     
     int client = GetClientOfUserId( data[0] );
     
-    if ( !client ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null )
     {
@@ -41,7 +41,7 @@ public void Thrd_DetermineStyleMenu( Handle db, Handle res, const char[] szError
     
     int client = GetClientOfUserId( data[0] );
     
-    if ( !client ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null )
     {
@@ -79,7 +79,7 @@ public void Thrd_PrintMaps( Handle db, Handle res, const char[] szError, ArrayLi
     
     int client = GetClientOfUserId( data[0] );
     
-    if ( !client ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null )
     {
@@ -147,7 +147,7 @@ public void Thrd_PrintRunSelect( Handle db, Handle res, const char[] szError, Ar
     
     int client = GetClientOfUserId( data[0] );
     
-    if ( !client ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null )
     {
@@ -315,7 +315,7 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     
     int client = GetClientOfUserId( data[PCB_USERID] );
     
-    if ( !client ) return;
+    if ( client < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null )
     {
@@ -550,7 +550,7 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
 
 public void Thrd_PrintRecordInfo( Handle db, Handle res, const char[] szError, int client )
 {
-    if ( !(client = GetClientOfUserId( client )) ) return;
+    if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
     
     if ( res == null || !SQL_FetchRow( res ) )
     {

@@ -30,7 +30,7 @@ public void OnClientPutInServer( int client )
 
 public Action T_Spawn( Handle hTimer, int client )
 {
-    if ( (client = GetClientOfUserId( client )) )
+    if ( (client = GetClientOfUserId( client )) > 0 && IsClientInGame( client ) )
     {
         if ( !IsPlayerAlive( client ) && !IsClientSourceTV( client ) )
         {
