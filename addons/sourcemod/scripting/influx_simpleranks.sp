@@ -123,6 +123,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     
     CreateNative( "Influx_GetClientSimpleRank", Native_GetClientSimpleRank );
     CreateNative( "Influx_GetClientSimpleRankPoints", Native_GetClientSimpleRankPoints );
+    CreateNative( "Influx_AddClientSimpleRankPoints", Native_AddClientSimpleRankPoints );
     
     
     g_bLate = late;
@@ -702,4 +703,20 @@ public int Native_GetClientSimpleRankPoints( Handle hPlugin, int nParms )
     int client = GetNativeCell( 1 );
     
     return g_nPoints[client];
+}
+
+public int Native_AddClientSimpleRankPoints( Handle hPlugin, int nParms )
+{
+    int iClient = GetNativeCell(1);
+    int iPoints = GetNativeCell(2);
+
+    if( !iClient || iPoints < 0 )
+    {
+        return 0;
+    }
+
+    DB_IncCachedPoints( iClient, iPoints );
+    g_nPoints[iClient] += iPoints;
+
+    return 1;
 }

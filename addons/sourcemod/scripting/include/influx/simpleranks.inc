@@ -10,6 +10,7 @@
 
 native void Influx_GetClientSimpleRank( int client, char[] out, int len );
 native int Influx_GetClientSimpleRankPoints( int client );
+native bool Influx_AddClientSimpleRankPoints( int client, int iPoints );
 
 
 public SharedPlugin __pl_influx_simpleranks =
@@ -28,5 +29,6 @@ public void __pl_influx_simpleranks_SetNTVOptional()
 {
     MarkNativeAsOptional( "Influx_GetClientSimpleRank" );
     MarkNativeAsOptional( "Influx_GetClientSimpleRankPoints" );
+    MarkNativeAsOptional( "Influx_AddClientSimpleRankPoints" );
 }
 #endif
