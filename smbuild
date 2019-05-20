@@ -232,6 +232,7 @@ Package(
 		'prespeedmaxjumps': '1',
 		'prespeedmaxspeed': '600',
 		'sv_autobunnyhopping': '1',
+		'startonjump': '0',
 	},
 )
 

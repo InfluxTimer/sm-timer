@@ -32,6 +32,7 @@ g_iBuildingRunId[INF_MAXPLAYERS];
 
 
 ConVar g_ConVar_SetRunOnTouch;
+ConVar g_ConVar_StartOnJump;
 
 
 
@@ -56,8 +57,13 @@ public void OnPluginStart()
     
     // CONVARS
     g_ConVar_SetRunOnTouch = CreateConVar( "influx_zones_timer_setrunontouch", "1", "When player touches the start zone, we set player's run to it.", FCVAR_NOTIFY );
+    g_ConVar_StartOnJump = CreateConVar( "influx_zones_timer_startonjump", "1", "0 = Timer starts only when leaving zone. 1 = Timer starts when jumping OR leaving zone.", FCVAR_NOTIFY );
     
     AutoExecConfig( true, "zones_timer", "influx" );
+    
+    
+    // EVENTS
+    HookEvent( "player_jump", E_PlayerJump );
 }
 
 public void OnAllPluginsLoaded()
@@ -625,6 +631,23 @@ stock void StartToBuild( int client, ZoneType_t zonetype, int runid = -1 )
     Inf_OpenZoneMenu( client );
 }
 
+public void E_PlayerJump( Event event, const char[] szEvent, bool bImUselessWhyDoIExist )
+{
+    int client = GetClientOfUserId( GetEventInt( event, "userid" ) );
+    if ( !client ) return;
+    
+    if ( !IsPlayerAlive( client ) ) return;
+    
+    
+    int runid = Influx_GetClientRunId( client );
+    
+    // Start timer on jump.
+    if ( g_ConVar_StartOnJump.BoolValue && Influx_GetClientState( client ) == STATE_START )
+    {
+        Influx_StartTimer( client, runid );
+    }
+}
+
 public void E_StartTouchPost_Start( int ent, int activator )
 {
     if ( !IS_ENT_PLAYER( activator ) ) return;
@@ -652,7 +675,7 @@ public void E_EndTouchPost_Start( int ent, int activator )
     
     int runid = Inf_GetZoneProp( ent );
     
-    if ( Influx_GetClientRunId( activator ) == runid )
+    if ( Influx_GetClientRunId( activator ) == runid && Influx_GetClientState( activator ) == STATE_START )
     {
         Influx_StartTimer( activator, runid );
     }
