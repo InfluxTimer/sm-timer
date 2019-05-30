@@ -396,14 +396,8 @@ stock void SetClientRank( int client, int index, bool bChose, const char[] szOve
     g_iCurRank[client] = index;
     
     
-    if ( g_ConVar_UseClanTag.IntValue )
-    {
-        char szClanTag[256];
-        strcopy( szClanTag, sizeof( szClanTag ), g_szCurRank[client] );
-        Influx_RemoveChatColors( szClanTag, sizeof( szClanTag ) );
-        
-        CS_SetClientClanTag( client, szClanTag );
-    }
+    UpdateClientClanTag( client );
+    CheckClientClanTag( client );
     
     
     if ( bPrint )
@@ -699,6 +693,77 @@ stock void GivePoints( const int[] targets, int nTargets, int points, int issuer
         Inf_ReplyToClient( issuer, "Gave {MAINCLR1}%i{CHATCLR} points to {MAINCLR1}%i{CHATCLR} player(s)!", points, valids );
     }
 }
+
+// Return true if a new clan tag was set.
+stock bool UpdateClientClanTag( int client )
+{
+    if ( !g_ConVar_UseClanTag.BoolValue )
+    {
+        return false;
+    }
+    
+    
+    char szRankClanTag[256];
+    char szClanTag[256];
+    
+    GetClientClanTagRank( client, szRankClanTag, sizeof( szRankClanTag ) );
+    
+    
+    CS_GetClientClanTag( client, szClanTag, sizeof( szClanTag ) );
+    
+    
+    if ( !StrEqual( szClanTag, szRankClanTag, true ) )
+    {
+        CS_SetClientClanTag( client, szRankClanTag );
+        
+#if defined DEBUG
+        PrintToServer( INF_DEBUG_PRE..."Set %N's clan tag to '%s'. (old: %s)",
+            client,
+            szRankClanTag,
+            szClanTag );
+#endif
+        return true;
+    }
+    else
+    {
+#if defined DEBUG
+        PrintToServer( INF_DEBUG_PRE..."%N already has '%s' as a clan tag!",
+            client,
+            szClanTag );
+#endif
+        return false;
+    }
+}
+
+stock void CheckClientClanTag( int client )
+{
+    if ( !g_ConVar_UseClanTag.BoolValue )
+    {
+        return;
+    }
+    
+    CreateTimer( 1.0, T_CheckClanTag, GetClientUserId( client ), TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT );
+}
+
+stock void GetClientClanTagRank( int client, char[] out, int len )
+{
+    strcopy( out, len, g_szCurRank[client] );
+    Influx_RemoveChatColors( out, len );
+}
+
+public Action T_CheckClanTag( Handle hTimer, int client )
+{
+    // Keep updating the clan tag until we no longer need to set it.
+    bool ret = true;
+    
+    if ( (client = GetClientOfUserId( client )) > 0 && IsClientInGame( client ) )
+    {
+        ret = UpdateClientClanTag( client );
+    }
+    
+    return ret ? Plugin_Continue : Plugin_Stop;
+}
+
 
 // NATIVES
 public int Native_GetClientSimpleRank( Handle hPlugin, int nParms )
