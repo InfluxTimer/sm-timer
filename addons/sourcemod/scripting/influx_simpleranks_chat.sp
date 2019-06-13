@@ -14,6 +14,8 @@
 ConVar g_ConVar_PrintToServer;
 
 
+bool g_bHasBaseChat;
+
 
 bool g_bLib_BaseComm;
 bool g_bLib_SilentChatCmds;
@@ -45,6 +47,10 @@ public void OnPluginStart()
     // LIBRARIES
     g_bLib_BaseComm = LibraryExists( "basecomm" );
     g_bLib_SilentChatCmds = LibraryExists( INFLUX_LIB_SILENT_CHATCMDS );
+    
+    
+    
+    g_bHasBaseChat = ( FindPluginByFile( "basechat.smx" ) != null ) ? true : false;
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -64,6 +70,13 @@ public Action OnClientSayCommand( int client, const char[] szCommand, const char
     if ( !client ) return Plugin_Continue;
     
     if ( !IsClientInGame( client ) ) return Plugin_Continue;
+    
+    
+    // This is an admin command.
+    if ( szMsg[0] == '@' && ShouldIgnoreAtSign() )
+    {
+        return Plugin_Continue;
+    }
     
     // Gagged?
     if ( g_bLib_BaseComm && BaseComm_IsClientGagged( client ) )
@@ -121,4 +134,9 @@ public Action OnClientSayCommand( int client, const char[] szCommand, const char
     }
     
     return Plugin_Continue;
+}
+
+bool ShouldIgnoreAtSign()
+{
+    return g_bHasBaseChat;
 }
