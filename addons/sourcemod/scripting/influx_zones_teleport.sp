@@ -130,7 +130,6 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     kv.GetVector( "teleangles", vec, ORIGIN_VECTOR );
     CopyArray( vec, data[TELE_ANG], 2 );
-    data[TELE_ANG + 1] = 0;
     
     g_hTeles.PushArray( data );
     
