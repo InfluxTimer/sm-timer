@@ -83,7 +83,7 @@ public Action Cmd_Admin_SetTelePos( int client, int args )
     }
     else
     {
-        Influx_PrintToChat( _, client, "Run with an ID of {MAINCLR1}%i{CHATCLR} does not exist!", runid );
+        Influx_PrintToChat( _, client, "%T", "INF_RUNIDNOTEXIST", client, runid );
     }
     
     return Plugin_Handled;
@@ -127,7 +127,7 @@ public Action Cmd_Admin_SetRunName( int client, int args )
         SetRunNameByIndex( index, szNew );
         
         
-        Influx_PrintToChatAll( _, client, "Run {MAINCLR1}%s{CHATCLR} has been renamed to {MAINCLR1}%s{CHATCLR}!", szOld, szNew );
+        Influx_PrintToChatAll( _, client, "%T", "INF_RUN_RENAMED", LANG_SERVER, szOld, szNew );
         
         
         if ( !client )
@@ -139,7 +139,7 @@ public Action Cmd_Admin_SetRunName( int client, int args )
     {
         if ( client )
         {
-            Influx_PrintToChat( _, client, "Run with an ID of {MAINCLR1}%i{CHATCLR} does not exist!", runid );
+            Influx_PrintToChat( _, client, "%T", "INF_RUNIDNOTEXIST", client, runid );
         }
         else
         {

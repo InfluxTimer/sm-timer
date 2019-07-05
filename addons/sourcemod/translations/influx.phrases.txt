@@ -1,28 +1,362 @@
 "Phrases"
 {
+	//
+	// Words
+	//
+	"INF_WORD_RUN"
+	{
+		"en"			"Run"
+	}
+	
+	"INF_WORD_MODE"
+	{
+		"en"			"Mode"
+	}
+	
+	"INF_WORD_STYLE"
+	{
+		"en"			"Style"
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	//
 	// General
-	"MUSTBERUNNING"
+	//
+	"INF_MUSTBERUNNING"
 	{
 		"en"			"You must be running!"
 	}
 	
+	"INF_MUSTBEALIVE"
+	{
+		"en"			"You must be alive!"
+	}
+	
+	"INF_TIMERDISABLED"
+	{
+		"en"			"Your timer has been disabled!"
+	}
+	
+	
+	
+	
+	
+	
+	
+	//
+	// Mode/Style
+	//
+	"INF_MODEORSTYLEISNOW"
+	{
+		"#format"		"{1:t},{2:s}"
+		"en"			"Your {1} is now {MAINCLR1}{2}{CHATCLR}!"
+	}
+	
+	"INF_MODEORSTYLENOTALLOWEDINRUN"
+	{
+		"#format"		"{1:t},{2:s},{3:s}"
+		"en"			"Sorry, {1} {MAINCLR1}{2}{CHATCLR} is not allowed in {MAINCLR1}{3}{CHATCLR}!"
+	}
+	
+	"INF_WENTWRONGCHANGING"
+	{
+		"#format"		"{1:t}"
+		"end"			"Something went wrong when changing your {1}!"
+	}
+	
+	"INF_WAITTILLSPAWN"
+	{
+		"en"			"You must enter a start zone/wait till next spawn."
+	}
+	
+	"INF_NOACCESSTO"
+	{
+		"#format"		"{1:t}"
+		"en"			"You do not have access to this {1}!"
+	}
+	
+	"INF_VALIDMODES"
+	{
+		"#format"		"{1:s}"
+		"en"			"Valid mode(s): {1}"
+	}
+	
+	
+	
+	
+	//
+	// Run Stuff
+	//
+	"INF_RUN_CREATED"
+	{
+		"#format"		"{1:s}"
+		"en"			"{MAINCLR1}{1}{CHATCLR} has been created!"
+	}
+	
+	"INF_RUN_DELETED"
+	{
+		"#format"		"{1:s}"
+		"en"			"Run {MAINCLR1}{1}{CHATCLR} has been deleted! Remember to {MAINCLR1}!saveruns{CHATCLR}."
+	}
+	
+	"INF_RUNIDNOTEXIST"
+	{
+		"#format"		"{1:i}"
+		"en"			"Run with an ID of {MAINCLR1}{1}{CHATCLR} does not exist!"
+	}
+	
+	"INF_RUNS_DELETED"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"Your {MAINCLR1}{1} {2}{CHATCLR} run has been deleted!"
+	}
+	
+	"INF_RUN_RUNS_DELETED"
+	{
+		"#format"		"{1:s}"
+		"en"			"Your {MAINCLR1}{1}{CHATCLR} runs has been deleted!"
+	}
+	
+	"INF_RUN_RENAMED"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"Run {MAINCLR1}{1}{CHATCLR} has been renamed to {MAINCLR1}{2}{CHATCLR}!"
+	}
+	
+	"INF_RUNISNOW"
+	{
+		"#format"		"{1:s}"
+		"en"			"Your run is now {MAINCLR1}{1}{CHATCLR}!"
+	}
+	
+	"INF_RUNNOTEXIST"
+	{
+		"en"			"That run does not exist!"
+	}
+	
+	
+	"INF_RUNFINISHEDPRINT_IMPROVEDBY"
+	{
+		"#format"		"{1:s}"
+		"en"			" {LIGHTYELLOW}Improving by {1} seconds"
+	}
+	
+	
+	"INF_RUNFINISHEDPRINT"
+	{
+		//
+		// 1 = Player name
+		// 2 = Run Name
+		// 3 = Time
+		// 4 = Time difference
+		// 5 = ' Improving by...' (above) (if necessary) (has a space at the start)
+		// 6 = Mode (if necessary) (has a space at the start)
+		// 7 = Style (if necessary) (has a space at the start)
+		//
+		"#format"		"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s}{7:s}"
+		"en"			"{MAINCLR1}{1}{CHATCLR} finished {MAINCLR1}{2}{CHATCLR} in {MAINCLR1}{3}{CHATCLR}!{4}{5}{6}{7}"
+	}
+	
+	
+	
+	
+	
+	//
+	// Misc.
+	//
+	"INF_INVALIDWEAPONSPD"
+	{
+		"#format"		"{1:i}"
+		"en"			"Invalid weapon speed! Can be {MAINCLR1}{1}{CHATCLR} at most!"
+	}
+	
+	
+	//
+	// Prespeed
+	//
+	"INF_PRESPEEDNONOCLIP"
+	{
+		"en"			"You cannot prespeed with noclip!"
+	}
+	
+	"INF_PRESPEEDJUMPLIMIT"
+	{
+		"#format"		"{1:i}"
+		"en"			"You cannot jump more than {MAINCLR1}{1}{CHATCLR} time(s) at the start!"
+	}
+	
+	"INF_PRESPEEDNOJUMP"
+	{
+		"en"			"You cannot jump at all at the start!"
+	}
+	
+	"INF_PRESPEEDEXCEED"
+	{
+		"#format"		"{1:i}"
+		"en"			"Your prespeed cannot exceed {MAINCLR1}{1}{CHATCLR}!"
+	}
+	
+	
+	
+	//
+	// Recording
+	//
+	"INF_RECORDINGSAVED"
+	{
+		"en"			"Your recording has been successfully saved!"
+	}
+	
+	"INF_RECORDINGSAVEFAILED"
+	{
+		"en"			"We were unable to save your recording, sorry!"
+	}
+	
+	"INF_RECORDINGALREADYPLAYING"
+	{
+		"en"			"That run is already being replayed!"
+	}
+	
+	"INF_RECORDINGNOWPLAYING"
+	{
+		"en"			"Replay is now being played!"
+	}
+	
+	"INF_RECORDINGEXCEEDEDLIMIT"
+	{
+		"#format"		"{1:i}"
+		"en"			"Stopped recording. Recordings cannot exceed {1} minutes!"
+	}
+	
+	"INF_REPLAYISFREENOW"
+	{
+		"en"			"You can now request a replay by typing {MAINCLR1}!replay{CHATCLR} in chat."
+	}
+	
+	"INF_REPLAYISNEW"
+	{
+		"en"			"Replaying a new record. Please wait."
+	}
+	
+	"INF_REPLAYALREADYREQUESTED"
+	{
+		"en"			"You've already requested a replay!"
+	}
+	
+	"INF_REPLAYISBEINGWATCHED"
+	{
+		"#format"		"{1:s}"
+		"en"			"Replay is being watched by {MAINCLR1}{1}{CHATCLR}. Please wait for the recording to finish."
+	}
+	
+	
+	
+	//
+	// Stages
+	//
+	"INF_STAGENUMBERNOTEXIST"
+	{
+		"#format"		"{1:i}"
+		"en"			"Stage {MAINCLR1}{1}{CHATCLR} does not exist!"
+	}
+	
+	"INF_LEAVEZONEFIRST"
+	{
+		"en"			"You must leave the zone first!"
+	}
+	
+	
+	
+	
+	
+	//
 	// Pause
-	"NOTPAUSED"
+	//
+	"INF_NOTPAUSED"
 	{
 		"en"			"You aren't even paused!"
 	}
-    "CANTPAUSE_PRAC"
+	
+    "INF_CANTPAUSE_PRAC"
 	{
 		"en"			"You cannot pause a practising run!"
 	}
 	
-    // Practise
-	"MUSTBERUNNING_CP"
+	"INF_NOWPAUSED"
 	{
-		"en"			"You must be running to use checkpoints!"
+		"en"			"Your run is now paused. Type {MAINCLR1}!continue{CHATCLR} to resume."
 	}
-    "MUSTBEPRACTISING"
+	
+	"INF_NOLONGERPAUSED"
+	{
+		"en"			"Your run is no longer paused."
+	}
+	
+	"INF_PAUSENOTSOFAST"
+	{
+		"#format"		"{1:i}"
+		"en"			"You cannot pause so soon! Please wait {MAINCLR1}{1}{CHATCLR} seconds!"
+	}
+	
+	"INF_PAUSENOTALLOWED"
+	{
+		"en"			"Pauses aren't allowed!"
+	}
+	
+	"INF_PAUSELIMIT"
+	{
+		"#format"		"{1:i}"
+		"en"			"You cannot pause more than {1} time(s) every run!"
+	}
+	
+	
+	
+	//
+    // Practise
+	//
+    "INF_MUSTBEPRACTISING"
 	{
 		"en"			"You must be practising!"
+	}
+	
+	"INF_PRACTICEMODECHANGE"
+	{
+		"#format"		"{1:s}"
+		"en"			"Practice mode: {MAINCLR1}{1}"
+	}
+	
+	
+	//
+	// Simple ranks
+	//
+	"INF_RANKISNOW"
+	{
+		"#format"		"{1:s}"
+		"en"			"Your rank is now '{MAINCLR1}{1}{CHATCLR}'!"
+	}
+	
+	"INF_GOTPOINTS"
+	{
+		"#format"		"{1:i},{2:i}"
+		"en"			"You've received {MAINCLR1}{1}{CHATCLR} points! You now have {MAINCLR1}{2}{CHATCLR} points!"
+	}
+	
+	
+	//
+	// Rank chat
+	//
+	"INF_RANKCHAT"
+	{
+		"#format"		"{1:s},{2:i},{3:i}"
+		"en"			"{MAINCLR1}{1}{CHATCLR} is now ranked {MAINCLR1}{2}{CHATCLR}/{MAINCLR1}{3}{CHATCLR}!"
 	}
 }

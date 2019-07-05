@@ -141,6 +141,10 @@ public void OnPluginStart()
     //g_nMapReward = -1;
     
     
+    // PHRASES
+    LoadTranslations( INFLUX_PHRASES );
+    
+    
     // PRIVILEGE CMDS
     RegAdminCmd( INF_PRIVCOM_CUSTOMRANK, Cmd_Empty, ADMFLAG_ROOT );
     RegAdminCmd( INF_PRIVCOM_MAPREWARD, Cmd_Empty, ADMFLAG_ROOT );
@@ -402,7 +406,7 @@ stock void SetClientRank( int client, int index, bool bChose, const char[] szOve
     
     if ( bPrint )
     {
-        Influx_PrintToChat( _, client, "Your rank is now '{MAINCLR1}%s{CHATCLR}'!", g_szCurRank[client] );
+        Influx_PrintToChat( _, client, "%T", "INF_RANKISNOW", client, g_szCurRank[client] );
     }
 }
 
@@ -459,7 +463,7 @@ stock bool IncClientPoints( int client, int reward, bool allownegative = false, 
     
     if ( g_ConVar_NotifyReward.BoolValue && print )
     {
-        Influx_PrintToChat( _, client, "You've received {MAINCLR1}%i{CHATCLR} points! You now have {MAINCLR1}%i{CHATCLR} points!", reward, g_nPoints[client] );
+        Influx_PrintToChat( _, client, "%T", "INF_GOTPOINTS", client, reward, g_nPoints[client] );
     }
     
     if ( oldrank != newrank && newrank != -1 )

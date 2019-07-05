@@ -146,7 +146,7 @@ public Action Cmd_Practise_Continue( int client, int args )
     }
     else
     {
-        Influx_PrintToChat( _, client, "%T", "NOTPAUSED", client );
+        Influx_PrintToChat( _, client, "%T", "INF_NOTPAUSED", client );
     }
     
     return Plugin_Handled;
@@ -158,7 +158,7 @@ public Action Cmd_Practise_Pause( int client, int args )
     
     if ( Influx_GetClientState( client ) != STATE_RUNNING )
     {
-        Influx_PrintToChat( _, client, "%T", "MUSTBERUNNING", client );
+        Influx_PrintToChat( _, client, "%T", "INF_MUSTBERUNNING", client );
         return Plugin_Handled;
     }
     
@@ -173,7 +173,7 @@ public Action Cmd_Practise_Pause( int client, int args )
     }
     else
     {
-        Influx_PrintToChat( _, client, "%T", "CANTPAUSE_PRAC", client );
+        Influx_PrintToChat( _, client, "%T", "INF_CANTPAUSE_PRAC", client );
     }
     
     return Plugin_Handled;
@@ -185,21 +185,24 @@ stock bool PauseRun( int client )
 	
     if ( Influx_GetClientState( client ) != STATE_RUNNING )
     {
-        Influx_PrintToChat( _, client, "%T", "MUSTBERUNNING", client );
+        Influx_PrintToChat( _, client, "%T", "INF_MUSTBERUNNING", client );
         return false;
     }
     
     
     if ( !IsPlayerAlive( client ) )
     {
-        Influx_PrintToChat( _, client, "You must be alive to pause!" );
+        Influx_PrintToChat( _, client, "%T", "INF_MUSTBEALIVE", client );
         return false;
     }
     
     
     if ( g_flPauseLimit[client] > GetEngineTime() )
     {
-        Influx_PrintToChat( _, client, "You cannot pause so soon! Please wait {MAINCLR1}%.1f{CHATCLR} seconds!", g_flPauseLimit[client] - GetEngineTime() );
+        Influx_PrintToChat( _, client, "%T",
+            "INF_PAUSENOTSOFAST",
+            client,
+            RoundFloat( g_flPauseLimit[client] - GetEngineTime() ) );
         return false;
     }
     
@@ -208,13 +211,13 @@ stock bool PauseRun( int client )
     
     if ( !maxpauses )
     {
-        Influx_PrintToChat( _, client, "Pauses aren't allowed!" );
+        Influx_PrintToChat( _, client, "%T", "INF_PAUSENOTALLOWED", client );
         return false;
     }
     
     if ( maxpauses > 0 && g_nPauses[client] >= maxpauses )
     {
-        Influx_PrintToChat( _, client, "You cannot pause more than %i time(s) every run!", maxpauses );
+        Influx_PrintToChat( _, client, "%T", "INF_PAUSELIMIT", client, maxpauses );
         return false;
     }
     
@@ -252,7 +255,7 @@ stock bool PauseRun( int client )
     
     GetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client], sizeof( g_szPausedTargetName[] ) );
 
-    Influx_PrintToChat( _, client, "Your run is now paused. Type {MAINCLR1}!continue{CHATCLR} to resume." );
+    Influx_PrintToChat( _, client, "%T", "INF_NOWPAUSED", client );
     
     return true;
 }
@@ -312,7 +315,7 @@ stock bool ContinueRun( int client )
     
     SetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client] );
 
-    Influx_PrintToChat( _, client, "Your run is no longer paused." );
+    Influx_PrintToChat( _, client, "%T", "INF_NOLONGERPAUSED", client );
     
     return true;
 }

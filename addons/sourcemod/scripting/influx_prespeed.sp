@@ -93,6 +93,10 @@ public void OnPluginStart()
     g_hPre = new ArrayList( PRESPEED_SIZE );
     
     
+    // PHRASES
+    LoadTranslations( INFLUX_PHRASES );
+    
+    
     // FORWARDS
     g_hForward_OnLimitClientPrespeed = CreateGlobalForward( "Influx_OnLimitClientPrespeed", ET_Hook, Param_Cell, Param_Cell );
     
@@ -270,7 +274,7 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
     
     if ( g_ConVar_Noclip.BoolValue && g_bUsedNoclip[client] )
     {
-        FormatEx( errormsg, error_len, "You cannot prespeed with noclip!" );
+        FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDNONOCLIP", client );
         return Plugin_Handled;
     }
     
@@ -288,11 +292,11 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
             {
                 if ( maxjumps )
                 {
-                    FormatEx( errormsg, error_len, "You cannot jump more than {MAINCLR1}%i{CHATCLR} time(s) at the start!", maxjumps );
+                    FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDJUMPLIMIT", client, maxjumps );
                 }
                 else
                 {
-                    FormatEx( errormsg, error_len, "You cannot jump at all at the start!" );
+                    FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDNOJUMP", client );
                 }
                 
                 
@@ -354,6 +358,7 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
                 }
                 else
                 {
+                    FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDEXCEED", client, RoundFloat( maxprespd ) );
                     FormatEx( errormsg, error_len, "Your prespeed cannot exceed {MAINCLR1}%.0f{CHATCLR}!", maxprespd );
                     return Plugin_Handled;
                 }

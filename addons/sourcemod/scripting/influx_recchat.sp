@@ -23,6 +23,11 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    // PHRASES
+    LoadTranslations( INFLUX_PHRASES );
+    
+    
+    // CONVARS
     g_ConVar_MinTime = CreateConVar( "influx_recchat_mintimeformsg", "10", "If record is shorter than this, don't do a chat message.", FCVAR_NOTIFY );
     g_ConVar_NumDecimals = CreateConVar( "influx_recchat_numdecimals", "2", "Number of decimals to use when printing to chat.", FCVAR_NOTIFY, true, 0.0, true, 3.0 );
     
@@ -30,6 +35,7 @@ public void OnPluginStart()
     AutoExecConfig( true, "recchat", "influx" );
     
     
+    // LIBRARIES
     g_bLib_Hud = LibraryExists( INFLUX_LIB_HUD );
 }
 
@@ -147,7 +153,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
         
         FormatEx( sec, sizeof( sec ), ( dif < 0.1 ) ? "%.3f" : "%.1f", dif );
         
-        FormatEx( szImprove, sizeof( szImprove ), " {LIGHTYELLOW}Improving by %s seconds", sec );
+        FormatEx( szImprove, sizeof( szImprove ), "%T", "INF_RUNFINISHEDPRINT_IMPROVEDBY", LANG_SERVER, sec );
     }
     else
     {
@@ -159,7 +165,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     if ( Influx_ShouldModeDisplay( mode ) )
     {
         Influx_GetModeShortName( mode, szMode, sizeof( szMode ) );
-        Format( szMode, sizeof( szMode ), "{GREY}[{PINK}%s{GREY}]", szMode );
+        Format( szMode, sizeof( szMode ), " {GREY}[{PINK}%s{GREY}]", szMode );
     }
     else
     {
@@ -170,7 +176,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     if ( Influx_ShouldStyleDisplay( style ) )
     {
         Influx_GetStyleShortName( style, szStyle, sizeof( szStyle ) );
-        Format( szStyle, sizeof( szStyle ), "[{PINK}%s{GREY}]", szStyle ); // {CHATCLR}
+        Format( szStyle, sizeof( szStyle ), " [{PINK}%s{GREY}]", szStyle ); // {CHATCLR}
     }
     else
     {
@@ -185,14 +191,14 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     GetClientName( client, szName, sizeof( szName ) );
     Influx_RemoveChatColors( szName, sizeof( szName ) );
     
-    Influx_PrintToChatEx( _, client, clients, nClients, "{MAINCLR1}%s{CHATCLR} finished {MAINCLR1}%s{CHATCLR} in {MAINCLR1}%s{CHATCLR}!%s%s%s%s%s%s",
+    // Use the influx phrases file to modify this.
+    Influx_PrintToChatEx( _, client, clients, nClients, "%T",
+        "INF_RUNFINISHEDPRINT", LANG_SERVER,
         szName,
         szRun,
         szForm,
         szRec,
         szImprove,
-        ( szMode[0] != '\0' ) ? " " : "",
         szMode,
-        ( szStyle[0] != '\0' ) ? " " : "",
         szStyle );
 }

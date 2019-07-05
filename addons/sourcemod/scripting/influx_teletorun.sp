@@ -44,6 +44,10 @@ public void OnPluginStart()
     g_hBonuses = new ArrayList( BONUS_SIZE );
     
     
+    // PHRASES
+    LoadTranslations( INFLUX_PHRASES );
+    
+    
     // CONVARS
     g_ConVar_RestartToCurrent = CreateConVar( "influx_teletorun_restarttocurrent", "1", "If true, restart command will put player to their current run's start. Otherwise, teleport to main start.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
@@ -166,7 +170,7 @@ stock bool AttemptToSet( int client, int runid )
 {
     if ( Influx_FindRunById( runid ) == -1 )
     {
-        Influx_PrintToChat( _, client, "That run does not exist!" );
+        Influx_PrintToChat( _, client, "%T", "INF_RUNNOTEXIST", client );
         return false;
     }
     

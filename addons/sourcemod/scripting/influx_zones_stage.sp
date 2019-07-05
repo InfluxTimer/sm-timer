@@ -103,6 +103,10 @@ public void OnPluginStart()
     g_hStageZones = new ArrayList( STAGEZONE_SIZE );
     
     
+    // PHRASES
+    LoadTranslations( INFLUX_PHRASES );
+    
+    
     // CONVARS
     g_ConVar_ActAsCP = CreateConVar( "influx_zones_stage_actascp", "1", "Stage zones act as checkpoints if checkpoints module is loaded.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
@@ -884,7 +888,7 @@ stock void TeleportToStage( int client, int stagenum )
     
     if ( index == -1 )
     {
-        Influx_PrintToChat( _, client, "Stage {MAINCLR1}%i{CHATCLR} does not exist!", stagenum );
+        Influx_PrintToChat( _, client, "%T", "INF_STAGENUMBERNOTEXIST", client, stagenum );
         return;
     }
     
@@ -945,7 +949,7 @@ public Action Cmd_SetStageTelePos( int client, int args )
     }
     else
     {
-        Influx_PrintToChat( _, client, "Stage {MAINCLR1}%i{CHATCLR} doesn't exist!", stagenum );
+        Influx_PrintToChat( _, client, "%T", "INF_STAGENUMBERNOTEXIST", client, stagenum );
     }
     
     return Plugin_Handled;
@@ -1073,7 +1077,7 @@ public Action Cmd_Back( int client, int args )
     
     if ( Influx_GetClientState( client ) != STATE_RUNNING )
     {
-        Influx_PrintToChat( _, client, "Can't go back if you're not running!" );
+        Influx_PrintToChat( _, client, "%T", "INF_MUSTBERUNNING", client );
         return Plugin_Handled;
     }
     
@@ -1088,7 +1092,7 @@ public Action Cmd_Back( int client, int args )
     
     if ( !g_bLeftStageZone[client] )
     {
-        Influx_PrintToChat( _, client, "You must leave the zone first!" );
+        Influx_PrintToChat( _, client, "%T", "INF_LEAVEZONEFIRST", client );
         return Plugin_Handled;
     }
     

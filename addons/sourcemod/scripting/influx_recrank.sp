@@ -33,6 +33,11 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    // PHRASES
+    LoadTranslations( INFLUX_PHRASES );
+    
+    
+    // CONVARS
     g_ConVar_WaitTime = CreateConVar( "influx_recrank_secstowait", "1.0", "Number of seconds to wait before printing the rank.", FCVAR_NOTIFY, true, 0.01 );
     g_ConVar_MinRecords = CreateConVar( "influx_recrank_minrecords", "1", "Number of records required before printing rank.", FCVAR_NOTIFY, true, 0.0 );
     
@@ -144,7 +149,9 @@ public void Thrd_Display( Handle db, Handle res, const char[] szError, int clien
     if ( g_ConVar_MinRecords.IntValue > numrecs ) return;
     
     
-    Influx_PrintToChatAll( _, client, "{MAINCLR1}%s{CHATCLR} is now ranked {MAINCLR1}%i{CHATCLR}/{MAINCLR1}%i{CHATCLR}!",
+    
+    Influx_PrintToChatAll( _, client, "%T",
+        "INF_RANKCHAT", LANG_SERVER,
         szName,
         rank,
         numrecs );

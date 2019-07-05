@@ -94,6 +94,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    // PHRASES
     LoadTranslations( INFLUX_PHRASES );
     
     
@@ -196,7 +197,7 @@ public Action Cmd_AddCP( int client, int args )
     
     if ( !g_bPractising[client] )
     {
-        Influx_PrintToChat( _, client, "%T", "MUSTBEPRACTISING", client );
+        Influx_PrintToChat( _, client, "%T", "INF_MUSTBEPRACTISING", client );
         return Plugin_Handled;
     }
     
@@ -212,7 +213,7 @@ public Action Cmd_LastUsedCP( int client, int args )
     
     if ( !g_bPractising[client] )
     {
-        Influx_PrintToChat( _, client, "%T", "MUSTBEPRACTISING", client );
+        Influx_PrintToChat( _, client, "%T", "INF_MUSTBEPRACTISING", client );
         return Plugin_Handled;
     }
     
@@ -228,7 +229,7 @@ public Action Cmd_LastCreatedCP( int client, int args )
     
     if ( !g_bPractising[client] )
     {
-        Influx_PrintToChat( _, client, "%T", "MUSTBEPRACTISING", client );
+        Influx_PrintToChat( _, client, "%T", "INF_MUSTBEPRACTISING", client );
         return Plugin_Handled;
     }
     
@@ -244,7 +245,7 @@ public Action Cmd_CPMenu( int client, int args )
     
     if ( !g_bPractising[client] )
     {
-        Influx_PrintToChat( _, client, "%T", "MUSTBEPRACTISING", client );
+        Influx_PrintToChat( _, client, "%T", "INF_MUSTBEPRACTISING", client );
         return Plugin_Handled;
     }
     
@@ -350,7 +351,7 @@ public int Hndlr_CP( Menu menu, MenuAction action, int client, int menuindex )
     
     if ( !g_bPractising[client] )
     {
-        Influx_PrintToChat( _, client, "%T", "MUSTBEPRACTISING", client );
+        Influx_PrintToChat( _, client, "%T", "INF_MUSTBEPRACTISING", client );
         return Plugin_Handled;
     }
     
@@ -594,7 +595,7 @@ stock bool StartPractising( int client )
     }
     
     
-    Influx_PrintToChat( _, client, "Practice mode: {MAINCLR1}ON" );
+    Influx_PrintToChat( _, client, "%T", "INF_PRACTICEMODECHANGE", client, "ON" );
     
     return true;
 }
@@ -617,7 +618,7 @@ stock void EndPractising( int client )
         Influx_TeleportToStart( client, true );
     }
     
-    Influx_PrintToChat( _, client, "Practice mode: {MAINCLR1}OFF" );
+    Influx_PrintToChat( _, client, "%T", "INF_PRACTICEMODECHANGE", client, "OFF" );
 }
 
 public int Native_IsClientPractising( Handle hPlugin, int nParams )

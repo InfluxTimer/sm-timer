@@ -457,6 +457,12 @@ public void OnPluginStart()
     g_hForward_OnSearchTelePos = CreateGlobalForward( "Influx_OnSearchTelePos", ET_Hook, Param_Array, Param_CellByRef, Param_Cell, Param_Cell );
     
     
+    
+    // PHRASES
+    LoadTranslations( INFLUX_PHRASES );
+    
+    
+    
     // CONVARS
     CreateConVar( "influx_version", INF_VERSION, "Version of Influx. Do not change.", FCVAR_NOTIFY );
     
@@ -1024,7 +1030,7 @@ stock void CapWeaponSpeed( int client )
         &&  (GetEngineTime() - g_flLastValidWepSpd[client]) > 0.2 // We have the invalid weapon out for more than this.
         &&  g_flNextWepSpdPrintTime[client] < GetEngineTime() )
         {
-            Influx_PrintToChat( _, client, "Invalid weapon speed! Can be {MAINCLR1}%.0f{CHATCLR} at most!", modemaxspd );
+            Influx_PrintToChat( _, client, "%T", "INF_INVALIDWEAPONSPD", client, RoundFloat( modemaxspd ) );
             
             g_flNextWepSpdPrintTime[client] = GetEngineTime() + 10.0;
         }
@@ -1783,7 +1789,7 @@ stock void PrintValidModes( int client, int modeflags )
         strcopy( list, sizeof( list ), "{MAINCLR1}None{CHATCLR}!" );
     }
     
-    Influx_PrintToChat( _, client, "Valid mode(s): %s", list );
+    Influx_PrintToChat( _, client, "%T", "INF_VALIDMODES", client, list );
 }
 
 stock bool SetClientRun( int client, int runid, bool bTele = true, bool bPrintToChat = true )
@@ -1836,7 +1842,7 @@ stock bool SetClientRun( int client, int runid, bool bTele = true, bool bPrintTo
         
         if ( bPrintToChat )
         {
-            Influx_PrintToChat( _, client, "Your run is now {MAINCLR1}%s{CHATCLR}!", sz );
+            Influx_PrintToChat( _, client, "%T", "INF_RUNISNOW", client, sz );
         }
     }
     
@@ -1898,7 +1904,7 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
     {
         if ( bPrintToChat )
         {
-            Influx_PrintToChat( _, client, "You do not have access to this mode!" );
+            Influx_PrintToChat( _, client, "%T", "INF_NOACCESSTO", client, "INF_WORD_MODE" );
         }
         
         return false;
@@ -1921,7 +1927,7 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
     {
         if ( bPrintToChat )
         {
-            Influx_PrintToChat( _, client, "Something went wrong when changing your mode!" );
+            Influx_PrintToChat( _, client, "%T", "INF_WENTWRONGCHANGING", client, "INF_WORD_MODE" );
         }
         
         // Fallback to last mode.
@@ -1935,7 +1941,7 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
         char sz[MAX_MODE_NAME];
         GetModeNameByIndex( imode, sz, sizeof( sz ) );
         
-        Influx_PrintToChat( _, client, "Your mode is now {MAINCLR1}%s{CHATCLR}!", sz );
+        Influx_PrintToChat( _, client, "%T", "INF_MODEORSTYLEISNOW", client, "INF_WORD_MODE", sz );
     }
     
     
@@ -1986,7 +1992,7 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
     {
         if ( bPrintToChat )
         {
-            Influx_PrintToChat( _, client, "You do not have access to this style!" );
+            Influx_PrintToChat( _, client, "%T", "INF_NOACCESSTO", client, "INF_WORD_STYLE" );
         }
         
         return false;
@@ -2007,7 +2013,7 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
     
     if ( res != Plugin_Continue )
     {
-        Influx_PrintToChat( _, client, "Something went wrong when changing your style!" );
+        Influx_PrintToChat( _, client, "%T", "INF_WENTWRONGCHANGING", client, "INF_WORD_STYLE" );
         
         // Fallback to last style.
         style = laststyle;
@@ -2020,7 +2026,7 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
         char sz[MAX_STYLE_NAME];
         GetStyleNameByIndex( istyle, sz, sizeof( sz ) );
         
-        Influx_PrintToChat( _, client, "Your style is now {MAINCLR1}%s{CHATCLR}!", sz );
+        Influx_PrintToChat( _, client, "%T", "INF_MODEORSTYLEISNOW", client, "INF_WORD_STYLE", sz );
     }
     
     g_iStyleId[client] = style;
@@ -2064,7 +2070,7 @@ stock bool IsClientModeValidForRun( int client, int imode, int irun, bool bPrint
             GetModeNameByIndex( imode, mode, sizeof( mode ) );
             GetRunNameByIndex( irun, run, sizeof( run ) );
             
-            Influx_PrintToChat( _, client, "Sorry, mode {MAINCLR1}%s{CHATCLR} is not allowed in {MAINCLR1}%s{CHATCLR}!", mode, run );
+            Influx_PrintToChat( _, client, "%T", "INF_MODEORSTYLENOTALLOWEDINRUN", client, "INF_WORD_MODE", mode, run );
         }
         
         return false;
@@ -2092,7 +2098,7 @@ stock bool ChangeTele( int client )
         }
         
         
-        Influx_PrintToChat( _, client, "You must enter a start zone/wait till next spawn." );
+        Influx_PrintToChat( _, client, "%T", "INF_WAITTILLSPAWN", client );
         return false;
     }
     
@@ -2236,7 +2242,7 @@ stock void InvalidateClientRun( int client )
     {
         if ( g_iRunState[client] == STATE_RUNNING )
         {
-            Influx_PrintToChat( _, client, "Your timer has been disabled!" );
+            Influx_PrintToChat( _, client, "%T", "INF_TIMERDISABLED", client );
         }
         
         g_iRunState[client] = STATE_NONE;
@@ -2607,7 +2613,7 @@ stock bool RemoveClientTimes( int client, int irun, int mode, int style, bool bP
             Inf_FormatSeconds( time, szTime, sizeof( szTime ) );
             
             
-            Influx_PrintToChat( _, client, "Your {MAINCLR1}%s %s{CHATCLR} run has been deleted!", szRun, szTime );
+            Influx_PrintToChat( _, client, "%T", "INF_RUNS_DELETED", client, szRun, szTime );
         }
     }
     
@@ -2616,7 +2622,7 @@ stock bool RemoveClientTimes( int client, int irun, int mode, int style, bool bP
     
     if ( found )
     {
-        Influx_PrintToChat( _, client, "Your {MAINCLR1}%s{CHATCLR} runs has been deleted!", szRun );
+        Influx_PrintToChat( _, client, "%T", "INF_RUN_RUNS_DELETED", client, szRun );
     }
     
     
@@ -2873,7 +2879,7 @@ stock int AddRun(   int runid,
     }
     
     if ( bPrint )
-        Influx_PrintToChatAll( _, 0, "{MAINCLR1}%s{CHATCLR} has been created!", szRun );
+        Influx_PrintToChatAll( _, 0, "%T", "INF_RUN_CREATED", LANG_SERVER, szRun );
     
     
     return runid;
@@ -2885,7 +2891,7 @@ stock void RemoveRunById( int runid, int client = 0 )
     
     if ( irun == -1 )
     {
-        Inf_ReplyToClient( client, "Run with an ID of {MAINCLR1}%i{CHATCLR} does not exist!", runid );
+        Inf_ReplyToClient( client, "%T", "INF_RUNIDNOTEXIST", client, runid );
         return;
     }
     
@@ -2907,7 +2913,7 @@ stock void RemoveRunById( int runid, int client = 0 )
     DB_RemoveRun( runid );
     
     
-    Inf_ReplyToClient( client, "Run {MAINCLR1}%s{CHATCLR} has been deleted! Remember to {MAINCLR1}!saveruns{CHATCLR}.", szRun );
+    Inf_ReplyToClient( client, "%T", "INF_RUN_DELETED", client, szRun );
 }
 
 stock void TeleportClientsOutOfRun( int runid )
