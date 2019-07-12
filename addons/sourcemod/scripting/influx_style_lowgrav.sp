@@ -49,10 +49,6 @@ public void OnPluginStart()
     g_ConVar_GravMult.AddChangeHook( E_ConVarChanged_GravMult );
     
     
-    g_flDefaultGravity = 800.0;
-    g_flLowGravGravity = g_flDefaultGravity * g_ConVar_GravMult.FloatValue;
-    
-    
     AutoExecConfig( true, "style_lowgrav", "influx" );
     
     
@@ -81,6 +77,17 @@ public void OnPluginEnd()
     
     
     Influx_RemoveStyle( STYLE_LOWGRAV );
+}
+
+public void OnConfigsExecuted()
+{
+    g_flDefaultGravity = g_ConVar_Gravity.FloatValue;
+    g_flLowGravGravity = g_flDefaultGravity * g_ConVar_GravMult.FloatValue;
+}
+
+public void OnClientPutInServer( int client )
+{
+    Inf_SendConVarValueFloat( client, g_ConVar_Gravity, g_flDefaultGravity );
 }
 
 public void E_ConVarChanged_GravMult( ConVar convar, const char[] oldValue, const char[] newValue )
