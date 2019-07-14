@@ -313,31 +313,17 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
     
     if ( maxprespd > 0.0 )
     {
-        float vel[3];
-        GetEntityVelocity( client, vel );
-        
-        bool bBadSpd = false;
-        
-        float spd = SquareRoot( vel[0] * vel[0] + vel[1] * vel[1] );
-        float truespd = SquareRoot( vel[0] * vel[0] + vel[1] * vel[1] + vel[2] * vel[2] );
-        
-        
         int usetruevel = g_hPre.Get( index, PRESPEED_USETRUEVEL );
         if ( usetruevel == -1 ) usetruevel = g_ConVar_UseTrueVel.IntValue;
         
-        if ( usetruevel )
-        {
-            bBadSpd = ( truespd > maxprespd );
-        }
-        else
-        {
-            bBadSpd = ( spd > maxprespd );
-        }
+        
+        // Just check if we're going over the prespeed limit.
+        bool bBadSpd = CapClientSpeed( client, maxprespd, usetruevel != 0, true );
         
         if ( bBadSpd )
         {
 #if defined DEBUG
-            PrintToServer( INF_DEBUG_PRE..."Bad prespeed (%i) (%.1f | %.1f)", client, spd, truespd );
+            PrintToServer( INF_DEBUG_PRE..."Bad prespeed (%i) (Max: %.1f)", client, maxprespd );
 #endif
             
             int capstyle = g_hPre.Get( index, PRESPEED_CAP );
@@ -348,13 +334,16 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
             {
                 if ( capstyle )
                 {
-                    float m = truespd / maxprespd;
+                    // Do the actual capping.
+                    CapClientSpeed( client, maxprespd, usetruevel != 0 );
                     
-                    vel[0] /= m;
-                    vel[1] /= m;
-                    vel[2] /= m;
-                    
-                    TeleportEntity( client, NULL_VECTOR, NULL_VECTOR, vel );
+                    //
+                    // We need to check whether the capping worked.
+                    // TeleportEntity works, but it's possible that the player's
+                    // origin/angles/velocity won't change (next frame?).
+                    // I have no idea why this happens.                   
+                    //
+                    StartCheckPrespeed( client, maxprespd, usetruevel != 0 );
                 }
                 else
                 {
@@ -488,6 +477,116 @@ stock float GetMaxSpeed( any data[PRESPEED_SIZE] )
 stock bool CanUserModifyPrespeedSettings( int client )
 {
     return CheckCommandAccess( client, INF_PRIVCOM_RUNSETTINGS, ADMFLAG_ROOT );
+}
+
+stock void StartCheckPrespeed( int client, float maxprespd, bool bUseTrueVel )
+{
+    DataPack pack = new DataPack();
+    pack.WriteCell( GetClientUserId( client ) );
+    pack.WriteFloat( maxprespd );
+    pack.WriteCell( bUseTrueVel );
+    pack.Reset( false );
+    
+    RequestFrame( CheckPrespeed, pack );
+}
+
+stock void CheckPrespeed( DataPack pack )
+{
+    int client = GetClientOfUserId( pack.ReadCell() );
+    float maxprespd = pack.ReadFloat();
+    bool bUseTrueVel = pack.ReadCell() != 0;
+    pack.Reset();
+    
+    if ( client < 1 || !IsClientInGame( client ) )
+    {
+        delete pack;
+        return;
+    }
+    
+    if ( !CapClientSpeed( client, maxprespd, bUseTrueVel ) )
+    {
+        delete pack;
+        return;
+    }
+    
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Capped player %i speed again!", client );
+#endif
+
+    // Keep checking our speed until we're not going faster.
+    RequestFrame( CheckPrespeed, pack );
+}
+
+stock bool CapClientSpeed( int client, float maxprespd, bool bUseTrueVel, bool bJustCheck = false )
+{
+    float vel[3];
+    GetEntityVelocity( client, vel );
+    
+    float truespd = SquareRoot( vel[0] * vel[0] + vel[1] * vel[1] + vel[2] * vel[2] );
+    float spd = SquareRoot( vel[0] * vel[0] + vel[1] * vel[1] );
+    
+    
+    bool bBadSpd = false;
+    if ( bUseTrueVel )
+    {
+        bBadSpd = ( truespd > maxprespd );
+    }
+    else
+    {
+        bBadSpd = ( spd > maxprespd );
+    }
+    
+    
+    // We're within the prespeed limit, all good.
+    if ( !bBadSpd )
+    {
+        return false;
+    }
+    
+    
+    // Caller just wanted to know whether we have a bad prespeed.
+    // Return early.
+    if ( bJustCheck )
+    {
+        return true;
+    }
+    
+#if defined DEBUG
+    PrintToServer( INF_DEBUG_PRE..."Capping player %i speed to %.0f!", client, maxprespd );
+#endif
+    
+    
+    float newvel[3];
+    CapVelocity( vel, newvel, maxprespd, bUseTrueVel );
+    
+    TeleportEntity( client, NULL_VECTOR, NULL_VECTOR, newvel );
+    
+    return true;
+}
+
+stock void CapVelocity( const float vel[3], float out[3], float maxprespd, bool bUseTrueVel )
+{
+    if ( bUseTrueVel )
+    {
+        NormalizeVector( vel, out );
+        ScaleVector( out, maxprespd );
+        return;
+    }
+    
+    
+    
+    float wanted[3];
+    
+    wanted[0] = vel[0];
+    wanted[1] = vel[1];
+    wanted[2] = 0.0;
+    
+    NormalizeVector( wanted, wanted );
+    ScaleVector( wanted, maxprespd );
+    
+    wanted[2] = vel[2];
+    
+    out = wanted;
 }
 
 public Action Cmd_Menu_PrespeedSettings( int client, int args )
