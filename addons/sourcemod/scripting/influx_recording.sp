@@ -1328,6 +1328,14 @@ stock void ReplayOwn( int client )
 
 stock bool CanChangeReplay( int issuer = 0, bool bCanAdminOverride = true )
 {
+    // No replay in the first place, just change.
+    if ( g_hReplay == null || g_hReplay.Length < 1 )
+        return true;
+    // We're at the end of the replay, sure.
+    if ( IsValidReplayBot() && g_nCurRec[g_iReplayBot] == PLAYBACK_END )
+        return true;
+    
+    
     if ( g_bForcedReplay && (!bCanAdminOverride || !CanUserChangeReplay( issuer )) )
     {
         if ( issuer )
