@@ -1179,6 +1179,9 @@ stock bool AddPreRunFrames( int client )
     }
     else
     {
+        delete g_hRec[client];
+        
+        
         ArrayList rec = g_hPreRec[client].Clone();
         
         
