@@ -1167,9 +1167,15 @@ stock bool AddPreRunFrames( int client )
         if ( !curstart ) return false;
         
         
+        delete g_hRec[client];
+        
+        
         ArrayList rec = g_hPreRec[client].Clone();
         
         rec.Resize( curstart );
+        
+        
+        g_hRec[client] = rec;
     }
     else
     {
