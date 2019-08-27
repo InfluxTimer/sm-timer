@@ -87,7 +87,10 @@ public void OnConfigsExecuted()
 
 public void OnClientPutInServer( int client )
 {
-    Inf_SendConVarValueFloat( client, g_ConVar_Gravity, g_flDefaultGravity );
+    if ( !IsFakeClient( client ) )
+    {
+        Inf_SendConVarValueFloat( client, g_ConVar_Gravity, g_flDefaultGravity );
+    }
 }
 
 public void E_ConVarChanged_GravMult( ConVar convar, const char[] oldValue, const char[] newValue )
