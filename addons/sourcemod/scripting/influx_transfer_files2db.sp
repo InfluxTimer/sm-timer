@@ -108,6 +108,7 @@ public void Thrd_Maps( Handle db, Handle res, const char[] szError, any data )
         int mapid = SQL_FetchInt( res, 0 );
         SQL_FetchString( res, 1, szMap, sizeof( szMap ) );
         
+        LogMessage( INF_CON_PRE..."Inserting map '%s' runs and zones to database...", szMap );
         
         
         // Runs
@@ -128,7 +129,7 @@ public void Thrd_Maps( Handle db, Handle res, const char[] szError, any data )
             
             kv.ExportToString( szData, sizeof( szData ) );
             
-            if ( !SQL_EscapeString( db, szData, szData, sizeof( szData ) ) )
+            if ( !Inf_DB_GetEscaped( db, szData, sizeof( szData ), "" ) )
             {
                 LogError( INF_CON_PRE..."Failed to escape run data string! (%i)", runid );
                 continue;
@@ -164,7 +165,7 @@ public void Thrd_Maps( Handle db, Handle res, const char[] szError, any data )
             
             kv.ExportToString( szData, sizeof( szData ) );
             
-            if ( !SQL_EscapeString( db, szData, szData, sizeof( szData ) ) )
+            if ( !Inf_DB_GetEscaped( db, szData, sizeof( szData ), "" ) )
             {
                 LogError( INF_CON_PRE..."Failed to escape zone data string! (%i)", zoneid );
                 continue;
@@ -184,4 +185,7 @@ public void Thrd_Maps( Handle db, Handle res, const char[] szError, any data )
         
         delete kv;
     }
+    
+    
+    LogMessage( INF_CON_PRE..."Done inserting! Wait a moment for queries to finish." );
 }
