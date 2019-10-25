@@ -25,7 +25,7 @@ deploy:
 
 before_script:
   # SM
-  - wget "https://sourcemod.net/latest.php?os=linux&version=1.9" -O /tmp/sourcemod.tar.gz
+  - wget "https://sourcemod.net/latest.php?os=linux&version=1.10" -O /tmp/sourcemod.tar.gz
   - mkdir ~/sm && cd ~/sm
   - tar xzf /tmp/sourcemod.tar.gz addons/sourcemod/scripting
   - PATH+=:$PWD/addons/sourcemod/scripting
