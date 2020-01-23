@@ -179,28 +179,73 @@ stock float Inf_MinsMaxsToYaw( const float start_mins[3], const float start_maxs
     return RadToDeg( ArcTangent2( dir[1], dir[0] ) );
 }
 
-stock int Inf_GetPreferredTeam( int &outspawns_ct, int &outspawns_t )
+// Returns CS_TEAM_NONE if no available spawns are available.
+stock int Inf_GetPreferredTeam( int &nOutSpawnsPref, int &nOutSpawnsOther, bool bBalance = false, int iPreferredTeam = CS_TEAM_CT )
 {
-    int spawns_ct = 0;
-    int spawns_t = 0;
+    static char szPrefSpawn[32];
+    static char szOtherSpawn[32];
+    
+    int iOtherTeam = CS_TEAM_NONE;
+    
+    if ( iPreferredTeam == CS_TEAM_CT )
+    {
+        iOtherTeam = CS_TEAM_T;
+        
+        strcopy( szPrefSpawn, sizeof( szPrefSpawn ), "info_player_counterterrorist" );
+        strcopy( szOtherSpawn, sizeof( szOtherSpawn ), "info_player_terrorist" );
+    }
+    else
+    {
+        iOtherTeam = CS_TEAM_CT;
+        
+        strcopy( szPrefSpawn, sizeof( szPrefSpawn ), "info_player_terrorist" );
+        strcopy( szOtherSpawn, sizeof( szOtherSpawn ), "info_player_counterterrorist" );
+    }
+    
+    
+    int nSpawnsPreferred = 0;
+    int nSpawnsOthers = 0;
     int ent;
     
     ent = -1;
-    while ( (ent = FindEntityByClassname( ent, "info_player_counterterrorist" )) != -1 ) spawns_ct++;
+    while ( (ent = FindEntityByClassname( ent, szPrefSpawn )) != -1 ) nSpawnsPreferred++;
     ent = -1;
-    while ( (ent = FindEntityByClassname( ent, "info_player_terrorist" )) != -1 ) spawns_t++;
+    while ( (ent = FindEntityByClassname( ent, szOtherSpawn )) != -1 ) nSpawnsOthers++;
     
     
-    outspawns_ct = spawns_ct;
-    outspawns_t = spawns_t;
+    nOutSpawnsPref = nSpawnsPreferred;
+    nOutSpawnsOther = nSpawnsOthers;
     
-    if ( GetTeamClientCount( CS_TEAM_CT ) < spawns_ct )
+    int nPrefCount = GetTeamClientCount( iPreferredTeam );
+    int nOtherCount = GetTeamClientCount( iOtherTeam );
+    
+    bool bEnoughPrefSpawns = ( nPrefCount < nSpawnsPreferred );
+    bool bEnoughOtherSpawns = ( nOtherCount < nSpawnsOthers );
+    
+    
+    
+    // Balance the teams out if we have enough spawn points.
+    if ( bBalance )
     {
-        return CS_TEAM_CT;
+        if ( nPrefCount <= nOtherCount && bEnoughPrefSpawns )
+        {
+            return iPreferredTeam;
+        }
+        else if ( nOtherCount <= nPrefCount && bEnoughOtherSpawns )
+        {
+            return iOtherTeam;
+        }
     }
-    else if ( GetTeamClientCount( CS_TEAM_T ) < spawns_t )
+    
+    
+    // Just use the preferred team first.
+    if ( bEnoughPrefSpawns )
     {
-        return CS_TEAM_T;
+        return iPreferredTeam;
+    }
+    else if ( bEnoughOtherSpawns )
+    {
+        return iOtherTeam;
     }
     else // Our spawns are full!
     {
@@ -215,7 +260,7 @@ stock int Inf_GetPreferredTeam( int &outspawns_ct, int &outspawns_t )
     }
     
     
-    return spawns_ct >= spawns_t ? CS_TEAM_CT : CS_TEAM_T;
+    return CS_TEAM_NONE;
 }
 
 // Delete the menu handle if ending, return if cancelling.
