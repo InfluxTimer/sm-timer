@@ -32,15 +32,12 @@ float g_flJoin[INF_MAXPLAYERS];
 
 ConVar g_ConVar_Title;
 ConVar g_ConVar_TitleDisplayAlways;
-ConVar g_ConVar_Font;
-ConVar g_ConVar_MsgClass;
 ConVar g_ConVar_TabSize;
 ConVar g_ConVar_TabAmount;
 ConVar g_ConVar_Pos;
 ConVar g_ConVar_Clr;
 
 char g_szTitle[256];
-char g_szFont[256];
 float g_fPos[2];
 int g_iClr[4];
 
@@ -84,17 +81,12 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 public void OnPluginStart()
 {
     // CONVARS
-    g_ConVar_Title = CreateConVar( "influx_hud_draw_title", "\t<font color='#00AAFF'>Influx Timer</font>", "Title to be shown to all players.", FCVAR_NOTIFY );
+    g_ConVar_Title = CreateConVar( "influx_hud_draw_title", "\tInflux Timer", "Title to be shown to all players.", FCVAR_NOTIFY );
     g_ConVar_Title.AddChangeHook( E_ConVarChanged_Title );
     g_ConVar_Title.GetString( g_szTitle, sizeof( g_szTitle ) );
     
     g_ConVar_TitleDisplayAlways = CreateConVar( "influx_hud_draw_titlealways", "0", "Do we always display the title when player is in start/has no run?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
-    g_ConVar_Font = CreateConVar( "influx_hud_draw_font", "monospace", "Font to use in the timer hud. Monospace fonts recommended.", FCVAR_NOTIFY );
-    g_ConVar_Font.AddChangeHook( E_ConVarChanged_Font );
-    g_ConVar_Font.GetString( g_szFont, sizeof( g_szFont ) );
-    
-    g_ConVar_MsgClass = CreateConVar( "influx_hud_draw_msgclass", "fontSize-l", "You'll have to google CSGO Panorama fonts, sorry.", FCVAR_NOTIFY );
     
     g_ConVar_TabSize = CreateConVar( "influx_hud_draw_tabsize", "6", "Amount of characters a tab is. If you increase/decrease font size you need to tweak this.", FCVAR_NOTIFY, true, 1.0 );
     g_ConVar_TabAmount = CreateConVar( "influx_hud_draw_tabnum", "5", "Amount of tabs to insert between columns.", FCVAR_NOTIFY, true, 0.0 );
@@ -165,11 +157,6 @@ public void OnClientPutInServer( int client )
 public void E_ConVarChanged_Title( ConVar convar, const char[] oldValue, const char[] newValue )
 {
     g_ConVar_Title.GetString( g_szTitle, sizeof( g_szTitle ) );
-}
-
-public void E_ConVarChanged_Font( ConVar convar, const char[] oldValue, const char[] newValue )
-{
-    g_ConVar_Font.GetString( g_szFont, sizeof( g_szFont ) );
 }
 
 public void E_ConVarChanged_Pos( ConVar convar, const char[] oldValue, const char[] newValue )
@@ -294,7 +281,7 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
             Influx_GetRunName( Influx_GetClientRunId( target ), szTemp2, sizeof( szTemp2 ) );
             curlinelen = Format( szTemp2, sizeof( szTemp2 ), "In %s Start", szTemp2 );
             
-            Format( szMsg, sizeof( szMsg ), "%s<font color='#4286f4'>%s</font>", szMsg, szTemp2 );
+            Format( szMsg, sizeof( szMsg ), "%s%s", szMsg, szTemp2 );
         }
         else if ( state >= STATE_RUNNING )
         {
@@ -373,10 +360,9 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
                 
                 curlinelen += strlen( szTemp );
                 
-                Format( szMsg, sizeof( szMsg ), "%s%s<font%s>%s%s</font>",
+                Format( szMsg, sizeof( szMsg ), "%s%s%s%s",
                     szMsg,
                     szTimeName,
-                    szColor,
                     ( pre[0] != 0 ) ? pre : "",
                     szTemp );
             }
@@ -385,7 +371,7 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
         
         GetTabs( curlinelen, szTemp, sizeof( szTemp ), nTabAmount );
         
-        Format( szMsg, sizeof( szMsg ), "%s%sSpeed: <font color='#4286f4'>%03.0f</font>",
+        Format( szMsg, sizeof( szMsg ), "%s%sSpeed: %03.0f",
             szMsg,
             szTemp,
             GetSpeed( target ) );
@@ -473,11 +459,6 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
         
         if ( szMsg[0] != 0 )
         {
-            static char szClass[256];
-            g_ConVar_MsgClass.GetString( szClass, sizeof( szClass ) );
-            
-            Format( szMsg, sizeof( szMsg ), "<pre><span class='%s' face='%s'>%s</span></pre>", szClass, g_szFont, szMsg );
-            
             PrintHintText( client, szMsg );
         }
     }
