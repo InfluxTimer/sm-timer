@@ -31,6 +31,9 @@ bool g_bLib_Teams;
 
 // FORWARDS
 Handle g_hForward_OnClientPause;
+Handle g_hForward_OnClientPausePost;
+Handle g_hForward_OnClientContinue;
+Handle g_hForward_OnClientContinuePost;
 
 
 // CONVARS
@@ -67,6 +70,9 @@ public void OnPluginStart()
     
     // FORWARDS
     g_hForward_OnClientPause = CreateGlobalForward( "Influx_OnClientPause", ET_Hook, Param_Cell );
+    g_hForward_OnClientPausePost = CreateGlobalForward( "Influx_OnClientPausePost", ET_Ignore, Param_Cell );
+    g_hForward_OnClientContinue = CreateGlobalForward( "Influx_OnClientContinue", ET_Hook, Param_Cell );
+    g_hForward_OnClientContinuePost = CreateGlobalForward( "Influx_OnClientContinuePost", ET_Ignore, Param_Cell );
     
     
     // CMDS
@@ -227,6 +233,7 @@ stock bool PauseRun( int client )
     }
     
     
+    // Ask other plugins if we should allow pausing.
     Action res = Plugin_Continue;
     
     Call_StartForward( g_hForward_OnClientPause );
@@ -257,12 +264,32 @@ stock bool PauseRun( int client )
 
     Influx_PrintToChat( _, client, "%T", "INF_NOWPAUSED", client );
     
+    
+    // Send success post.
+    Call_StartForward( g_hForward_OnClientPausePost );
+    Call_PushCell( client );
+    Call_Finish();
+    
     return true;
 }
 
 stock bool ContinueRun( int client )
 {
     if ( !g_bPaused[client] ) return true;
+    
+    
+    // Ask other plugins if we should allow continuing.
+    Action res = Plugin_Continue;
+    
+    Call_StartForward( g_hForward_OnClientContinue );
+    Call_PushCell( client );
+    Call_Finish( res );
+    
+    if ( res != Plugin_Continue )
+    {
+        return false;
+    }
+    
     
     
     // Spawn them if they are dead.
@@ -316,6 +343,12 @@ stock bool ContinueRun( int client )
     SetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client] );
 
     Influx_PrintToChat( _, client, "%T", "INF_NOLONGERPAUSED", client );
+    
+    
+    // Send success post.
+    Call_StartForward( g_hForward_OnClientContinuePost );
+    Call_PushCell( client );
+    Call_Finish();
     
     return true;
 }

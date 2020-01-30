@@ -7,8 +7,12 @@
 #define INFLUX_LIB_PAUSE      "influx_pause"
 
 
-// Return != Plugin_Continue to stop the pausing process.
+// Return != Plugin_Continue to stop the pausing/continuing process.
 forward Action Influx_OnClientPause( int client );
+forward Action Influx_OnClientContinue( int client );
+// Pausing/continuing has succeeded.
+forward void Influx_OnClientPausePost( int client );
+forward void Influx_OnClientContinuePost( int client );
 
 
 native bool Influx_IsClientPaused( int client );
