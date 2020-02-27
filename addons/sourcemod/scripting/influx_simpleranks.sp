@@ -203,6 +203,8 @@ public void OnMapStart()
 {
     ReadRanks();
     ReadStyleModePoints();
+
+    CreateTimer( 1.0, T_CheckClanTags, _, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT );
 }
 
 public void OnClientPutInServer( int client )
@@ -401,7 +403,6 @@ stock void SetClientRank( int client, int index, bool bChose, const char[] szOve
     
     
     UpdateClientClanTag( client );
-    CheckClientClanTag( client );
     
     
     if ( bPrint )
@@ -739,33 +740,28 @@ stock bool UpdateClientClanTag( int client )
     }
 }
 
-stock void CheckClientClanTag( int client )
-{
-    if ( !g_ConVar_UseClanTag.BoolValue )
-    {
-        return;
-    }
-    
-    CreateTimer( 1.0, T_CheckClanTag, GetClientUserId( client ), TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT );
-}
-
 stock void GetClientClanTagRank( int client, char[] out, int len )
 {
     strcopy( out, len, g_szCurRank[client] );
     Influx_RemoveChatColors( out, len );
 }
 
-public Action T_CheckClanTag( Handle hTimer, int client )
+public Action T_CheckClanTags( Handle hTimer, any data )
 {
-    // Keep updating the clan tag until we no longer need to set it.
-    bool ret = true;
-    
-    if ( (client = GetClientOfUserId( client )) > 0 && IsClientInGame( client ) )
+    if ( !g_ConVar_UseClanTag.BoolValue )
     {
-        ret = UpdateClientClanTag( client );
+        return Plugin_Continue;
     }
-    
-    return ret ? Plugin_Continue : Plugin_Stop;
+
+    for ( int i = 1; i <= MaxClients; i++ )
+    {
+        if ( IsClientInGame( i ) && !IsFakeClient( i ) )
+        {
+            UpdateClientClanTag( i );
+        }
+    }
+
+    return Plugin_Continue;
 }
 
 
