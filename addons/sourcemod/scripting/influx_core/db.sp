@@ -245,11 +245,11 @@ stock void DB_InitRecords( int runid = -1, int mode = MODE_INVALID, int style = 
     
     
     char szQuery[512];
-    FormatEx( szQuery, sizeof( szQuery ), QUERY_INIT_RECORDS,
+    FormatEx( szQuery, sizeof( szQuery ), QUERY_INIT_RECORDS_1,
         g_iCurMapId,
         szWhere );
     
-    SQL_TQuery( g_hDB, Thrd_GetBestRecords, szQuery, _, DBPrio_High );
+    SQL_TQuery( g_hDB, Thrd_GetBestRecords_1, szQuery, _, DBPrio_High );
 }
 
 stock void DB_InitClient( int client )

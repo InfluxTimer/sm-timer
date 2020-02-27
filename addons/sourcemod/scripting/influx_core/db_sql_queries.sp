@@ -77,7 +77,39 @@
 //
 // Select all best times for this map
 //
-#define QUERY_INIT_RECORDS "\
+
+// Worst case scenario, this will return MAX_RUNS*MAX_MODES*MAX_STYLES (about 2304 if these constants haven't changed)
+// This is true if the server runs multiple modes and styles and a lot runs per map.
+// It'd be more inline with 2 runs in a map * 2 different mode records * 8 style records for an average map.
+#define QUERY_INIT_RECORDS_1 "\
+    SELECT \
+        runid,\
+        `mode`,\
+        style,\
+        MIN(rectime) \
+    FROM "...INF_TABLE_TIMES..." \
+    WHERE mapid=%i%s \
+    GROUP BY runid,`mode`,style\
+    "
+
+// For each record we get from the above query:
+#define QUERY_INIT_RECORDS_2 "\
+    SELECT \
+        _t.uid,\
+        runid,\
+        `mode`,\
+        style,\
+        rectime,\
+        `name` \
+    FROM "...INF_TABLE_TIMES..." AS _t INNER JOIN "...INF_TABLE_USERS..." AS _u ON _t.uid=_u.uid \
+    WHERE mapid=%i AND runid=%i AND `mode`=%i AND style=%i AND rectime=%f \
+    ORDER BY recdate \
+    LIMIT 1\
+    "
+
+
+// This was the old method which would create horrible query times if 1 composite key would have thousands of records in it.
+#define QUERY_INIT_RECORDS_OLD "\
     SELECT \
         _t.uid,\
         runid,\

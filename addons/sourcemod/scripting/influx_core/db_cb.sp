@@ -224,11 +224,61 @@ public void Thrd_GetClientRecords( Handle db, Handle res, const char[] szError, 
     g_bCachedTimes[client] = true;
 }
 
-public void Thrd_GetBestRecords( Handle db, Handle res, const char[] szError, any data )
+public void Thrd_GetBestRecords_1( Handle db, Handle res, const char[] szError, any data )
 {
     if ( res == null )
     {
-        Inf_DB_LogError( g_hDB, "getting best records" );
+        Inf_DB_LogError( g_hDB, "getting best records times" );
+        return;
+    }
+
+    if ( !SQL_GetRowCount( res ) )
+    {
+        PrintToServer( INF_CON_PRE..."No records to load from map. (%i)", g_iCurMapId );
+
+        // Alright, we're ready to receive new best times.
+        g_bBestTimesCached = true;
+
+        return;
+    }
+
+
+    PrintToServer( INF_CON_PRE..."Retrieving %i best records from database for map...", SQL_GetRowCount( res ) );
+
+
+    decl String:szQuery[512];
+    int runid, mode, style;
+    float time;
+
+    // Count down to 1 so we know when we've finished retrieving all the records.
+    int counter = SQL_GetRowCount( res );
+
+
+    while ( SQL_FetchRow( res ) )
+    {
+        runid = SQL_FetchInt( res, 0 );
+        mode = SQL_FetchInt( res, 1 );
+        style = SQL_FetchInt( res, 2 );
+        time = SQL_FetchFloat( res, 3 );
+        
+        // We now have the best time per runid, mode, style group for the map.
+        // Now get the actual data we need.
+        FormatEx( szQuery, sizeof( szQuery ), QUERY_INIT_RECORDS_2,
+            g_iCurMapId,
+            runid,
+            mode,
+            style,
+            time );
+
+        SQL_TQuery( g_hDB, Thrd_GetBestRecords_2, szQuery, counter--, DBPrio_High );
+    }
+}
+
+public void Thrd_GetBestRecords_2( Handle db, Handle res, const char[] szError, int counter )
+{
+    if ( res == null )
+    {
+        Inf_DB_LogError( g_hDB, "getting best records data" );
         return;
     }
     
@@ -286,10 +336,18 @@ public void Thrd_GetBestRecords( Handle db, Handle res, const char[] szError, an
         }
     }
     
-    g_bBestTimesCached = true;
-    
-    Call_StartForward( g_hForward_OnPostRecordsLoad );
-    Call_Finish();
+
+    // We've reached the end of our queries. All our times should be cached now!
+    if ( counter <= 1 )
+    {
+        PrintToServer( INF_CON_PRE..."Finished retrieving best records from database!" );
+
+
+        g_bBestTimesCached = true;
+        
+        Call_StartForward( g_hForward_OnPostRecordsLoad );
+        Call_Finish();
+    }
 }
 
 public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, any data )
