@@ -225,6 +225,7 @@ TopMenuObject g_InfluxAdminMenu = INVALID_TOPMENUOBJECT;
 
 #include "influx_core/cmds.sp"
 #include "influx_core/colorchat.sp"
+#include "influx_core/db_sql_queries.sp"
 #include "influx_core/db.sp"
 #include "influx_core/db_cb.sp"
 #include "influx_core/events.sp"

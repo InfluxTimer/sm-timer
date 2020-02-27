@@ -15,19 +15,8 @@ char g_szDriver[32];
 
 
 // Threaded callbacks recide in db_cb.sp
+// Queries written as preprocessors are in db_sql_queries.sp
 
-
-#define QUERY_CREATETABLE_USERS         "CREATE TABLE IF NOT EXISTS "...INF_TABLE_USERS..." (\
-                                        uid INTEGER PRIMARY KEY,\
-                                        steamid VARCHAR(63) NOT NULL UNIQUE,\
-                                        name VARCHAR(62) DEFAULT 'N/A',\
-                                        joindate DATE NOT NULL)"
-                                    
-#define QUERY_CREATETABLE_USERS_MYSQL   "CREATE TABLE IF NOT EXISTS "...INF_TABLE_USERS..." (\
-                                        uid INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,\
-                                        steamid VARCHAR(63) NOT NULL UNIQUE,\
-                                        name VARCHAR(62) DEFAULT 'N/A',\
-                                        joindate DATE NOT NULL)"
 
 
 stock bool DB_UpdateQuery( int ver, const char[] szQuery )
@@ -122,48 +111,25 @@ stock void DB_InitTables()
     {
         SQL_TQuery( g_hDB, Thrd_Empty, QUERY_CREATETABLE_USERS_MYSQL, _, DBPrio_High );
         
-        SQL_TQuery( g_hDB, Thrd_Empty,
-            "CREATE TABLE IF NOT EXISTS "...INF_TABLE_MAPS..." (" ...
-            "mapid INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY," ... // Only change
-            "mapname VARCHAR(127) NOT NULL UNIQUE)", _, DBPrio_High );
+        SQL_TQuery( g_hDB, Thrd_Empty, QUERY_CREATETABLE_MAPS_MYSQL, _, DBPrio_High );
     }
     else
     {
-        // NOTE: Must be INTEGER PRIMARY KEY.
-        // https://www.sqlite.org/autoinc.html
-        SQL_TQuery( g_hDB, Thrd_Empty, QUERY_CREATETABLE_USERS, _, DBPrio_High );
+        SQL_TQuery( g_hDB, Thrd_Empty, QUERY_CREATETABLE_USERS_SQLITE, _, DBPrio_High );
         
-        SQL_TQuery( g_hDB, Thrd_Empty,
-            "CREATE TABLE IF NOT EXISTS "...INF_TABLE_MAPS..." (" ...
-            "mapid INTEGER PRIMARY KEY," ...
-            "mapname VARCHAR(127) NOT NULL UNIQUE)", _, DBPrio_High );
+        SQL_TQuery( g_hDB, Thrd_Empty, QUERY_CREATETABLE_MAPS_SQLITE, _, DBPrio_High );
     }
     
     
-    SQL_TQuery( g_hDB, Thrd_Empty,
-        "CREATE TABLE IF NOT EXISTS "...INF_TABLE_TIMES..." (" ...
-        "uid INT NOT NULL," ...
-        "mapid INT NOT NULL," ...
-        "runid INT NOT NULL," ...
-        "mode INT NOT NULL," ...
-        "style INT NOT NULL," ...
-        "rectime REAL NOT NULL," ...
-        "recdate DATE NOT NULL," ...
-        "PRIMARY KEY(uid,mapid,runid,mode,style))", _, DBPrio_High );
+    SQL_TQuery( g_hDB, Thrd_Empty, QUERY_CREATETABLE_TIMES, _, DBPrio_High );
     
     
-    SQL_TQuery( g_hDB, Thrd_Empty,
-        "CREATE TABLE IF NOT EXISTS "...INF_TABLE_RUNS..." (" ...
-        "mapid INT NOT NULL," ...
-        "runid INT NOT NULL," ...
-        "rundata VARCHAR(512)," ...
-        "PRIMARY KEY(mapid,runid))", _, DBPrio_High );
+    SQL_TQuery( g_hDB, Thrd_Empty, QUERY_CREATETABLE_RUNS, _, DBPrio_High );
     
     
     
     // Track our database's version since it'll become handy if we ever need to update the database structure.
-    SQL_TQuery( g_hDB, Thrd_Empty,
-        "CREATE TABLE IF NOT EXISTS "...INF_TABLE_DBVER..." (id INT NOT NULL UNIQUE, version INT NOT NULL)", _, DBPrio_High );
+    SQL_TQuery( g_hDB, Thrd_Empty, QUERY_CREATETABLE_DBVER, _, DBPrio_High );
     
     
     DB_CheckVersion();
@@ -223,7 +189,7 @@ stock bool DB_PerformUpdateQueries( int ver )
         PrintToServer( INF_CON_PRE..."Renamed old users table to %s. If everything goes smoothly you may want to delete it to free resources.", szTempTable );
         
         
-        if ( !DB_UpdateQuery( ver, g_bIsMySQL ? QUERY_CREATETABLE_USERS_MYSQL : QUERY_CREATETABLE_USERS ) ) return false;
+        if ( !DB_UpdateQuery( ver, g_bIsMySQL ? QUERY_CREATETABLE_USERS_MYSQL : QUERY_CREATETABLE_USERS_SQLITE ) ) return false;
         
         
         PrintToServer( INF_CON_PRE..."Created new version of users table." );
@@ -279,20 +245,7 @@ stock void DB_InitRecords( int runid = -1, int mode = MODE_INVALID, int style = 
     
     
     char szQuery[512];
-    FormatEx( szQuery, sizeof( szQuery ), "SELECT " ...
-        "_t.uid," ...
-        "runid," ...
-        "mode," ...
-        "style," ...
-        "rectime," ...
-        "name " ...
-        "FROM "...INF_TABLE_TIMES..." AS _t INNER JOIN "...INF_TABLE_USERS..." AS _u ON _t.uid=_u.uid WHERE mapid=%i%s " ...
-        
-        "AND rectime=(SELECT " ...
-            "MIN(rectime) " ...
-            "FROM "...INF_TABLE_TIMES..." WHERE mapid=_t.mapid AND runid=_t.runid AND mode=_t.mode AND style=_t.style" ...
-        ") " ...
-        "ORDER BY runid",
+    FormatEx( szQuery, sizeof( szQuery ), QUERY_INIT_RECORDS,
         g_iCurMapId,
         szWhere );
     
@@ -333,7 +286,7 @@ stock void DB_InitClientTimes( int client )
     
     
     decl String:szQuery[192];
-    FormatEx( szQuery, sizeof( szQuery ), "SELECT runid,mode,style,rectime FROM "...INF_TABLE_TIMES..." WHERE mapid=%i AND uid=%i ORDER BY runid", g_iCurMapId, g_iClientId[client] );
+    FormatEx( szQuery, sizeof( szQuery ), QUERY_INIT_PLAYER_RECORDS, g_iCurMapId, g_iClientId[client] );
     
     SQL_TQuery( g_hDB, Thrd_GetClientRecords, szQuery, GetClientUserId( client ), DBPrio_High );
 }
