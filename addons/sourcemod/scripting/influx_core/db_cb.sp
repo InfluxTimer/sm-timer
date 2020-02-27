@@ -52,12 +52,10 @@ public void Thrd_GetMapId( Handle db, Handle res, const char[] szError, any data
     {
         g_iCurMapId = SQL_FetchInt( res, 0 );
         
+        // We've retrieved the map id, send forward.
+        PrintToServer( INF_CON_PRE..."Retrieved map id %i", g_iCurMapId );
         
-        // We've retrieved the map id!
-        Call_StartForward( g_hForward_OnMapIdRetrieved );
-        Call_PushCell( g_iCurMapId );
-        Call_PushCell( g_bNewMapId );
-        Call_Finish();
+        SendMapIdRetrieved();
         
         
         DB_InitRecords();
@@ -78,6 +76,9 @@ public void Thrd_GetMapId( Handle db, Handle res, const char[] szError, any data
         
         g_bNewMapId = true;
         
+        
+        LogMessage( INF_CON_PRE..."Creating a new map id for map %s!", g_szCurrentMap );
+
         
         decl String:szQuery[256];
         FormatEx( szQuery, sizeof( szQuery ), "INSERT INTO "...INF_TABLE_MAPS..." (mapname) VALUES ('%s')", g_szCurrentMap );
@@ -303,7 +304,7 @@ public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, any data 
     // Attempt to load em from file if we have none in db.
     if ( !SQL_GetRowCount( res ) )
     {
-        LoadRuns( true, false );
+        LoadRuns( true, false, true );
         return;
     }
     

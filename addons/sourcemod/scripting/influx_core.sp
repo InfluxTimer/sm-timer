@@ -2987,6 +2987,14 @@ stock void SendRunLoad( int runid, KeyValues kv )
     Call_Finish();
 }
 
+stock void SendMapIdRetrieved()
+{
+    Call_StartForward( g_hForward_OnMapIdRetrieved );
+    Call_PushCell( g_iCurMapId );
+    Call_PushCell( g_bNewMapId );
+    Call_Finish();
+}
+
 stock bool LoadRunFromKv( KeyValues kv )
 {
     char szRun[MAX_RUN_NAME];
@@ -3080,11 +3088,13 @@ stock void BuildRunKvs( ArrayList kvs )
     }
 }
 
-stock void LoadRuns( bool bForceType = false, bool bUseDb = false )
+stock void LoadRuns( bool bForceType = false, bool bUseDb = false, bool bFallback = false )
 {
     bool usedb = (bForceType && bUseDb) || (!bForceType && WantsRunsToDb());
     
-    PrintToServer( INF_CON_PRE..."Loading runs from %s...", usedb ? "database" : "file" );
+    PrintToServer( INF_CON_PRE..."Loading runs from %s %s...",
+        usedb ? "database" : "file",
+        bFallback ? "as a fallback" : "first time" );
     
     if ( usedb )
     {
