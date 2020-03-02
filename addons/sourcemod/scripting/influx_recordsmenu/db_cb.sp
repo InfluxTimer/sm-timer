@@ -442,7 +442,7 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
         }
         
         
-        rank = SQL_FetchInt( res, 8 ) + 1;
+        rank = SQL_FetchInt( res, 8 );
         
         if ( requid != -1 )
         {
