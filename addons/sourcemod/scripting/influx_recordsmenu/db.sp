@@ -233,11 +233,13 @@ stock void DB_PrintRecords(
     
 
     static char szQuery[1024];
-    new offsetrows = offset * PRINTREC_MENU_LIMIT;
+
     
-    FormatEx( szQuery, sizeof( szQuery ), "SELECT _t.uid,_t.mapid,runid,mode,style,rectime,name,mapname," ...
-    "@rank := @rank + 1 AS plyrank " ...
-    "FROM (SELECT @rank := %i) AS _rank, "...INF_TABLE_TIMES..." AS _t INNER JOIN "...INF_TABLE_USERS..." AS _u ON _t.uid=_u.uid INNER JOIN "...INF_TABLE_MAPS..." AS _m ON _t.mapid=_m.mapid WHERE runid=%i", offsetrows, runid );
+    FormatEx( szQuery, sizeof( szQuery ), "SELECT _t.uid,_t.mapid,runid,mode,style,rectime,name,mapname " ...
+        "FROM "...INF_TABLE_TIMES..." AS _t " ...
+        "INNER JOIN "...INF_TABLE_USERS..." AS _u ON _t.uid=_u.uid INNER JOIN "...INF_TABLE_MAPS..." AS _m ON _t.mapid=_m.mapid " ...
+        "WHERE runid=%i",
+        runid );
     
     if ( mapid > 0 )
     {
@@ -311,10 +313,10 @@ stock void DB_PrintRecords(
         }
     }
     
-    Format( szQuery, sizeof( szQuery ), "%s ORDER BY rectime LIMIT %i", szQuery, PRINTREC_QUERY_LIMIT );
-    
-    
-    Format( szQuery, sizeof( szQuery ), "%s OFFSET %i", szQuery, offsetrows );
+    Format( szQuery, sizeof( szQuery ), "%s ORDER BY rectime LIMIT %i OFFSET %i",
+        szQuery,
+        PRINTREC_QUERY_LIMIT,
+        offset * PRINTREC_MENU_LIMIT );
     
     
     decl data[PCB_SIZE];
