@@ -235,7 +235,7 @@ stock void DB_PrintRecords(
     if ( db == null ) SetFailState( INF_CON_PRE..."Couldn't retrieve database handle!" );
     
     
-
+    static char szSearch[162];
     static char szQuery[1024];
     
     FormatEx( szQuery, sizeof( szQuery ), "SELECT _t.uid,_t.mapid,runid,mode,style,rectime,name,mapname," ...
@@ -269,10 +269,11 @@ stock void DB_PrintRecords(
     // The backslash is removed here since we use it to escape underscores.
     if ( uid <= 0 && szName[0] != '\0' )
     {
-        decl String:szSearch[64];
         strcopy( szSearch, sizeof( szSearch ), szName );
-        
+
         RemoveChars( szSearch, "`'\"\\" );
+        SQL_EscapeString( db, szName, szSearch, sizeof( szSearch ) );
+
         
         ReplaceString( szSearch, sizeof( szSearch ), "_", "\\_" );
         ReplaceString( szSearch, sizeof( szSearch ), "%", "\\%" );
@@ -293,10 +294,10 @@ stock void DB_PrintRecords(
     
     if ( mapid <= 0 && szMap[0] != '\0' )
     {
-        decl String:szSearch[64];
         strcopy( szSearch, sizeof( szSearch ), szMap );
         
         RemoveChars( szSearch, "`'\"%\\" );
+        SQL_EscapeString( db, szName, szSearch, sizeof( szSearch ) );
         
         ReplaceString( szSearch, sizeof( szSearch ), "_", "\\_" );
         
@@ -310,7 +311,6 @@ stock void DB_PrintRecords(
                 szQuery,
                 szSearch,
                 Influx_IsMySQL() ? "\\\\" : "\\" );
-                // MySQL escapes them.
         }
     }
     
