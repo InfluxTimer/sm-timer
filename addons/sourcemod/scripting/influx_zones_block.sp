@@ -194,8 +194,12 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     
     int index = FindBlockById( zoneid );
-    if ( index == -1 ) return Plugin_Stop;
-    
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Block zone (id: %i) is not registered with the plugin! Cannot save!",
+            zoneid );
+        return Plugin_Stop;
+    }
     
     decl data[BLOCK_SIZE];
     g_hBlocks.GetArray( index, data );

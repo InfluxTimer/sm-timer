@@ -122,7 +122,8 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     if ( SquareRoot( vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2] ) == 0.0 )
     {
-        return Plugin_Stop;
+        LogError( INF_CON_PRE..."Teleporter zone (id: %i) has no teleport location, loading anyway...",
+            zoneid );
     }
     
     CopyArray( vec, data[TELE_POS], 3 );
@@ -142,14 +143,22 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     
     int index = FindTeleById( zoneid );
-    if ( index == -1 ) return Plugin_Stop;
-    
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Teleporter zone (id: %i) is not registered with the plugin! Cannot save!",
+            zoneid );
+        return Plugin_Stop;
+    }
     
     decl data[TELE_SIZE];
     g_hTeles.GetArray( index, data );
     
-    if ( !data[TELE_ISSET] ) return Plugin_Stop;
-    
+    if ( !data[TELE_ISSET] )
+    {
+        LogError( INF_CON_PRE..."Teleporter zone (id: %i) has no teleport location! Cannot save!",
+            zoneid );
+        return Plugin_Stop;
+    }
     
     kv.SetNum( "resetvel", data[TELE_RESETVEL] );
     

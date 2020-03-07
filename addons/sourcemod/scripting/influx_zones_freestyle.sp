@@ -147,8 +147,12 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     
     int index = FindFreestyleById( zoneid );
-    if ( index == -1 ) return Plugin_Stop;
-    
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Freestyle zone (id: %i) is not registered with the plugin! Cannot save!",
+            zoneid );
+        return Plugin_Stop;
+    }
     
     decl data[FS_SIZE];
     g_hFreestyles.GetArray( index, data );
@@ -164,8 +168,12 @@ public void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent )
     if ( zonetype != ZONETYPE_FS ) return;
 
     int index = FindFreestyleById( zoneid );
-    if ( index == -1 ) return;
-    
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Freestyle zone (id: %i) is not registered with the plugin! Cannot register hooks!",
+            zoneid );
+        return;
+    }
     
     SDKHook( ent, SDKHook_StartTouchPost, E_StartTouchPost_Freestyle );
     SDKHook( ent, SDKHook_EndTouchPost, E_EndTouchPost_Freestyle );

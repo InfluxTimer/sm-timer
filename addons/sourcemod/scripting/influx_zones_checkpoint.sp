@@ -420,12 +420,20 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     
     int runid = kv.GetNum( "run_id", -1 );
-    if ( runid < 1 ) return Plugin_Stop;
-    
+    if ( runid < 1 )
+    {
+        LogError( INF_CON_PRE..."Checkpoint zone (id: %i) has invalid run id %i, loading anyway...",
+            zoneid,
+            runid );
+    }
     
     int cpnum = kv.GetNum( "cp_num", -1 );
-    if ( cpnum < 1 ) return Plugin_Stop;
-    
+    if ( cpnum < 1 )
+    {
+        LogError( INF_CON_PRE..."Checkpoint zone (id: %i) has invalid cp num %i, loading anyway...",
+            zoneid,
+            cpnum );
+    }
     
     //char szName[MAX_CP_NAME];
     //kv.GetString( "cp_name", szName, sizeof( szName ), "" );
@@ -456,8 +464,12 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     
     int index = FindCPZoneById( zoneid );
-    if ( index == -1 ) return Plugin_Stop;
-    
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Checkpoint zone (id: %i) is not registered with the plugin! Cannot save!",
+            zoneid );
+        return Plugin_Stop;
+    }
     
     kv.SetNum( "run_id", g_hCPZones.Get( index, CPZONE_RUN_ID ) );
     
@@ -475,8 +487,13 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     
     
     int cpnum = g_iBuildingNum[client];
-    if ( cpnum < 1 ) return;
-    
+    if ( cpnum < 1 )
+    {
+        LogError( INF_CON_PRE..."Checkpoint zone (id: %i) cannot be initialized because it has invalid cp num %i!",
+            zoneid,
+            cpnum );
+        return;
+    }
     
     
     decl data[CPZONE_SIZE];

@@ -137,8 +137,12 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     
     int runid = kv.GetNum( "run_id", -1 );
-    if ( runid < 1 ) return Plugin_Stop;
-    
+    if ( runid < 1 )
+    {
+        LogError( INF_CON_PRE..."Validator zone (id: %i) has invalid run id %i, loading anyway...",
+            zoneid,
+            runid );
+    }
     
     AddValidator( runid, zoneid );
     
@@ -151,8 +155,12 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     
     int index = FindValidatorById( zoneid );
-    if ( index == -1 ) return Plugin_Stop;
-    
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Validator zone (id: %i) is not registered with the plugin! Cannot save!",
+            zoneid );
+        return Plugin_Stop;
+    }
     
     kv.SetNum( "run_id", g_hValidators.Get( index, VAL_RUN_ID ) );
     

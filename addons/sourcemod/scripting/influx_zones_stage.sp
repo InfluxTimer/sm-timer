@@ -318,8 +318,12 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     
     int index = FindStageZoneById( zoneid );
-    if ( index == -1 ) return Plugin_Stop;
-    
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Stage zone (id: %i) is not registered with the plugin! Cannot save!",
+            zoneid );
+        return Plugin_Stop;
+    }
     
     int runid = g_hStageZones.Get( index, STAGEZONE_RUN_ID );
     
@@ -356,8 +360,13 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     
     
     int stagenum = g_iBuildingNum[client];
-    if ( stagenum < 2 ) return;
-    
+    if ( stagenum < 2 )
+    {
+        LogError( INF_CON_PRE..."Stage zone (id: %i) cannot be properly initialized because stage number %i is invalid!",
+            zoneid,
+            stagenum );
+        return;
+    }
     
     AddStageZone( zoneid, runid, stagenum );
     
@@ -389,8 +398,12 @@ public void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent )
     
     
     int index = FindStageZoneById( zoneid );
-    if ( index == -1 ) return;
-    
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Stage zone (id: %i) is not registered with the plugin! Cannot register hooks!",
+            zoneid );
+        return;
+    }
     
     // Update ent reference.
     g_hStageZones.Set( index, EntIndexToEntRef( ent ), STAGEZONE_ENTREF );

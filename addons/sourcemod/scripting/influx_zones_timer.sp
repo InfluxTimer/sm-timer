@@ -226,8 +226,9 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     data[TIMER_RUN_ID] = kv.GetNum( "run_id", -1 );
     if ( data[TIMER_RUN_ID] < 1 )
     {
-        LogError( INF_CON_PRE..."Invalid run id %i!", data[TIMER_RUN_ID] );
-        return Plugin_Stop;
+        LogError( INF_CON_PRE..."Timer zone (id: %i) has invalid run id %i, loading anyway...",
+            zoneid,
+            data[TIMER_RUN_ID] );
     }
     
     data[TIMER_ZONE_ID] = zoneid;
@@ -247,12 +248,20 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     
     int index = FindTimerById( zoneid );
-    if ( index == -1 ) return Plugin_Stop;
-    
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Timer zone (id: %i) is not registered with the plugin! Cannot save!",
+            zoneid );
+        return Plugin_Stop;
+    }
     
     int runid = g_hTimer.Get( index, TIMER_RUN_ID );
-    if ( runid < 1 ) return Plugin_Stop;
-    
+    if ( runid < 1 )
+    {
+        LogError( INF_CON_PRE..."Timer zone (id: %i) has invalid run id %i, saving anyway...",
+            zoneid,
+            runid );
+    }
     
     kv.SetNum( "run_id", runid );
     
@@ -264,8 +273,12 @@ public void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent )
     if ( !Inf_IsZoneTypeTimer( zonetype ) ) return;
     
     int index = FindTimerById( zoneid );
-    if ( index == -1 ) return;
-    
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Timer zone (id: %i) is not registered with the plugin! Cannot register hooks!",
+            zoneid );
+        return;
+    }
     
     // Cache our ent reference.
     g_hTimer.Set( index, EntIndexToEntRef( ent ), TIMER_ENTREF );
