@@ -132,22 +132,18 @@ stock void DB_PrintRunSelect(
     
     
     static char szWhere[128];
-    static char szWhere2[128];
     szWhere[0] = 0;
-    szWhere2[0] = 0;
     
     if ( uid > 0 )
     {
         FormatEx( szWhere, sizeof( szWhere ), " AND uid=%i", uid );
-        
-        strcopy( szWhere2, sizeof( szWhere2 ), " AND uid=_t.uid" ); // Subquery
     }
     
     static char szQuery[512];
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT runid," ...
-        "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_t.mapid AND runid=_t.runid%s) AS numrunrecs " ...
-        "FROM "...INF_TABLE_TIMES..." AS _t WHERE mapid=%i%s GROUP BY runid ORDER BY numrunrecs DESC", szWhere2, mapid, szWhere );
+        "COUNT(*) AS numrunrecs " ...
+        "FROM "...INF_TABLE_TIMES..." WHERE mapid=%i%s GROUP BY runid ORDER BY numrunrecs DESC", mapid, szWhere );
     
     
     decl data[3];
@@ -191,8 +187,8 @@ stock void DB_PrintStyleSelect(
     static char szQuery[512];
     FormatEx( szQuery, sizeof( szQuery ),
         "SELECT mode,style," ...
-        "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_t.mapid AND runid=_t.runid AND mode=_t.mode AND style=_t.style) AS numrecs " ...
-        "FROM "...INF_TABLE_TIMES..." AS _t WHERE mapid=%i AND runid=%i%s GROUP BY mode,style ORDER BY numrecs DESC", mapid, runid, szWhere );
+        "COUNT(*) AS numrecs " ...
+        "FROM "...INF_TABLE_TIMES..." WHERE mapid=%i AND runid=%i%s GROUP BY mode,style ORDER BY numrecs DESC", mapid, runid, szWhere );
     
     
     decl data[4];
@@ -237,10 +233,13 @@ stock void DB_PrintRecords(
     
     static char szSearch[162];
     static char szQuery[1024];
+
     
-    FormatEx( szQuery, sizeof( szQuery ), "SELECT _t.uid,_t.mapid,runid,mode,style,rectime,name,mapname," ...
-    "(SELECT COUNT(*) FROM "...INF_TABLE_TIMES..." WHERE mapid=_t.mapid AND runid=_t.runid AND mode=_t.mode AND style=_t.style AND rectime<_t.rectime) AS plyrank " ...
-    "FROM "...INF_TABLE_TIMES..." AS _t INNER JOIN "...INF_TABLE_USERS..." AS _u ON _t.uid=_u.uid INNER JOIN "...INF_TABLE_MAPS..." AS _m ON _t.mapid=_m.mapid WHERE runid=%i", runid );
+    FormatEx( szQuery, sizeof( szQuery ), "SELECT _t.uid,_t.mapid,runid,mode,style,rectime,name,mapname " ...
+        "FROM "...INF_TABLE_TIMES..." AS _t " ...
+        "INNER JOIN "...INF_TABLE_USERS..." AS _u ON _t.uid=_u.uid INNER JOIN "...INF_TABLE_MAPS..." AS _m ON _t.mapid=_m.mapid " ...
+        "WHERE runid=%i",
+        runid );
     
     if ( mapid > 0 )
     {
@@ -314,13 +313,10 @@ stock void DB_PrintRecords(
         }
     }
     
-    Format( szQuery, sizeof( szQuery ), "%s ORDER BY rectime LIMIT %i", szQuery, PRINTREC_QUERY_LIMIT );
-    
-    
-    if ( offset > 0 )
-    {
-        Format( szQuery, sizeof( szQuery ), "%s OFFSET %i", szQuery, offset * PRINTREC_MENU_LIMIT );
-    }
+    Format( szQuery, sizeof( szQuery ), "%s ORDER BY rectime LIMIT %i OFFSET %i",
+        szQuery,
+        PRINTREC_QUERY_LIMIT,
+        offset * PRINTREC_MENU_LIMIT );
     
     
     decl data[PCB_SIZE];

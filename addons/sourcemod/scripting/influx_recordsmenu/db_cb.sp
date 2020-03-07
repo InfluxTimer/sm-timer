@@ -442,7 +442,8 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
         }
         
         
-        rank = SQL_FetchInt( res, 8 ) + 1;
+        // Just estimate the rank from offset we had + records in current menu + 1
+        rank = (offset * PRINTREC_MENU_LIMIT) + numrecsprinted + 1;
         
         if ( requid != -1 )
         {
