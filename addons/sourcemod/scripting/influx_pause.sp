@@ -20,6 +20,9 @@ int g_nPauses[INF_MAXPLAYERS];
 float g_vecContinuePos[INF_MAXPLAYERS][3];
 float g_vecContinueAng[INF_MAXPLAYERS][3];
 float g_vecContinueVel[INF_MAXPLAYERS][3];
+int g_iPausedRunId[INF_MAXPLAYERS];
+int g_iPausedModeId[INF_MAXPLAYERS];
+int g_iPausedStyleId[INF_MAXPLAYERS];
 char g_szPausedTargetName[INF_MAXPLAYERS][128];
 int g_nPausedTicks[INF_MAXPLAYERS];
 bool g_bPaused[INF_MAXPLAYERS];
@@ -232,6 +235,16 @@ stock bool PauseRun( int client )
         return false;
     }
     
+
+    int runid = Influx_GetClientMode( client );
+    int modeid = Influx_GetClientMode( client );
+    int styleid = Influx_GetClientStyle( client );
+
+    if ( Influx_FindRunById( runid ) == -1 || modeid == MODE_INVALID || styleid == STYLE_INVALID )
+    {
+        return false;
+    }
+
     
     // Ask other plugins if we should allow pausing.
     Action res = Plugin_Continue;
@@ -246,9 +259,18 @@ stock bool PauseRun( int client )
     }
     
     
+
+    
+
+
+    
     g_nPauses[client]++;
     
     g_bPaused[client] = true;
+
+    g_iPausedRunId[client] = runid;
+    g_iPausedModeId[client] = modeid;
+    g_iPausedStyleId[client] = styleid;
     
     
     g_nPausedTicks[client] = GetGameTickCount() - Influx_GetClientStartTick( client );
@@ -317,6 +339,15 @@ stock bool ContinueRun( int client )
     
     
     g_bPaused[client] = false;
+
+    if (    !Influx_SetClientRun( client, g_iPausedRunId[client] )
+        ||  !Influx_SetClientMode( client, g_iPausedModeId[client] )
+        ||  !Influx_SetClientStyle( client, g_iPausedStyleId[client] ))
+    {
+        LogError( INF_CON_PRE..."Failed to set client's run/mode/style when continuing a previous run!" );
+        return false;
+    }
+
     
     
     // Make sure to reset our noclip so our timer don't stop.
