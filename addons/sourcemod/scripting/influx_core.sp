@@ -2103,7 +2103,6 @@ stock bool ChangeTele( int client )
         // If we're in start, it's all good.
         if ( g_iRunState[client] == STATE_START )
         {
-            g_iRunState[client] = STATE_NONE;
             return true;
         }
         
