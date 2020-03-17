@@ -92,6 +92,14 @@ stock void DB_OnConnected()
 {
     PrintToServer( INF_CON_PRE..."Established connection to %s database!", g_szDriver );
     
+
+    // Set the charset to utfmb4 for 4 byte utf-8 characters.
+    // SQLite should automatically use whatever UTF-8 that support 4 byte chars.
+    if ( g_bIsMySQL && !SQL_SetCharset( g_hDB, "utf8mb4" ) )
+    {
+       LogError( INF_CON_PRE..."Failed to set character set to 'utf8mb4'! Some player names may result in errors." );
+    }
+
     
     DB_InitTables();
     
