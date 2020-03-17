@@ -257,3 +257,42 @@ public Action Cmd_TestPrintStyles( int client, int args )
     return Plugin_Handled;
 }
 
+public Action Cmd_Change_Name_Db( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+
+
+    if ( g_iClientId[client] <= 0 ) return Plugin_Handled;
+    
+    
+    char szName[128];
+    char szQuery[256];
+
+
+    GetCmdArgString( szName, sizeof( szName ) );
+
+
+    if (szName[0] == 0 )
+    {
+        DB_UpdateClient( client );
+    }
+    else
+    {
+        RemoveChars( szName, "`'\"" );
+        
+        Inf_DB_GetEscaped( Influx_GetDB(), szName, sizeof( szName ), "N/A" );
+        
+
+        FormatEx( szQuery, sizeof( szQuery ), "UPDATE "...INF_TABLE_USERS..." SET name='%s' WHERE uid=%i",
+            szName,
+            g_iClientId[client] );
+        
+        SQL_TQuery( Influx_GetDB(), Thrd_Empty, szQuery, _, DBPrio_Low );
+
+
+        Inf_ReplyToClient( client, "Set your name to '%s' in database!", szName );
+    }
+
+    return Plugin_Handled;
+}
+

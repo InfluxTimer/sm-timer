@@ -38,6 +38,7 @@
 //#define DEBUG_DB_RUN
 //#define TEST_REGEX
 //#define TEST_MODESTYLES
+//#define TEST_DB_NAMECHANGE
 
 
 #define GAME_CONFIG_FILE      "influx.games"
@@ -569,6 +570,10 @@ public void OnPluginStart()
 
 #if defined TEST_REGEX
     RegAdminCmd( "sm_testmapname", Cmd_TestMapName, ADMFLAG_ROOT );
+#endif
+
+#if defined TEST_DB_NAMECHANGE
+    RegAdminCmd( "sm_changenamedb", Cmd_Change_Name_Db, ADMFLAG_ROOT );
 #endif
     
     

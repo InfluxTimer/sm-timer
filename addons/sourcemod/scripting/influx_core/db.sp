@@ -317,6 +317,11 @@ stock void DB_UpdateClient( int client )
         g_iClientId[client] );
     
     SQL_TQuery( g_hDB, Thrd_Empty, szQuery, _, DBPrio_Low );
+
+
+#if defined DEBUG_DB
+    PrintToServer( INF_DEBUG_PRE..."Updated player's %i name to '%s'", client, szName );
+#endif
 }
 
 stock void DB_InsertRecord( int client, int uid, int runid, int mode, int style, float time )
