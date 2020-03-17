@@ -1129,13 +1129,22 @@ stock bool TeleClientToStart( int client, int runid )
     
     // Make sure our teleport location is ok.
     // If not, ask other plugins to tell it to us and save it.
+    bool ok = true;
+
     if ( !Inf_IsValidTelePos( pos ) )
     {
-        ResetRunTelePosByIndex( irun, pos, ang[1] );
+        ok = ResetRunTelePosByIndex( irun, pos, ang[1] );
     }
     else if ( !Inf_IsValidTeleAngle( ang[1] ) )
     {
+        // Tele yaw is not critical.
         ResetRunTeleYawByIndex( irun, ang[1] );
+    }
+
+
+    if ( !ok )
+    {
+        return false;
     }
     
     
@@ -2942,29 +2951,55 @@ stock void TeleportClientsOutOfRun( int runid )
     }
 }
 
-stock void ResetRunTelePosByIndex( int irun, float pos[3], float &yaw )
+stock bool ResetRunTelePosByIndex( int irun, float pos[3], float &yaw )
 {
+    int runid = g_hRuns.Get( irun, RUN_ID );
+
+    LogMessage( INF_CON_PRE..."Resetting run's %i teleport location.", runid );
+
+
     if ( SearchTelePos(
             pos,
             yaw,
-            g_hRuns.Get( irun, RUN_ID ),
+            runid,
             TELEPOSTYPE_START ) )
     {
         SetRunTelePos( irun, pos, true );
         SetRunTeleYaw( irun, yaw );
+
+        return true;
+    }
+    else
+    {
+        LogError( INF_CON_PRE..."Failed to find a suitable teleport location for run %i on reset!", runid );
+
+        return false;
     }
 }
 
-stock void ResetRunTeleYawByIndex( int irun, float &yaw )
+stock bool ResetRunTeleYawByIndex( int irun, float &yaw )
 {
+    int runid = g_hRuns.Get( irun, RUN_ID );
+
+    LogMessage( INF_CON_PRE..."Resetting run's %i teleport angle.", runid );
+
+
     float pos[3];
     if ( SearchTelePos(
             pos,
             yaw,
-            g_hRuns.Get( irun, RUN_ID ),
+            runid,
             TELEPOSTYPE_START ) )
     {
         SetRunTeleYaw( irun, yaw );
+
+        return true;
+    }
+    else
+    {
+        LogError( INF_CON_PRE..."Failed to find a suitable teleport angle for run %i on reset!", runid );
+
+        return false;
     }
 }
 
