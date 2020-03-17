@@ -296,7 +296,10 @@ stock void DB_UpdateClient( int client )
     if ( g_iClientId[client] <= 0 ) return;
     
     
-    decl String:szName[MAX_DB_NAME_LENGTH];
+    static char szName[MAX_DB_NAME_LENGTH];
+    static char szQuery[256];
+
+
     if ( !GetClientName( client, szName, sizeof( szName ) ) )
     {
         strcopy( szName, sizeof( szName ), "N/A" );
@@ -308,8 +311,8 @@ stock void DB_UpdateClient( int client )
         Inf_DB_GetEscaped( g_hDB, szName, sizeof( szName ), "N/A" ); // Just in case.
     }
     
-    decl String:szQuery[128];
-    FormatEx( szQuery, sizeof( szQuery ), "UPDATE "...INF_TABLE_USERS..." SET name='%s' WHERE uid=%i",
+
+    SQL_FormatQuery( g_hDB, szQuery, sizeof( szQuery ), "UPDATE "...INF_TABLE_USERS..." SET name='%s' WHERE uid=%i",
         szName,
         g_iClientId[client] );
     
