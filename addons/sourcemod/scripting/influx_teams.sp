@@ -87,7 +87,17 @@ stock int GetPreferredTeam()
     
     
     int spawns_ct, spawns_t;
-    return Inf_GetPreferredTeam( spawns_ct, spawns_t, balance, iPreferredTeam );
+    // Check for spawn points.
+    int iBalancedTeam = Inf_GetPreferredTeam( spawns_ct, spawns_t, balance, iPreferredTeam );
+
+    // No spawnpoints left. Assume preferred team.
+    if ( iBalancedTeam == CS_TEAM_NONE )
+    {
+        LogError( INF_CON_PRE..."Map does not have enough spawnpoints for all players. Assuming cvar team." );
+        return iPreferredTeam;
+    }
+
+    return iBalancedTeam;
 }
 
 stock void SpawnPlayer( int client )
