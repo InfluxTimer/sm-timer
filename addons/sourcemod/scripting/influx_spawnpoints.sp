@@ -339,6 +339,10 @@ stock int RemoveAllByClassname( const char[] szClass )
             continue;
         
         KillEntity( ent );
+
+        // Make sure we detect this entity as dying.
+        // For some reason KillEntity does not set this.
+        SetEntityFlags( ent, GetEntityFlags( ent ) | FL_KILLME );
         
         ++num;
     }
