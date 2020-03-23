@@ -137,7 +137,7 @@ pluginlist = MyPluginList([
                  './influx_simpleranks_readme.txt',
              ]),
     MyPlugin('influx_simpleranks_chat', excldflgs=EXCLUDE_LITE),
-    #MyPlugin('influx_spawnpoints'),
+    MyPlugin('influx_spawnpoints', 'spawnpoints'),
     MyPlugin('influx_specalltalk_css', excldflgs=EXCLUDE_LITE),
     MyPlugin('influx_speclist', 'speclist', EXCLUDE_LITE),
     MyPlugin('influx_strafes', excldflgs=EXCLUDE_SURF),
