@@ -8,7 +8,8 @@ cd full && zip -rq9 ../full.zip . && cd ..
 cd bhop && zip -rq9 ../bhop.zip . && cd ..
 cd surf && zip -rq9 ../surf.zip . && cd ..
 cd bhoplite && zip -rq9 ../bhoplite.zip . && cd ..
-tar -cf influx.tar full.zip bhop.zip surf.zip bhoplite.zip
+cd deathrun && zip -rq9 ../deathrun.zip . && cd ..
+tar -cf influx.tar full.zip bhop.zip surf.zip bhoplite.zip deathrun.zip
 
 echo "Uploading to site..."
 
