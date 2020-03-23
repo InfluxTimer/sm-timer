@@ -90,7 +90,7 @@ pluginlist = MyPluginList([
                  'addons/sourcemod/configs/influx_style_overrides_example.cfg',
              ]),
     MyPlugin('influx_disableradio'),
-    MyPlugin('influx_disableroundrestart'),
+    MyPlugin('influx_disableroundrestart', excldflgs=EXCLUDE_DEATHRUN),
     MyPlugin('influx_disablesuicide', 'disablesuicide', EXCLUDE_DEATHRUN),
     MyPlugin('influx_dropknife_css'),
     MyPlugin('influx_fixtimelimit', excldflgs=EXCLUDE_LITE),
