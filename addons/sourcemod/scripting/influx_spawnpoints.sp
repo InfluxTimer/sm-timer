@@ -96,36 +96,16 @@ stock void CreateBalanced()
 #if defined DEBUG
     PrintToServer( INF_DEBUG_PRE..."Creating balanced spawns..." );
 #endif
-
-    int ent;
     
-    int copy_ent_ct = -1;
-    int copy_ent_t = -1;
-    int num_ct = 0;
-    int num_t = 0;
+    int copy_ent_ct = FindValidSpawn( CT_SPAWN );
+    int copy_ent_t = FindValidSpawn( T_SPAWN );
+    int num_ct = GetEntityCountByClassname( CT_SPAWN, true );
+    int num_t = GetEntityCountByClassname( T_SPAWN, true );
     
     
-    ent = -1;
-    while ( (ent = FindEntityByClassname( ent, CT_SPAWN )) != -1 )
+    if ( !num_ct || !num_t || copy_ent_ct == -1 || copy_ent_t == -1 )
     {
-        if ( copy_ent_ct == -1 )
-            copy_ent_ct = ent;
-        
-        ++num_ct;
-    }
-    ent = -1;
-    while ( (ent = FindEntityByClassname( ent, T_SPAWN )) != -1 )
-    {
-        if ( copy_ent_t == -1 )
-            copy_ent_t = ent;
-        
-        ++num_t;
-    }
-    
-    
-    if ( !num_ct || !num_t )
-    {
-        LogError( INF_CON_PRE..."Can't create balanced spawns if one side doesn't have any spawns! (CT: %i, T: %i)", num_ct, num_t );
+        LogError( INF_CON_PRE..."Can't create balanced spawns if one side doesn't have any valid spawns! (CT: %i, T: %i)", num_ct, num_t );
         
         CreateOneSided();
         return;
@@ -222,11 +202,11 @@ stock void CreateOneSided()
     GetFallbackSpawnClass( szFallbackSpawn, sizeof( szFallbackSpawn ) );
     
     
-    if ( (ent = FindEntityByClassname( ent, szSpawn )) != -1 )
+    if ( (ent = FindValidSpawn( szSpawn )) != -1 )
     {
         copy_ent = ent;
     }
-    else if ( (ent = FindEntityByClassname( ent, szFallbackSpawn )) != -1 )
+    else if ( (ent = FindValidSpawn( szFallbackSpawn )) != -1 )
     {
         copy_ent = ent;
         
@@ -238,9 +218,9 @@ stock void CreateOneSided()
         strcopy( szSpawn, sizeof( szSpawn ), copy );
     }
     // We have no CSS spawns, look for others
-    else if (   (ent = FindEntityByClassname( ent, TF_SPAWN )) != -1
-    ||          (ent = FindEntityByClassname( ent, GAME_SPAWN )) != -1
-    ||          (ent = FindEntityByClassname( ent, ABSLAST_SPAWN )) != -1)
+    else if (   (ent = FindValidSpawn( TF_SPAWN )) != -1
+    ||          (ent = FindValidSpawn( GAME_SPAWN )) != -1
+    ||          (ent = FindValidSpawn( ABSLAST_SPAWN )) != -1)
     {
         copy_ent = ent;
     }
@@ -328,7 +308,7 @@ stock int RemoveSpawns()
     return total;
 }
 
-stock int GetEntityCountByClassname( const char[] szClass )
+stock int GetEntityCountByClassname( const char[] szClass, bool bCheckValidSpawn = false )
 {
     int num = 0;
     int ent = -1;
@@ -336,6 +316,9 @@ stock int GetEntityCountByClassname( const char[] szClass )
     {
         // Ignore dying entities.
         if ( GetEntityFlags( ent ) & FL_KILLME )
+            continue;
+
+        if ( bCheckValidSpawn && !IsSpawnWithinMap( ent ) )
             continue;
         
         ++num;
@@ -389,4 +372,50 @@ stock void GetFallbackSpawnClass( char[] szFallbackSpawn, int len )
         // Use T
         strcopy( szFallbackSpawn, len, CT_SPAWN );
     }
+}
+
+stock int FindValidSpawn( const char[] szSpawnClass )
+{
+    int ent = -1;
+    while ( (ent = FindEntityByClassname( ent, szSpawnClass )) != -1 )
+    {
+        if ( IsSpawnWithinMap( ent ) )
+        {
+            return ent;
+        }
+    }
+
+    return -1;
+}
+
+stock bool IsSpawnWithinMap( ent )
+{
+    float end[3];
+
+    float pos[3];
+    float ang[3];
+    GetSpawnData( ent, pos, ang );
+
+
+    end = pos;
+    end[2] += 72.0;
+
+    float mins[] = { -16.0, -16.0, 0.0 };
+    float maxs[] = { 16.0, 16.0, 0.0 };
+
+    // Mask that only hits solid world (ignore moveables ents at least for now.)
+    int mask = ( CONTENTS_SOLID | CONTENTS_WINDOW | CONTENTS_GRATE );
+
+    TR_TraceHull( pos, end, mins, maxs, mask );
+
+    bool bValid = !TR_DidHit();
+    if ( !bValid )
+    {
+#if defined DEBUG
+        PrintToServer( INF_DEBUG_PRE..."Detected spawnpoint %i that is outside the map!", ent );
+#endif
+        return false;
+    }
+
+    return true;
 }
