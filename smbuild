@@ -93,6 +93,7 @@ pluginlist=MyPluginList([
 				]
 			),
 	MyPlugin('influx_disableradio'),
+	MyPlugin('influx_disableroundrestart'),
 	MyPlugin('influx_disablesuicide', 'disablesuicide', EXCLUDE_DEATHRUN),
 	MyPlugin('influx_dropknife_css'),
 	MyPlugin('influx_fixtimelimit', excldflgs=EXCLUDE_LITE),
