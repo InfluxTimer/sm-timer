@@ -1,17 +1,8 @@
 # Influx Timer
-![Influx Logo](https://github.com/TotallyMehis/Influx-Timer/blob/master/web/img/inflogo.png "Influx Logo")
+"Influx - because there weren't enough timers already"
 
-Please visit the site [influxtimer.com](https://influxtimer.com/) for latest stable version with compiled *.smx files.
+#### Please visit [influxtimer.com](https://influxtimer.com/) for latest version with compiled .smx files.
+**Influx is not in active development.**
+Ask help on [Influx's Discord](https://discord.gg/Mc5VDQT) or visit [the guide](https://influxtimer.com/guide). Please refrain from creating issues unless it's clearly a bug.
 
-**Example of web stats: [influxtimer.com/stats](https://influxtimer.com/stats)**
-
-
-**Check devlog.txt for current changes.**
-
-
-Contributions are appreciated.
-If you're planning on rewriting something, you might want to create an issue first.
-If you think the server might want to take a feature out for compatibility/user experience, it should be in its own script file(s).
-
-
-Before making an issue, please visit [influxtimer.com/download#faq](https://influxtimer.com/download#faq).
+If you're planning on contributing, please discuss it on the Discord group or create an issue here.
