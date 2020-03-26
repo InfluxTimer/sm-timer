@@ -143,8 +143,8 @@ stock bool CreateSpawnsAtMain()
     float yaw;
     
     for ( int i = 0; i < 3; i++ )
-        pos[i] = runs.Get( irun, RUN_TELEPOS + i );
-    yaw = runs.Get( irun, RUN_TELEYAW );
+        pos[i] = runs.Get( irun, Run_t::vecTelePos + i );
+    yaw = runs.Get( irun, Run_t::flTeleYaw );
     
     
     if ( !Inf_IsValidTelePos( pos ) || !Inf_IsValidTeleAngle( yaw ) )

@@ -104,12 +104,12 @@ public Action Cmd_TasCPMenu( int client, int args )
             }
             
             
-            num = g_hFrameCP[client].Get( i, FRMCP_NUM );
+            num = g_hFrameCP[client].Get( i, FrameCp_t::nNum );
             
             if ( num > 0 )
             {
                 FormatEx( szInfo, sizeof( szInfo ), "g%i", num );
-                FormatEx( szDisplay, sizeof( szDisplay ), "CP %i (%i)", num, g_hFrameCP[client].Get( i, FRMCP_FRMINDEX ) + 1 );
+                FormatEx( szDisplay, sizeof( szDisplay ), "CP %i (%i)", num, g_hFrameCP[client].Get( i, FrameCp_t::iFrameIndex ) + 1 );
                 
                 menu.AddItem( szInfo, szDisplay );
                 
@@ -287,7 +287,7 @@ public Action Cmd_LoadRun( int client, int args )
             }
             
             
-            file.Seek( TASFILE_RUNID * 4, SEEK_SET );
+            file.Seek( TasFileHeader_t::iRunId * 4, SEEK_SET );
             
             
             file.ReadInt32( runid );

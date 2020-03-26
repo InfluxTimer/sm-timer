@@ -319,18 +319,18 @@ stock void DB_PrintRecords(
         offset * PRINTREC_MENU_LIMIT );
     
     
-    decl data[PCB_SIZE];
-    ArrayList array = new ArrayList( sizeof( data ) );
-    data[PCB_USERID] = GetClientUserId( client );
-    data[PCB_UID] = uid;
-    data[PCB_MAPID] = mapid;
-    data[PCB_RUNID] = runid;
-    data[PCB_MODE] = mode;
-    data[PCB_STYLE] = style;
-    data[PCB_OFFSET] = offset;
-    data[PCB_TOTALRECORDS] = total_records;
+    RecordsCallback_t data;
+    ArrayList array = new ArrayList( sizeof( RecordsCallback_t ) );
+    data.iUserId = GetClientUserId( client );
+    data.iUId = uid;
+    data.iMapId = mapid;
+    data.iRunId = runid;
+    data.iModeId = mode;
+    data.iStyleId = style;
+    data.nOffset = offset;
+    data.nTotalRecords = total_records;
     
-    //strcopy( view_as<char>( data[PCB_PLYNAME] ), MAX_PCB_PLYNAME, szName );
+    //strcopy( data.szPlyName, sizeof( RecordsCallback_t::szPlyName ), szName );
     
     array.PushArray( data );
     

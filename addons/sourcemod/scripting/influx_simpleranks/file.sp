@@ -90,7 +90,7 @@ stock void ReadPoints( ArrayList array, const char[] szKvName, const char[] szFi
     
     
     decl String:szTemp[64];
-    decl data[P_SIZE];
+    ModeNStyleReward_t reward;
     
     do
     {
@@ -101,23 +101,23 @@ stock void ReadPoints( ArrayList array, const char[] szKvName, const char[] szFi
         }
         
         
-        data[P_ID] = -1;
-        data[P_NAME_ID] = 0;
+        reward.iId = -1;
+        reward.szName[0] = 0;
         
         if ( IsCharNumeric( szTemp[0] ) )
         {
-            data[P_ID] = StringToInt( szTemp );
+            reward.iId = StringToInt( szTemp );
         }
         else
         {
-            strcopy( view_as<char>( data[P_NAME_ID] ), MAX_P_NAME_ID, szTemp );
+            strcopy( reward.szName, sizeof( ModeNStyleReward_t::szName ), szTemp );
         }
         
         
-        data[P_VAL] = kv.GetNum( "points", 0 );
+        reward.nPoints = kv.GetNum( "points", 0 );
         
 #if defined DEBUG
-        PrintToServer( INF_DEBUG_PRE..."%s reward: %i", szTemp, data[P_VAL] );
+        PrintToServer( INF_DEBUG_PRE..."%s reward: %i", szTemp, reward.nPoints );
 #endif
         
         array.PushArray( data );

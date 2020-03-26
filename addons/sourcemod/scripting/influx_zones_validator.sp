@@ -8,21 +8,17 @@
 #include <msharedutil/arrayvec>
 
 
-enum // Zone - validators
+enum struct ValidatorZone_t
 {
-    VAL_ID = 0,
-    
-    VAL_RUN_ID,
-    
-    VAL_SIZE
-};
+    int iZoneId;
 
-enum // Client validators.
+    int iRunId;
+}
+
+enum struct ClientValidator_t
 {
-    CVAL_ID = 0,
-    
-    CVAL_SIZE
-};
+    int iId;
+}
 
 
 
@@ -58,7 +54,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hValidators = new ArrayList( VAL_SIZE );
+    g_hValidators = new ArrayList( sizeof( ValidatorZone_t ) );
     
     
     // CONVARS
@@ -100,7 +96,7 @@ public void OnPluginEnd()
 public void OnClientPutInServer( int client )
 {
     delete g_hValidatorsTouched[client];
-    g_hValidatorsTouched[client] = new ArrayList( CVAL_SIZE );
+    g_hValidatorsTouched[client] = new ArrayList( sizeof( ClientValidator_t ) );
 }
 
 public void Influx_OnPreRunLoad()
@@ -162,7 +158,7 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
         return Plugin_Stop;
     }
     
-    kv.SetNum( "run_id", g_hValidators.Get( index, VAL_RUN_ID ) );
+    kv.SetNum( "run_id", g_hValidators.Get( index, ValidatorZone_t::iRunId ) );
     
     return Plugin_Handled;
 }
@@ -216,7 +212,7 @@ public void E_StartTouchPost_Validator( int ent, int activator )
     }
     
     
-    int myrunid = g_hValidators.Get( ival, VAL_RUN_ID );
+    int myrunid = g_hValidators.Get( ival, ValidatorZone_t::iRunId );
     int runid = Influx_GetClientRunId( activator );
     
     if ( myrunid != runid )
@@ -247,12 +243,12 @@ stock int AddValidator( int runid, int zoneid )
     if ( index != -1 ) return index;
     
     
-    decl data[VAL_SIZE];
+    ValidatorZone_t zone;
     
-    data[VAL_ID] = zoneid;
-    data[VAL_RUN_ID] = runid;
+    zone.iZoneId = zoneid;
+    zone.iRunId = runid;
     
-    return g_hValidators.PushArray( data );
+    return g_hValidators.PushArray( zone );
 }
 
 stock int FindValidatorById( int id )
@@ -262,7 +258,7 @@ stock int FindValidatorById( int id )
     {
         for ( int i = 0; i < len; i++ )
         {
-            if ( g_hValidators.Get( i, VAL_ID ) == id ) return i;
+            if ( g_hValidators.Get( i, ValidatorZone_t::iZoneId ) == id ) return i;
         }
     }
     
@@ -276,7 +272,7 @@ stock int GetNumValidators( int runid )
     int len = g_hValidators.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hValidators.Get( i, VAL_RUN_ID ) == runid )
+        if ( g_hValidators.Get( i, ValidatorZone_t::iRunId ) == runid )
             ++num;
     }
     
@@ -292,7 +288,7 @@ stock int FindClientValidatorById( int client, int id )
     {
         for ( int i = 0; i < len; i++ )
         {
-            if ( validator.Get( i, CVAL_ID ) == id ) return i;
+            if ( validator.Get( i, ValidatorZone_t::iId ) == id ) return i;
         }
     }
     
@@ -306,7 +302,7 @@ stock int FindClientNextValidator( int client )
         return -1;
     
     
-    return g_hValidators.Get( ival, VAL_ID );
+    return g_hValidators.Get( ival, ValidatorZone_t::iZoneId );
 }
 
 stock int FindClientNextValidatorIndex( int client )
@@ -321,7 +317,7 @@ stock int FindClientNextValidatorIndex( int client )
     int lastzoneid = -1;
     if ( len > 0 )
     {
-        lastzoneid = validator.Get( len -1, CVAL_ID );
+        lastzoneid = validator.Get( len -1, ValidatorZone_t::iId );
     }
     
     // Just find the next highest zone id.
@@ -330,11 +326,11 @@ stock int FindClientNextValidatorIndex( int client )
     len = g_hValidators.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hValidators.Get( i, VAL_RUN_ID ) != runid )
+        if ( g_hValidators.Get( i, ValidatorZone_t::iRunId ) != runid )
             continue;
         
         
-        int myzoneid = g_hValidators.Get( i, VAL_ID );
+        int myzoneid = g_hValidators.Get( i, ValidatorZone_t::iZoneId );
         
         if ( myzoneid > lastzoneid && (zoneid == -1 || myzoneid < zoneid) )
         {
@@ -352,10 +348,10 @@ stock void AddValidatorTouchedByIndex( int client, int ival )
     if ( touched == null ) return;
     
     
-    decl data[CVAL_SIZE];
-    data[CVAL_ID] = g_hValidators.Get( ival, VAL_ID );
+    ClientValidator_t cvalidator;
+    cvalidator.iId = g_hValidators.Get( ival, ValidatorZone_t::iZoneId );
     
-    touched.PushArray( data );
+    touched.PushArray( cvalidator );
     
     if ( g_ConVar_MsgWhenTouched.BoolValue )
     {

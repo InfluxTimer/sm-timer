@@ -22,15 +22,13 @@
 #define RECFLAG_FLASHLIGHT  ( 1 << 6 ) // impulse 100
 
 
-enum
+enum struct RecordingFrame_t
 {
-    REC_POS[3],
-    REC_ANG[2],
-    
-    REC_FLAGS,
-    
-    REC_SIZE
-};
+    float vecPos[3];
+    float angles[2];
+
+    int fFlags;
+}
 
 /*
 #define MAX_RUNREC_WEPNAME          12
@@ -43,23 +41,15 @@ enum
 #define RUNRECFLAG_ZOOM2            ( 1 << 3 )
 */
 
-enum
+enum struct RunRecordingData_t
 {
-    RUNREC_RUN_ID = 0,
-    
-    RUNREC_REC[MAX_MODES * MAX_STYLES],
-    //RUNREC_REC_UID[MAX_MODES * MAX_STYLES],
-    RUNREC_REC_TIME[MAX_MODES * MAX_STYLES],
-    
-    RUNREC_REC_NAME[MAX_MODES * MAX_STYLES * MAX_BEST_NAME_CELL],
-    
-    //RUNREC_REC_START_PRIMWEP[MAX_MODES * MAX_STYLES * MAX_RUNREC_WEPNAME_CELL],
-    //RUNREC_REC_START_SECWEP[MAX_MODES * MAX_STYLES * MAX_RUNREC_WEPNAME_CELL],
-    
-    //RUNREC_REC_FLAGS[MAX_MODES * MAX_STYLES],
-    
-    RUNREC_SIZE
-};
+    int iRunId;
+
+    ArrayList hRecordings[MAX_MODES * MAX_STYLES];
+    float flRecTimes[MAX_MODES * MAX_STYLES];
+    // char
+    int szRecNames[MAX_MODES * MAX_STYLES * MAX_BEST_NAME_CELL];
+}
 
 
 // 4 byte | "inf!"

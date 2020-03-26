@@ -143,7 +143,7 @@ stock bool LoadFrames( int client, ArrayList &frames, int runid, int mode, int s
     
     delete frames;
     
-    frames = new ArrayList( FRM_SIZE );
+    frames = new ArrayList( sizeof( TasFrame_t ) );
     
     bool ret = false;
     
@@ -166,11 +166,11 @@ stock bool LoadFrames( int client, ArrayList &frames, int runid, int mode, int s
 
 stock bool ReadFrames( File file, ArrayList frames, int len )
 {
-    decl data[FRM_SIZE];
+    TasFrame_t frame;
     
     for ( int i = 0; i < len; i++ )
     {
-        if ( file.Read( data, sizeof( data ), 4 ) == -1 )
+        if ( file.Read( frame, sizeof( TasFrame_t ), 4 ) == -1 )
         {
             LogError( INF_CON_PRE..."Encountered a sudden end of file!" );
             
@@ -186,8 +186,8 @@ stock bool ReadFrames( File file, ArrayList frames, int len )
 /*
 stock bool ReadFramesVersion1( File file, ArrayList frames, int len )
 {
-    decl dataold[FRM_SIZE - 2];
-    decl data[FRM_SIZE];
+    decl dataold[sizeof( TasFrame_t ) - 2];
+    decl data[sizeof( TasFrame_t )];
     
     for ( int i = 0; i < len; i++ )
     {
@@ -199,8 +199,8 @@ stock bool ReadFramesVersion1( File file, ArrayList frames, int len )
         }
         
         CopyArray( dataold[0], data[0], 5 );
-        CopyArray( dataold[3], data[FRM_ANG], 2 );
-        CopyArray( dataold[5], data[FRM_ABSVEL], sizeof( dataold ) - 5 );
+        CopyArray( dataold[3], data[TasFrame_t::angles], 2 );
+        CopyArray( dataold[5], data[TasFrame_t::vecAbsVel], sizeof( dataold ) - 5 );
         
         frames.PushArray( data );
     }
@@ -293,7 +293,7 @@ stock bool SaveFrames( int client )
     file.Write( plyname, sizeof( plyname ), 4 );
     
     
-    decl data[FRM_SIZE];
+    TasFrame_t frame;
     
     
     
@@ -302,9 +302,9 @@ stock bool SaveFrames( int client )
     
     for ( int i = 0; i < len; i++ )
     {
-        frames.GetArray( i, data );
+        frames.GetArray( i, frame );
         
-        file.Write( data, sizeof( data ), 4 );
+        file.Write( frame, sizeof( TasFrame_t ), 4 );
     }
     
     delete file;

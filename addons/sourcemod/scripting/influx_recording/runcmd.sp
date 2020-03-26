@@ -44,18 +44,17 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
     }
     
     
-    static int data[REC_SIZE];
+    static RecordingFrame_t frame;
     static float pos[3];
     
     
     if ( g_nCurRec[client] == PLAYBACK_START )
     {
-        g_hReplay.GetArray( 0, data );
+        g_hReplay.GetArray( 0, frame );
         
-        CopyArray( data[REC_POS], pos, 3 );
-        CopyArray( data[REC_ANG], angles, 2 );
+        CopyArray( frame.angles, angles, 2 );
         
-        TeleportEntity( client, pos, angles, ORIGIN_VECTOR );
+        TeleportEntity( client, frame.vecPos, angles, ORIGIN_VECTOR );
     }
     else if ( g_nCurRec[client] == PLAYBACK_END )
     {
@@ -69,15 +68,15 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
         vel[2] = 0.0;
         static float temp[3];
         
-        g_hReplay.GetArray( g_nCurRec[client]++, data );
+        g_hReplay.GetArray( g_nCurRec[client]++, frame );
         
-        CopyArray( data[REC_POS], pos, 3 );
-        CopyArray( data[REC_ANG], angles, 2 );
+        pos = frame.vecPos;
+        CopyArray( frame.angles, angles, 2 );
         
         GetClientAbsOrigin( client, temp );
         
         
-        int flags = data[REC_FLAGS];
+        int flags = frame.fFlags;
         
         if ( flags & RECFLAG_CROUCH )
         {

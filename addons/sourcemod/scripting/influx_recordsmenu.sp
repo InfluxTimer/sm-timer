@@ -17,8 +17,24 @@
 
 #define PCB_NUM_ELEMENTS            7 // This is for menu string parsing.
 
-enum
+enum struct RecordsCallback_t
 {
+    int iUserId;
+
+
+    int iUId;
+    int iMapId;
+    int iRunId;
+    int iModeId;
+    int iStyleId;
+
+    int nOffset;
+    int nTotalRecords;
+
+    // For now ignore player names
+    //char szPlyName[MAX_PCB_PLYNAME];
+    //char szMapName[];
+
     PCB_USERID = 0,
     
     PCB_UID,

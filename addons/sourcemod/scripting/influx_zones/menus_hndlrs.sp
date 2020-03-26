@@ -128,7 +128,7 @@ public int Hndlr_ZoneSettings( Menu menu, MenuAction action, int client, int ind
     
     if ( izone != -1 )
     {
-        if ( !ZoneTypeHasSettings( view_as<ZoneType_t>( g_hZones.Get( izone, ZONE_TYPE ) ) ) )
+        if ( !ZoneTypeHasSettings( view_as<ZoneType_t>( g_hZones.Get( izone, Zone_t::iZoneType ) ) ) )
         {
             return 0;
         }
@@ -138,8 +138,8 @@ public int Hndlr_ZoneSettings( Menu menu, MenuAction action, int client, int ind
         
         Call_StartForward( g_hForward_OnZoneSettings );
         Call_PushCell( client );
-        Call_PushCell( g_hZones.Get( izone, ZONE_ID ) );
-        Call_PushCell( g_hZones.Get( izone, ZONE_TYPE ) );
+        Call_PushCell( g_hZones.Get( izone, Zone_t::iZoneId ) );
+        Call_PushCell( g_hZones.Get( izone, Zone_t::iZoneType ) );
         Call_Finish( res );
         
         

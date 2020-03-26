@@ -38,17 +38,15 @@
 #define INF_PRIVCOM_SAVEZONES       "sm_inf_savezones"
 
 
-enum
+enum struct ZoneTypeData_t
 {
-    ZTYPE_NAME[MAX_ZONE_NAME] = 0,
-    ZTYPE_SHORTNAME[MAX_ZONE_NAME],
-    
-    ZTYPE_TYPE,
-    
-    ZTYPE_HAS_SETTINGS,
-    
-    ZTYPE_SIZE
-};
+    char szName[MAX_ZONE_NAME];
+    char szSafeName[MAX_ZONE_NAME];
+
+    ZoneType_t iZoneType;
+
+    bool bHasSettings;
+}
 
 
 
@@ -247,8 +245,8 @@ public void OnPluginStart()
     g_bLib_Zones_Beams = LibraryExists( INFLUX_LIB_ZONES_BEAMS );
     
     
-    g_hZones = new ArrayList( ZONE_SIZE );
-    g_hZoneTypes = new ArrayList( ZTYPE_SIZE );
+    g_hZones = new ArrayList( sizeof( Zone_t ) );
+    g_hZoneTypes = new ArrayList( sizeof( ZoneTypeData_t ) );
     
     
     if ( g_bLate )
@@ -394,14 +392,17 @@ public Action Cmd_Debug_PrintZoneTypes( int client, int args )
     if ( client ) return Plugin_Handled;
     
     
-    decl data[ZTYPE_SIZE];
+    ZoneTypeData_t ztype;
     
     int len = g_hZoneTypes.Length;
     for ( int i = 0; i < len; i++ )
     {
-        g_hZoneTypes.GetArray( i, data );
+        g_hZoneTypes.GetArray( i, ztype );
         
-        PrintToServer( "%i | %s | %s", data[ZTYPE_TYPE], data[ZTYPE_NAME], data[ZTYPE_SHORTNAME] );
+        PrintToServer( "%i | %s | %s",
+            ztype.iZoneType,
+            ztype.szName,
+            ztype.szSafeName );
     }
     
     if ( !len )
@@ -420,11 +421,11 @@ stock void CheckZones( int issuer = 0, bool bForcePrint = false )
     int len = g_hZones.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( FindZoneType( view_as<ZoneType_t>( g_hZones.Get( i, ZONE_TYPE ) ) ) == -1 )
+        if ( FindZoneType( view_as<ZoneType_t>( g_hZones.Get( i, Zone_t::iZoneType ) ) ) == -1 )
             continue;
         
         
-        if ( EntRefToEntIndex( g_hZones.Get( i, ZONE_ENTREF ) ) < 1 )
+        if ( EntRefToEntIndex( g_hZones.Get( i, Zone_t::iEntRef ) ) < 1 )
         {
             if ( CreateZoneEntityByIndex( i ) != -1 )
                 ++num;
@@ -515,7 +516,7 @@ stock int GetZoneTypeCount( ZoneType_t zonetype )
     {
         for ( int i = 0; i < len; i++  )
         {
-            if ( view_as<ZoneType_t>( g_hZones.Get( i, ZONE_TYPE ) ) == zonetype )
+            if ( view_as<ZoneType_t>( g_hZones.Get( i, Zone_t::iZoneType ) ) == zonetype )
             {
                 ++count;
             }
@@ -535,14 +536,14 @@ stock int GetZoneFromPos( int startindex, const float pos[3] )
     
     
     float mins[3], maxs[3];
-    int data[ZONE_SIZE];
+    Zone_t zone;
     
     for ( int i = startindex; i < len; i++ )
     {
-        g_hZones.GetArray( i, data, sizeof( data ) );
+        g_hZones.GetArray( i, zone );
         
-        CopyArray( data[ZONE_MINS], mins, 3 );
-        CopyArray( data[ZONE_MAXS], maxs, 3 );
+        CopyArray( zone.vecMins, mins, 3 );
+        CopyArray( zone.vecMaxs, maxs, 3 );
         
         if ( IsInsideBounds( pos, mins, maxs ) )
         {
@@ -577,12 +578,12 @@ stock int CreateZoneEntityByIndex( int index )
     int ent = CreateTriggerEnt( mins, maxs );
     if ( ent < 1 ) return -1;
     
-    g_hZones.Set( index, EntIndexToEntRef( ent ), ZONE_ENTREF );
+    g_hZones.Set( index, EntIndexToEntRef( ent ), Zone_t::iEntRef );
     
     
     Call_StartForward( g_hForward_OnZoneSpawned );
-    Call_PushCell( g_hZones.Get( index, ZONE_ID ) );
-    Call_PushCell( g_hZones.Get( index, ZONE_TYPE ) );
+    Call_PushCell( g_hZones.Get( index, Zone_t::iZoneId ) );
+    Call_PushCell( g_hZones.Get( index, Zone_t::iZoneType ) );
     Call_PushCell( ent );
     Call_Finish();
     
@@ -611,7 +612,7 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
     int zoneid = 1;
     for ( int i = 0; i < g_hZones.Length; )
     {
-        if ( g_hZones.Get( i, ZONE_ID ) == zoneid )
+        if ( g_hZones.Get( i, Zone_t::iZoneId ) == zoneid )
         {
             ++zoneid;
             i = 0;
@@ -624,14 +625,15 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
     
     //int zoneid = g_nNewZoneId++;
     
-    int data[ZONE_SIZE];
+    Zone_t zone;
     
-    data[ZONE_TYPE] = view_as<int>( zonetype );
-    data[ZONE_ID] = zoneid;
-    CopyArray( mins, data[ZONE_MINS], 3 );
-    CopyArray( maxs, data[ZONE_MAXS], 3 );
+    zone.iZoneType = zonetype;
+    zone.iZoneId = zoneid;
+
+    zone.vecMins = mins;
+    zone.vecMaxs = maxs;
     
-    int index = g_hZones.PushArray( data );
+    int index = g_hZones.PushArray( zone );
     
     SetZoneNameByIndex( index, szName );
     
@@ -690,13 +692,13 @@ stock void GetZoneNameByIndex( int index, char[] sz, int len )
 
 stock void GetZoneMinsMaxsByIndex( int index, float mins_out[3], float maxs_out[3] )
 {
-    mins_out[0] = g_hZones.Get( index, ZONE_MINS );
-    mins_out[1] = g_hZones.Get( index, ZONE_MINS + 1 );
-    mins_out[2] = g_hZones.Get( index, ZONE_MINS + 2 );
+    mins_out[0] = g_hZones.Get( index, Zone_t::vecMins );
+    mins_out[1] = g_hZones.Get( index, Zone_t::vecMins + 1 );
+    mins_out[2] = g_hZones.Get( index, Zone_t::vecMins + 2 );
     
-    maxs_out[0] = g_hZones.Get( index, ZONE_MAXS );
-    maxs_out[1] = g_hZones.Get( index, ZONE_MAXS + 1 );
-    maxs_out[2] = g_hZones.Get( index, ZONE_MAXS + 2 );
+    maxs_out[0] = g_hZones.Get( index, Zone_t::vecMaxs );
+    maxs_out[1] = g_hZones.Get( index, Zone_t::vecMaxs + 1 );
+    maxs_out[2] = g_hZones.Get( index, Zone_t::vecMaxs + 2 );
 }
 
 stock void DeleteZoneWithClient( int client, int index )
@@ -734,7 +736,7 @@ stock bool DeleteZoneByIndex( int index )
         return false;
     
     
-    int ent = EntRefToEntIndex( g_hZones.Get( index, ZONE_ENTREF ) );
+    int ent = EntRefToEntIndex( g_hZones.Get( index, Zone_t::iEntRef ) );
     
     if ( ent > 0 && !KillEntity( ent ) )
     {
@@ -742,8 +744,8 @@ stock bool DeleteZoneByIndex( int index )
     }
     
     
-    int zoneid = g_hZones.Get( index, ZONE_ID );
-    ZoneType_t zonetype = view_as<ZoneType_t>( g_hZones.Get( index, ZONE_TYPE ) );
+    int zoneid = g_hZones.Get( index, Zone_t::iZoneId );
+    ZoneType_t zonetype = view_as<ZoneType_t>( g_hZones.Get( index, Zone_t::iZoneType ) );
     
     
     g_hZones.Erase( index );
@@ -770,9 +772,9 @@ stock int FindZoneHighestId()
     {
         for ( int i = 0; i < len; i++ )
         {
-            if ( g_hZones.Get( i, ZONE_ID ) > highest )
+            if ( g_hZones.Get( i, Zone_t::iZoneId ) > highest )
             {
-                highest = g_hZones.Get( i, ZONE_ID );
+                highest = g_hZones.Get( i, Zone_t::iZoneId );
             }
         }
     }
@@ -787,7 +789,7 @@ stock int FindZoneById( int zoneid )
     {
         for ( int i = 0; i < len; i++ )
         {
-            if ( g_hZones.Get( i, ZONE_ID ) == zoneid )
+            if ( g_hZones.Get( i, Zone_t::iZoneId ) == zoneid )
             {
                 return i;
             }
@@ -939,15 +941,15 @@ stock bool AddZoneType( ZoneType_t type, const char[] szName, const char[] szSho
     if ( FindZoneType( type ) != -1 ) return false;
     
     
-    int data[ZTYPE_SIZE];
+    ZoneTypeData_t ztype;
     
-    strcopy( view_as<char>( data[ZTYPE_NAME] ), MAX_ZONE_NAME, szName );
-    strcopy( view_as<char>( data[ZTYPE_SHORTNAME] ), MAX_ZONE_NAME, szShortName );
+    strcopy( ztype.szName, sizeof( ZoneTypeData_t::szName ), szName );
+    strcopy( ztype.szSafeName, sizeof( ZoneTypeData_t::szSafeName ), szShortName );
     
-    data[ZTYPE_TYPE] = view_as<int>( type );
-    data[ZTYPE_HAS_SETTINGS] = bHasSettings;
+    ztype.iZoneType = type;
+    ztype.bHasSettings = bHasSettings;
     
-    g_hZoneTypes.PushArray( data );
+    g_hZoneTypes.PushArray( ztype );
     
     ImportantTypesToHead();
     
@@ -972,7 +974,7 @@ stock int FindZoneType( ZoneType_t type )
     int len = g_hZoneTypes.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hZoneTypes.Get( i, ZTYPE_TYPE ) == view_as<int>( type ) )
+        if ( g_hZoneTypes.Get( i, ZoneTypeData_t::iZoneType ) == view_as<int>( type ) )
         {
             return i;
         }
@@ -1011,7 +1013,7 @@ stock void GetZoneTypeShortNameByIndex( int index, char[] sz, int len )
         
         for ( int i = 0; i < MAX_ZONE_NAME_CELL; i++ )
         {
-            name[i] = g_hZoneTypes.Get( index, ZTYPE_SHORTNAME + i ); 
+            name[i] = g_hZoneTypes.Get( index, ZoneTypeData_t::szSafeName + i ); 
         }
         
         strcopy( sz, len, view_as<char>( name ) );
@@ -1033,7 +1035,7 @@ stock ZoneType_t FindZoneTypeByShortName( const char[] sz )
         
         if ( StrEqual( sz, szName ) )
         {
-            return view_as<ZoneType_t>( g_hZoneTypes.Get( i, ZTYPE_TYPE ) );
+            return view_as<ZoneType_t>( g_hZoneTypes.Get( i, ZoneTypeData_t::iZoneType ) );
         }
     }
     
@@ -1046,7 +1048,7 @@ stock bool ZoneTypeHasSettings( ZoneType_t type )
     int i = FindZoneType( type );
     if ( i == -1 ) return false;
     
-    return g_hZoneTypes.Get( i, ZTYPE_HAS_SETTINGS );
+    return g_hZoneTypes.Get( i, ZoneTypeData_t::bHasSettings );
 }
 
 stock void SetZoneName( int zoneid, const char[] szName )
@@ -1094,7 +1096,7 @@ stock void ImportantTypesToHead()
     
     for ( i = 0; i < len; i++ )
     {
-        type = view_as<ZoneType_t>( g_hZoneTypes.Get( i, ZTYPE_TYPE ) );
+        type = view_as<ZoneType_t>( g_hZoneTypes.Get( i, ZoneTypeData_t::iZoneType ) );
         
         
         for ( k = 0; k < sizeof( important ); k++ )
@@ -1154,7 +1156,7 @@ stock void SpawnZones()
 
 stock bool LoadZoneFromKv( KeyValues kv )
 {
-    decl data[ZONE_SIZE];
+    Zone_t zone;
     
     float mins[3], maxs[3];
     ZoneType_t zonetype;
@@ -1211,7 +1213,7 @@ stock bool LoadZoneFromKv( KeyValues kv )
     }
     
     
-    kv.GetSectionName( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME );
+    kv.GetSectionName( zone.szName, sizeof( Zone_t::szName ) );
     
     
     // Ask other plugins what to load.
@@ -1231,7 +1233,10 @@ stock bool LoadZoneFromKv( KeyValues kv )
 
         if ( res == Plugin_Stop )
         {
-            LogError( INF_CON_PRE..."Couldn't load zone %s with type %i from file! (id: %i)", data[ZONE_NAME], zonetype, zoneid );
+            LogError( INF_CON_PRE..."Couldn't load zone %s with type %i from file! (id: %i)",
+                zone.szName,
+                zonetype,
+                zoneid );
         }
         
         return false;
@@ -1246,14 +1251,14 @@ stock bool LoadZoneFromKv( KeyValues kv )
     
     
     
-    data[ZONE_ID] = zoneid;
-    data[ZONE_TYPE] = view_as<int>( zonetype );
+    zone.iZoneId = zoneid;
+    zone.iZoneType = zonetype;
     
-    CopyArray( mins, data[ZONE_MINS], 3 );
-    CopyArray( maxs, data[ZONE_MAXS], 3 );
+    zone.vecMins = mins;
+    zone.vecMaxs = maxs;
     
     
-    g_hZones.PushArray( data );
+    g_hZones.PushArray( zone );
     
     return true;
 }
@@ -1318,7 +1323,7 @@ stock void BuildZoneKvs( ArrayList kvs )
 {
     decl String:szBuffer[256];
     
-    decl data[ZONE_SIZE];
+    Zone_t zone;
     int zoneid;
     ZoneType_t zonetype;
     int itype;
@@ -1326,20 +1331,20 @@ stock void BuildZoneKvs( ArrayList kvs )
     
     for ( int i = 0; i < g_hZones.Length; i++ )
     {
-        g_hZones.GetArray( i, data, sizeof( data ) );
+        g_hZones.GetArray( i, zone );
         
         // Forward slashes need to be removed since they create a subkey. WHY?!?!?!
-        ReplaceString( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME, "/", "" );
+        ReplaceString( zone.szName, sizeof( Zone_t::szName ), "/", "" );
         
-        KeyValues kv = new KeyValues( view_as<char>( data[ZONE_NAME] ) );
+        KeyValues kv = new KeyValues( zone.szName );
         
         
         
-        zoneid = data[ZONE_ID];
+        zoneid = zone.iZoneId;
         if ( zoneid < 1 ) continue;
         
         
-        zonetype = view_as<ZoneType_t>( data[ZONE_TYPE] );
+        zonetype = zone.iZoneType;
         
         itype = FindZoneType( zonetype );
         if ( itype == -1 )
@@ -1361,7 +1366,10 @@ stock void BuildZoneKvs( ArrayList kvs )
         {
             if ( res == Plugin_Stop )
             {
-                LogError( INF_CON_PRE..."Couldn't save zone %s (id: %i) with type %i!", data[ZONE_NAME], zoneid, zonetype );
+                LogError( INF_CON_PRE..."Couldn't save zone %s (id: %i) with type %i!",
+                    zone.szName,
+                    zoneid,
+                    zonetype );
             }
             
             kv.DeleteThis();
@@ -1386,15 +1394,15 @@ stock void BuildZoneKvs( ArrayList kvs )
         
         
         FormatEx( szBuffer, sizeof( szBuffer ), "%.1f %.1f %.1f",
-            data[ZONE_MINS],
-            data[ZONE_MINS + 1],
-            data[ZONE_MINS + 2] );
+            zone.vecMins[0],
+            zone.vecMins[1],
+            zone.vecMins[2] );
         kv.SetString( "mins", szBuffer );
         
         FormatEx( szBuffer, sizeof( szBuffer ), "%.1f %.1f %.1f",
-            data[ZONE_MAXS],
-            data[ZONE_MAXS + 1],
-            data[ZONE_MAXS + 2] );
+            zone.vecMaxs[0],
+            zone.vecMaxs[1],
+            zone.vecMaxs[2] );
         kv.SetString( "maxs", szBuffer );
         
         

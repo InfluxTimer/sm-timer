@@ -22,17 +22,17 @@ public Action Cmd_Menu_Rank( int client, int args )
     menu.AddItem( "-1", "Default rank\n ", ( g_bChose[client] ) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
     
     
-    decl data[RANK_SIZE];
+    Rank_t rank;
     
     int len = g_hRanks.Length;
     for ( int i = 0; i < len; i++ )
     {
-        g_hRanks.GetArray( i, data );
+        g_hRanks.GetArray( i, rank );
         
-        if ( !ShouldDisplayRank( client, data ) )
+        if ( !ShouldDisplayRank( client, rank ) )
             continue;
         
-        FormatEx( szDisplay, sizeof( szDisplay ), "%s (%i)", data[RANK_NAME], data[RANK_POINTS] );
+        FormatEx( szDisplay, sizeof( szDisplay ), "%s (%i)", rank.szName, rank.nPoints );
         FormatEx( szInfo, sizeof( szInfo ), "%i", i );
         
         Influx_RemoveChatColors( szDisplay, sizeof( szDisplay ) );
@@ -40,7 +40,7 @@ public Action Cmd_Menu_Rank( int client, int args )
         menu.AddItem(
             szInfo,
             szDisplay,
-            ( !CanUseRank( client, data ) || g_iCurRank[client] == i ) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT );
+            ( !CanUseRank( client, rank ) || g_iCurRank[client] == i ) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT );
     }
     
     menu.Display( client, MENU_TIME_FOREVER );

@@ -376,14 +376,14 @@ public void OnPluginStart()
     g_bIsCSGO = ( GetEngineVersion() == Engine_CSGO );
     
     
-    g_hRuns = new ArrayList( RUN_SIZE );
-    g_hModes = new ArrayList( MODE_SIZE );
-    g_hStyles = new ArrayList( STYLE_SIZE );
+    g_hRuns = new ArrayList( sizeof( Run_t ) );
+    g_hModes = new ArrayList( sizeof( Mode_t ) );
+    g_hStyles = new ArrayList( sizeof( Style_t ) );
     g_hRunResFlags = new ArrayList( RUNRES_SIZE );
-    g_hChatClrs = new ArrayList( CLR_SIZE );
+    g_hChatClrs = new ArrayList( sizeof( ) );
     
-    g_hModeOvers = new ArrayList( MOVR_SIZE );
-    g_hStyleOvers = new ArrayList( SOVR_SIZE );
+    g_hModeOvers = new ArrayList( sizeof( ModeNStyleOverride_t ) );
+    g_hStyleOvers = new ArrayList( sizeof( ModeNStyleOverride_t ) );
     
     
     ReadGameConfig();
@@ -1054,7 +1054,7 @@ stock int FindRunById( int runid )
     int len = g_hRuns.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hRuns.Get( i, RUN_ID ) == runid )
+        if ( g_hRuns.Get( i, Run_t::iId ) == runid )
         {
             return i;
         }
@@ -1216,9 +1216,9 @@ public bool TraceFilter_AnythingButThoseFilthyPlayersEww( int ent, int mask )
 
 stock void GetRunTelePos( int irun, float out[3] )
 {
-    out[0] = g_hRuns.Get( irun, RUN_TELEPOS );
-    out[1] = g_hRuns.Get( irun, RUN_TELEPOS + 1 );
-    out[2] = g_hRuns.Get( irun, RUN_TELEPOS + 2 );
+    out[0] = g_hRuns.Get( irun, Run_t::vecTelePos );
+    out[1] = g_hRuns.Get( irun, Run_t::vecTelePos + 1 );
+    out[2] = g_hRuns.Get( irun, Run_t::vecTelePos + 2 );
 }
 
 stock bool SetRunTelePos( int irun, const float pos[3], bool bForce = false )
@@ -1245,7 +1245,7 @@ stock bool SetRunTelePos( int irun, const float pos[3], bool bForce = false )
     
     for ( int i = 0; i < 3; i++ )
     {
-        g_hRuns.Set( irun, pos[i], RUN_TELEPOS + i );
+        g_hRuns.Set( irun, pos[i], Run_t::vecTelePos + i );
     }
     
     return true;
@@ -1253,7 +1253,7 @@ stock bool SetRunTelePos( int irun, const float pos[3], bool bForce = false )
 
 stock float GetRunTeleYaw( int irun )
 {
-    return view_as<float>( g_hRuns.Get( irun, RUN_TELEYAW ) );
+    return view_as<float>( g_hRuns.Get( irun, Run_t::flTeleYaw ) );
 }
 
 stock void SetRunTeleYaw( int irun, float yaw )
@@ -1261,7 +1261,7 @@ stock void SetRunTeleYaw( int irun, float yaw )
     if ( irun == -1 ) return;
     
     
-    g_hRuns.Set( irun, yaw, RUN_TELEYAW );
+    g_hRuns.Set( irun, yaw, Run_t::flTeleYaw );
 }
 
 // If we have only one choice, don't display.
@@ -1272,7 +1272,7 @@ stock bool ShouldModeDisplay( int mode )
     
     int i = FindModeById( mode );
     
-    return ( i != -1 ) ? g_hModes.Get( i, MODE_DISPLAY ) : 0;
+    return ( i != -1 ) ? g_hModes.Get( i, Mode_t::bDisplay ) : 0;
 }
 
 stock bool ShouldStyleDisplay( int style )
@@ -1282,7 +1282,7 @@ stock bool ShouldStyleDisplay( int style )
     
     int i = FindStyleById( style );
     
-    return ( i != -1 ) ? g_hStyles.Get( i, STYLE_DISPLAY ) : 0;
+    return ( i != -1 ) ? g_hStyles.Get( i, Style_t::bDisplay ) : 0;
 }
 
 stock bool AddMode( int id, const char[] szName, const char[] szShortName, const char[] szSafeName, float flMaxSpeed = 0.0 )
@@ -1300,15 +1300,15 @@ stock bool AddMode( int id, const char[] szName, const char[] szShortName, const
     }
     
     
-    int data[MODE_SIZE];
-    strcopy( view_as<char>( data[MODE_NAME] ), MAX_MODE_NAME, szName );
-    strcopy( view_as<char>( data[MODE_SHORTNAME] ), MAX_MODE_SHORTNAME, szShortName );
-    strcopy( view_as<char>( data[MODE_SAFENAME] ), MAX_SAFENAME, szSafeName );
+    Mode_t mode;
+    strcopy( mode.szName, sizeof( Mode_t::szName ), szName );
+    strcopy( mode.szShortName, sizeof( Mode_t::szShortName ), szShortName );
+    strcopy( mode.szSafeName, sizeof( Mode_t::szSafeName ), szSafeName );
     
-    data[MODE_ID] = id;
-    data[MODE_DISPLAY] = 1;
+    mode.iId = id;
+    mode.bDisplay = true;
     
-    data[MODE_ADMFLAGS] = 0;
+    mode.fAdmFlags = 0;
     
     
     float spd = flMaxSpeed;
@@ -1318,9 +1318,9 @@ stock bool AddMode( int id, const char[] szName, const char[] szShortName, const
         spd = g_ConVar_DefMaxWeaponSpeed.FloatValue;
     }*/
     
-    data[MODE_MAXSPEED] = view_as<int>( spd );
+    mode.flMaxSpeed = spd;
     
-    index = g_hModes.PushArray( data );
+    index = g_hModes.PushArray( mode );
     
     
     UpdateCvars();
@@ -1378,18 +1378,19 @@ stock bool AddStyle( int id, const char[] szName, const char[] szShortName, cons
         return false;
     }
     
-    int data[STYLE_SIZE];
-    strcopy( view_as<char>( data[STYLE_NAME] ), MAX_STYLE_NAME, szName );
-    strcopy( view_as<char>( data[STYLE_SHORTNAME] ), MAX_STYLE_SHORTNAME, szShortName );
-    strcopy( view_as<char>( data[STYLE_SAFENAME] ), MAX_SAFENAME, szSafeName );
+
+    Style_t style;
+    strcopy( style.szName, sizeof( Style_t::szName ), szName );
+    strcopy( style.szShortName, sizeof( Style_t::szShortName ), szShortName );
+    strcopy( style.szSafeName, sizeof( Style_t::szSafeName ), szSafeName );
     
-    data[STYLE_ID] = id;
-    data[STYLE_DISPLAY] = bDisplay;
+    style.iId = id;
+    style.bDisplay = bDisplay;
     
-    data[STYLE_ADMFLAGS] = 0;
+    style.fAdmFlags = 0;
     
     
-    index = g_hStyles.PushArray( data );
+    index = g_hStyles.PushArray( style );
     
 
     UpdateStyleOverrides( index );
@@ -1468,17 +1469,17 @@ stock bool AddResultFlag( const char[] szName, int flag )
 
 stock int GetRunIdByIndex( int index )
 {
-    return ( index != -1 ) ? g_hRuns.Get( index, RUN_ID ) : -1;
+    return ( index != -1 ) ? g_hRuns.Get( index, Run_t::iId ) : -1;
 }
 
 stock int GetModeIdByIndex( int index )
 {
-    return ( index != -1 ) ? g_hModes.Get( index, MODE_ID ) : MODE_INVALID;
+    return ( index != -1 ) ? g_hModes.Get( index, Mode_t::iId ) : MODE_INVALID;
 }
 
 stock int GetStyleIdByIndex( int index )
 {
-    return ( index != -1 ) ? g_hStyles.Get( index, STYLE_ID ) : STYLE_INVALID;
+    return ( index != -1 ) ? g_hStyles.Get( index, Style_t::iId ) : STYLE_INVALID;
 }
 
 stock int FindModeById( int id )
@@ -1486,7 +1487,7 @@ stock int FindModeById( int id )
     int len = g_hModes.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hModes.Get( i, MODE_ID ) == id )
+        if ( g_hModes.Get( i, Mode_t::iId ) == id )
             return i;
     }
     
@@ -1498,7 +1499,7 @@ stock int FindStyleById( int id )
     int len = g_hStyles.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hStyles.Get( i, STYLE_ID ) == id )
+        if ( g_hStyles.Get( i, Style_t::iId ) == id )
             return i;
     }
     
@@ -1518,7 +1519,7 @@ stock void GetRunNameByIndex( int index, char[] out, int len )
         
         for ( int i = 0; i < MAX_RUN_NAME_CELL; i++ )
         {
-            name[i] = g_hRuns.Get( index, RUN_NAME + i );
+            name[i] = g_hRuns.Get( index, Run_t::szName + i );
         }
         
         strcopy( out, len, view_as<char>( name ) );
@@ -1539,7 +1540,7 @@ stock void SetRunNameByIndex( int index, const char[] sz )
     
     for ( int i = 0; i < MAX_RUN_NAME_CELL; i++ )
     {
-        g_hRuns.Set( index, name[i], RUN_NAME + i );
+        g_hRuns.Set( index, name[i], Run_t::szName + i );
     }
 }
 
@@ -1556,7 +1557,7 @@ stock void GetModeNameByIndex( int index, char[] out, int len )
         
         for ( int i = 0; i < MAX_MODE_NAME_CELL; i++ )
         {
-            name[i] = g_hModes.Get( index, MODE_NAME + i );
+            name[i] = g_hModes.Get( index, Mode_t::szName + i );
         }
         
         strcopy( out, len, view_as<char>( name ) );
@@ -1580,7 +1581,7 @@ stock void GetModeShortNameByIndex( int index, char[] out, int len )
         
         for ( int i = 0; i < MAX_MODE_SHORTNAME_CELL; i++ )
         {
-            name[i] = g_hModes.Get( index, MODE_SHORTNAME + i );
+            name[i] = g_hModes.Get( index, Mode_t::szShortName + i );
         }
         
         strcopy( out, len, view_as<char>( name ) );
@@ -1604,7 +1605,7 @@ stock void GetModeSafeNameByIndex( int index, char[] out, int len )
         
         for ( int i = 0; i < MAX_SAFENAME_CELL; i++ )
         {
-            name[i] = g_hModes.Get( index, MODE_SAFENAME + i );
+            name[i] = g_hModes.Get( index, Mode_t::szSafeName + i );
         }
         
         strcopy( out, len, view_as<char>( name ) );
@@ -1628,7 +1629,7 @@ stock void GetStyleNameByIndex( int index, char[] out, int len )
         
         for ( int i = 0; i < MAX_STYLE_NAME_CELL; i++ )
         {
-            name[i] = g_hStyles.Get( index, STYLE_NAME + i );
+            name[i] = g_hStyles.Get( index, Style_t::szName + i );
         }
         
         strcopy( out, len, view_as<char>( name ) );
@@ -1652,7 +1653,7 @@ stock void GetStyleShortNameByIndex( int index, char[] out, int len )
         
         for ( int i = 0; i < MAX_STYLE_SHORTNAME_CELL; i++ )
         {
-            name[i] = g_hStyles.Get( index, STYLE_SHORTNAME + i );
+            name[i] = g_hStyles.Get( index, Style_t::szShortName + i );
         }
         
         strcopy( out, len, view_as<char>( name ) );
@@ -1676,7 +1677,7 @@ stock void GetStyleSafeNameByIndex( int index, char[] out, int len )
         
         for ( int i = 0; i < MAX_SAFENAME_CELL; i++ )
         {
-            name[i] = g_hStyles.Get( index, STYLE_SAFENAME + i );
+            name[i] = g_hStyles.Get( index, Style_t::szSafeName + i );
         }
         
         strcopy( out, len, view_as<char>( name ) );
@@ -1699,20 +1700,20 @@ stock void SetRunNumRecords( int index, int mode, int style, int num )
 
 stock float GetRunBestTime( int index, int mode, int style )
 {
-    return view_as<float>( g_hRuns.Get( index, RUN_BESTTIMES + OFFSET_MODESTYLE( mode, style ) ) );
+    return view_as<float>( g_hRuns.Get( index, Run_t::flBestTimes + OFFSET_MODESTYLE( mode, style ) ) );
 }
 
 stock void SetRunBestTime( int index, int mode, int style, float time, int uid = 0 )
 {
     int offset = OFFSET_MODESTYLE( mode, style );
     
-    g_hRuns.Set( index, time, RUN_BESTTIMES + offset );
-    g_hRuns.Set( index, uid, RUN_BESTTIMES_UID + offset );
+    g_hRuns.Set( index, time, Run_t::flBestTimes + offset );
+    g_hRuns.Set( index, uid, Run_t::flBestTimesIds + offset );
 }
 
 stock int GetRunBestTimeId( int index, int mode, int style )
 {
-    return g_hRuns.Get( index, RUN_BESTTIMES_UID + OFFSET_MODESTYLE( mode, style ) );
+    return g_hRuns.Get( index, Run_t::flBestTimesIds + OFFSET_MODESTYLE( mode, style ) );
 }
 
 stock void GetRunBestName( int index, int mode, int style, char[] out, int len )
@@ -1724,7 +1725,7 @@ stock void GetRunBestName( int index, int mode, int style, char[] out, int len )
     
     for ( int i = 0; i < sizeof( name ); i++ )
     {
-        name[i] = g_hRuns.Get( index, RUN_BESTTIMES_NAME + offset + i );
+        name[i] = g_hRuns.Get( index, Run_t::flBestTimesNames + offset + i );
     }
     
     strcopy( out, len, view_as<char>( name ) );
@@ -1750,18 +1751,18 @@ stock void SetRunBestName( int index, int mode, int style, const char[] szName )
     
     for ( int i = 0; i < sizeof( name ); i++ )
     {
-        g_hRuns.Set( index, name[i], RUN_BESTTIMES_NAME + offset + i );
+        g_hRuns.Set( index, name[i], Run_t::flBestTimesNames + offset + i );
     }
 }
 
 stock float GetClientRunTime( int index, int client, int mode, int style )
 {
-    return view_as<float>( g_hRuns.Get( index, RUN_CLIENTTIMES + OFFSET_MODESTYLECLIENT( mode, style, client ) ) );
+    return view_as<float>( g_hRuns.Get( index, Run_t::flClientTimes + OFFSET_MODESTYLECLIENT( mode, style, client ) ) );
 }
 
 stock void SetClientRunTime( int index, int client, int mode, int style, float time )
 {
-    g_hRuns.Set( index, time, RUN_CLIENTTIMES + OFFSET_MODESTYLECLIENT( mode, style, client ) );
+    g_hRuns.Set( index, time, Run_t::flClientTimes + OFFSET_MODESTYLECLIENT( mode, style, client ) );
 }
 
 stock int FindValidModeFromFlags( int modeflags )
@@ -1820,7 +1821,7 @@ stock bool SetClientRun( int client, int runid, bool bTele = true, bool bPrintTo
     if ( !IsClientModeValidForRun( client, FindModeById( g_iModeId[client] ), irun, bPrintToChat ) )
     {
         // Find valid mode for this run.
-        int modeflags = g_hRuns.Get( irun, RUN_MODEFLAGS );
+        int modeflags = g_hRuns.Get( irun, Run_t::fModeFlags );
         
         if ( bPrintToChat )
         {
@@ -1887,7 +1888,7 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
     int irun = FindRunById( g_iRunId[client] );
     if ( !IsClientModeValidForRun( client, imode, irun, bPrintToChat ) )
     {
-        int modeflags = g_hRuns.Get( irun, RUN_MODEFLAGS );
+        int modeflags = g_hRuns.Get( irun, Run_t::fModeFlags );
         
         
         if ( bPrintToChat )
@@ -2076,7 +2077,7 @@ stock bool IsClientModeValidForRun( int client, int imode, int irun, bool bPrint
         return true;
     
     
-    if ( g_hRuns.Get( irun, RUN_MODEFLAGS ) & (1 << GetModeIdByIndex( imode )) )
+    if ( g_hRuns.Get( irun, Run_t::fModeFlags ) & (1 << GetModeIdByIndex( imode )) )
     {
         if ( bPrintToChat )
         {
@@ -2230,7 +2231,7 @@ stock float GetModeMaxspeedByIndex( int index )
 {
     if ( index != -1 )
     {
-        float spd = g_hModes.Get( index, MODE_MAXSPEED );
+        float spd = g_hModes.Get( index, Mode_t::flMaxSpeed );
         
         
         return ( spd > 0.0 ) ? spd : INVALID_MAXSPEED;
@@ -2685,7 +2686,7 @@ stock void SetModeNameByIndex( int index, const char[] szName )
     
     for ( int i = 0; i < MAX_MODE_NAME_CELL; i++ )
     {
-        g_hModes.Set( index, name[i], MODE_NAME + i );
+        g_hModes.Set( index, name[i], Mode_t::szName + i );
     }
 }
 
@@ -2700,7 +2701,7 @@ stock void SetModeShortNameByIndex( int index, const char[] szName )
     
     for ( int i = 0; i < MAX_MODE_SHORTNAME_CELL; i++ )
     {
-        g_hModes.Set( index, name[i], MODE_SHORTNAME + i );
+        g_hModes.Set( index, name[i], Mode_t::szShortName + i );
     }
 }
 
@@ -2715,7 +2716,7 @@ stock void SetStyleNameByIndex( int index, const char[] szName )
     
     for ( int i = 0; i < MAX_STYLE_NAME_CELL; i++ )
     {
-        g_hStyles.Set( index, name[i], STYLE_NAME + i );
+        g_hStyles.Set( index, name[i], Style_t::szName + i );
     }
 }
 
@@ -2730,7 +2731,7 @@ stock void SetStyleShortNameByIndex( int index, const char[] szName )
     
     for ( int i = 0; i < MAX_STYLE_SHORTNAME_CELL; i++ )
     {
-        g_hStyles.Set( index, name[i], STYLE_SHORTNAME + i );
+        g_hStyles.Set( index, name[i], Style_t::szShortName + i );
     }
 }
 
@@ -2779,7 +2780,7 @@ stock int GetModeFlags( int id )
 
 stock int GetModeFlagsByIndex( int index )
 {
-    return ( index != -1 ) ? g_hModes.Get( index, MODE_ADMFLAGS ) : 0;
+    return ( index != -1 ) ? g_hModes.Get( index, Mode_t::fAdmFlags ) : 0;
 }
 
 stock int GetStyleFlags( int id )
@@ -2789,7 +2790,7 @@ stock int GetStyleFlags( int id )
 
 stock int GetStyleFlagsByIndex( int index )
 {
-    return ( index != -1 ) ? g_hStyles.Get( index, STYLE_ADMFLAGS ) : 0;
+    return ( index != -1 ) ? g_hStyles.Get( index, Style_t::fAdmFlags ) : 0;
 }
 
 stock int AddRun(   int runid,
@@ -2812,9 +2813,9 @@ stock int AddRun(   int runid,
         int len = g_hRuns.Length;
         for ( int i = 0; i < len; i++ )
         {
-            if ( g_hRuns.Get( i, RUN_ID ) > highest )
+            if ( g_hRuns.Get( i, Run_t::iId ) > highest )
             {
-                highest = g_hRuns.Get( i, RUN_ID );
+                highest = g_hRuns.Get( i, Run_t::iId );
             }
         }
         
@@ -2850,7 +2851,7 @@ stock int AddRun(   int runid,
     char szRun[MAX_RUN_NAME];
     
     
-    int data[RUN_SIZE];
+    Run_t run;
     
     
     if ( strlen( szInRun ) )
@@ -2872,14 +2873,14 @@ stock int AddRun(   int runid,
     }
     
     
-    data[RUN_ID] = runid;
-    strcopy( view_as<char>( data[RUN_NAME] ), MAX_RUN_NAME, szRun );
+    run.iId = runid;
+    strcopy( run.szName, sizeof( Run_t::szName ), szRun );
     
     
-    data[RUN_RESFLAGS] = resflags;
-    data[RUN_MODEFLAGS] = modeflags;
+    run.fResFlags = resflags;
+    run.fModeFlags = modeflags;
     
-    int irun = g_hRuns.PushArray( data );
+    int irun = g_hRuns.PushArray( run );
     
     
     SetRunTelePos( irun, telepos, true );
@@ -2958,7 +2959,7 @@ stock void TeleportClientsOutOfRun( int runid )
 
 stock bool ResetRunTelePosByIndex( int irun, float pos[3], float &yaw )
 {
-    int runid = g_hRuns.Get( irun, RUN_ID );
+    int runid = g_hRuns.Get( irun, Run_t::iId );
 
     LogMessage( INF_CON_PRE..."Resetting run's %i teleport location.", runid );
 
@@ -2984,7 +2985,7 @@ stock bool ResetRunTelePosByIndex( int irun, float pos[3], float &yaw )
 
 stock bool ResetRunTeleYawByIndex( int irun, float &yaw )
 {
-    int runid = g_hRuns.Get( irun, RUN_ID );
+    int runid = g_hRuns.Get( irun, Run_t::iId );
 
     LogMessage( INF_CON_PRE..."Resetting run's %i teleport angle.", runid );
 
@@ -3083,47 +3084,47 @@ stock bool LoadRunFromKv( KeyValues kv )
 
 stock void BuildRunKvs( ArrayList kvs )
 {
-    decl data[RUN_SIZE];
+    Run_t run;
     float vec[3];
     
     
     for ( int i = 0; i < g_hRuns.Length; i++ )
     {
-        g_hRuns.GetArray( i, data );
+        g_hRuns.GetArray( i, run );
         
         
-        KeyValues kv = new KeyValues( view_as<char>( data[RUN_NAME] ) );
+        KeyValues kv = new KeyValues( run.szName );
         
         
-        kv.SetNum( "id", data[RUN_ID] );
+        kv.SetNum( "id", run.iId );
         
         
-        kv.SetNum( "resflags", data[RUN_RESFLAGS] );
-        kv.SetNum( "modeflags", data[RUN_MODEFLAGS] );
+        kv.SetNum( "resflags", run.fResFlags );
+        kv.SetNum( "modeflags", run.fModeFlags );
         
         
-        CopyArray( data[RUN_TELEPOS], vec, 3 );
+        CopyArray( run.vecTelePos, vec, 3 );
         // Make sure we're not saving invalid teleport locations
         if (vec[0] != INVALID_TELEAXIS
         ||  vec[1] != INVALID_TELEAXIS
         ||  vec[2] != INVALID_TELEAXIS)
             kv.SetVector( "telepos", vec );
         
-        float teleyaw = view_as<float>( data[RUN_TELEYAW] );
+        float teleyaw = run.flTeleYaw;
         if ( teleyaw != INVALID_TELEANG )
-            kv.SetFloat( "teleyaw", view_as<float>( data[RUN_TELEYAW] ) );
+            kv.SetFloat( "teleyaw", teleyaw );
         
         
         // Ask other plugins if they want to save some data.
         Call_StartForward( g_hForward_OnRunSave );
-        Call_PushCell( data[RUN_ID] );
+        Call_PushCell( run.iId );
         Call_PushCell( view_as<int>( kv ) );
         Call_Finish();
         
         
         decl arr[2];
         arr[0] = view_as<int>( kv );
-        arr[1] = data[RUN_ID];
+        arr[1] = run.iId;
         
         kvs.PushArray( arr );
     }

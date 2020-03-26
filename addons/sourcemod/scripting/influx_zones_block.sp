@@ -351,7 +351,7 @@ public Action Cmd_ZoneSettings( int client, int args )
     int flags = g_hBlocks.Get( index, BLOCK_RUNFLAGS );
     for ( int i = 0; i < runslen; i++ )
     {
-        id = runs.Get( i, RUN_ID );
+        id = runs.Get( i, Run_t::iId );
         
         runs.GetString( i, szName, sizeof( szName ) );
         

@@ -175,7 +175,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hRunRec = new ArrayList( RUNREC_SIZE );
+    g_hRunRec = new ArrayList( sizeof( RunRecordingData_t ) );
     
     
     // PHRASES
@@ -252,7 +252,7 @@ public void OnPluginStart()
         
         for ( int i = 0; i < len; i++ )
         {
-            Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+            Influx_OnRunCreated( runs.Get( i, Run_t::iId ) );
         }
         
         Influx_OnPostRunLoad();
@@ -526,7 +526,7 @@ stock void SetMaxPreRunLength()
         
         if ( g_nMaxPreRecLength > 0 )
         {
-            g_hPreRec[i] = new ArrayList( REC_SIZE, g_nMaxPreRecLength );
+            g_hPreRec[i] = new ArrayList( sizeof( RecordingFrame_t ), g_nMaxPreRecLength );
             
             
             ResetClientPreRun( i );
@@ -688,7 +688,7 @@ stock bool FindNewPlayback()
                     
                     StartPlayback(
                         GetRunRec( irun, mode, style ),
-                        g_hRunRec.Get( irun, RUNREC_RUN_ID ),
+                        g_hRunRec.Get( irun, RunRecordingData_t::iRunId ),
                         mode,
                         style,
                         GetRunTime( irun, mode, style ),
@@ -901,8 +901,8 @@ public void Influx_OnRunCreated( int runid )
     if ( FindRunRecById( runid ) != -1 ) return;
     
     
-    int data[RUNREC_SIZE];
-    data[RUNREC_RUN_ID] = runid;
+    RunRecordingData_t data;
+    data.iRunId = runid;
     
     g_hRunRec.PushArray( data );
 }
@@ -1054,7 +1054,7 @@ stock bool StartRecording( int client, bool bInsertFrame = false )
         FreeRecording( rec );
     }
     
-    g_hRec[client] = new ArrayList( REC_SIZE );
+    g_hRec[client] = new ArrayList( sizeof( RecordingFrame_t ) );
     
     
     Action res = Plugin_Continue;
@@ -1097,13 +1097,13 @@ stock bool StartRecording( int client, bool bInsertFrame = false )
     if ( g_hRec[client].Length )
     {
         int wep = GetEntPropEnt( client, Prop_Data, "m_hActiveWeapon" );
-        int flags = g_hRec[client].Get( 0, REC_FLAGS );
+        int flags = g_hRec[client].Get( 0, RecordingFrame_t::fFlags );
         
         switch ( FindSlotByWeapon( client, wep ) )
         {
-            case SLOT_PRIMARY : g_hRec[client].Set( 0, flags | RECFLAG_WEP_SLOT1, REC_FLAGS );
-            case SLOT_SECONDARY : g_hRec[client].Set( 0, flags | RECFLAG_WEP_SLOT2, REC_FLAGS );
-            case SLOT_MELEE : g_hRec[client].Set( 0, flags | RECFLAG_WEP_SLOT3, REC_FLAGS );
+            case SLOT_PRIMARY : g_hRec[client].Set( 0, flags | RECFLAG_WEP_SLOT1, RecordingFrame_t::fFlags );
+            case SLOT_SECONDARY : g_hRec[client].Set( 0, flags | RECFLAG_WEP_SLOT2, RecordingFrame_t::fFlags );
+            case SLOT_MELEE : g_hRec[client].Set( 0, flags | RECFLAG_WEP_SLOT3, RecordingFrame_t::fFlags );
         }
     }
 
@@ -1117,7 +1117,7 @@ stock bool FinishRecording( int client, bool bInsertFrame = false )
     
     // Create a dummy recording if we have none. OnTimerStart isn't guaranteed to be called (eg. with TAS)
     if ( g_hRec[client] == null )
-        g_hRec[client] = new ArrayList( REC_SIZE );
+        g_hRec[client] = new ArrayList( sizeof( RecordingFrame_t ) );
     
     
     Action res = Plugin_Continue;
@@ -1220,12 +1220,12 @@ stock void InsertPreRunFrame( int client )
     if ( !g_nMaxPreRecLength ) return;
     
     
-    static int data[REC_SIZE];
+    static RecordingFrame_t frame;
     
-    FillFrame( client, data );
+    FillFrame( client, frame );
     
     
-    g_hPreRec[client].SetArray( g_iCurPreRecStart[client], data );
+    g_hPreRec[client].SetArray( g_iCurPreRecStart[client], frame );
     
     if ( ++g_iCurPreRecStart[client] >= g_nMaxPreRecLength )
     {
@@ -1235,29 +1235,28 @@ stock void InsertPreRunFrame( int client )
     }
 }
 
-stock void FillFrame( int client, any data[REC_SIZE] )
+stock void FillFrame( int client, RecordingFrame_t frame )
 {
     decl Float:temp[3];
     
-    GetClientAbsOrigin( client, temp );
-    CopyArray( temp, data[REC_POS], 3 );
+    GetClientAbsOrigin( client, frame.vecPos );
     
     GetClientEyeAngles( client, temp );
-    CopyArray( temp, data[REC_ANG], 2 );
+    CopyArray( temp, frame.angles, 2 );
     
     
     
-    data[REC_FLAGS] = ( GetEntityFlags( client ) & FL_DUCKING ) ? RECFLAG_CROUCH : 0;
+    frame.fFlags = ( GetEntityFlags( client ) & FL_DUCKING ) ? RECFLAG_CROUCH : 0;
     
     
     if ( g_ConVar_WeaponAttack.BoolValue && g_fCurButtons[client] & IN_ATTACK )
     {
-        data[REC_FLAGS] |= RECFLAG_ATTACK;
+        frame.fFlags |= RECFLAG_ATTACK;
     }
     
     if ( g_ConVar_WeaponAttack2.BoolValue && g_fCurButtons[client] & IN_ATTACK2 )
     {
-        data[REC_FLAGS] |= RECFLAG_ATTACK2;
+        frame.fFlags |= RECFLAG_ATTACK2;
     }
     
     
@@ -1267,7 +1266,7 @@ stock void FillFrame( int client, any data[REC_SIZE] )
         {
             case SLOT_PRIMARY :
             {
-                data[REC_FLAGS] |= RECFLAG_WEP_SLOT1;
+                frame.fFlags |= RECFLAG_WEP_SLOT1;
                 
                 if ( g_szWep_Prim[client][0] == '\0' ) // We haven't added a gun here yet.
                 {
@@ -1276,14 +1275,14 @@ stock void FillFrame( int client, any data[REC_SIZE] )
             }
             case SLOT_SECONDARY :
             {
-                data[REC_FLAGS] |= RECFLAG_WEP_SLOT2;
+                frame.fFlags |= RECFLAG_WEP_SLOT2;
                 
                 if ( g_szWep_Sec[client][0] == '\0' ) // We haven't added a gun here yet.
                 {
                     GetEntityClassname( g_iCurWep[client], g_szWep_Sec[client], sizeof( g_szWep_Sec[] ) );
                 }
             }
-            case SLOT_MELEE : data[REC_FLAGS] |= RECFLAG_WEP_SLOT3;
+            case SLOT_MELEE : frame.fFlags |= RECFLAG_WEP_SLOT3;
         }
     }
 }
@@ -1294,11 +1293,11 @@ stock InsertFrame( int client )
     PrintToServer( INF_DEBUG_PRE..."(%i) | Frame: %i", client, GetGameTickCount() );
 #endif
     
-    static int data[REC_SIZE];
+    static RecordingFrame_t frame;
 
-    FillFrame( client, data );
+    FillFrame( client, frame );
     
-    if ( g_hRec[client].PushArray( data ) > g_nMaxRecLength )
+    if ( g_hRec[client].PushArray( frame ) > g_nMaxRecLength )
     {
         Influx_PrintToChat( _, client, "%T", "INF_RECORDINGEXCEEDEDLIMIT", client, g_ConVar_MaxLength.IntValue );
         StopRecording( client );
@@ -1431,7 +1430,7 @@ stock int FindRunRecById( int id )
         int len = g_hRunRec.Length;
         for ( int i = 0; i < len; i++ )
         {
-            if ( g_hRunRec.Get( i, RUNREC_RUN_ID ) == id )
+            if ( g_hRunRec.Get( i, RunRecordingData_t::iRunId ) == id )
                 return i;
         }
     }
@@ -1441,12 +1440,12 @@ stock int FindRunRecById( int id )
 
 stock ArrayList GetRunRec( int index, int mode, int style )
 {
-    return view_as<ArrayList>( g_hRunRec.Get( index, RUNREC_REC + OFFSET_MODESTYLE( mode, style ) ) );
+    return view_as<ArrayList>( g_hRunRec.Get( index, RunRecordingData_t::hRecordings + OFFSET_MODESTYLE( mode, style ) ) );
 }
 
 stock void SetRunRec( int index, int mode, int style, ArrayList rec )
 {
-    g_hRunRec.Set( index, rec, RUNREC_REC + OFFSET_MODESTYLE( mode, style ) );
+    g_hRunRec.Set( index, rec, RunRecordingData_t::hRecordings + OFFSET_MODESTYLE( mode, style ) );
 }
 
 /*stock int GetRunTimeId( int index, int mode, int style )
@@ -1456,14 +1455,14 @@ stock void SetRunRec( int index, int mode, int style, ArrayList rec )
 
 stock float GetRunTime( int index, int mode, int style )
 {
-    return g_hRunRec.Get( index, RUNREC_REC_TIME + OFFSET_MODESTYLE( mode, style ) );
+    return g_hRunRec.Get( index, RunRecordingData_t::flRecTimes + OFFSET_MODESTYLE( mode, style ) );
 }
 
 stock void SetRunTime( int index, int mode, int style, float time )//, int uid = 0 )
 {
     int offset = OFFSET_MODESTYLE( mode, style );
     
-    g_hRunRec.Set( index, time, RUNREC_REC_TIME + offset );
+    g_hRunRec.Set( index, time, RunRecordingData_t::flRecTimes + offset );
     //g_hRunRec.Set( i, uid, RUNREC_REC_UID + offset );
 }
 
@@ -1476,7 +1475,7 @@ stock void GetRunName( int index, int mode, int style, char[] out, int len )
     
     for ( int i = 0; i < sizeof( name ); i++ )
     {
-        name[i] = g_hRunRec.Get( index, RUNREC_REC_NAME + offset + i );
+        name[i] = g_hRunRec.Get( index, RunRecordingData_t::szRecNames + offset + i );
     }
     
     strcopy( out, len, view_as<char>( name ) );
@@ -1500,7 +1499,7 @@ stock void SetRunName( int index, int mode, int style, const char[] szName )
     
     for ( int i = 0; i < sizeof( name ); i++ )
     {
-        g_hRunRec.Set( index, name[i], RUNREC_REC_NAME + offset + i );
+        g_hRunRec.Set( index, name[i], RunRecordingData_t::szRecNames + offset + i );
     }
 }
 
@@ -1594,17 +1593,15 @@ stock void ResetReplay()
     // Try to teleport the bot to start.
     if ( IsValidReplayBot() && g_hReplay != null && g_hReplay.Length > 0 )
     {
-        float pos[3];
         float angles[3];
         
-        int data[REC_SIZE];
+        RecordingFrame_t frame;
         
-        g_hReplay.GetArray( 0, data );
+        g_hReplay.GetArray( 0, frame );
         
-        CopyArray( data[REC_POS], pos, 3 );
-        CopyArray( data[REC_ANG], angles, 2 );
+        CopyArray( frame.angles, angles, 2 );
         
-        TeleportEntity( g_iReplayBot, pos, angles, ORIGIN_VECTOR );
+        TeleportEntity( g_iReplayBot, frame.vecPos, angles, ORIGIN_VECTOR );
     }
     
     

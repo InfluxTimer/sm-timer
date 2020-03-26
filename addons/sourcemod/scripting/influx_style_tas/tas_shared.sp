@@ -51,25 +51,24 @@
 #define MAX_TASFILE_PLYNAME             32
 #define MAX_TASFILE_PLYNAME_CELL        MAX_TASFILE_PLYNAME / 4
 
-enum
+enum struct TasFileHeader_t
 {
-    TASFILE_MAGIC = 0,
-    TASFILE_VERSION,
-    TASFILE_HEADERSIZE,
-    
-    TASFILE_TICKRATE,
-    
-    TASFILE_RUNID,
-    TASFILE_MODE,
-    TASFILE_STYLE,
-    
-    TASFILE_MAPNAME[MAX_TASFILE_MAPNAME_CELL],
-    TASFILE_PLYNAME[MAX_TASFILE_PLYNAME_CELL],
-    
-    TASFILE_FRAMELEN
-};
+    int iMagic;
+    int iVersion;
 
-#define TASFILE_CURHEADERSIZE       TASFILE_FRAMELEN
+    int nHeaderSize;
+
+    int nTickrate;
+    
+    int iRunId;
+    int iModeId;
+    int iStyleId;
+
+    char szMapName[MAX_TASFILE_MAPNAME];
+    char szPlayerName[MAX_TASFILE_PLYNAME];
+}
+
+#define TASFILE_CURHEADERSIZE       sizeof( TasFileHeader_t )
 
 
 
@@ -79,24 +78,22 @@ enum
 #define FRM_TARGETNAME_SIZE         32
 #define FRM_TARGETNAME_SIZE_CELL    FRM_TARGETNAME_SIZE / 4
 
-enum
+enum struct TasFrame_t
 {
-    FRM_POS[3] = 0,
-    FRM_ANGREAL[2],
-    FRM_ANG[2],
-    
-    FRM_ABSVEL[3],
-    FRM_BASEVEL[3],
-    
-    FRM_MOVETYPE,
-    FRM_GROUNDENT,
-    FRM_ENTFLAGS,
-    
-    FRM_TARGETNAME[FRM_TARGETNAME_SIZE_CELL],
-    FRM_CLASSNAME[FRM_CLASSNAME_SIZE_CELL],
-    
-    FRM_SIZE
-};
+    float vecPos[3];
+    float anglesReal[2];
+    float angles[2];
+
+    float vecAbsVel[3];
+    float vecBaseVel[3];
+
+    int iMoveType;
+    int iGroundEnt;
+    int iEntFlags;
+
+    char szTargetName[FRM_TARGETNAME_SIZE];
+    char szClassname[FRM_CLASSNAME_SIZE];
+}
 
 enum
 {
@@ -118,13 +115,11 @@ enum
     AIMLOCK_MAX
 };
 
-enum
+enum struct FrameCp_t
 {
-    FRMCP_NUM = 0,
-    FRMCP_FRMINDEX,
-    
-    FRMCP_SIZE
-};
+    int nNum;
+    int iFrameIndex;
+}
 
 #define MAX_FRMCP       50
 
@@ -329,7 +324,7 @@ public void Influx_OnTimerStartPost( int client, int runid )
     
     delete g_hFrames[client];
     
-    g_hFrames[client] = new ArrayList( FRM_SIZE );
+    g_hFrames[client] = new ArrayList( sizeof( TasFrame_t ) );
     
 
     
@@ -397,11 +392,11 @@ public Action Influx_OnRecordingFinish( int client, ArrayList hRecording )
     
     hRecording.Clear();
     
-    decl framedata[FRM_SIZE];
-    decl recdata[REC_SIZE];
+    TasFrame_t framedata;
+    static RecordingFrame_t recframe;
     
     
-    int ang_index = g_ConVar_SilentStrafer.BoolValue ? FRM_ANG : FRM_ANGREAL;
+    int ang_index = g_ConVar_SilentStrafer.BoolValue ? TasFrame_t::angles : TasFrame_t::anglesReal;
     
     
     int len = g_hFrames[client].Length;
@@ -409,18 +404,18 @@ public Action Influx_OnRecordingFinish( int client, ArrayList hRecording )
     {
         g_hFrames[client].GetArray( i, framedata );
         
-        CopyArray( framedata[FRM_POS], recdata[REC_POS], 3 );
-        CopyArray( framedata[ang_index], recdata[REC_ANG], 2 );
+        recframe.vecPos = framedata.vecPos;
+        CopyArray( framedata[ang_index], recframe.angles, 2 );
         
         
-        recdata[REC_FLAGS] = 0;
+        recframe.fFlags = 0;
         
-        if ( framedata[FRM_ENTFLAGS] & FL_DUCKING )
+        if ( framedata.iEntFlags & FL_DUCKING )
         {
-            recdata[REC_FLAGS] |= RECFLAG_CROUCH;
+            recframe.fFlags |= RECFLAG_CROUCH;
         }
         
-        hRecording.PushArray( recdata );
+        hRecording.PushArray( recframe );
     }
     
     
@@ -744,32 +739,32 @@ stock void InsertFrame( int client )
     
     decl Float:vec[3];
     
-    static int data[FRM_SIZE];
+    static TasFrame_t frame;
     
     GetClientAbsOrigin( client, vec );
-    CopyArray( vec, data[FRM_POS], 3 );
+    frame.vecPos = vec;
     
     GetClientEyeAngles( client, vec );
-    CopyArray( vec, data[FRM_ANGREAL], 2 );
+    CopyArray( vec, frame.anglesReal, 2 );
     
-    CopyArray( g_vecLastWantedAngles[client], data[FRM_ANG], 2 );
+    CopyArray( g_vecLastWantedAngles[client], frame.angles, 2 );
     
     GetEntityAbsVelocity( client, vec );
-    CopyArray( vec, data[FRM_ABSVEL], 3 );
+    frame.vecAbsVel = vec;
     
     GetEntityBaseVelocity( client, vec );
-    CopyArray( vec, data[FRM_BASEVEL], 3 );
+    frame.vecBaseVel = vec;
     
     
-    data[FRM_MOVETYPE] = view_as<int>( GetEntityMoveType( client ) );
-    data[FRM_GROUNDENT] = GetEntPropEnt( client, Prop_Data, "m_hGroundEntity" );
-    data[FRM_ENTFLAGS] = GetEntityFlags( client );
+    frame.iMoveType = view_as<int>( GetEntityMoveType( client ) );
+    frame.iGroundEnt = GetEntPropEnt( client, Prop_Data, "m_hGroundEntity" );
+    frame.iEntFlags = GetEntityFlags( client );
     
     
-    GetEntityName( client, view_as<char>( data[FRM_TARGETNAME] ), FRM_TARGETNAME_SIZE );
-    GetEntityClassname( client, view_as<char>( data[FRM_CLASSNAME] ), FRM_CLASSNAME_SIZE );
+    GetEntityName( client, frame.szTargetName, sizeof( TasFrame_t::szTargetName ) );
+    GetEntityClassname( client, frame.szClassName, sizeof( TasFrame_t::szClassName ) );
     
-    g_iStoppedFrame[client] = g_hFrames[client].PushArray( data );
+    g_iStoppedFrame[client] = g_hFrames[client].PushArray( frame );
     
     
     if ( g_bAdvanceFrame[client] )
@@ -794,16 +789,16 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
     decl Float:ang[3];
     decl Float:vel[3];
     
-    static int data[FRM_SIZE];
+    static TasFrame_t frame;
     
-    g_hFrames[client].GetArray( i, data );
+    g_hFrames[client].GetArray( i, frame );
     
-    CopyArray( data[FRM_POS], pos, 3 );
-    //CopyArray( data[FRM_ANGREAL], angreal, 2 );
+    pos = frame.vecPos;
+    //CopyArray( data[TasFrame_t::anglesReal], angreal, 2 );
     //angreal[2] = 0.0;
-    CopyArray( data[FRM_ANG], ang, 2 );
+    CopyArray( frame.angles, ang, 2 );
     ang[2] = 0.0;
-    CopyArray( data[FRM_ABSVEL], vel, 3 );
+    vel = frame.vecAbsVel;
     
     
     if ( !bContinue )
@@ -814,13 +809,13 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
     }
     else
     {
-        SetEntityMoveType( client, view_as<MoveType>( data[FRM_MOVETYPE] ) );
+        SetEntityMoveType( client, view_as<MoveType>( frame.iMoveType ) );
         
         
         TeleportEntity( client, pos, NULL_VECTOR, vel );
         
         
-        CopyArray( data[FRM_BASEVEL], vel, 3 );
+        vel = frame.vecAbsVel;
         SetEntityBaseVelocity( client, vel );
         
         
@@ -836,8 +831,8 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
     }
     
     
-    int ent = data[FRM_GROUNDENT];
-    int flags = data[FRM_ENTFLAGS];
+    int ent = frame.iGroundEnt;
+    int flags = frame.iEntFlags;
     
     
     SetEntPropEnt( client, Prop_Data, "m_hGroundEntity", ent );
@@ -858,8 +853,8 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
     }
     
     
-    SetEntityName( client, view_as<char>( data[FRM_TARGETNAME] ) );
-    SetEntityClassname( client, view_as<char>( data[FRM_CLASSNAME] ) );
+    SetEntityName( client, frame.szTargetName );
+    SetEntityClassname( client, frame.szClassName );
     
     
     g_iStoppedFrame[client] = i;
@@ -886,7 +881,7 @@ stock void FreezeAim( int client )
     if ( i < 0 || i >= g_hFrames[client].Length ) return;
     
     
-    int offset = ( g_iAimlock[client] == AIMLOCK_FAKEANG ) ? FRM_ANG : FRM_ANGREAL;
+    int offset = ( g_iAimlock[client] == AIMLOCK_FAKEANG ) ? TasFrame_t::angles : TasFrame_t::anglesReal;
     
     float ang[3];
     ang[0] = g_hFrames[client].Get( i, offset );
@@ -1150,9 +1145,9 @@ stock void EraseFutureCPs( int client, int index )
     int len = GetFrameCPLength( client );
     for ( int i = 0; i < len; i++ )
     {
-        if ( index < g_hFrameCP[client].Get( i, FRMCP_FRMINDEX ) )
+        if ( index < g_hFrameCP[client].Get( i, FrameCp_t::iFrameIndex ) )
         {
-            g_hFrameCP[client].Set( i, 0, FRMCP_NUM );
+            g_hFrameCP[client].Set( i, 0, FrameCp_t::nNum );
         }
     }
     
@@ -1171,10 +1166,10 @@ stock int FindHighestCPNum( int client )
     
     for ( int i = 0; i < MAX_FRMCP; i++ )
     {
-        if ( g_hFrameCP[client].Get( i, FRMCP_NUM ) < 1 ) continue;
+        if ( g_hFrameCP[client].Get( i, FrameCp_t::nNum ) < 1 ) continue;
         
         
-        index = g_hFrameCP[client].Get( i, FRMCP_FRMINDEX );
+        index = g_hFrameCP[client].Get( i, FrameCp_t::iFrameIndex );
         
         if ( highest < index )
         {
@@ -1194,7 +1189,7 @@ stock int FindFrameCPByNum( int client, int num )
     int len = GetFrameCPLength( client );
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hFrameCP[client].Get( i, FRMCP_NUM ) == num )
+        if ( g_hFrameCP[client].Get( i, FrameCp_t::nNum ) == num )
         {
             return i;
         }
@@ -1211,7 +1206,7 @@ stock int FindFrameCPByIndex( int client, int index )
     int len = GetFrameCPLength( client );
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hFrameCP[client].Get( i, FRMCP_FRMINDEX ) == index )
+        if ( g_hFrameCP[client].Get( i, FrameCp_t::iFrameIndex ) == index )
         {
             return i;
         }
@@ -1250,28 +1245,28 @@ stock void AddCP( int client )
     if ( FindFrameCPByIndex( client, index ) != -1 ) return;
     
     
-    decl data[FRMCP_SIZE];
-    data[FRMCP_FRMINDEX] = index;
-    data[FRMCP_NUM] = ++g_nCPs[client];
+    FrameCp_t cp;
+    cp.iFrameIndex = index;
+    cp.nNum = ++g_nCPs[client];
     
-    g_hFrameCP[client].SetArray( g_iCurCP[client]++, data );
+    g_hFrameCP[client].SetArray( g_iCurCP[client]++, cp );
     
     if ( g_iCurCP[client] >= MAX_FRMCP ) g_iCurCP[client] = 0;
     
     
-    g_iLastCreatedCP[client] = data[FRMCP_NUM];
+    g_iLastCreatedCP[client] = cp.nNum;
 }
 
 stock void CreateFrameCP( int client )
 {
     delete g_hFrameCP[client];
     
-    g_hFrameCP[client] = new ArrayList( FRMCP_SIZE, MAX_FRMCP );
+    g_hFrameCP[client] = new ArrayList( sizeof( FrameCp_t ), MAX_FRMCP );
     
     
     for ( int i = 0; i < MAX_FRMCP; i++ )
     {
-        g_hFrameCP[client].Set( i, 0, FRMCP_NUM );
+        g_hFrameCP[client].Set( i, 0, FrameCp_t::nNum );
     }
     
     g_iCurCP[client] = 0;
@@ -1290,7 +1285,7 @@ stock void GotoCP( int client, int num )
     
     if ( i != -1 )
     {
-        SetFrame( client, g_hFrameCP[client].Get( i, FRMCP_FRMINDEX ), false, true );
+        SetFrame( client, g_hFrameCP[client].Get( i, FrameCp_t::iFrameIndex ), false, true );
         
         g_iLastUsedCP[client] = num;
     }

@@ -28,7 +28,7 @@ stock bool GetRecMenuData( const char[] sz, int data[RECMENU_SIZE] )
     return true;
 }
 
-stock bool GetRecMenuPageData( const char[] sz, any data[PCB_SIZE] )
+stock bool GetRecMenuPageData( const char[] sz, RecordsCallback_t data )
 {
     decl String:buffer[PCB_NUM_ELEMENTS][32];
     if ( ExplodeString( sz, "_", buffer, sizeof( buffer ), sizeof( buffer[] ) ) != sizeof( buffer ) )
@@ -36,13 +36,13 @@ stock bool GetRecMenuPageData( const char[] sz, any data[PCB_SIZE] )
         return false;
     }
     
-    data[PCB_UID] = StringToInt( buffer[0] );
-    data[PCB_MAPID] = StringToInt( buffer[1] );
-    data[PCB_RUNID] = StringToInt( buffer[2] );
-    data[PCB_MODE] = StringToInt( buffer[3] );
-    data[PCB_STYLE] = StringToInt( buffer[4] );
-    data[PCB_OFFSET] = StringToInt( buffer[5] );
-    data[PCB_TOTALRECORDS] = StringToInt( buffer[6] );
+    data.iUId = StringToInt( buffer[0] );
+    data.iMapId = StringToInt( buffer[1] );
+    data.iRunId = StringToInt( buffer[2] );
+    data.iModeId = StringToInt( buffer[3] );
+    data.iStyleId = StringToInt( buffer[4] );
+    data.nOffset = StringToInt( buffer[5] );
+    data.nTotalRecords = StringToInt( buffer[6] );
     
     return true;
 }
@@ -140,11 +140,11 @@ public int Hndlr_RecordList( Menu menu, MenuAction action, int client, int index
     // We just want to go to the last or next page!
     if ( szInfo[0] == 'l' || szInfo[0] == 'n' )
     {        
-        decl data[PCB_SIZE];
+        RecordsCallback_t data;
         if ( !GetRecMenuPageData( szInfo[1], data ) ) return 0;
         
         
-        int offset = data[PCB_OFFSET];
+        int offset = data.nOffset;
         
         if ( szInfo[0] == 'n' ) ++offset; // Add for next page.
         else --offset; // Subtract for last page.
@@ -152,15 +152,15 @@ public int Hndlr_RecordList( Menu menu, MenuAction action, int client, int index
         
         DB_PrintRecords(
             client,
-            data[PCB_UID],
-            data[PCB_MAPID],
-            data[PCB_RUNID],
-            data[PCB_MODE],
-            data[PCB_STYLE],
+            data.iUId,
+            data.iMapId,
+            data.iRunId,
+            data.iModeId,
+            data.iStyleId,
             _,
             _,
             offset,
-            data[PCB_TOTALRECORDS] );
+            data.nTotalRecords );
     }
     // We want to show specific record's info.
     else

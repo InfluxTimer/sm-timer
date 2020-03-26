@@ -12,17 +12,15 @@
 //#define DEBUG
 
 
-enum
+enum struct TimerZone_t
 {
-    TIMER_ZONE_ID = 0,
-    TIMER_RUN_ID,
-    
-    TIMER_ZONE_TYPE,
-    
-    TIMER_ENTREF,
-    
-    TIMER_SIZE
-};
+    int iZoneId;
+    int iRunId;
+
+    ZoneType_t iZoneType;
+
+    int iEntRef;
+}
 
 
 ArrayList g_hTimer;
@@ -52,7 +50,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hTimer = new ArrayList( TIMER_SIZE );
+    g_hTimer = new ArrayList( sizeof( TimerZone_t ) );
     
     
     // CONVARS
@@ -150,20 +148,20 @@ stock void CheckRuns()
     int len = GetArrayLength_Safe( g_hTimer );
     for ( int i = 0; i < len; i++ )
     {
-        if ( (runid = g_hTimer.Get( i, TIMER_RUN_ID )) < 1 )
+        if ( (runid = g_hTimer.Get( i, TimerZone_t::iRunId )) < 1 )
             continue;
         
         // This run already exists.
         if ( Influx_FindRunById( runid ) != -1 ) continue;
         
         
-        ZoneType_t myzonetype = view_as<ZoneType_t>( g_hTimer.Get( i, TIMER_ZONE_TYPE ) );
+        ZoneType_t myzonetype = view_as<ZoneType_t>( g_hTimer.Get( i, TimerZone_t::iZoneType ) );
         
         // Find opposite type with same run id.
         int j = i;
         while ( (j = FindByRunId( runid, j + 1 )) != -1 )
         {
-            if ( view_as<ZoneType_t>( g_hTimer.Get( j, TIMER_ZONE_TYPE ) ) == myzonetype ) continue;
+            if ( view_as<ZoneType_t>( g_hTimer.Get( j, TimerZone_t::iZoneType ) ) == myzonetype ) continue;
             
             
 #if defined DEBUG
@@ -187,8 +185,8 @@ stock void CheckRuns()
             float start_mins[3], start_maxs[3];
             float end_mins[3], end_maxs[3];
             
-            Influx_GetZoneMinsMaxs( g_hTimer.Get( istart, TIMER_ZONE_ID ), start_mins, start_maxs );
-            Influx_GetZoneMinsMaxs( g_hTimer.Get( iend, TIMER_ZONE_ID ), end_mins, end_maxs );
+            Influx_GetZoneMinsMaxs( g_hTimer.Get( istart, TimerZone_t::iZoneId ), start_mins, start_maxs );
+            Influx_GetZoneMinsMaxs( g_hTimer.Get( iend, TimerZone_t::iZoneId ), end_mins, end_maxs );
             
             
             float yaw;
@@ -221,23 +219,23 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     if ( !Inf_IsZoneTypeTimer( zonetype ) ) return Plugin_Continue;
     
     
-    decl data[TIMER_SIZE];
+    TimerZone_t timerzone;
     
-    data[TIMER_RUN_ID] = kv.GetNum( "run_id", -1 );
-    if ( data[TIMER_RUN_ID] < 1 )
+    timerzone.iRunId = kv.GetNum( "run_id", -1 );
+    if ( timerzone.iRunId < 1 )
     {
         LogError( INF_CON_PRE..."Timer zone (id: %i) has invalid run id %i, loading anyway...",
             zoneid,
-            data[TIMER_RUN_ID] );
+            timerzone.iRunId );
     }
     
-    data[TIMER_ZONE_ID] = zoneid;
+    timerzone.iZoneId = zoneid;
     
-    data[TIMER_ZONE_TYPE] = view_as<int>( zonetype );
-    data[TIMER_ENTREF] = INVALID_ENT_REFERENCE;
+    timerzone.iZoneType = zonetype;
+    timerzone.iEntRef = INVALID_ENT_REFERENCE;
     
     
-    g_hTimer.PushArray( data );
+    g_hTimer.PushArray( timerzone );
     
     return Plugin_Handled;
 }
@@ -255,7 +253,7 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
         return Plugin_Stop;
     }
     
-    int runid = g_hTimer.Get( index, TIMER_RUN_ID );
+    int runid = g_hTimer.Get( index, TimerZone_t::iRunId );
     if ( runid < 1 )
     {
         LogError( INF_CON_PRE..."Timer zone (id: %i) has invalid run id %i, saving anyway...",
@@ -281,10 +279,10 @@ public void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent )
     }
     
     // Cache our ent reference.
-    g_hTimer.Set( index, EntIndexToEntRef( ent ), TIMER_ENTREF );
+    g_hTimer.Set( index, EntIndexToEntRef( ent ), TimerZone_t::iEntRef );
     
     
-    Inf_SetZoneProp( ent, g_hTimer.Get( index, TIMER_RUN_ID ) );
+    Inf_SetZoneProp( ent, g_hTimer.Get( index, TimerZone_t::iRunId ) );
     
     // We only store the run id because that's all we need.
     switch ( zonetype )
@@ -321,13 +319,13 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     
     int runid = g_iBuildingRunId[client];
     
-    decl data[TIMER_SIZE];
-    data[TIMER_RUN_ID] = runid;
-    data[TIMER_ZONE_ID] = zoneid;
-    data[TIMER_ZONE_TYPE] = view_as<int>( zonetype );
-    data[TIMER_ENTREF] = INVALID_ENT_REFERENCE;
+    TimerZone_t timerzone;
+    timerzone.iRunId = runid;
+    timerzone.iZoneId = zoneid;
+    timerzone.iZoneType = zonetype;
+    timerzone.iEntRef = INVALID_ENT_REFERENCE;
     
-    int ourindex = g_hTimer.PushArray( data );
+    int ourindex = g_hTimer.PushArray( timerzone );
     
     
     // We already have this run.
@@ -346,11 +344,11 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     
     for ( int i = 0; i < len; i++ )
     {
-        otherzonetype = g_hTimer.Get( i, TIMER_ZONE_TYPE );
+        otherzonetype = g_hTimer.Get( i, TimerZone_t::iZoneType );
         
         // Same run id but different zone type.
         if (i != ourindex
-        &&  g_hTimer.Get( i, TIMER_RUN_ID ) == runid
+        &&  g_hTimer.Get( i, TimerZone_t::iRunId ) == runid
         &&  otherzonetype != zonetype)
         {
             // Found our match!
@@ -378,8 +376,8 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
         iend = ourindex;
     }
     
-    Influx_GetZoneMinsMaxs( g_hTimer.Get( istart, TIMER_ZONE_ID ), start_mins, start_maxs );
-    Influx_GetZoneMinsMaxs( g_hTimer.Get( iend, TIMER_ZONE_ID ), end_mins, end_maxs );
+    Influx_GetZoneMinsMaxs( g_hTimer.Get( istart, TimerZone_t::iZoneId ), start_mins, start_maxs );
+    Influx_GetZoneMinsMaxs( g_hTimer.Get( iend, TimerZone_t::iZoneId ), end_mins, end_maxs );
     
     
     float yaw;
@@ -403,21 +401,21 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     }
     
     
-    g_hTimer.Set( ourindex, newrunid, TIMER_RUN_ID );
-    g_hTimer.Set( other, newrunid, TIMER_RUN_ID );
+    g_hTimer.Set( ourindex, newrunid, TimerZone_t::iRunId );
+    g_hTimer.Set( other, newrunid, TimerZone_t::iRunId );
     
     
     // Update other zone's run id property.
     int ent;
-    if ( (ent = EntRefToEntIndex( g_hTimer.Get( other, TIMER_ENTREF ) )) > 0 )
+    if ( (ent = EntRefToEntIndex( g_hTimer.Get( other, TimerZone_t::iEntRef ) )) > 0 )
     {
         Inf_SetZoneProp( ent, newrunid );
     }
     
     
     // Update our zone names to reflect the change.
-    NameZone( g_hTimer.Get( ourindex, TIMER_ZONE_ID ), zonetype, newrunid );
-    NameZone( g_hTimer.Get( other, TIMER_ZONE_ID ), otherzonetype, newrunid );
+    NameZone( g_hTimer.Get( ourindex, TimerZone_t::iZoneId ), zonetype, newrunid );
+    NameZone( g_hTimer.Get( other, TimerZone_t::iZoneId ), otherzonetype, newrunid );
 }
 
 public void Influx_OnZoneDeleted( int zoneid, ZoneType_t zonetype )
@@ -472,7 +470,7 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     for ( int i = 0; i < len; i++ )
     {
         runs.GetString( i, szRun, sizeof( szRun ) );
-        runid = runs.Get( i, RUN_ID );
+        runid = runs.Get( i, Run_t::iId );
         
         
         FormatEx( szInfo, sizeof( szInfo ), "%c%i", timerchar, runid );
@@ -517,8 +515,8 @@ public int Hndlr_CreateZone_SelectRun( Menu oldmenu, MenuAction action, int clie
         int len = g_hTimer.Length;
         for ( int i = 0; i < len; i++ )
         {
-            if (g_hTimer.Get( i, TIMER_RUN_ID ) == runid
-            &&  view_as<ZoneType_t>( g_hTimer.Get( i, TIMER_ZONE_TYPE ) ) == zonetype )
+            if (g_hTimer.Get( i, TimerZone_t::iRunId ) == runid
+            &&  view_as<ZoneType_t>( g_hTimer.Get( i, TimerZone_t::iZoneType ) ) == zonetype )
             {
                 izone = i;
                 break;
@@ -534,7 +532,7 @@ public int Hndlr_CreateZone_SelectRun( Menu oldmenu, MenuAction action, int clie
         char szType[32];
         Inf_ZoneTypeToName( zonetype, szType, sizeof( szType ) );
         
-        int zoneid = g_hTimer.Get( izone, TIMER_ZONE_ID );
+        int zoneid = g_hTimer.Get( izone, TimerZone_t::iZoneId );
         
         Influx_GetZoneName( zoneid, szZone, sizeof( szZone ) );
         
@@ -596,10 +594,10 @@ public int Hndlr_CreateZone_SelectRun_Confirm( Menu menu, MenuAction action, int
                 int len = g_hTimer.Length;
                 for ( int i = 0; i < len; i++ )
                 {
-                    if (g_hTimer.Get( i, TIMER_RUN_ID ) == runid
-                    &&  g_hTimer.Get( i, TIMER_ZONE_TYPE ) == zonetype )
+                    if (g_hTimer.Get( i, TimerZone_t::iRunId ) == runid
+                    &&  g_hTimer.Get( i, TimerZone_t::iZoneType ) == zonetype )
                     {
-                        int zoneid = g_hTimer.Get( i, TIMER_ZONE_ID );
+                        int zoneid = g_hTimer.Get( i, TimerZone_t::iZoneId );
                         
                         // HACK - Will call OnZoneDeleted which in turn would delete our index anyway.
                         g_hTimer.Erase( i );
@@ -714,7 +712,7 @@ stock int FindTimerById( int id )
     int len = g_hTimer.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hTimer.Get( i, TIMER_ZONE_ID ) == id )
+        if ( g_hTimer.Get( i, TimerZone_t::iZoneId ) == id )
         {
             return i;
         }
@@ -731,7 +729,7 @@ stock int FindByRunId( int id, int startindex = 0 )
     
     for ( int i = startindex; i < len; i++ )
     {
-        if ( g_hTimer.Get( i, TIMER_RUN_ID ) == id )
+        if ( g_hTimer.Get( i, TimerZone_t::iRunId ) == id )
         {
             return i;
         }
@@ -764,12 +762,12 @@ stock bool GetRunStartTelePos( int runid, float pos[3], float &yaw )
     int i = 0;
     while ( (i = FindByRunId( runid, i )) != -1 )
     {
-        if ( g_hTimer.Get( i, TIMER_ZONE_TYPE ) == ZONETYPE_START )
+        if ( g_hTimer.Get( i, TimerZone_t::iZoneType ) == ZONETYPE_START )
         {
             float start_mins[3];
             float start_maxs[3];
             
-            Influx_GetZoneMinsMaxs( g_hTimer.Get( i, TIMER_ZONE_ID ), start_mins, start_maxs );
+            Influx_GetZoneMinsMaxs( g_hTimer.Get( i, TimerZone_t::iZoneId ), start_mins, start_maxs );
             
             
             if ( !Inf_FindTelePos( start_mins, start_maxs, pos, yaw ) )
@@ -791,12 +789,12 @@ stock bool GetRunEndTelePos( int runid, float pos[3] )
     int i = 0;
     while ( (i = FindByRunId( runid, i )) != -1 )
     {
-        if ( g_hTimer.Get( i, TIMER_ZONE_TYPE ) == ZONETYPE_END )
+        if ( g_hTimer.Get( i, TimerZone_t::iZoneType ) == ZONETYPE_END )
         {
             float mins[3];
             float maxs[3];
             
-            Influx_GetZoneMinsMaxs( g_hTimer.Get( i, TIMER_ZONE_ID ), mins, maxs );
+            Influx_GetZoneMinsMaxs( g_hTimer.Get( i, TimerZone_t::iZoneId ), mins, maxs );
             
             Inf_TelePosFromMinsMaxs( mins, maxs, pos );
             

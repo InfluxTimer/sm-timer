@@ -17,31 +17,26 @@
 //#define DEBUG_ZONE_ENTER
 
 
-enum
+enum struct StageZone_t
 {
-    STAGEZONE_ID = 0,
-    
-    STAGEZONE_RUN_ID,
-    
-    STAGEZONE_NUM,
-    
-    STAGEZONE_ENTREF,
-    
-    STAGEZONE_SIZE
-};
+    int iZoneId;
+    int iRunId;
+
+    int nStageNum;
+
+    int iEntRef;
+}
 
 
-enum
+enum struct Stage_t
 {
-    STAGE_RUN_ID = 0,
-    
-    STAGE_NUM,
-    
-    STAGE_TELEPOS[3],
-    STAGE_TELEYAW,
-    
-    STAGE_SIZE
-};
+    int iRunId;
+
+    int nStageNum;
+
+    float vecTelePos[3];
+    float flTeleYaw;
+}
 
 
 ArrayList g_hStages;
@@ -99,8 +94,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hStages = new ArrayList( STAGE_SIZE );
-    g_hStageZones = new ArrayList( STAGEZONE_SIZE );
+    g_hStages = new ArrayList( sizeof( Stage_t ) );
+    g_hStageZones = new ArrayList( sizeof( StageZone_t ) );
     
     
     // PHRASES
@@ -147,7 +142,7 @@ public void OnPluginStart()
         
         for ( int i = 0; i < len; i++ )
         {
-            Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+            Influx_OnRunCreated( runs.Get( i, Run_t::iId ) );
         }
     }
 }
@@ -258,10 +253,10 @@ public void Influx_OnRunCreated( int runid )
     len = g_hStages.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hStages.Get( i, STAGE_RUN_ID ) != -1 ) continue;
+        if ( g_hStages.Get( i, Stage_t::iRunId ) != -1 ) continue;
         
         
-        g_hStages.Set( i, runid, STAGE_RUN_ID );
+        g_hStages.Set( i, runid, Stage_t::iRunId );
     }
     
     
@@ -274,14 +269,14 @@ public void Influx_OnRunCreated( int runid )
     len = g_hStageZones.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hStageZones.Get( i, STAGEZONE_RUN_ID ) != -1 ) continue;
+        if ( g_hStageZones.Get( i, StageZone_t::iRunId ) != -1 ) continue;
         
         
-        g_hStageZones.Set( i, runid, STAGEZONE_RUN_ID );
+        g_hStageZones.Set( i, runid, StageZone_t::iRunId );
         
-        FormatEx( szName, sizeof( szName ), "%s Stage %i", szRun, g_hStageZones.Get( i, STAGEZONE_NUM ) );
+        FormatEx( szName, sizeof( szName ), "%s Stage %i", szRun, g_hStageZones.Get( i, StageZone_t::nStageNum ) );
         
-        Influx_SetZoneName( g_hStageZones.Get( i, STAGEZONE_ID ), szName );
+        Influx_SetZoneName( g_hStageZones.Get( i, StageZone_t::iZoneId ), szName );
     }
 }
 
@@ -325,9 +320,9 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
         return Plugin_Stop;
     }
     
-    int runid = g_hStageZones.Get( index, STAGEZONE_RUN_ID );
+    int runid = g_hStageZones.Get( index, StageZone_t::iRunId );
     
-    int stagenum = g_hStageZones.Get( index, STAGEZONE_NUM );
+    int stagenum = g_hStageZones.Get( index, StageZone_t::nStageNum );
     
     kv.SetNum( "run_id", runid );
     
@@ -406,7 +401,7 @@ public void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent )
     }
     
     // Update ent reference.
-    g_hStageZones.Set( index, EntIndexToEntRef( ent ), STAGEZONE_ENTREF );
+    g_hStageZones.Set( index, EntIndexToEntRef( ent ), StageZone_t::iEntRef );
     
     
     SDKHook( ent, SDKHook_StartTouchPost, E_StartTouchPost_Stage );
@@ -457,10 +452,10 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     int len = g_hStages.Length;
     for( int i = 0; i < len; i++ )
     {
-        if ( g_hStages.Get( i, STAGE_RUN_ID ) != runid ) continue;
+        if ( g_hStages.Get( i, Stage_t::iRunId ) != runid ) continue;
         
         
-        stagenum = g_hStages.Get( i, STAGE_NUM );
+        stagenum = g_hStages.Get( i, Stage_t::nStageNum );
         
         if ( stagenum > highest )
         {
@@ -566,12 +561,12 @@ public int Hndlr_CreateZone_SelectMethod( Menu oldmenu, MenuAction action, int c
             int len = g_hStageZones.Length;
             for ( int i = 0; i < len; i++ )
             {
-                if ( g_hStageZones.Get( i, STAGEZONE_RUN_ID ) != runid ) continue;
+                if ( g_hStageZones.Get( i, StageZone_t::iRunId ) != runid ) continue;
                 
-                if ( g_hStageZones.Get( i, STAGEZONE_NUM ) != stagenum ) continue;
+                if ( g_hStageZones.Get( i, StageZone_t::nStageNum ) != stagenum ) continue;
                 
                 
-                int zoneid = g_hStageZones.Get( i, STAGEZONE_ID );
+                int zoneid = g_hStageZones.Get( i, StageZone_t::iZoneId );
                 
                 if ( Influx_DeleteZone( zoneid ) || RemoveStageById( zoneid ) )
                 {
@@ -626,11 +621,11 @@ public void E_StartTouchPost_Stage( int ent, int activator )
     if ( zindex == -1 ) return;
     
     
-    int runid = g_hStageZones.Get( zindex, STAGEZONE_RUN_ID );
+    int runid = g_hStageZones.Get( zindex, StageZone_t::iRunId );
     if ( runid != Influx_GetClientRunId( activator ) ) return;
     
     
-    int stagenum = g_hStageZones.Get( zindex, STAGEZONE_NUM );
+    int stagenum = g_hStageZones.Get( zindex, StageZone_t::nStageNum );
     
     // That stage doesn't exist!
     if ( FindStageByNum( runid, stagenum ) == -1 ) return;
@@ -669,12 +664,12 @@ public void E_EndTouchPost_Stage( int ent, int activator )
         return;
     
     
-    int runid = g_hStageZones.Get( zindex, STAGEZONE_RUN_ID );
+    int runid = g_hStageZones.Get( zindex, StageZone_t::iRunId );
     if ( runid != Influx_GetClientRunId( activator ) )
         return;
     
     
-    int stagenum = g_hStageZones.Get( zindex, STAGEZONE_NUM );
+    int stagenum = g_hStageZones.Get( zindex, StageZone_t::nStageNum );
     
     if ( g_iStage[activator] != stagenum )
         return;
@@ -689,17 +684,16 @@ stock int AddStageZone( int zoneid, int runid, int stagenum )
     if ( index != -1 ) return index;
     
     
-    decl data[STAGEZONE_SIZE];
+    StageZone_t stagezone;
     
-    data[STAGEZONE_ID] = zoneid;
+    stagezone.iZoneId = zoneid;
+    stagezone.iRunId = runid;
+
+    stagezone.nStageNum = stagenum;
     
-    data[STAGEZONE_RUN_ID] = runid;
+    stagezone.iEntRef = INVALID_ENT_REFERENCE;
     
-    data[STAGEZONE_NUM] = stagenum;
-    
-    data[STAGEZONE_ENTREF] = INVALID_ENT_REFERENCE;
-    
-    return g_hStageZones.PushArray( data );
+    return g_hStageZones.PushArray( stagezone );
 }
 
 stock bool RemoveStageById( int zoneid )
@@ -719,8 +713,8 @@ stock bool RemoveStageById( int zoneid )
     }
     
     
-    int runid = g_hStageZones.Get( index, STAGEZONE_RUN_ID );
-    int stagenum = g_hStageZones.Get( index, STAGEZONE_NUM );
+    int runid = g_hStageZones.Get( index, StageZone_t::iRunId );
+    int stagenum = g_hStageZones.Get( index, StageZone_t::nStageNum );
     
     
     g_hStageZones.Erase( index );
@@ -756,9 +750,9 @@ stock int AddStage( int runid, int stagenum, const float pos[3], float yaw )
     if ( index != -1 ) return index;
     
     
-    decl data[STAGE_SIZE];
-    data[STAGE_RUN_ID] = runid;
-    data[STAGE_NUM] = stagenum;
+    decl data[sizeof( Stage_t )];
+    data[Stage_t::iRunId] = runid;
+    data[Stage_t::nStageNum] = stagenum;
     
     index = g_hStages.PushArray( data );
     
@@ -802,7 +796,7 @@ stock int FindStageZoneById( int id )
     int len = g_hStageZones.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hStageZones.Get( i, STAGEZONE_ID ) == id )
+        if ( g_hStageZones.Get( i, StageZone_t::iZoneId ) == id )
         {
             return i;
         }
@@ -819,7 +813,7 @@ stock int GetRunStageCount( int runid )
     int len = g_hStages.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hStages.Get( i, STAGE_RUN_ID ) == runid )
+        if ( g_hStages.Get( i, Stage_t::iRunId ) == runid )
         {
             ++num;
         }
@@ -835,7 +829,7 @@ stock int GetRunStageZoneCount( int runid )
     int len = g_hStageZones.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hStageZones.Get( i, STAGEZONE_RUN_ID ) == runid )
+        if ( g_hStageZones.Get( i, StageZone_t::iRunId ) == runid )
         {
             ++num;
         }
@@ -852,7 +846,7 @@ stock int FindStageById( int runid, int startindex = -1 )
     int len = g_hStages.Length;
     for ( int i = startindex; i < len; i++ )
     {
-        if ( g_hStages.Get( i, STAGE_RUN_ID ) == runid )
+        if ( g_hStages.Get( i, Stage_t::iRunId ) == runid )
         {
             return i;
         }
@@ -866,9 +860,9 @@ stock int FindStageByNum( int runid, int num )
     int len = g_hStages.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hStages.Get( i, STAGE_RUN_ID ) != runid ) continue;
+        if ( g_hStages.Get( i, Stage_t::iRunId ) != runid ) continue;
         
-        if ( g_hStages.Get( i, STAGE_NUM ) == num )
+        if ( g_hStages.Get( i, Stage_t::nStageNum ) == num )
         {
             return i;
         }
@@ -882,9 +876,9 @@ stock int FindStageZoneByNum( int runid, int num )
     int len = g_hStageZones.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hStageZones.Get( i, STAGEZONE_RUN_ID ) != runid ) continue;
+        if ( g_hStageZones.Get( i, StageZone_t::iRunId ) != runid ) continue;
         
-        if ( g_hStageZones.Get( i, STAGEZONE_NUM ) == num )
+        if ( g_hStageZones.Get( i, StageZone_t::nStageNum ) == num )
         {
             return i;
         }
@@ -996,10 +990,10 @@ public Action Cmd_StageSelect( int client, int args )
         int len = g_hStages.Length;
         for ( int i = 0; i < len; i++ )
         {
-            if ( g_hStages.Get( i, STAGE_RUN_ID ) != runid ) continue;
+            if ( g_hStages.Get( i, Stage_t::iRunId ) != runid ) continue;
             
             
-            stagenum = g_hStages.Get( i, STAGE_NUM );
+            stagenum = g_hStages.Get( i, Stage_t::nStageNum );
             
             if ( stagenum > highest )
             {
@@ -1131,7 +1125,7 @@ stock void GetStageTelePos( int index, float out[3] )
     
     for ( int i = 0; i < 3; i++ )
     {
-        out[i] = view_as<float>( g_hStages.Get( index, STAGE_TELEPOS + i ) );
+        out[i] = view_as<float>( g_hStages.Get( index, Stage_t::vecTelePos + i ) );
     }
 }
 
@@ -1142,7 +1136,7 @@ stock void SetStageTelePos( int index, const float pos[3] )
     
     for ( int i = 0; i < 3; i++ )
     {
-        g_hStages.Set( index, pos[i], STAGE_TELEPOS + i );
+        g_hStages.Set( index, pos[i], Stage_t::vecTelePos + i );
     }
 }
 
@@ -1151,7 +1145,7 @@ stock float GetStageTeleYaw( int index )
     if ( index == -1 ) return 0.0;
     
     
-    return view_as<float>( g_hStages.Get( index, STAGE_TELEYAW ) );
+    return view_as<float>( g_hStages.Get( index, Stage_t::flTeleYaw ) );
 }
 
 stock void SetStageTeleYaw( int index, float yaw )
@@ -1159,18 +1153,18 @@ stock void SetStageTeleYaw( int index, float yaw )
     if ( index == -1 ) return;
     
     
-    g_hStages.Set( index, yaw, STAGE_TELEYAW );
+    g_hStages.Set( index, yaw, Stage_t::flTeleYaw );
 }
 
 stock void ResetStageTelePosByIndex( int istage, float pos[3], float &yaw )
 {
-    int istagezone = FindStageZoneByNum( g_hStages.Get( istage, STAGE_RUN_ID ), g_hStages.Get( istage, STAGE_NUM ) );
+    int istagezone = FindStageZoneByNum( g_hStages.Get( istage, Stage_t::iRunId ), g_hStages.Get( istage, Stage_t::nStageNum ) );
     if ( istagezone == -1 )
         return;
     
     
     float mins[3], maxs[3];
-    Influx_GetZoneMinsMaxs( g_hStageZones.Get( istagezone, STAGEZONE_ID ), mins, maxs );
+    Influx_GetZoneMinsMaxs( g_hStageZones.Get( istagezone, StageZone_t::iZoneId ), mins, maxs );
     
     if ( !Inf_FindTelePos( mins, maxs, pos, yaw ) )
     {
@@ -1188,7 +1182,10 @@ public Action Cmd_PrintStageZones( int client, int args )
 {
     for ( int i = 0; i < g_hStageZones.Length; i++ )
     {
-        PrintToServer( INF_DEBUG_PRE..."Stage Id: %i | Stage %i | Run Id: %i", g_hStageZones.Get( i, STAGEZONE_ID ), g_hStageZones.Get( i, STAGEZONE_NUM ), g_hStageZones.Get( i, STAGEZONE_RUN_ID ) );
+        PrintToServer( INF_DEBUG_PRE..."Stage Id: %i | Stage %i | Run Id: %i",
+            g_hStageZones.Get( i, StageZone_t::iZoneId ), 
+            g_hStageZones.Get( i, StageZone_t::nStageNum ),
+            g_hStageZones.Get( i, StageZone_t::iRunId ) );
     }
     
     return Plugin_Handled;
@@ -1198,7 +1195,9 @@ public Action Cmd_PrintStages( int client, int args )
 {
     for ( int i = 0; i < g_hStages.Length; i++ )
     {
-        PrintToServer( INF_DEBUG_PRE..."Stage %i | Run Id: %i", g_hStages.Get( i, STAGE_NUM ), g_hStages.Get( i, STAGE_RUN_ID ) );
+        PrintToServer( INF_DEBUG_PRE..."Stage %i | Run Id: %i",
+            g_hStages.Get( i, Stage_t::nStageNum ),
+            g_hStages.Get( i, Stage_t::iRunId ) );
     }
     
     return Plugin_Handled;

@@ -7,15 +7,13 @@
 //#define DEBUG_DB
 
 
-enum
+enum struct Rank_t
 {
-    RANK_RUN_ID = 0,
-    
-    RANK_NUMRANKS[MAX_STYLES * MAX_MODES],
-    RANK_PLYRANKS[MAX_STYLES * MAX_MODES * INF_MAXPLAYERS],
-    
-    RANK_SIZE
-};
+    int iRunId;
+
+    int nRanks[MAX_STYLES * MAX_MODES];
+    int nPlyRanks[MAX_STYLES * MAX_MODES * INF_MAXPLAYERS];
+}
 
 
 
@@ -66,7 +64,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hRunRanks = new ArrayList( RANK_SIZE );
+    g_hRunRanks = new ArrayList( sizeof( Rank_t ) );
     
     
     // FORWARDS
@@ -82,7 +80,7 @@ public void OnPluginStart()
         
         for ( int i = 0; i < len; i++ )
         {
-            Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+            Influx_OnRunCreated( runs.Get( i, Run_t::iId ) );
         }
         
         
@@ -165,10 +163,10 @@ public void Influx_OnRunCreated( int runid )
     if ( FindRunRankById( runid ) != -1 ) return;
     
     
-    int data[RANK_SIZE];
-    data[RANK_RUN_ID] = runid;
+    Rank_t rank;
+    rank.iRunId = runid;
     
-    g_hRunRanks.PushArray( data );
+    g_hRunRanks.PushArray( rank );
 }
 
 public void Influx_OnRunDeleted( int runid )
@@ -383,7 +381,7 @@ stock int FindRunRankById( int runid )
     int len = g_hRunRanks.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hRunRanks.Get( i, RANK_RUN_ID ) == runid )
+        if ( g_hRunRanks.Get( i, Rank_t::iRunId ) == runid )
         {
             return i;
         }
@@ -394,22 +392,22 @@ stock int FindRunRankById( int runid )
 
 stock int GetRunRankCount( int index, int mode, int style )
 {
-    return g_hRunRanks.Get( index, RANK_NUMRANKS + OFFSET_MODESTYLE( mode, style ) );
+    return g_hRunRanks.Get( index, Rank_t::nRanks + OFFSET_MODESTYLE( mode, style ) );
 }
 
 stock void SetRunRankCount( int index, int mode, int style, int rank )
 {
-    g_hRunRanks.Set( index, rank, RANK_NUMRANKS + OFFSET_MODESTYLE( mode, style ) );
+    g_hRunRanks.Set( index, rank, Rank_t::nRanks + OFFSET_MODESTYLE( mode, style ) );
 }
 
 stock int GetClientRank( int index, int client, int mode, int style )
 {
-    return g_hRunRanks.Get( index, RANK_PLYRANKS + OFFSET_MODESTYLECLIENT( mode, style, client ) );
+    return g_hRunRanks.Get( index, Rank_t::nPlyRanks + OFFSET_MODESTYLECLIENT( mode, style, client ) );
 }
 
 stock void SetClientRank( int index, int client, int mode, int style, int rank )
 {
-    g_hRunRanks.Set( index, rank, RANK_PLYRANKS + OFFSET_MODESTYLECLIENT( mode, style, client ) );
+    g_hRunRanks.Set( index, rank, Rank_t::nPlyRanks + OFFSET_MODESTYLECLIENT( mode, style, client ) );
 }
 
 stock void ResetClientRanks( int client )

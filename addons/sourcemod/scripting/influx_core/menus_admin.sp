@@ -97,7 +97,7 @@ public Action Cmd_Admin_RunSettings( int client, int args )
     
     
     // Result settings...
-    flags = g_hRuns.Get( index, RUN_RESFLAGS );
+    flags = g_hRuns.Get( index, Run_t::fResFlags );
     len = g_hRunResFlags.Length;
     for ( int i = 0; i < len; i++ )
     {
@@ -115,11 +115,11 @@ public Action Cmd_Admin_RunSettings( int client, int args )
     }
     
     // Mode settings
-    flags = g_hRuns.Get( index, RUN_MODEFLAGS );
+    flags = g_hRuns.Get( index, Run_t::fModeFlags );
     len = g_hModes.Length;
     for ( int i = 0; i < len; i++ )
     {
-        int mode = g_hModes.Get( i, MODE_ID );
+        int mode = g_hModes.Get( i, Mode_t::iId );
         
         GetModeNameByIndex( i, szTemp, sizeof( szTemp ) );
         

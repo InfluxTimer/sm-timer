@@ -59,7 +59,7 @@ public Action Cmd_Change_Mode( int client, int args )
     {
         GetModeNameByIndex( i, szMode, sizeof( szMode ) );
         
-        id = g_hModes.Get( i, MODE_ID );
+        id = g_hModes.Get( i, Mode_t::iId );
         FormatEx( szInfo, sizeof( szInfo ), "%i", id );
         
         menu.AddItem( szInfo, szMode, ( g_iModeId[client] == id ) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT );
@@ -104,7 +104,7 @@ public Action Cmd_Change_Style( int client, int args )
             }
             
             
-            id = g_hModes.Get( i, MODE_ID );
+            id = g_hModes.Get( i, Mode_t::iId );
             FormatEx( szInfo, sizeof( szInfo ), "m%i", id );
             
             menu.AddItem( szInfo, szDisplay, ( g_iModeId[client] == id ) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT );
@@ -118,7 +118,7 @@ public Action Cmd_Change_Style( int client, int args )
         {
             GetStyleNameByIndex( i, szDisplay, sizeof( szDisplay ) );
             
-            id = g_hStyles.Get( i, STYLE_ID );
+            id = g_hStyles.Get( i, Style_t::iId );
             FormatEx( szInfo, sizeof( szInfo ), "s%i", id );
             
             menu.AddItem( szInfo, szDisplay, ( g_iStyleId[client] == id ) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT );
