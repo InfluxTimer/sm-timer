@@ -50,26 +50,26 @@ float g_flLastReplayMenu[INF_MAXPLAYERS];
 
 
 // FINISH STUFF
-float g_flFinishedTime[INF_MAXPLAYERS];
-int g_iFinishedRunId[INF_MAXPLAYERS];
-int g_iFinishedMode[INF_MAXPLAYERS];
-int g_iFinishedStyle[INF_MAXPLAYERS];
+float g_flFinishedTime[INF_MAXPLAYERS] = { INVALID_RUN_TIME, ... };
+int g_iFinishedRunId[INF_MAXPLAYERS] = { -1, ... };
+int g_iFinishedMode[INF_MAXPLAYERS] = { MODE_INVALID, ... };
+int g_iFinishedStyle[INF_MAXPLAYERS] = { STYLE_INVALID, ... };
 
 
 // REPLAY
 int g_iReplayBot;
 ArrayList g_hReplay;
 
-int g_iReplayRunId;
-int g_iReplayMode;
-int g_iReplayStyle;
+int g_iReplayRunId = -1;
+int g_iReplayMode = MODE_INVALID;
+int g_iReplayStyle = STYLE_INVALID;
 
 int g_iReplayLastFindRun;
 int g_iReplayLastFindMode;
 int g_iReplayLastFindStyle;
 
 char g_szReplayName[MAX_BEST_NAME];
-float g_flReplayTime;
+float g_flReplayTime = INVALID_RUN_TIME;
 
 int g_iReplayRequester;
 bool g_bReplayedOnce;

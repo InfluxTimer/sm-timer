@@ -60,18 +60,18 @@
 
 
 // PLAYER STUFF
-int g_iRunId[INF_MAXPLAYERS];
-int g_iStyleId[INF_MAXPLAYERS];
-int g_iModeId[INF_MAXPLAYERS];
+int g_iRunId[INF_MAXPLAYERS] = { -1, ... };
+int g_iStyleId[INF_MAXPLAYERS] = { STYLE_INVALID, ... };
+int g_iModeId[INF_MAXPLAYERS] = { MODE_INVALID, ... };
 
 int g_iRunStartTick[INF_MAXPLAYERS];
-RunState_t g_iRunState[INF_MAXPLAYERS];
+RunState_t g_iRunState[INF_MAXPLAYERS] = { STATE_NONE, ... };
 
-int g_iWantedStyleId[INF_MAXPLAYERS];
-int g_iWantedModeId[INF_MAXPLAYERS];
+int g_iWantedStyleId[INF_MAXPLAYERS] = { STYLE_INVALID, ... };
+int g_iWantedModeId[INF_MAXPLAYERS] = { MODE_INVALID, ... };
 
 
-float g_flFinishedTime[INF_MAXPLAYERS];
+float g_flFinishedTime[INF_MAXPLAYERS] = { INVALID_RUN_TIME, ... };
 
 
 // PLAYER DATABASE RELATED STUFF
@@ -79,11 +79,11 @@ int g_iClientId[INF_MAXPLAYERS];
 bool g_bCachedTimes[INF_MAXPLAYERS];
 
 // PLAYER CACHE
-float g_cache_flPBTime[INF_MAXPLAYERS];
-float g_cache_flBestTime[INF_MAXPLAYERS];
+float g_cache_flPBTime[INF_MAXPLAYERS] = { INVALID_RUN_TIME, ... };
+float g_cache_flBestTime[INF_MAXPLAYERS] = { INVALID_RUN_TIME, ... };
 char g_cache_szBestName[INF_MAXPLAYERS][MAX_BEST_NAME];
 char g_cache_szRunName[INF_MAXPLAYERS][MAX_RUN_NAME];
-float g_cache_flMaxSpeed[INF_MAXPLAYERS];
+float g_cache_flMaxSpeed[INF_MAXPLAYERS] = { INVALID_MAXSPEED, ... };
 //char g_cache_szModeName[INF_MAXPLAYERS][MAX_NAME_LENGTH];
 //char g_cache_szStyleName[INF_MAXPLAYERS][MAX_NAME_LENGTH];
 
@@ -91,7 +91,7 @@ float g_cache_flMaxSpeed[INF_MAXPLAYERS];
 // PLAYER MISC.
 float g_flNextStyleGroundCheck[INF_MAXPLAYERS];
 
-float g_flFinishBest[INF_MAXPLAYERS];
+float g_flFinishBest[INF_MAXPLAYERS] = { INVALID_RUN_TIME, ... };
 
 float g_flJoinTime[INF_MAXPLAYERS];
 

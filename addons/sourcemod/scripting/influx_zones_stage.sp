@@ -52,7 +52,7 @@ int g_iStage[INF_MAXPLAYERS];
 int g_nStages[INF_MAXPLAYERS];
 
 int g_iBuildingNum[INF_MAXPLAYERS];
-int g_iBuildingRunId[INF_MAXPLAYERS];
+int g_iBuildingRunId[INF_MAXPLAYERS] = { -1, ... };
 
 bool g_bLeftStageZone[INF_MAXPLAYERS];
 

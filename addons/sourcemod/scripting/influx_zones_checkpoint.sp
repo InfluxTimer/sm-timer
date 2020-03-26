@@ -80,7 +80,7 @@ ArrayList g_hCPs;
 
 
 int g_iBuildingNum[INF_MAXPLAYERS];
-int g_iBuildingRunId[INF_MAXPLAYERS];
+int g_iBuildingRunId[INF_MAXPLAYERS] = { -1, ... };
 
 
 ArrayList g_hClientCP[INF_MAXPLAYERS];
@@ -89,10 +89,10 @@ int g_iClientLatestCP[INF_MAXPLAYERS];
 
 // Cache for hud.
 float g_flLastTouch[INF_MAXPLAYERS];
-float g_flLastCPTime[INF_MAXPLAYERS];
-float g_flLastCPPBTime[INF_MAXPLAYERS];
-float g_flLastCPBestTime[INF_MAXPLAYERS];
-float g_flLastCPSRTime[INF_MAXPLAYERS];
+float g_flLastCPTime[INF_MAXPLAYERS] = { INVALID_RUN_TIME, ... };
+float g_flLastCPPBTime[INF_MAXPLAYERS] = { INVALID_RUN_TIME, ... };
+float g_flLastCPBestTime[INF_MAXPLAYERS] = { INVALID_RUN_TIME, ... };
+float g_flLastCPSRTime[INF_MAXPLAYERS] = { INVALID_RUN_TIME, ... };
 
 
 float g_flLastCmdTime[INF_MAXPLAYERS];
