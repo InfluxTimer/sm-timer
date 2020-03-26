@@ -495,7 +495,7 @@ public void OnPluginStart()
     g_iDefStyle = STYLE_NORMAL;
     
     
-    g_ConVar_DefMaxWeaponSpeed = CreateConVar( "influx_default_maxwepspd", "250", "Default maximum weapon speed. Max weapon speed is controlled by modes.", FCVAR_NOTIFY, true, 0.0 );
+    g_ConVar_DefMaxWeaponSpeed = CreateConVar( "influx_default_maxwepspd", "250", "Default maximum weapon speed. Max weapon speed is controlled by modes. 0 = Disable check", FCVAR_NOTIFY, true, 0.0 );
     g_ConVar_LadderFreestyle = CreateConVar( "influx_ladderfreestyle", "1", "Whether to allow freestyle on ladders.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     g_ConVar_TeleToStart = CreateConVar( "influx_teletostartonspawn", "1", "0 = Never teleport when spawning, 1 = Only teleport if no spawnpoints are found, 2 = Always teleport to start.", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
@@ -1006,10 +1006,11 @@ stock void CapWeaponSpeed( int client )
     
     
     float maxspd = GetPlayerMaxSpeed( client );
+    float cvarval = g_ConVar_DefMaxWeaponSpeed.FloatValue;
     
-    float modemaxspd = ( g_cache_flMaxSpeed[client] == INVALID_MAXSPEED ) ? g_ConVar_DefMaxWeaponSpeed.FloatValue : g_cache_flMaxSpeed[client];
+    float modemaxspd = ( g_cache_flMaxSpeed[client] == INVALID_MAXSPEED ) ? cvarval : g_cache_flMaxSpeed[client];
     
-    if ( maxspd != 0.0 && maxspd > modemaxspd )
+    if ( cvarval > 0.0 && maxspd != 0.0 && maxspd > modemaxspd )
     {
         // HACK
         if ( GetEntityFlags( client ) & FL_ONGROUND )
