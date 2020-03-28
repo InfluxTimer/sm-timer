@@ -38,7 +38,8 @@ class MyPluginList:
     def removeFileFromListSlot(lst, d, f):
         if d not in lst:
             return
-        lst[d].remove(f)
+        if f in lst[d]:
+            lst[d].remove(f)
 
     @staticmethod
     def addFileToList(lst, f):
