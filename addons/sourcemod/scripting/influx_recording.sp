@@ -350,15 +350,9 @@ public void OnMapEnd()
     
     
     decl i, j, k;
-    for ( i = 0; i < INF_MAXPLAYERS; i++ )
+    for ( i = 0; i < sizeof( g_hRec ); i++ )
     {
-        // null it from bot before we attempt to delete it.
-        if ( g_hRec[i] == g_hReplay )
-        {
-            g_hReplay = null;
-        }
-        
-        delete g_hRec[i];
+        FreeRecording( g_hRec[i] );
     }
     
     ArrayList rec;
@@ -371,13 +365,7 @@ public void OnMapEnd()
                     PrintToServer( INF_DEBUG_PRE..."Deleting replay recording %x", rec );
 #endif
                     
-                    // null it from bot before we attempt to delete it.
-                    if ( rec == g_hReplay )
-                    {
-                        g_hReplay = null;
-                    }
-                    
-                    delete rec;
+                    FreeRecording( rec );
                 }
     
     delete g_hReplay;
@@ -522,6 +510,7 @@ stock void SetMaxPreRunLength()
     for ( int i = 1; i < INF_MAXPLAYERS; i++ )
     {
         delete g_hPreRec[i];
+        g_hPreRec[i] = null;
         
         
         if ( g_nMaxPreRecLength > 0 )
@@ -545,9 +534,7 @@ public void OnClientPutInServer( int client )
     g_bIsRec[client] = false;
     
     
-    ArrayList rec = g_hRec[client];
-    if ( rec != null ) FreeRecording( rec );
-    g_hRec[client] = null;
+    if ( g_hRec[client] != null ) FreeRecording( g_hRec[client] );
     
     if ( !IsFakeClient( client ) )
     {
@@ -907,14 +894,19 @@ public void Influx_OnRunCreated( int runid )
     g_hRunRec.PushArray( data );
 }
 
+//
+// Always call this to make sure we don't replay deleted recording!
+//
 stock void FreeRecording( ArrayList &rec )
 {
+    // null from bot
     if ( rec == g_hReplay )
     {
         g_hReplay = null;
     }
     
     delete rec;
+    rec = null;
 }
 
 stock void StartPlayback( ArrayList rec, int runid, int mode, int style, float time, const char[] szName, int requester = 0, bool bForce = false )
@@ -1047,11 +1039,9 @@ stock void FinishPlayback()
 
 stock bool StartRecording( int client, bool bInsertFrame = false )
 {
-    ArrayList rec = g_hRec[client];
-    
-    if ( rec != null )
+    if ( g_hRec[client] != null )
     {
-        FreeRecording( rec );
+        FreeRecording( g_hRec[client] );
     }
     
     g_hRec[client] = new ArrayList( REC_SIZE );
@@ -1167,7 +1157,7 @@ stock bool AddPreRunFrames( int client )
         if ( !curstart ) return false;
         
         
-        delete g_hRec[client];
+        FreeRecording( g_hRec[client] );
         
         
         ArrayList rec = g_hPreRec[client].Clone();
@@ -1179,7 +1169,7 @@ stock bool AddPreRunFrames( int client )
     }
     else
     {
-        delete g_hRec[client];
+        FreeRecording( g_hRec[client] );
         
         
         ArrayList rec = g_hPreRec[client].Clone();
