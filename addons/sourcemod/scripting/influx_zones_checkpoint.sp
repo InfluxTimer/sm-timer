@@ -114,6 +114,7 @@ TopMenu g_hTopMenu;
 bool g_bLate;
 
 
+#include "influx_zones_checkpoint/db_sql_queries.sp"
 #include "influx_zones_checkpoint/db.sp"
 #include "influx_zones_checkpoint/db_cb.sp"
 #include "influx_zones_checkpoint/menus.sp"
