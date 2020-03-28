@@ -224,6 +224,7 @@ public void Thrd_GetClientRecords( Handle db, Handle res, const char[] szError, 
     g_bCachedTimes[client] = true;
 }
 
+// Currently not used.
 public void Thrd_GetBestRecords_1( Handle db, Handle res, const char[] szError, any data )
 {
     if ( res == null )

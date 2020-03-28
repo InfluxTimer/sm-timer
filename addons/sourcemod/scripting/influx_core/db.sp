@@ -235,6 +235,13 @@ stock void DB_InitMap()
     SQL_TQuery( g_hDB, Thrd_GetMapId, szQuery, _, DBPrio_High );
 }
 
+stock void FormatWhereClause( char[] sz, int len, const char[] table, int runid, int mode, int style )
+{
+    if ( runid > 0 ) FormatEx( sz, len, " AND %srunid=%i", table, runid );
+    if ( VALID_MODE( mode ) ) Format( sz, len, "%s AND %smode=%i", sz, table, mode );
+    if ( VALID_STYLE( style ) ) Format( sz, len, "%s AND %sstyle=%i", sz, table, style );
+}
+
 stock void DB_InitRecords( int runid = -1, int mode = MODE_INVALID, int style = STYLE_INVALID )
 {
     if ( g_iCurMapId <= 0 )
@@ -244,20 +251,19 @@ stock void DB_InitRecords( int runid = -1, int mode = MODE_INVALID, int style = 
     
     
     char szWhere[128];
-    szWhere[0] = 0;
+    char szWhere2[128];
     
-    if ( runid > 0 ) FormatEx( szWhere, sizeof( szWhere ), " AND runid=%i", runid );
-    if ( VALID_MODE( mode ) ) Format( szWhere, sizeof( szWhere ), "%s AND mode=%i", szWhere, mode );
-    if ( VALID_STYLE( style ) ) Format( szWhere, sizeof( szWhere ), "%s AND style=%i", szWhere, style );
-    
+    FormatWhereClause( szWhere, sizeof( szWhere ), "", runid, mode, style );
+    FormatWhereClause( szWhere2, sizeof( szWhere2 ), "_t.", runid, mode, style );
     
     
-    char szQuery[512];
-    FormatEx( szQuery, sizeof( szQuery ), QUERY_INIT_RECORDS_1,
-        g_iCurMapId,
-        szWhere );
     
-    SQL_TQuery( g_hDB, Thrd_GetBestRecords_1, szQuery, _, DBPrio_Normal );
+    char szQuery[700];
+    FormatEx( szQuery, sizeof( szQuery ), QUERY_INIT_RECORDS,
+        g_iCurMapId, szWhere,
+        g_iCurMapId, szWhere2 );
+    
+    SQL_TQuery( g_hDB, Thrd_GetBestRecords_2, szQuery, 1, DBPrio_Normal );
 }
 
 stock void DB_InitClient( int client )
