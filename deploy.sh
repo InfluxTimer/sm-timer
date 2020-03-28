@@ -4,9 +4,6 @@ echo "Deploying..."
 
 cd builds
 
-# We don't want to include the auto version here.
-rm addons/sourcemod/scripting/include/influx/autoversion.inc
-
 # Zip em and roll em into a tar ball
 cd full && zip -rq9 ../full.zip . && cd ..
 cd bhop && zip -rq9 ../bhop.zip . && cd ..

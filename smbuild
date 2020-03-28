@@ -35,8 +35,18 @@ class MyPluginList:
             lst[d].append(f)
 
     @staticmethod
+    def removeFileFromListSlot(lst, d, f):
+        if d not in lst:
+            return
+        lst[d].remove(f)
+
+    @staticmethod
     def addFileToList(lst, f):
         MyPluginList.addFileToListSlot(lst, os.path.dirname(f), f)
+
+    @staticmethod
+    def removeFileFromList(lst, f):
+        MyPluginList.removeFileFromListSlot(lst, os.path.dirname(f), f)
 
     def getPluginIncList(self):
         mylist = {}
@@ -50,6 +60,7 @@ class MyPluginList:
                 self.addFileToList(mylist, f)
         # Add script include files, we kinda need these
         self.addFileToList(mylist, 'addons/sourcemod/scripting/include/influx/*')
+        self.removeFileFromList(mylist, 'addons/sourcemod/scripting/include/influx/autoversion.inc')
         self.addFileToList(mylist, 'addons/sourcemod/scripting/include/msharedutil/*')
         # Misc
         self.addFileToList(mylist, 'addons/sourcemod/gamedata/*')
