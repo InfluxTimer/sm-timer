@@ -270,7 +270,7 @@ public void Thrd_GetBestRecords_1( Handle db, Handle res, const char[] szError, 
             style,
             time );
 
-        SQL_TQuery( g_hDB, Thrd_GetBestRecords_2, szQuery, counter--, DBPrio_High );
+        SQL_TQuery( g_hDB, Thrd_GetBestRecords_2, szQuery, counter--, DBPrio_Normal );
     }
 }
 

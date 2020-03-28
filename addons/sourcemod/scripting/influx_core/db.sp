@@ -257,7 +257,7 @@ stock void DB_InitRecords( int runid = -1, int mode = MODE_INVALID, int style = 
         g_iCurMapId,
         szWhere );
     
-    SQL_TQuery( g_hDB, Thrd_GetBestRecords_1, szQuery, _, DBPrio_High );
+    SQL_TQuery( g_hDB, Thrd_GetBestRecords_1, szQuery, _, DBPrio_Normal );
 }
 
 stock void DB_InitClient( int client )

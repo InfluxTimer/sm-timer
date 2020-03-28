@@ -132,7 +132,7 @@ stock void DB_InitCPTimes( int runid = -1, int mode = -1, int style = -1, int cp
         mapid,
         szWhere );
     
-    SQL_TQuery( db, Thrd_GetCPSRTimes, szQuery, _, DBPrio_High );
+    SQL_TQuery( db, Thrd_GetCPSRTimes, szQuery, _, DBPrio_Normal );
     
     
     // Get best times.
@@ -157,7 +157,7 @@ stock void DB_InitCPTimes( int runid = -1, int mode = -1, int style = -1, int cp
         mapid,
         szWhere );
     
-    SQL_TQuery( db, Thrd_GetCPBestTimes, szQuery, _, DBPrio_High );
+    SQL_TQuery( db, Thrd_GetCPBestTimes, szQuery, _, DBPrio_Normal );
 }
 
 stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int flags )
@@ -237,7 +237,7 @@ stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int
             cpnum,
             time );
         
-        SQL_TQuery( db, Thrd_Update, szQuery, userid, DBPrio_High );
+        SQL_TQuery( db, Thrd_Update, szQuery, userid, DBPrio_Normal );
         
         
         // Update server record time.
@@ -390,7 +390,7 @@ stock void DB_PrintTopCPTimes( int client, int mapid, int runid, int mode, int s
     array.PushArray( data );
     
     
-    SQL_TQuery( db, Thrd_PrintTopCPTimes, szQuery, array, DBPrio_High );
+    SQL_TQuery( db, Thrd_PrintTopCPTimes, szQuery, array, DBPrio_Low );
 }
 
 stock void DB_PrintDeleteCPTimes( int client, int mapid )
