@@ -36,6 +36,8 @@ before_script:
   - python setup.py install --prefix=~/.local
 
   - cd $TRAVIS_BUILD_DIR
+  # Generate autoversion.inc
+  - python generate_auto_version.py build-$TRAVIS_BUILD_NUMBER
 
 script:
   - smbuilder --flags " -i=addons/sourcemod/scripting/include"

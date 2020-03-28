@@ -9,13 +9,15 @@
 #include <msharedutil/arrayvec>
 #include <msharedutil/ents>
 
+#tryinclude <influx/autoversion>
+
 
 #define INF_NAME                "Influx"
 #define INF_AUTHOR              "Mehis"
-#define INF_URL                 "http://influxtimer.com/"
-// If a plugin doesn't have the same version number, it may need a recompile.
-#define INF_VERSION             "1.3"
-
+#define INF_URL                 "https://influxtimer.com/"
+#if !defined INF_VERSION
+#define INF_VERSION             "manual"
+#endif
 
 #define INF_MAXPLAYERS          MAXPLAYERS + 1
 
