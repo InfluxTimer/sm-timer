@@ -29,24 +29,28 @@ public void Thrd_GetCPSRTimes( Handle db, Handle res, const char[] szError, any 
     
     while ( SQL_FetchRow( res ) )
     {
-        if ( (runid = SQL_FetchInt( res, 1 )) != lastrunid )
-        {
-            if ( Influx_FindRunById( runid ) == -1 ) continue;
-        }
-        
-        
+        uid = SQL_FetchInt( res, 0 );
+        runid = SQL_FetchInt( res, 1 )
         mode = SQL_FetchInt( res, 2 );
         style = SQL_FetchInt( res, 3 );
         cpnum = SQL_FetchInt( res, 4 );
-        
-        
+        time = SQL_FetchFloat( res, 5 );
+
+#if defined DEBUG_DB
+        PrintToServer( INF_DEBUG_PRE..."Db sr cp time: Run id: %i | Cp num: %i | Time: %.1f",
+            runid,
+            cpnum,
+            time );
+#endif
+
+        if ( runid != lastrunid )
+        {
+            if ( Influx_FindRunById( runid ) == -1 ) continue;
+        }
+
         if ( !VALID_MODE( mode ) ) continue;
         if ( !VALID_STYLE( style ) ) continue;
         if ( cpnum < 1 ) continue;
-        
-        
-        time = SQL_FetchFloat( res, 5 );
-        uid = SQL_FetchInt( res, 0 );
         
         
         if ((runid == lastrunid && cpnum == lastcpnum && index != -1)
@@ -86,23 +90,27 @@ public void Thrd_InitClientCPTimes( Handle db, Handle res, const char[] szError,
     
     while ( SQL_FetchRow( res ) )
     {
-        if ( (runid = SQL_FetchInt( res, 0 )) != lastrunid )
+        runid = SQL_FetchInt( res, 0 );
+        mode = SQL_FetchInt( res, 1 );
+        style = SQL_FetchInt( res, 2 );
+        cpnum = SQL_FetchInt( res, 3 );
+        time = SQL_FetchFloat( res, 4 );
+
+#if defined DEBUG_DB
+        PrintToServer( INF_DEBUG_PRE..."Db client cp time: Run id: %i | Cp num: %i | Time: %.1f",
+            runid,
+            cpnum,
+            time );
+#endif
+
+        if ( runid != lastrunid )
         {
             if ( Influx_FindRunById( runid ) == -1 ) continue;
         }
         
-        
-        mode = SQL_FetchInt( res, 1 );
-        style = SQL_FetchInt( res, 2 );
-        cpnum = SQL_FetchInt( res, 3 );
-        
-        
         if ( !VALID_MODE( mode ) ) continue;
         if ( !VALID_STYLE( style ) ) continue;
         if ( cpnum < 1 ) continue;
-        
-        
-        time = SQL_FetchFloat( res, 4 );
         
         
         if ((runid == lastrunid && cpnum == lastcpnum && index != -1)
@@ -139,24 +147,32 @@ public void Thrd_GetCPBestTimes( Handle db, Handle res, const char[] szError, an
     
     while ( SQL_FetchRow( res ) )
     {
-        if ( (runid = SQL_FetchInt( res, 1 )) != lastrunid )
-        {
-            if ( Influx_FindRunById( runid ) == -1 ) continue;
-        }
-        
-        
+        uid = SQL_FetchInt( res, 0 );
+        runid = SQL_FetchInt( res, 1 )
         mode = SQL_FetchInt( res, 2 );
         style = SQL_FetchInt( res, 3 );
         cpnum = SQL_FetchInt( res, 4 );
-        
-        
+        time = SQL_FetchFloat( res, 5 );
+
+#if defined DEBUG_DB
+        PrintToServer( INF_DEBUG_PRE..."Db best cp time: Run id: %i | Cp num: %i | Time: %.1f",
+            runid,
+            cpnum,
+            time );
+#endif
+
+        if ( runid != lastrunid )
+        {
+            if ( Influx_FindRunById( runid ) == -1 ) continue;
+        }
+
         if ( !VALID_MODE( mode ) ) continue;
         if ( !VALID_STYLE( style ) ) continue;
         if ( cpnum < 1 ) continue;
         
         
-        time = SQL_FetchFloat( res, 5 );
-        uid = SQL_FetchInt( res, 0 );
+        
+        
         
         
         if ((runid == lastrunid && cpnum == lastcpnum && index != -1)
