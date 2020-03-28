@@ -42,11 +42,11 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-    ListenToSpawnCommand( "sm_r" );
-    ListenToSpawnCommand( "sm_re" );
-    ListenToSpawnCommand( "sm_rs" );
-    ListenToSpawnCommand( "sm_restart" );
-    ListenToSpawnCommand( "sm_start" );
+    //
+    // HACK: Register with a delay, so we can make sure
+    // the influx_teletorun cmds exist.
+    //
+    CreateTimer( 0.1, T_RegisterSpawnCmds );
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -117,18 +117,36 @@ public Action Cmd_Spec( int client, int args )
 
 public Action Cmd_Spawn( int client, int args )
 {
-    if ( client && IsClientInGame( client ) )
+    if ( client && IsClientInGame( client ) && !IsPlayerAlive( client ) )
     {
+#if defined DEBUG
+        char szCmd[32];
+        GetCmdArg( 0, szCmd, sizeof( szCmd ) );
+
+        PrintToServer( INF_DEBUG_PRE..."Spawning player %N from cmd '%s'.",
+            client,
+            szCmd );
+#endif
+
         Influx_SpawnPlayer( client );
     }
-    
+
     return Plugin_Handled;
 }
 
 public Action Lstnr_Spawn( int client, const char[] command, int argc )
 {
-    if ( client && IsClientInGame( client ) )
+    if ( client && IsClientInGame( client ) && !IsPlayerAlive( client ) )
     {
+#if defined DEBUG
+        char szCmd[32];
+        GetCmdArg( 0, szCmd, sizeof( szCmd ) );
+
+        PrintToServer( INF_DEBUG_PRE..."Spawning player %N from cmd listener '%s'.",
+            client,
+            szCmd );
+#endif
+
         Influx_SpawnPlayer( client );
     }
     
@@ -141,7 +159,29 @@ stock void ListenToSpawnCommand( const char[] cmd )
     // This makes sure we have the intended behavior: spawn the player -> tele to run.
     // NOTE: Does no support late-loading.
     if ( CommandExists( cmd ) )
+    {
+        PrintToServer( INF_CON_PRE..."Listening for spawn command: %s", cmd );
+
         AddCommandListener( Lstnr_Spawn, cmd );
+    }
     else
+    {
+        PrintToServer( INF_CON_PRE..."Registering possible restart cmd as spawn command: %s", cmd );
+
         RegConsoleCmd( cmd, Cmd_Spawn );
+    }
+}
+
+stock void RegisterSpawnCmds()
+{
+    ListenToSpawnCommand( "sm_r" );
+    ListenToSpawnCommand( "sm_re" );
+    ListenToSpawnCommand( "sm_rs" );
+    ListenToSpawnCommand( "sm_restart" );
+    ListenToSpawnCommand( "sm_start" );
+}
+
+public Action T_RegisterSpawnCmds( Handle hTimer )
+{
+    RegisterSpawnCmds();
 }
