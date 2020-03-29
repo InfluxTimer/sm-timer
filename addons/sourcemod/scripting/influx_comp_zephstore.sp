@@ -26,6 +26,9 @@ public OnPluginStart()
 
 public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style, float time, float prev_pb, float prev_best, int flags )
 {
-    Store_SetClientCredits( client, Store_GetClientCredits( client ) + g_ConVar_CreditsNormal.IntValue );
-}
+    int credits = g_ConVar_CreditsNormal.IntValue;
 
+    Store_SetClientCredits( client, Store_GetClientCredits( client ) + credits );
+
+    PrintToChat( client, "\x03You received \x01%i\x03 credits for completing the map!", credits );
+}
