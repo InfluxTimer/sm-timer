@@ -21,6 +21,7 @@
 //#define DEBUG_INSERTFRAME
 //#define DEBUG
 //#define DEBUG_REPLAY
+//#define DEBUG_CVARS
 
 
 #define DEF_REPLAYBOTNAME           "Replay Bot - !replay"
@@ -124,6 +125,8 @@ ConVar g_ConVar_BotName;
 ConVar g_ConVar_PreRunTime;
 ConVar g_ConVar_IgnoreDifTickrate;
 
+ConVar g_ConVar_MaxVelocity;
+
 
 int g_nMaxRecLength;
 
@@ -225,6 +228,13 @@ public void OnPluginStart()
     
     
     AutoExecConfig( true, "recording", "influx" );
+
+
+    if ( (g_ConVar_MaxVelocity = FindConVar( "sv_maxvelocity" )) == null )
+    {
+        SetFailState( INF_CON_PRE..."Couldn't find cvar sv_maxvelocity!" );
+    }
+    g_ConVar_MaxVelocity.AddChangeHook( E_CvarChange_MaxVelocity );
     
     
     // LIBRARIES
@@ -339,6 +349,11 @@ public void Influx_OnPostRunLoad()
     LoadAllRecordings();
 }
 
+public void OnMapStart()
+{
+    CreateTimer( 1.0, T_CheckCvars, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+}
+
 public void OnMapEnd()
 {
     g_bRecordingsLoaded = false;
@@ -406,64 +421,8 @@ public void E_PlayerSpawn_Delay( int client )
 
 public void OnConfigsExecuted()
 {
-    ConVar cvar;
-    
-    
-    // Bot cvars
-    cvar = FindConVar( "bot_stop" );
-    if ( cvar != null )
-    {
-        cvar.SetBool( true );
-        delete cvar;
-    }
-    
-    cvar = FindConVar( "bot_quota" );
-    if ( cvar != null )
-    {
-        cvar.SetInt( 1 );
-        delete cvar;
-    }
-    
-    cvar = FindConVar( "bot_quota_mode" );
-    if ( cvar != null )
-    {
-        cvar.SetString( "normal" );
-        delete cvar;
-    }
-    
-    cvar = FindConVar( "bot_join_after_player" );
-    if ( cvar != null )
-    {
-        cvar.SetBool( false );
-        delete cvar;
-    }
-    
-    cvar = FindConVar( "bot_chatter" );
-    if ( cvar != null )
-    {
-        cvar.SetString( "off" );
-        delete cvar;
-    }
-    
-    cvar = FindConVar( "bot_join_team" );
-    if ( cvar != null )
-    {
-        cvar.SetString( "any" );
-        delete cvar;
-    }
-    
-    
     // Playback stuff
-    float maxvel = 3500.0;
-    
-    cvar = FindConVar( "sv_maxvelocity" );
-    if ( cvar != null )
-    {
-        maxvel = cvar.FloatValue;
-        delete cvar;
-    }
-    
-    SetTeleDistance( maxvel, g_flTickrate );
+    SetTeleDistance( g_ConVar_MaxVelocity.FloatValue, g_flTickrate );
     
     SetMaxRecordingLength( g_flTickrate );
 }
@@ -486,6 +445,11 @@ stock void SetTeleDistance( float maxvel, float tickrate )
 public void E_CvarChange_MaxLength( ConVar convar, const char[] oldval, const char[] newval )
 {
     SetMaxRecordingLength( g_flTickrate );
+}
+
+public void E_CvarChange_MaxVelocity( ConVar convar, const char[] oldval, const char[] newval )
+{
+    SetTeleDistance( g_ConVar_MaxVelocity.FloatValue, g_flTickrate );
 }
 
 public void E_CvarChange_BotName( ConVar convar, const char[] oldval, const char[] newval )
@@ -1620,6 +1584,50 @@ stock void SetBotName()
     }
     
     SetClientName( g_iReplayBot, szName );
+}
+
+// Set the value and log if it was changed.
+stock void SetCvarValueWarn( const char[] szCvar, const char[] szValue )
+{
+    ConVar cvar = FindConVar( szCvar );
+    if ( cvar != null )
+    {
+        char szPrevValue[64];
+        cvar.GetString( szPrevValue, sizeof( szPrevValue ) );
+
+        if ( !StrEqual( szValue, szPrevValue, false ) )
+        {
+            cvar.SetString( szValue );
+
+            LogMessage( INF_CON_PRE..."Changed replay bot related cvar '%s' to '%s'! Previous: '%s'", szCvar, szValue, szPrevValue );
+        }
+        
+    }
+    else
+    {
+        LogError( INF_CON_PRE..."Failed to find cvar %s!", szCvar );
+    }
+}
+
+stock void CheckCvarChanges()
+{
+#if defined DEBUG_CVARS
+    PrintToServer( INF_DEBUG_PRE..."Resetting replay bot related cvars..." );
+#endif
+
+    SetCvarValueWarn( "bot_quota", "1" );
+    SetCvarValueWarn( "bot_quota_mode", "normal" );
+    SetCvarValueWarn( "bot_stop", "1" );
+    SetCvarValueWarn( "bot_join_after_player", "0" );
+    SetCvarValueWarn( "bot_chatter", "off" );
+    SetCvarValueWarn( "bot_join_team", "any" );
+}
+
+public Action T_CheckCvars( Handle hTimer )
+{
+    CheckCvarChanges();
+
+    return Plugin_Continue;
 }
 
 // NATIVES
