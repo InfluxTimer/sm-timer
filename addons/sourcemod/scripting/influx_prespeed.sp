@@ -105,7 +105,7 @@ public void OnPluginStart()
     g_ConVar_MaxJumps = CreateConVar( "influx_prespeed_maxjumps", "-1", "Maximum number of jumps a player can do before starting a run? -1 = disable", FCVAR_NOTIFY, true, -1.0 );
     g_ConVar_Max = CreateConVar( "influx_prespeed_max", "300", "Default max prespeed. 0 = disable", FCVAR_NOTIFY, true, 0.0 );
     g_ConVar_UseTrueVel = CreateConVar( "influx_prespeed_usetruevel", "0", "Use truevel when checking player's speed.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-    g_ConVar_Cap = CreateConVar( "influx_prespeed_cap", "1", "If true, cap player's speed to max prespeed. Otherwise teleport.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_Cap = CreateConVar( "influx_prespeed_cap", "1", "0 = Timer is not started, 1 = Player's speed is capped", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_Noclip = CreateConVar( "influx_prespeed_noclip", "1", "If true, don't allow players to prespeed with noclip.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
@@ -262,7 +262,7 @@ public void Influx_OnRunSave( int runid, KeyValues kv )
     
     if ( cap != INVALID_DOCAP && cap != g_ConVar_Cap.IntValue )
     {
-        kv.SetNum( "prespeed_cap", cap ? 1 : 0 );
+        kv.SetNum( "prespeed_cap", cap );
     }
 }
 
