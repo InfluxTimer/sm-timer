@@ -269,8 +269,10 @@ public void Influx_OnRunSave( int runid, KeyValues kv )
 public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int error_len )
 {
     int index = FindPreById( runid );
-    if ( index == -1 ) return Plugin_Continue;
-    
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Couldn't find prespeed settings for run %i! Using defaults...", runid );
+    }
     
     if ( g_ConVar_Noclip.BoolValue && g_bUsedNoclip[client] )
     {
@@ -280,8 +282,7 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
     
     
     // Check jump count.
-    int maxjumps = g_hPre.Get( index, PRESPEED_MAXJUMPS );
-    if ( maxjumps == -2 ) maxjumps = g_ConVar_MaxJumps.IntValue;
+    int maxjumps = GetMaxJumpsByIndexSafe( index );
     
     
     if ( maxjumps >= 0 )
@@ -307,14 +308,12 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
     
     
     // Check prespeed.
-    float maxprespd = g_hPre.Get( index, PRESPEED_MAX );
-    if ( maxprespd == -1.0 ) maxprespd = g_ConVar_Max.FloatValue;
+    float maxprespd = GetMaxSpeedByIndexSafe( index );
     
     
     if ( maxprespd > 0.0 )
     {
-        int usetruevel = g_hPre.Get( index, PRESPEED_USETRUEVEL );
-        if ( usetruevel == -1 ) usetruevel = g_ConVar_UseTrueVel.IntValue;
+        int usetruevel = GetUseTrueVelByIndexSafe( index );
         
         
         // Just check if we're going over the prespeed limit.
@@ -326,8 +325,7 @@ public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int e
             PrintToServer( INF_DEBUG_PRE..."Bad prespeed (%i) (Max: %.1f)", client, maxprespd );
 #endif
             
-            int capstyle = g_hPre.Get( index, PRESPEED_CAP );
-            if ( capstyle == -1 ) capstyle = g_ConVar_Cap.IntValue;
+            int capstyle = GetCapStyleByIndexSafe( index );
             
             
             if ( SendLimitForward( client, g_bUsedNoclip[client] ) )
@@ -469,9 +467,45 @@ stock int GetMaxJumps( any data[PRESPEED_SIZE] )
     return data[PRESPEED_MAXJUMPS] == INVALID_MAXJUMPS ? g_ConVar_MaxJumps.IntValue : data[PRESPEED_MAXJUMPS];
 }
 
+stock int GetMaxJumpsByIndexSafe( int index )
+{
+    if ( index == -1 )
+        return g_ConVar_MaxJumps.IntValue;
+
+    int jumps = g_hPre.Get( index, PRESPEED_MAXJUMPS );
+    return ( jumps == INVALID_MAXJUMPS ) ? g_ConVar_MaxJumps.IntValue : jumps;
+}
+
 stock float GetMaxSpeed( any data[PRESPEED_SIZE] )
 {
     return view_as<float>( data[PRESPEED_MAX] ) == INVALID_MAXSPD ? g_ConVar_Max.FloatValue : view_as<float>( data[PRESPEED_MAX] );
+}
+
+stock float GetMaxSpeedByIndexSafe( int index )
+{
+    if ( index == -1 )
+        return g_ConVar_Max.FloatValue;
+
+    float spd = g_hPre.Get( index, PRESPEED_MAX );
+    return ( spd == INVALID_MAXSPD ) ? g_ConVar_Max.FloatValue : spd;
+}
+
+stock int GetUseTrueVelByIndexSafe( int index )
+{
+    if ( index == -1 )
+        return g_ConVar_UseTrueVel.IntValue;
+
+    int usetruevel = g_hPre.Get( index, PRESPEED_USETRUEVEL );
+    return ( usetruevel == INVALID_USETRUEVEL ) ? g_ConVar_UseTrueVel.IntValue : usetruevel;
+}
+
+stock int GetCapStyleByIndexSafe( int index )
+{
+    if ( index == -1 )
+        return g_ConVar_Cap.IntValue;
+
+    int capstyle = g_hPre.Get( index, PRESPEED_CAP );
+    return ( capstyle == INVALID_DOCAP ) ? g_ConVar_Cap.IntValue : capstyle;
 }
 
 stock bool CanUserModifyPrespeedSettings( int client )
