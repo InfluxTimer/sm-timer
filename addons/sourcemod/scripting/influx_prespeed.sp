@@ -602,8 +602,12 @@ stock void CapVelocity( const float vel[3], float out[3], float maxprespd, bool 
 {
     if ( bUseTrueVel )
     {
-        NormalizeVector( vel, out );
-        ScaleVector( out, maxprespd );
+        float temp[3];
+        NormalizeVector( vel, temp );
+        ScaleVector( temp, maxprespd );
+        
+        out = temp;
+        
         return;
     }
     
