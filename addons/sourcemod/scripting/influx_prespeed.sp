@@ -28,6 +28,18 @@
 //#define DEBUG
 
 
+enum CappingRet_t
+{
+    // No capping happened.
+    CAPPING_NONE = 0,
+
+    // Capping happened made but silently. Doesn't stop timer.
+    CAPPING_SILENT,
+    // Capping happened and timer needs to stop.
+    CAPPING_STOP
+}
+
+
 enum
 {
     PRESPEED_RUN_ID = 0,
@@ -49,6 +61,8 @@ int g_nJumps[INF_MAXPLAYERS];
 float g_flLastLand[INF_MAXPLAYERS];
 bool g_bUsedNoclip[INF_MAXPLAYERS];
 
+float g_flLastPrint[INF_MAXPLAYERS];
+
 
 
 // CONVARS
@@ -57,6 +71,7 @@ ConVar g_ConVar_Max;
 ConVar g_ConVar_UseTrueVel;
 ConVar g_ConVar_Cap;
 ConVar g_ConVar_Noclip;
+ConVar g_ConVar_AlwaysActive;
 
 
 // FORWARDS
@@ -107,6 +122,7 @@ public void OnPluginStart()
     g_ConVar_UseTrueVel = CreateConVar( "influx_prespeed_usetruevel", "0", "Use truevel when checking player's speed.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_Cap = CreateConVar( "influx_prespeed_cap", "1", "0 = Timer is not started, 1 = Player's speed is capped", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_Noclip = CreateConVar( "influx_prespeed_noclip", "1", "If true, don't allow players to prespeed with noclip.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_AlwaysActive = CreateConVar( "influx_prespeed_alwaysactive", "0", "If true, stop player's prespeed immediately even inside the start zone.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
     AutoExecConfig( true, "prespeed", "influx" );
@@ -184,6 +200,8 @@ public void OnClientPutInServer( int client )
 {
     g_nJumps[client] = 0;
     g_flLastLand[client] = 0.0;
+
+    g_flLastPrint[client] = 0.0;
     
     if ( !IsFakeClient( client ) )
     {
@@ -276,92 +294,14 @@ public void Influx_OnRunSave( int runid, KeyValues kv )
 
 public Action Influx_OnTimerStart( int client, int runid, char[] errormsg, int error_len )
 {
-    int index = FindPreById( runid );
-    if ( index == -1 )
-    {
-        LogError( INF_CON_PRE..."Couldn't find prespeed settings for run %i! Using defaults...", runid );
-    }
-    
-    if ( g_ConVar_Noclip.BoolValue && g_bUsedNoclip[client] )
-    {
-        FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDNONOCLIP", client );
-        return Plugin_Handled;
-    }
-    
-    
-    // Check jump count.
-    int maxjumps = GetMaxJumpsByIndexSafe( index );
-    
-    
-    if ( maxjumps >= 0 )
-    {
-        if ( g_nJumps[client] > maxjumps )
-        {
-            if ( SendLimitForward( client, g_bUsedNoclip[client] ) )
-            {
-                if ( maxjumps )
-                {
-                    FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDJUMPLIMIT", client, maxjumps );
-                }
-                else
-                {
-                    FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDNOJUMP", client );
-                }
-                
-                
-                return Plugin_Handled;
-            }
-        }
-    }
-    
-    
-    // Check prespeed.
-    float maxprespd = GetMaxSpeedByIndexSafe( index );
-    
-    
-    if ( maxprespd > 0.0 )
-    {
-        int usetruevel = GetUseTrueVelByIndexSafe( index );
-        
-        
-        // Just check if we're going over the prespeed limit.
-        bool bBadSpd = CapClientSpeed( client, maxprespd, usetruevel != 0, true );
-        
-        if ( bBadSpd )
-        {
-#if defined DEBUG
-            PrintToServer( INF_DEBUG_PRE..."Bad prespeed (%i) (Max: %.1f)", client, maxprespd );
-#endif
-            
-            int capstyle = GetCapStyleByIndexSafe( index );
-            
-            
-            if ( SendLimitForward( client, g_bUsedNoclip[client] ) )
-            {
-                if ( capstyle )
-                {
-                    // Do the actual capping.
-                    CapClientSpeed( client, maxprespd, usetruevel != 0 );
-                    
-                    //
-                    // We need to check whether the capping worked.
-                    // TeleportEntity works, but it's possible that the player's
-                    // origin/angles/velocity won't change (next frame?).
-                    // I have no idea why this happens.                   
-                    //
-                    StartCheckPrespeed( client, maxprespd, usetruevel != 0 );
-                }
-                else
-                {
-                    FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDEXCEED", client, RoundFloat( maxprespd ) );
-                    FormatEx( errormsg, error_len, "Your prespeed cannot exceed {MAINCLR1}%.0f{CHATCLR}!", maxprespd );
-                    return Plugin_Handled;
-                }
-            }
-        }
-    }
-    
-    return Plugin_Continue;
+    CappingRet_t ret = PerformCapping(
+        client,
+        runid,
+        errormsg,
+        error_len,
+        true );
+
+    return ret == CAPPING_STOP ? Plugin_Handled : Plugin_Continue;
 }
 
 public Action OnPlayerRunCmd( int client )
@@ -424,6 +364,31 @@ public void E_PreThinkPost_Client( int client )
     else if ( g_bUsedNoclip[client] && GetEntityTrueSpeedSquared( client ) < MIN_NC_PRESPEED_SQ )
     {
         g_bUsedNoclip[client] = false;
+    }
+
+    // Always active prespeed checking.
+    if ( g_ConVar_AlwaysActive.BoolValue && Influx_GetClientState( client ) == STATE_START )
+    {
+        static char szError[256];
+        szError[0] = 0;
+
+        CappingRet_t ret = PerformCapping(
+            client,
+            Influx_GetClientRunId( client ),
+            szError,
+            sizeof( szError ),
+            false );
+
+        if ( ret == CAPPING_STOP )
+        {
+            Influx_SetClientState( client, STATE_NONE );
+        }
+
+        if ( szError[0] != 0 && ShouldPrintMsg( client ) )
+        {
+            Influx_PrintToChat( _, client, "%s", szError );
+            g_flLastPrint[client] = GetEngineTime();
+        }
     }
 }
 
@@ -532,6 +497,103 @@ stock void StartCheckPrespeed( int client, float maxprespd, bool bUseTrueVel )
     RequestFrame( CheckPrespeed, pack );
 }
 
+stock CappingRet_t PerformCapping( int client, int runid, char[] errormsg, int error_len, bool bOnStart )
+{
+    // This should never occur.
+    int index = FindPreById( runid );
+    if ( index == -1 )
+    {
+        LogError( INF_CON_PRE..."Couldn't find prespeed settings for run %i! Using defaults...", runid );
+    }
+    
+
+    if ( g_ConVar_Noclip.BoolValue && g_bUsedNoclip[client] )
+    {
+        FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDNONOCLIP", client );
+        return CAPPING_STOP;
+    }
+    
+    
+    // Check jump count.
+    int maxjumps = GetMaxJumpsByIndexSafe( index );
+    
+    
+    if ( maxjumps >= 0 )
+    {
+        if ( g_nJumps[client] > maxjumps )
+        {
+            if ( SendLimitForward( client, g_bUsedNoclip[client] ) )
+            {
+                if ( maxjumps )
+                {
+                    FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDJUMPLIMIT", client, maxjumps );
+                }
+                else
+                {
+                    FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDNOJUMP", client );
+                }
+                
+                
+                return CAPPING_STOP;
+            }
+        }
+    }
+    
+    
+    // Check prespeed.
+    float maxprespd = GetMaxSpeedByIndexSafe( index );
+    
+    
+    if ( maxprespd > 0.0 )
+    {
+        int usetruevel = GetUseTrueVelByIndexSafe( index );
+        
+        
+        // Just check if we're going over the prespeed limit.
+        bool bBadSpd = CapClientSpeed( client, maxprespd, usetruevel != 0, true );
+        
+        if ( bBadSpd )
+        {
+#if defined DEBUG
+            PrintToServer( INF_DEBUG_PRE..."Bad prespeed (%i) (Max: %.1f)", client, maxprespd );
+#endif
+            
+            int capstyle = GetCapStyleByIndexSafe( index );
+            
+            
+            if ( SendLimitForward( client, g_bUsedNoclip[client] ) )
+            {
+                if ( capstyle )
+                {
+                    // Do the actual capping.
+                    CapClientSpeed( client, maxprespd, usetruevel != 0 );
+                    
+                    //
+                    // We need to check whether the capping worked.
+                    // TeleportEntity works, but it's possible that the player's
+                    // origin/angles/velocity won't change (next frame?).
+                    // I have no idea why this happens.                   
+                    //
+                    if ( bOnStart )
+                    {
+                        StartCheckPrespeed( client, maxprespd, usetruevel != 0 );
+                    }
+
+                    return CAPPING_SILENT;
+                }
+                else
+                {
+                    FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDEXCEED", client, RoundFloat( maxprespd ) );
+                    FormatEx( errormsg, error_len, "Your prespeed cannot exceed {MAINCLR1}%.0f{CHATCLR}!", maxprespd );
+                    return CAPPING_STOP;
+                }
+            }
+        }
+    }
+
+    return CAPPING_NONE;
+}
+
 stock void CheckPrespeed( DataPack pack )
 {
     int client = GetClientOfUserId( pack.ReadCell() );
@@ -633,6 +695,11 @@ stock void CapVelocity( const float vel[3], float out[3], float maxprespd, bool 
     wanted[2] = vel[2];
     
     out = wanted;
+}
+
+stock bool ShouldPrintMsg( int client )
+{
+    return ( GetEngineTime() - g_flLastPrint[client] ) > 1.0;
 }
 
 public Action Cmd_Menu_PrespeedSettings( int client, int args )
