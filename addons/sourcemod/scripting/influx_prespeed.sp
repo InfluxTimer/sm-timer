@@ -138,6 +138,14 @@ public void OnPluginStart()
         {
             Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
         }
+
+        for ( int i = 1; i <= MaxClients; i++ )
+        {
+            if ( IsClientInGame( i ) )
+            {
+                OnClientPutInServer( i );
+            }
+        }
     }
 }
 
