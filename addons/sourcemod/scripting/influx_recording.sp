@@ -266,6 +266,15 @@ public void OnPluginStart()
         }
         
         Influx_OnPostRunLoad();
+
+
+        for ( int i = 1; i <= MaxClients; i++ )
+        {
+            if ( IsClientInGame( i ) )
+            {
+                OnClientPutInServer( i );
+            }
+        }
     }
 }
 
