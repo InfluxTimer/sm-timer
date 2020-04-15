@@ -356,6 +356,8 @@ public void Influx_OnPostRunLoad()
     
     
     LoadAllRecordings();
+
+    CreateTimer( 1.0, T_FindNewPlayback, _, TIMER_FLAG_NO_MAPCHANGE );
 }
 
 public void OnMapStart()
@@ -1635,6 +1637,17 @@ stock void CheckCvarChanges()
 public Action T_CheckCvars( Handle hTimer )
 {
     CheckCvarChanges();
+
+    return Plugin_Continue;
+}
+
+// Find new playback if we don't have one already.
+public Action T_FindNewPlayback( Handle hTimer )
+{
+    if ( IsValidReplayBot() && g_hReplay == null )
+    {
+        FindNewPlayback();
+    }
 
     return Plugin_Continue;
 }
