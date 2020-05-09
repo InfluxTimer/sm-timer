@@ -58,13 +58,18 @@ stock void LoadAllRecordings()
     
     
     DirectoryListing dir = OpenDirectory( szPath );
-    if ( dir == null ) return;
+    if ( dir == null )
+    {
+        LogError( INF_CON_PRE..."Couldn't open directory '%s' for reading!", szPath );
+        return;
+    }
     
     
     char szFile[PLATFORM_MAX_PATH];
     int len, dotpos;
     
     int runid, mode, style;
+    int filerunid = -1;
     float time;
     char szName[MAX_BEST_NAME];
     
@@ -90,16 +95,20 @@ stock void LoadAllRecordings()
         
         
         if ( ExplodeString( szFile, "_", bufs, sizeof( bufs ), sizeof( bufs[] ) ) < sizeof( bufs ) )
+        {
+            LogError( INF_CON_PRE..."Found a .rec file (%s) but it does not have all the name components!", szFile );
             continue;
+        }
         
         
         runid = StringToInt( bufs[0] );
         
-        if ( Influx_FindRunById( runid ) == -1 )
+        int irun = FindRunRecById( runid );
+        if ( irun == -1 )
         {
-#if defined DEBUG_LOADRECORDINGS
-            PrintToServer( INF_DEBUG_PRE..."Recording file had invalid run id! (%i)", runid );
-#endif
+            LogError( INF_CON_PRE..."Recording file '%s' is of run that does not exist! Run id: %i",
+                szFile,
+                runid );
             continue;
         }
         
@@ -109,33 +118,34 @@ stock void LoadAllRecordings()
         
         ArrayList rec = null;
         
-        if ( LoadRecording( szFile, rec, runid, mode, style, time, szName, sizeof( szName ) ) && rec != null )
+        if ( LoadRecording( szFile, rec, filerunid, mode, style, time, szName, sizeof( szName ) ) && rec != null )
         {
-            int irun = FindRunRecById( runid );
-            
-            if ( irun != -1 )
+            if ( filerunid != runid )
             {
-                // Duplicate run. That's no good...
-                if ( GetRunRec( irun, mode, style ) != null )
-                {
-                    delete rec;
-                    continue;
-                }
-                
-                SetRunRec( irun, mode, style, rec );
-                SetRunTime( irun, mode, style, time );
-                SetRunName( irun, mode, style, szName );
-                
-#if defined DEBUG_LOADRECORDINGS
-                PrintToServer( INF_DEBUG_PRE..."Added recording %x (%i, %i, %i)!", rec, runid, mode, style );
-#endif
-            
-                ++numrecs;
+                LogError( INF_CON_PRE..."Recording file's run id does not match name's! (%s) | %i - %i",
+                    szFile,
+                    runid,
+                    filerunid );
             }
-            else
+
+            // Duplicate recording. That's no good...
+            if ( GetRunRec( irun, mode, style ) != null )
             {
+                LogError( INF_CON_PRE..."Found a duplicate recording! (%s)", szFile );
+
                 delete rec;
+                continue;
             }
+            
+            SetRunRec( irun, mode, style, rec );
+            SetRunTime( irun, mode, style, time );
+            SetRunName( irun, mode, style, szName );
+            
+#if defined DEBUG_LOADRECORDINGS
+            PrintToServer( INF_DEBUG_PRE..."Added recording %x (%i, %i, %i)!", rec, runid, mode, style );
+#endif
+        
+            ++numrecs;
         }
     }
     
@@ -170,9 +180,9 @@ stock bool LoadRecording( const char[] szPath, ArrayList &rec, int &runid, int &
     file.ReadInt32( temp );
     if ( temp != INF_RECFILE_CURVERSION )
     {
-#if defined DEBUG_LOADRECORDINGS
-        PrintToServer( INF_DEBUG_PRE..."Invalid file version %i!", temp );
-#endif
+        LogError( INF_CON_PRE..."Recording file '%s' had wrong version '%x'!",
+            szPath,
+            temp );
         delete file;
         return false;
     }
@@ -180,9 +190,9 @@ stock bool LoadRecording( const char[] szPath, ArrayList &rec, int &runid, int &
     file.ReadInt32( temp );
     if ( temp != INF_CURHEADERSIZE )
     {
-#if defined DEBUG_LOADRECORDINGS
-        PrintToServer( INF_DEBUG_PRE..."Invalid header size %i!", temp );
-#endif
+        LogError( INF_CON_PRE..."Recording file '%s' had invalid header size '%i'!",
+            szPath,
+            temp );
         delete file;
         return false;
     }
@@ -266,9 +276,9 @@ stock bool LoadRecording( const char[] szPath, ArrayList &rec, int &runid, int &
     
     if ( len < 1 )
     {
-#if defined DEBUG_LOADRECORDINGS
-        PrintToServer( INF_DEBUG_PRE..."Invalid recording length %i!", len );
-#endif
+        LogError( INF_CON_PRE..."Found recording file '%s' with invalid frame data length: %i!",
+            szPath,
+            len );
         delete file;
         return false;
     }
