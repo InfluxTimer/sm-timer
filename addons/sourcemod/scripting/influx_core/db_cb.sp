@@ -124,12 +124,23 @@ public void Thrd_GetClientId( Handle db, Handle res, const char[] szError, int c
     
     if ( !SQL_FetchRow( res ) )
     {
-        decl String:szSteam[64];
+        static char szQuery[512];
+        static char szName[MAX_DB_NAME_LENGTH];
+        static char szSteam[64];
+
         if ( !Inf_GetClientSteam( client, szSteam, sizeof( szSteam ) ) ) return;
+
+        
+        if ( !DB_GetClientNameSafe( client, szName, sizeof( szName ) ) )
+        {
+            strcopy( szName, sizeof( szName ), "N/A" );
+        }
         
         
-        decl String:szQuery[128];
-        FormatEx( szQuery, sizeof( szQuery ), "INSERT INTO "...INF_TABLE_USERS..." (steamid,joindate) VALUES ('%s',CURRENT_DATE)", szSteam );
+        
+        FormatEx( szQuery, sizeof( szQuery ), "INSERT INTO "...INF_TABLE_USERS..." (steamid,joindate,name) VALUES ('%s',CURRENT_DATE,'%s')",
+            szSteam,
+            szName );
         
         SQL_TQuery( g_hDB, Thrd_InsertNewUser, szQuery, GetClientUserId( client ), DBPrio_High );
     }

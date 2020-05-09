@@ -314,15 +314,10 @@ stock void DB_UpdateClient( int client )
     static char szQuery[256];
 
 
-    if ( !GetClientName( client, szName, sizeof( szName ) ) )
+    if ( !DB_GetClientNameSafe( client, szName, sizeof( szName ) ) )
     {
-        strcopy( szName, sizeof( szName ), "N/A" );
-    }
-    else
-    {
-        RemoveChars( szName, "`'\"" );
-        
-        Inf_DB_GetEscaped( g_hDB, szName, sizeof( szName ), "N/A" ); // Just in case.
+        LogError( INF_CON_PRE..."Failed to update player's '%N' name in database!", client );
+        return;
     }
     
 
@@ -498,4 +493,20 @@ stock int DB_SaveRuns( ArrayList kvs )
     }
     
     return num;
+}
+
+stock bool DB_GetClientNameSafe( int client, char[] szName, int len )
+{
+    if ( !GetClientName( client, szName, len ) )
+    {
+        szName[0] = 0;
+    }
+    else
+    {
+        RemoveChars( szName, "`'\"" );
+        
+        Inf_DB_GetEscaped( g_hDB, szName, len, "" );
+    }
+
+    return szName[0] != 0;
 }
