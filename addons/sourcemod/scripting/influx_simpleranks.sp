@@ -295,6 +295,22 @@ stock bool CanUseRankFlags( int client, const any data[RANK_SIZE] )
     return ( data[RANK_FLAGS] == 0 || CheckCommandAccess( client, "", data[RANK_FLAGS], true ) );
 }
 
+stock bool CanUseRankFlagsByIndex( int client, int irank )
+{
+    int flags = g_hRanks.Get( irank, RANK_FLAGS );
+    if ( flags == 0 ) return true;
+
+
+    AdminId id = GetUserAdmin( client );
+    if ( id == INVALID_ADMIN_ID )
+    {
+        return false;
+    }
+
+
+    return (flags & id.GetFlags( Access_Effective )) == flags;
+}
+
 stock bool CanUseRankByIndex( int client, int index )
 {
     if ( index == -1 ) return false;

@@ -46,7 +46,7 @@ public void Thrd_InitClient( Handle db, Handle res, const char[] szError, int cl
         {
             int index = FindRankByName( szRank );
             
-            if ( index != -1 )
+            if ( index != -1 && CanUseRankFlagsByIndex( client, index ) )
             {
                 SetClientRank( client, index, true, szRank );
             }
