@@ -128,8 +128,12 @@ public void Thrd_GetClientId( Handle db, Handle res, const char[] szError, int c
         static char szName[MAX_DB_NAME_LENGTH];
         static char szSteam[64];
 
-        if ( !Inf_GetClientSteam( client, szSteam, sizeof( szSteam ) ) ) return;
-
+        if ( !Inf_GetClientSteam( client, szSteam, sizeof( szSteam ) ) )
+        {
+            LogError( INF_CON_PRE..."Failed to retrieve %N's Steam Id to insert new record!",
+                client );
+            return;
+        }
         
         if ( !DB_GetClientNameSafe( client, szName, sizeof( szName ) ) )
         {

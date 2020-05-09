@@ -284,7 +284,12 @@ stock void DB_InitClient_Cb( int client, SQLTCallback cb )
     PrintToServer( INF_DEBUG_PRE..."Searching for name %s", szName );
 #else
     decl String:szSteam[64];
-    if ( !Inf_GetClientSteam( client, szSteam, sizeof( szSteam ) ) ) return;
+    if ( !Inf_GetClientSteam( client, szSteam, sizeof( szSteam ) ) )
+    {
+        LogError( INF_CON_PRE..."Failed to retrieve %N's Steam Id to init their data!",
+            client );
+        return;
+    }
     
     
     decl String:szQuery[256];
