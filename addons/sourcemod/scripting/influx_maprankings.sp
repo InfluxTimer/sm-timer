@@ -111,16 +111,34 @@ public void OnClientPutInServer( int client )
 
 public void Influx_OnClientStatusChanged( int client )
 {
-    int irun = FindRunRankById( Influx_GetClientRunId( client ) );
-    if ( irun == -1 ) return;
-    
+    int runid = Influx_GetClientRunId( client );
+
+    int irun = FindRunRankById( runid );
+    if ( irun == -1 )
+    {
+        LogError( INF_CON_PRE..."Couldn't set player's %N rank info because run of id %i rank data does not exist!",
+            client,
+            runid );
+        return;
+    }
     
     int mode = Influx_GetClientMode( client );
-    if ( mode == MODE_INVALID ) return;
-    
+    if ( !VALID_MODE( mode ) )
+    {
+        LogError( INF_CON_PRE..."Couldn't set player's %N rank info because mode of id %i does not exist!",
+            client,
+            mode );
+        return;
+    }
+
     int style = Influx_GetClientStyle( client );
-    if ( style == STYLE_INVALID ) return;
-    
+    if ( !VALID_STYLE( style ) )
+    {
+        LogError( INF_CON_PRE..."Couldn't set player's %N rank info because style of id %i does not exist!",
+            client,
+            style );
+        return;
+    }
     
     g_nCurrentRank[client] = GetClientRank( irun, client, mode, style );
     g_nCurrentRankCount[client] = GetRunRankCount( irun, mode, style );
