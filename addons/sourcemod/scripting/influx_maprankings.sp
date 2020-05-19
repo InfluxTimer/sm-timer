@@ -162,13 +162,11 @@ public void Influx_OnPreRunLoad()
 
 public void Influx_OnRunCreated( int runid )
 {
+    // Already exists.
     if ( FindRunRankById( runid ) != -1 ) return;
     
     
-    int data[RANK_SIZE];
-    data[RANK_RUN_ID] = runid;
-    
-    g_hRunRanks.PushArray( data );
+    CreateRunRankData( runid );
 }
 
 public void Influx_OnRunDeleted( int runid )
@@ -287,9 +285,15 @@ public void Thrd_InitNumRecs( Handle db, Handle res, const char[] szError, any d
         
         lastrunid = runid;
         
-        if ( irun == -1 ) continue;
         
-        
+        if ( irun == -1 )
+        {
+            LogError( INF_CON_PRE..."Received run id of %i from database but rank data does not exist! Inserting a new one...",
+                runid );
+
+            irun = CreateRunRankData( runid );
+            //continue;
+        }
         
 
         if ( !VALID_MODE( mode ) ) continue;
@@ -426,6 +430,21 @@ stock void ResetClientRanks( int client )
             {
                 SetClientRank( i, client, j, k, 0 );
             }
+}
+
+stock int CreateRunRankData( int runid )
+{
+    if ( FindRunRankById( runid ) != -1 )
+    {
+        LogError( INF_CON_PRE..."Attempted to create a run rank data for run of id %i that already exists!" );
+        return -1;
+    }
+
+
+    int data[RANK_SIZE];
+    data[RANK_RUN_ID] = runid;
+    
+    return g_hRunRanks.PushArray( data );
 }
 
 // NATIVES
