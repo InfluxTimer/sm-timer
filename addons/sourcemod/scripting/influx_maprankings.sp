@@ -274,7 +274,13 @@ public void Thrd_InitNumRecs( Handle db, Handle res, const char[] szError, any d
     
     while ( SQL_FetchRow( res ) )
     {
-        if ( (runid = SQL_FetchInt( res, 0 )) != lastrunid )
+        runid = SQL_FetchInt( res, 0 );
+        mode = SQL_FetchInt( res, 1 );
+        style = SQL_FetchInt( res, 2 );
+        numrecs = SQL_FetchInt( res, 3 );
+
+
+        if ( runid != lastrunid )
         {
             irun = FindRunRankById( runid );
         }
@@ -284,14 +290,11 @@ public void Thrd_InitNumRecs( Handle db, Handle res, const char[] szError, any d
         if ( irun == -1 ) continue;
         
         
-        mode = SQL_FetchInt( res, 1 );
-        style = SQL_FetchInt( res, 2 );
         
+
         if ( !VALID_MODE( mode ) ) continue;
         if ( !VALID_STYLE( style ) ) continue;
-        
-        
-        numrecs = SQL_FetchInt( res, 3 );
+
         
 #if defined DEBUG_DB
         PrintToServer( INF_DEBUG_PRE..."Setting record count to %i (%i, %i, %i)...", numrecs, runid, mode, style );
