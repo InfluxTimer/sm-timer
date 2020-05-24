@@ -454,7 +454,7 @@ stock int CreateRunRankData( int runid )
 {
     if ( FindRunRankById( runid ) != -1 )
     {
-        LogError( INF_CON_PRE..."Attempted to create a run rank data for run of id %i that already exists!" );
+        LogError( INF_CON_PRE..."Attempted to create a run rank data for run of id %i that already exists!", runid );
         return -1;
     }
 
