@@ -860,13 +860,11 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
 
 public void Influx_OnRunCreated( int runid )
 {
+    // Already exists.
     if ( FindRunRecById( runid ) != -1 ) return;
     
     
-    int data[RUNREC_SIZE];
-    data[RUNREC_RUN_ID] = runid;
-    
-    g_hRunRec.PushArray( data );
+    CreateRunRec( runid );
 }
 
 //
@@ -1650,6 +1648,21 @@ public Action T_FindNewPlayback( Handle hTimer )
     }
 
     return Plugin_Continue;
+}
+
+stock int CreateRunRec( int runid )
+{
+    if ( FindRunRecById( runid ) != -1 )
+    {
+        LogError( INF_CON_PRE..."Attempted to create a run rec data for run of id %i that already exists!", runid );
+        return -1;
+    }
+    
+
+    int data[RUNREC_SIZE];
+    data[RUNREC_RUN_ID] = runid;
+    
+    return g_hRunRec.PushArray( data );
 }
 
 // NATIVES

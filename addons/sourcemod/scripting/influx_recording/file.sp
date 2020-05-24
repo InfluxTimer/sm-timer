@@ -102,14 +102,16 @@ stock void LoadAllRecordings()
         
         
         runid = StringToInt( bufs[0] );
+        int irun;
         
-        int irun = FindRunRecById( runid );
+        irun = FindRunRecById( runid );
         if ( irun == -1 )
         {
-            LogError( INF_CON_PRE..."Recording file '%s' is of run that does not exist! Run id: %i",
+            LogError( INF_CON_PRE..."Recording file '%s' is of run that does not exist! Creating new one... (Run id: %i)",
                 szFile,
                 runid );
-            continue;
+
+            irun = CreateRunRec( runid );
         }
         
         Format( szFile, sizeof( szFile ), "%s/%s", szPath, szFile );
