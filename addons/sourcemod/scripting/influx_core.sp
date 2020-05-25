@@ -201,8 +201,8 @@ bool g_bLib_Hud_Draw;
 char g_szCurrentMap[128];
 int g_iCurMapId;
 bool g_bNewMapId;
-//bool g_bRunsLoaded;
-bool g_bBestTimesCached;
+bool g_bRunsLoaded = false;
+bool g_bBestTimesCached = false;
 
 // Cached id.
 int g_iDefMode;
@@ -298,6 +298,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_GetClientId", Native_GetClientId );
     CreateNative( "Influx_GetCurrentMapId", Native_GetCurrentMapId );
     
+    CreateNative( "Influx_HasLoadedRuns", Native_HasLoadedRuns );
+    CreateNative( "Influx_HasLoadedBestTimes", Native_HasLoadedBestTimes );
     
     
     CreateNative( "Influx_InvalidateClientRun", Native_InvalidateClientRun );
@@ -911,9 +913,8 @@ public void OnMapStart()
     
     GetCurrentMapSafe( g_szCurrentMap, sizeof( g_szCurrentMap ) );
     
-    //g_bRunsLoaded = false;
-    
     g_bNewMapId = false;
+    g_bRunsLoaded = false;
     g_bBestTimesCached = false;
     g_iCurMapId = 0;
     
@@ -3146,6 +3147,8 @@ stock void LoadRuns( bool bForceType = false, bool bUseDb = false, bool bFallbac
         SendRunLoadPre();
         ReadRunFile();
         SendRunLoadPost();
+
+        g_bRunsLoaded = true;
     }
 }
 

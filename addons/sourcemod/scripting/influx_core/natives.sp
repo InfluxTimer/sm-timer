@@ -12,6 +12,10 @@ public int Native_GetPostRunLoadForward( Handle hPlugin, int nParms ) { return v
 
 public int Native_GetCurrentMapId( Handle hPlugin, int nParms ) { return g_iCurMapId; }
 
+public int Native_HasLoadedRuns( Handle hPlugin, int nParms ) { return g_bRunsLoaded; }
+
+public int Native_HasLoadedBestTimes( Handle hPlugin, int nParms ) { return g_bBestTimesCached; }
+
 public int Native_FindRunById( Handle hPlugin, int nParms ) { return FindRunById( GetNativeCell( 1 ) ); }
 
 public int Native_InvalidateClientRun( Handle hPlugin, int nParms )

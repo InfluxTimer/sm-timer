@@ -371,6 +371,8 @@ public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, any data 
     if ( res == null )
     {
         Inf_DB_LogError( db, "getting run data" );
+
+        g_bRunsLoaded = true;
         return;
     }
     
@@ -403,6 +405,8 @@ public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, any data 
     }
     
     SendRunLoadPost();
+
+    g_bRunsLoaded = true;
 }
 
 /*public void Thrd_GetNumRecords( Handle db, Handle res, const char[] szError, any data )

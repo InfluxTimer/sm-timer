@@ -203,6 +203,9 @@ forward void Influx_OnMapIdRetrieved( int mapid, bool bNew );
 // Will return 0 if map id hasn't been retrieved.
 native int Influx_GetCurrentMapId();
 
+native bool Influx_HasLoadedRuns(); // If we have all map's runs loaded.
+native bool Influx_HasLoadedBestTimes(); // If we have best times cached for each run.
+
 
 
 // When we've retrieved our map id and records.
