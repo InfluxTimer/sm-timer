@@ -292,23 +292,14 @@ stock int GetRankClosest( int points, bool bIgnoreUnlock = true )
 
 stock bool CanUseRankFlags( int client, const any data[RANK_SIZE] )
 {
-    return ( data[RANK_FLAGS] == 0 || CheckCommandAccess( client, "", data[RANK_FLAGS], true ) );
+    return Inf_CanClientUseAdminFlags( client, data[RANK_FLAGS] );
 }
 
 stock bool CanUseRankFlagsByIndex( int client, int irank )
 {
     int flags = g_hRanks.Get( irank, RANK_FLAGS );
-    if ( flags == 0 ) return true;
 
-
-    AdminId id = GetUserAdmin( client );
-    if ( id == INVALID_ADMIN_ID )
-    {
-        return false;
-    }
-
-
-    return (flags & id.GetFlags( Access_Effective )) == flags;
+    return Inf_CanClientUseAdminFlags( client, flags );
 }
 
 stock bool CanUseRankByIndex( int client, int index )

@@ -1917,7 +1917,7 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
     }
     
     
-    if ( !CheckCommandAccess( client, "", GetModeFlagsByIndex( imode ), true ) )
+    if ( !Inf_CanClientUseAdminFlags( client, GetModeFlagsByIndex( imode ) ) )
     {
         if ( bPrintToChat )
         {
@@ -2005,7 +2005,7 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
     }
     
     
-    if ( !CheckCommandAccess( client, "", GetStyleFlagsByIndex( istyle ), true ) )
+    if ( !Inf_CanClientUseAdminFlags( client, GetStyleFlagsByIndex( istyle ) ) )
     {
         if ( bPrintToChat )
         {

@@ -265,5 +265,21 @@ stock int Inf_GetPreferredTeam( int &nOutSpawnsPref, int &nOutSpawnsOther, bool 
     return CS_TEAM_NONE;
 }
 
+stock bool Inf_CanClientUseAdminFlags( int client, int flags )
+{
+    // No flags, no problem.
+    if ( flags == 0 ) return true;
+
+
+    AdminId id = GetUserAdmin( client );
+    if ( id == INVALID_ADMIN_ID )
+    {
+        return false;
+    }
+
+
+    return (flags & id.GetFlags( Access_Effective )) == flags;
+}
+
 // Delete the menu handle if ending, return if cancelling.
 #define MENU_HANDLE(%0,%1)       if ( %1 == MenuAction_End ) { delete %0; return 0; } else if ( %1 == MenuAction_Cancel ) { return 0; }

@@ -122,7 +122,7 @@ public Action Cmd_Help( int client, int args )
         }
         
         
-        bool bIsAdmin = CheckCommandAccess( client, "", ADMFLAG_GENERIC, true );
+        bool bIsAdmin = Inf_CanClientUseAdminFlags( client, ADMFLAG_GENERIC );
         
         decl String:szDisplay[128];
         
