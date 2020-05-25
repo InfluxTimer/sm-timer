@@ -140,14 +140,19 @@ public void OnPluginStart()
     
     if ( g_bLate )
     {
-        Influx_OnPreRunLoad();
-        
-        ArrayList runs = Influx_GetRunsArray();
-        int len = runs.Length;
-        
-        for ( int i = 0; i < len; i++ )
+        // If core has already loaded runs
+        // register runs ourselves.
+        if ( Influx_HasLoadedRuns() )
         {
-            Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+            Influx_OnPreRunLoad();
+            
+            ArrayList runs = Influx_GetRunsArray();
+            int len = runs.Length;
+            
+            for ( int i = 0; i < len; i++ )
+            {
+                Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+            }
         }
     }
 }
