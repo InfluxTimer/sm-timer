@@ -287,7 +287,7 @@ public Action Cmd_Change_Name_Db( int client, int args )
             szName,
             g_iClientId[client] );
         
-        SQL_TQuery( Influx_GetDB(), Thrd_Empty, szQuery, _, DBPrio_Low );
+        SQL_TQuery( Influx_GetDB(), Thrd_Empty, szQuery, _, DBPrio_Normal );
 
 
         Inf_ReplyToClient( client, "Set your name to '%s' in database!", szName );

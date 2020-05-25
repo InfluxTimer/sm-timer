@@ -239,7 +239,7 @@ stock void DB_InitNumRecs( int runid = -1, int mode = MODE_INVALID, int style = 
         mapid,
         szWhere );
     
-    SQL_TQuery( db, Thrd_InitNumRecs, szQuery, _, DBPrio_Low );
+    SQL_TQuery( db, Thrd_InitNumRecs, szQuery, _, DBPrio_Normal );
 }
 
 stock void DB_InitClientRanks( int client, int runid = -1, int mode = MODE_INVALID, int style = STYLE_INVALID )
@@ -272,7 +272,7 @@ stock void DB_InitClientRanks( int client, int runid = -1, int mode = MODE_INVAL
         mapid,
         szWhere );
     
-    SQL_TQuery( db, Thrd_InitClientRanks, szQuery, GetClientUserId( client ), DBPrio_Low );
+    SQL_TQuery( db, Thrd_InitClientRanks, szQuery, GetClientUserId( client ), DBPrio_Normal );
 }
 
 public void Thrd_InitNumRecs( Handle db, Handle res, const char[] szError, any data )

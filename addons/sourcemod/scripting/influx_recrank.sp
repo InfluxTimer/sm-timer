@@ -115,7 +115,7 @@ public Action T_Display( Handle hTimer, ArrayList array )
         data[PCB_MODE],
         data[PCB_STYLE] );
         
-    SQL_TQuery( db, Thrd_Display, szQuery, data[PCB_USERID], DBPrio_Low );
+    SQL_TQuery( db, Thrd_Display, szQuery, data[PCB_USERID], DBPrio_Normal );
     
     return Plugin_Stop;
 }

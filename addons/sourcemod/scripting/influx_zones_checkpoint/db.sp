@@ -144,7 +144,7 @@ stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int
         mode,
         style );
     
-    SQL_TQuery( db, Thrd_Update, szQuery, userid, DBPrio_High );*/
+    SQL_TQuery( db, Thrd_Update, szQuery, userid, DBPrio_Normal );*/
     
     
     
@@ -341,7 +341,7 @@ stock void DB_PrintTopCPTimes( int client, int mapid, int runid, int mode, int s
     array.PushArray( data );
     
     
-    SQL_TQuery( db, Thrd_PrintTopCPTimes, szQuery, array, DBPrio_Low );
+    SQL_TQuery( db, Thrd_PrintTopCPTimes, szQuery, array, DBPrio_Normal );
 }
 
 stock void DB_PrintDeleteCPTimes( int client, int mapid )

@@ -163,7 +163,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
             mode,
             style );
         
-        SQL_TQuery( db, Thrd_Update, szQuery, GetClientUserId( client ), DBPrio_High );
+        SQL_TQuery( db, Thrd_Update, szQuery, GetClientUserId( client ), DBPrio_Normal );
     }
 }
 

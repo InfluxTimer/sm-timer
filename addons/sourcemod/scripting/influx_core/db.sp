@@ -330,7 +330,7 @@ stock void DB_UpdateClient( int client )
         szName,
         g_iClientId[client] );
     
-    SQL_TQuery( g_hDB, Thrd_Empty, szQuery, _, DBPrio_Low );
+    SQL_TQuery( g_hDB, Thrd_Empty, szQuery, _, DBPrio_Normal );
 
 
 #if defined DEBUG_DB
@@ -363,7 +363,7 @@ stock void DB_InsertRecord( int client, int uid, int runid, int mode, int style,
         style,
         time );
     
-    SQL_TQuery( g_hDB, Thrd_Empty, szQuery, GetClientUserId( client ), DBPrio_High );
+    SQL_TQuery( g_hDB, Thrd_Empty, szQuery, GetClientUserId( client ), DBPrio_Normal );
 }
 
 stock void DB_PrintDeleteRecords( int client, int mapid )
@@ -415,7 +415,7 @@ stock void DB_DeleteRecords( int issuer, int mapid, int uid = -1, int runid = -1
     }
     
     
-    SQL_TQuery( g_hDB, Thrd_Empty, szQuery, issuer ? GetClientUserId( issuer ) : 0, DBPrio_High );
+    SQL_TQuery( g_hDB, Thrd_Empty, szQuery, issuer ? GetClientUserId( issuer ) : 0, DBPrio_Normal );
     
     
     Call_StartForward( g_hForward_OnRecordRemoved );
