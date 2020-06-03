@@ -121,9 +121,13 @@ public void Influx_OnClientStatusChanged( int client )
     int irun = FindRunRankById( runid );
     if ( irun == -1 )
     {
-        LogError( INF_CON_PRE..."Couldn't set player's %N rank info because run of id %i rank data does not exist!",
-            client,
-            runid );
+        if ( runid != -1 )
+        {
+            LogError( INF_CON_PRE..."Couldn't set player's %N rank info because run of id %i rank data does not exist!",
+                client,
+                runid );
+        }
+
         return;
     }
     
