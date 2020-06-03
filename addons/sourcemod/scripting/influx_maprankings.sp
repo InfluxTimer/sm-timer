@@ -371,24 +371,33 @@ public void Thrd_InitClientRanks( Handle db, Handle res, const char[] szError, i
     
     while ( SQL_FetchRow( res ) )
     {
-        if ( (runid = SQL_FetchInt( res, 0 )) != lastrunid )
+        runid = SQL_FetchInt( res, 0 )
+        mode = SQL_FetchInt( res, 1 );
+        style = SQL_FetchInt( res, 2 );
+        rank = SQL_FetchInt( res, 3 ) + 1;
+
+
+        if ( runid != lastrunid )
         {
             irun = FindRunRankById( runid );
         }
         
         lastrunid = runid;
         
-        if ( irun == -1 ) continue;
-        
-        
-        mode = SQL_FetchInt( res, 1 );
-        style = SQL_FetchInt( res, 2 );
+        if ( irun == -1 )
+        {
+            LogError( INF_CON_PRE..."Received run id of %i from database but rank data does not exist! Inserting a new one... (Client: %i)",
+                runid,
+                client );
+
+            irun = CreateRunRankData( runid );
+            //continue;
+        }
+
         
         if ( !VALID_MODE( mode ) ) continue;
         if ( !VALID_STYLE( style ) ) continue;
         
-        
-        rank = SQL_FetchInt( res, 3 ) + 1;
         
 #if defined DEBUG_DB
         PrintToServer( INF_DEBUG_PRE..."Setting client ranks to %i (%i, %i, %i)...", rank, runid, mode, style );
