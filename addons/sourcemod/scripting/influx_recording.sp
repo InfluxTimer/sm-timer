@@ -811,9 +811,24 @@ public void Influx_OnTimerStartPost( int client, int runid )
 
 public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style, float time, float prev_pb, float prev_best, int flags )
 {
+    bool bWasRecording = g_bIsRec[client];
+
+    bool bIsNewRecord = ( flags & (RES_TIME_ISBEST | RES_TIME_FIRSTREC) ) != 0;
+
+
     if ( !FinishRecording( client, true ) ) return;
     
-    if ( g_hRec[client].Length < 1 ) return;
+    if ( g_hRec[client].Length < 1 )
+    {
+        if ( bWasRecording )
+        {
+            LogError( INF_CON_PRE..."Player's %N recording has no size! New record: %i",
+                client,
+                bIsNewRecord );
+        }
+        
+        return;
+    }
     
     
     g_flFinishedTime[client] = time;
@@ -823,7 +838,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     g_iFinishedStyle[client] = style;
     
     
-    if ( flags & (RES_TIME_ISBEST | RES_TIME_FIRSTREC) )
+    if ( bIsNewRecord )
     {
         // Make sure this run allows us to save the recording.
         if ( !(flags & RES_RECORDING_DONTSAVE) )
@@ -840,7 +855,14 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
         
         
         int irun = FindRunRecById( runid );
-        if ( irun == -1 ) return;
+        if ( irun == -1 )
+        {
+            LogError( INF_CON_PRE..."Player %N finished a run but run rec data does not exist for run of id %i! Creating new one...",
+                client,
+                runid );
+            
+            irun = CreateRunRec( runid );
+        }
         
         
         ArrayList rec = GetRunRec( irun, mode, style );
