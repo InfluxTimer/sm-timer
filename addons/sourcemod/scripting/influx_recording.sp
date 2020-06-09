@@ -650,7 +650,7 @@ stock bool FindNewPlayback()
             {
                 if ( GetRunRec( irun, mode, style ) != null )
                 {
-                    decl String:szName[MAX_NAME_LENGTH];
+                    char szName[MAX_NAME_LENGTH];
                     GetRunName( irun, mode, style, szName, sizeof( szName ) );
                     
                     StartPlayback(
@@ -699,8 +699,10 @@ public void E_PostThinkPost_Client( int client )
     
     if ( !g_bIsRec[client] ) return;
     
+    // Practising
     if ( g_bLib_Practise && Influx_IsClientPractising( client ) ) return;
     
+    // Paused
     if ( g_bLib_Pause && Influx_IsClientPaused( client ) ) return;
     
     
@@ -792,8 +794,10 @@ public void Influx_OnTimerResetPost( int client )
 
 public void Influx_OnTimerStartPost( int client, int runid )
 {
+    // Practising
     if ( g_bLib_Practise && Influx_IsClientPractising( client ) ) return;
     
+
     if ( !StartRecording( client, true ) ) return;
     
     
@@ -844,7 +848,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
         if ( rec != null ) FreeRecording( rec );
         
         
-        decl String:szName[32];
+        char szName[32];
         GetClientName( client, szName, sizeof( szName ) );
         
         rec = g_hRec[client].Clone();
@@ -945,10 +949,10 @@ stock void StartPlayback( ArrayList rec, int runid, int mode, int style, float t
     
     
     // Set tag.
-    decl String:szTag[32];
-    decl String:szRun[16];
-    decl String:szMode[16];
-    decl String:szStyle[16];
+    char szTag[32];
+    char szRun[16];
+    char szMode[16];
+    char szStyle[16];
     
     
     Influx_GetRunName( runid, szRun, sizeof( szRun ) );
@@ -1256,7 +1260,7 @@ stock void FillFrame( int client, any data[REC_SIZE] )
     }
 }
 
-stock InsertFrame( int client )
+stock void InsertFrame( int client )
 {
 #if defined DEBUG_INSERTFRAME
     PrintToServer( INF_DEBUG_PRE..."(%i) | Frame: %i", client, GetGameTickCount() );
@@ -1290,7 +1294,7 @@ stock bool CanReplayOwn( int client )
 
 stock void ReplayOwn( int client )
 {
-    decl String:szName[MAX_NAME_LENGTH];
+    char szName[MAX_NAME_LENGTH];
     GetClientName( client, szName, sizeof( szName ) );
     
     StartPlayback(
