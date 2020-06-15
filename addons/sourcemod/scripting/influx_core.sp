@@ -64,7 +64,7 @@ int g_iRunId[INF_MAXPLAYERS] = { -1, ... };
 int g_iStyleId[INF_MAXPLAYERS] = { STYLE_INVALID, ... };
 int g_iModeId[INF_MAXPLAYERS] = { MODE_INVALID, ... };
 
-int g_iRunStartTick[INF_MAXPLAYERS];
+float g_flRunStartTime[INF_MAXPLAYERS];
 RunState_t g_iRunState[INF_MAXPLAYERS] = { STATE_NONE, ... };
 
 int g_iWantedStyleId[INF_MAXPLAYERS] = { STYLE_INVALID, ... };
@@ -322,8 +322,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_GetClientTime", Native_GetClientTime );
     CreateNative( "Influx_GetClientFinishedTime", Native_GetClientFinishedTime );
     CreateNative( "Influx_GetClientFinishedBestTime", Native_GetClientFinishedBestTime );
-    CreateNative( "Influx_GetClientStartTick", Native_GetClientStartTick );
-    CreateNative( "Influx_SetClientStartTick", Native_SetClientStartTick );
+    CreateNative( "Influx_GetClientStartTime", Native_GetClientStartTime );
+    CreateNative( "Influx_SetClientStartTime", Native_SetClientStartTime );
     
     CreateNative( "Influx_GetClientPB", Native_GetClientPB );
     CreateNative( "Influx_GetClientCurrentPB", Native_GetClientCurrentPB );
@@ -2286,7 +2286,7 @@ stock void ResetClient( int client )
     g_bCachedTimes[client] = false;
     
     g_iRunState[client] = STATE_NONE;
-    g_iRunStartTick[client] = -1;
+    g_flRunStartTime[client] = 0.0;
     
     
     g_iRunId[client] = -1;

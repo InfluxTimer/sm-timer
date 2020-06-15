@@ -389,7 +389,7 @@ public int Native_StartTimer( Handle hPlugin, int nParms )
     }
     
     
-    g_iRunStartTick[client] = GetGameTickCount();
+    g_flRunStartTime[client] = GetEngineTime();
     
     g_iRunState[client] = STATE_RUNNING;
     
@@ -412,6 +412,8 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     
     if ( g_iRunState[client] != STATE_RUNNING ) return;
     
+    if ( g_flRunStartTime[client] <= 0.0 ) return;
+
     
     int runid = GetNativeCell( 2 );
     
@@ -423,7 +425,7 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     
     if ( runid != g_iRunId[client] ) return;
     
-    float time = TickCountToTime( GetGameTickCount() - g_iRunStartTick[client] );
+    float time = GetEngineTime() - g_flRunStartTime[client];
     if ( time <= INVALID_RUN_TIME ) return;
     
     
@@ -613,8 +615,11 @@ public int Native_SetClientState( Handle hPlugin, int nParms )
 public int Native_GetClientTime( Handle hPlugin, int nParms )
 {
     int client = GetNativeCell( 1 );
+
+    if ( g_flRunStartTime[client] <= 0.0 )
+        return view_as<int>( INVALID_RUN_TIME );
     
-    return view_as<int>( TickCountToTime( GetGameTickCount() - g_iRunStartTick[client] ) );
+    return view_as<int>( GetEngineTime() - g_flRunStartTime[client] );
 }
 
 public int Native_GetClientFinishedTime( Handle hPlugin, int nParms )
@@ -631,20 +636,20 @@ public int Native_GetClientFinishedBestTime( Handle hPlugin, int nParms )
     return view_as<int>( g_flFinishBest[client] );
 }
 
-public int Native_GetClientStartTick( Handle hPlugin, int nParms )
+public int Native_GetClientStartTime( Handle hPlugin, int nParms )
 {
     int client = GetNativeCell( 1 );
     
-    return g_iRunStartTick[client];
+    return view_as<int>( g_flRunStartTime[client] );
 }
 
-public int Native_SetClientStartTick( Handle hPlugin, int nParms )
+public int Native_SetClientStartTime( Handle hPlugin, int nParms )
 {
     int client = GetNativeCell( 1 );
-    int tick = GetNativeCell( 2 );
-    
-    g_iRunStartTick[client] = tick;
-    
+    float time = GetNativeCell( 2 );
+
+    g_flRunStartTime[client] = time;
+
     return 1;
 }
 

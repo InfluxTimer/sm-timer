@@ -488,13 +488,15 @@ stock bool TeleportClientToCP( int client, int index )
     // If we're not paused, change our time.
     if ( !g_bLib_Pause || !Influx_IsClientPaused( client ) )
     {
-        if ( data[PRAC_TIME] > 0 )
+        float practime = view_as<float>( data[PRAC_TIME] );
+
+        if ( practime > 0.0 )
         {
             Influx_SetClientState( client, STATE_RUNNING );
             
-            Influx_SetClientStartTick(
+            Influx_SetClientStartTime(
                 client,
-                GetGameTickCount() - data[PRAC_TIME] );
+                GetEngineTime() - practime );
         }
         else
         {
@@ -535,11 +537,11 @@ stock bool AddClientCP( int client )
     
     if ( Influx_GetClientState( client ) == STATE_RUNNING )
     {
-        data[PRAC_TIME] = GetGameTickCount() - Influx_GetClientStartTick( client );
+        data[PRAC_TIME] = view_as<int>( Influx_GetClientTime( client ) );
     }
     else
     {
-        data[PRAC_TIME] = 0;
+        data[PRAC_TIME] = view_as<int>( 0.0 );
     }
     
     data[PRAC_ID] = ++g_nId[client];

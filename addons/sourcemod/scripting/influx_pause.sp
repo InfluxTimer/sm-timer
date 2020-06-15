@@ -24,7 +24,7 @@ int g_iPausedRunId[INF_MAXPLAYERS] = { -1, ... };
 int g_iPausedModeId[INF_MAXPLAYERS] = { MODE_INVALID, ... };
 int g_iPausedStyleId[INF_MAXPLAYERS] = { STYLE_INVALID, ... };
 char g_szPausedTargetName[INF_MAXPLAYERS][128];
-int g_nPausedTicks[INF_MAXPLAYERS];
+float g_flPausedTime[INF_MAXPLAYERS];
 bool g_bPaused[INF_MAXPLAYERS];
 
 
@@ -273,7 +273,7 @@ stock bool PauseRun( int client )
     g_iPausedStyleId[client] = styleid;
     
     
-    g_nPausedTicks[client] = GetGameTickCount() - Influx_GetClientStartTick( client );
+    g_flPausedTime[client] = GetEngineTime() - Influx_GetClientStartTime( client );
     
     GetClientAbsOrigin( client, g_vecContinuePos[client] );
     GetClientEyeAngles( client, g_vecContinueAng[client] );
@@ -359,7 +359,7 @@ stock bool ContinueRun( int client )
     
     Influx_SetClientState( client, STATE_RUNNING );
     
-    Influx_SetClientStartTick( client, GetGameTickCount() - g_nPausedTicks[client] );
+    Influx_SetClientStartTime( client, GetEngineTime() - g_flPausedTime[client] );
     
     
     float vel[3];
@@ -411,5 +411,5 @@ public int Native_GetClientPausedTime( Handle hPlugin, int nParams )
     if ( !g_bPaused[client] ) return view_as<int>( INVALID_RUN_TIME );
     
     
-    return view_as<int>( TickCountToTime( g_nPausedTicks[client] ) );
+    return view_as<int>( g_flPausedTime[client] );
 }
