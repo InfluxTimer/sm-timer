@@ -71,7 +71,7 @@
 	"INF_WENTWRONGCHANGING"
 	{
 		"#format"		"{1:t}"
-		"end"			"Something went wrong when changing your {1}!"
+		"en"			"Something went wrong when changing your {1}!"
 	}
 	
 	"INF_WAITTILLSPAWN"
