@@ -27,6 +27,7 @@
 
 
 //#define DEBUG
+//#define DEBUG_TIMING
 //#define DEBUG_TIMER
 //#define DEBUG_WEPSPD
 //#define DEBUG_PARSESEARCH
@@ -995,6 +996,9 @@ public void OnGameFrame()
         if ( g_bLib_Pause && Influx_IsClientPaused( client ) )
             continue;
 
+#if defined DEBUG_TIMING
+        PrintToServer( INF_DEBUG_PRE..."Incrementing player time on frame %i", GetGameTickCount() );
+#endif
 
         // TODO: Account for tas.
         g_flRunTime[client] += frametime;

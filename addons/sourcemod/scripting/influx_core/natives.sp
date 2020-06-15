@@ -389,7 +389,11 @@ public int Native_StartTimer( Handle hPlugin, int nParms )
     }
     
     
-    g_flRunTime[client] = 0.0;
+#if defined DEBUG_TIMING
+    PrintToServer( INF_DEBUG_PRE..."Starting timer on tick %i", GetGameTickCount() );
+#endif
+    // OnGameFrame isn't called for this frame. Start incrementing here.
+    g_flRunTime[client] = GetGameFrameTime();
     
     g_iRunState[client] = STATE_RUNNING;
     
