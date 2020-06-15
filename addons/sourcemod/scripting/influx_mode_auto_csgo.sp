@@ -32,8 +32,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 {
     if ( GetEngineVersion() != Engine_CSGO )
     {
-        FormatEx( szError, error_len, "Bad engine version!" );
-        return APLRes_Failure;
+        FormatEx( szError, error_len, "This plugin is for CS:GO only. You can safely remove this plugin file." );
+        return APLRes_SilentFailure;
     }
     
     return APLRes_Success;
