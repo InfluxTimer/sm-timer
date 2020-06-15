@@ -64,7 +64,7 @@ int g_iRunId[INF_MAXPLAYERS] = { -1, ... };
 int g_iStyleId[INF_MAXPLAYERS] = { STYLE_INVALID, ... };
 int g_iModeId[INF_MAXPLAYERS] = { MODE_INVALID, ... };
 
-float g_flRunStartTime[INF_MAXPLAYERS];
+float g_flRunTime[INF_MAXPLAYERS];
 RunState_t g_iRunState[INF_MAXPLAYERS] = { STATE_NONE, ... };
 
 int g_iWantedStyleId[INF_MAXPLAYERS] = { STYLE_INVALID, ... };
@@ -320,10 +320,9 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     
     
     CreateNative( "Influx_GetClientTime", Native_GetClientTime );
+    CreateNative( "Influx_SetClientTime", Native_SetClientTime );
     CreateNative( "Influx_GetClientFinishedTime", Native_GetClientFinishedTime );
     CreateNative( "Influx_GetClientFinishedBestTime", Native_GetClientFinishedBestTime );
-    CreateNative( "Influx_GetClientStartTime", Native_GetClientStartTime );
-    CreateNative( "Influx_SetClientStartTime", Native_SetClientStartTime );
     
     CreateNative( "Influx_GetClientPB", Native_GetClientPB );
     CreateNative( "Influx_GetClientCurrentPB", Native_GetClientCurrentPB );
@@ -977,6 +976,28 @@ public void OnClientDisconnect( int client )
         SDKUnhook( client, SDKHook_PostThinkPost, E_PostThinkPost_Client );
         
         DB_UpdateClient( client );
+    }
+}
+
+public void OnGameFrame()
+{
+    float frametime = GetGameFrameTime();
+
+    for ( int client = 1; client <= MaxClients; client++ )
+    {
+        if ( !IsClientInGame( client ) )
+            continue;
+
+        
+        if ( g_iRunState[client] != STATE_RUNNING )
+            continue;
+
+        if ( g_bLib_Pause && Influx_IsClientPaused( client ) )
+            continue;
+
+
+        // TODO: Account for tas.
+        g_flRunTime[client] += frametime;
     }
 }
 
@@ -2286,7 +2307,7 @@ stock void ResetClient( int client )
     g_bCachedTimes[client] = false;
     
     g_iRunState[client] = STATE_NONE;
-    g_flRunStartTime[client] = 0.0;
+    g_flRunTime[client] = 0.0;
     
     
     g_iRunId[client] = -1;

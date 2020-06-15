@@ -238,7 +238,7 @@ public int Hndlr_TasLoad( Menu menu, MenuAction action, int client, int index )
         SetFrame( client, g_hFrames[client].Length - 1, false, true );
         
         Influx_SetClientState( client, STATE_RUNNING );
-        Influx_SetClientStartTime( client, TickCountToTime( GetGameTickCount() - (g_iStoppedFrame[client] + 1) ) );
+        Influx_SetClientTime( client, TickCountToTime( (g_iStoppedFrame[client] + 1) ) );
         
         
         Influx_PrintToChat( _, client, "Loaded {MAINCLR1}%i{CHATCLR} frames from disk.", g_hFrames[client].Length );

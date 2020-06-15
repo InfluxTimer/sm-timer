@@ -389,7 +389,7 @@ public int Native_StartTimer( Handle hPlugin, int nParms )
     }
     
     
-    g_flRunStartTime[client] = GetEngineTime();
+    g_flRunTime[client] = 0.0;
     
     g_iRunState[client] = STATE_RUNNING;
     
@@ -412,7 +412,7 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     
     if ( g_iRunState[client] != STATE_RUNNING ) return;
     
-    if ( g_flRunStartTime[client] <= 0.0 ) return;
+    if ( g_flRunTime[client] <= 0.0 ) return;
 
     
     int runid = GetNativeCell( 2 );
@@ -425,7 +425,7 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     
     if ( runid != g_iRunId[client] ) return;
     
-    float time = GetEngineTime() - g_flRunStartTime[client];
+    float time = g_flRunTime[client];
     if ( time <= INVALID_RUN_TIME ) return;
     
     
@@ -616,10 +616,20 @@ public int Native_GetClientTime( Handle hPlugin, int nParms )
 {
     int client = GetNativeCell( 1 );
 
-    if ( g_flRunStartTime[client] <= 0.0 )
+    if ( g_flRunTime[client] <= 0.0 )
         return view_as<int>( INVALID_RUN_TIME );
     
-    return view_as<int>( GetEngineTime() - g_flRunStartTime[client] );
+    return view_as<int>( g_flRunTime[client] );
+}
+
+public int Native_SetClientTime( Handle hPlugin, int nParms )
+{
+    int client = GetNativeCell( 1 );
+    float time = GetNativeCell( 2 );
+
+    g_flRunTime[client] = time;
+
+    return 1;
 }
 
 public int Native_GetClientFinishedTime( Handle hPlugin, int nParms )
@@ -634,23 +644,6 @@ public int Native_GetClientFinishedBestTime( Handle hPlugin, int nParms )
     int client = GetNativeCell( 1 );
     
     return view_as<int>( g_flFinishBest[client] );
-}
-
-public int Native_GetClientStartTime( Handle hPlugin, int nParms )
-{
-    int client = GetNativeCell( 1 );
-    
-    return view_as<int>( g_flRunStartTime[client] );
-}
-
-public int Native_SetClientStartTime( Handle hPlugin, int nParms )
-{
-    int client = GetNativeCell( 1 );
-    float time = GetNativeCell( 2 );
-
-    g_flRunStartTime[client] = time;
-
-    return 1;
 }
 
 public int Native_GetClientPB( Handle hPlugin, int nParms )

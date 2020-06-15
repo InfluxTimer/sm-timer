@@ -367,10 +367,10 @@ forward Action Influx_OnCheckClientStyle( int client, int style, float vel[3] );
 
 
 native float Influx_GetClientTime( int client );
+native void Influx_SetClientTime( int client, float enginetime );
+
 native float Influx_GetClientFinishedTime( int client );
 native float Influx_GetClientFinishedBestTime( int client );
-native float Influx_GetClientStartTime( int client );
-native void Influx_SetClientStartTime( int client, float enginetime );
 
 native float Influx_GetClientPB( int client, int runid, int mode, int style );
 native float Influx_GetClientCurrentPB( int client );
@@ -767,7 +767,6 @@ public void __pl_influx_core_SetNTVOptional()
     MarkNativeAsOptional( "Influx_GetClientMode" );
     MarkNativeAsOptional( "Influx_GetClientPB" );
     MarkNativeAsOptional( "Influx_GetClientRunId" );
-    MarkNativeAsOptional( "Influx_GetClientStartTime" );
     MarkNativeAsOptional( "Influx_GetClientState" );
     MarkNativeAsOptional( "Influx_GetClientStyle" );
     MarkNativeAsOptional( "Influx_GetClientTime" );
@@ -799,9 +798,9 @@ public void __pl_influx_core_SetNTVOptional()
     MarkNativeAsOptional( "Influx_ResetTimer" );
     MarkNativeAsOptional( "Influx_SearchType" );
     MarkNativeAsOptional( "Influx_SetClientMode" );
-    MarkNativeAsOptional( "Influx_SetClientStartTime" );
     MarkNativeAsOptional( "Influx_SetClientState" );
     MarkNativeAsOptional( "Influx_SetClientStyle" );
+    MarkNativeAsOptional( "Influx_SetClientTime" );
     MarkNativeAsOptional( "Influx_SetNextMenuTime" );
     MarkNativeAsOptional( "Influx_ShouldModeDisplay" );
     MarkNativeAsOptional( "Influx_ShouldStyleDisplay" );

@@ -494,9 +494,7 @@ stock bool TeleportClientToCP( int client, int index )
         {
             Influx_SetClientState( client, STATE_RUNNING );
             
-            Influx_SetClientStartTime(
-                client,
-                GetEngineTime() - practime );
+            Influx_SetClientTime( client, practime );
         }
         else
         {

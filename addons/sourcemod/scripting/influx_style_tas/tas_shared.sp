@@ -576,7 +576,7 @@ public void E_PostThinkPost_Client( int client )
     }
     
     // HACK
-    Influx_SetClientStartTime( client, TickCountToTime( GetGameTickCount() - (g_iStoppedFrame[client] + 1) ) );
+    Influx_SetClientTime( client, TickCountToTime( (g_iStoppedFrame[client] + 1) ) );
 }
 
 public void E_PlayerTeamNDeath( Event event, const char[] szEvent, bool bImUselessWhyDoIExist )

@@ -273,7 +273,7 @@ stock bool PauseRun( int client )
     g_iPausedStyleId[client] = styleid;
     
     
-    g_flPausedTime[client] = GetEngineTime() - Influx_GetClientStartTime( client );
+    g_flPausedTime[client] = Influx_GetClientTime( client );
     
     GetClientAbsOrigin( client, g_vecContinuePos[client] );
     GetClientEyeAngles( client, g_vecContinueAng[client] );
@@ -359,7 +359,7 @@ stock bool ContinueRun( int client )
     
     Influx_SetClientState( client, STATE_RUNNING );
     
-    Influx_SetClientStartTime( client, GetEngineTime() - g_flPausedTime[client] );
+    Influx_SetClientTime( client, g_flPausedTime[client] );
     
     
     float vel[3];
