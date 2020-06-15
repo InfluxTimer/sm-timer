@@ -208,6 +208,13 @@ public void E_PreThinkPost_Client( int client )
     PrintToServer( INF_DEBUG_PRE..."PreThinkPost - Auto (aa: %.0f)", g_flAirAccelerate );
 #endif
     
+    if ( Influx_GetClientMode( client ) != MODE_AUTO )
+    {
+        UnhookThinks( client );
+        return;
+    }
+    
+
     g_ConVar_AirAccelerate.FloatValue = g_flAirAccelerate;
     
 #if !defined PRE_ORANGEBOX

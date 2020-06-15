@@ -163,6 +163,13 @@ public void E_PreThinkPost_Client( int client )
     PrintToServer( INF_DEBUG_PRE..."PreThinkPost - Scroll (aa: %.0f)", g_flAirAccelerate );
 #endif
     
+    if ( Influx_GetClientMode( client ) != MODE_SCROLL )
+    {
+        UnhookThinks( client );
+        return;
+    }
+    
+
     g_ConVar_AirAccelerate.FloatValue = g_flAirAccelerate;
     g_ConVar_EnableBunnyhopping.BoolValue = true;
 }

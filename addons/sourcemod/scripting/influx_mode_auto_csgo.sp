@@ -171,6 +171,13 @@ public void E_PreThinkPost_Client( int client )
     PrintToServer( INF_DEBUG_PRE..."PreThinkPost - Auto CS:GO (aa: %.0f)", g_flAirAccelerate );
 #endif
     
+    if ( Influx_GetClientMode( client ) != MODE_AUTO )
+    {
+        UnhookThinks( client );
+        return;
+    }
+    
+
     g_ConVar_AirAccelerate.FloatValue = g_flAirAccelerate;
     g_ConVar_EnableBunnyhopping.BoolValue = true;
     g_ConVar_AutoBhop.BoolValue = true;
@@ -181,6 +188,13 @@ public void E_PostThinkPost_Client( int client )
 #if defined DEBUG_THINK
     PrintToServer( INF_DEBUG_PRE..."PostThinkPost - Auto CS:GO (aa: %.0f)", g_flAirAccelerate );
 #endif
+
+    if ( Influx_GetClientMode( client ) != MODE_AUTO )
+    {
+        UnhookThinks( client );
+        return;
+    }
+    
 
     g_ConVar_AutoBhop.BoolValue = false;
 }
