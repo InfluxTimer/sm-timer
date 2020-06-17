@@ -189,14 +189,14 @@ public void E_PostThinkPost_Client( int client )
     PrintToServer( INF_DEBUG_PRE..."PostThinkPost - Auto CS:GO (aa: %.0f)", g_flAirAccelerate );
 #endif
 
+    g_ConVar_AutoBhop.BoolValue = false;
+	
+	
     if ( Influx_GetClientMode( client ) != MODE_AUTO )
     {
         UnhookThinks( client );
         return;
     }
-    
-
-    g_ConVar_AutoBhop.BoolValue = false;
 }
 
 public Action Cmd_Mode_Auto( int client, int args )
