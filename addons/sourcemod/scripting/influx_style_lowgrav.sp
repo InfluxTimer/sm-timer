@@ -173,6 +173,14 @@ public void E_PreThinkPost_Client( int client )
 #if defined DEBUG_THINK
     PrintToServer( INF_DEBUG_PRE..."PreThinkPost - Low Grav (grav: %.0f | low grav: %.0f)", g_flDefaultGravity, g_flLowGravGravity );
 #endif
+
+    if ( Influx_GetClientStyle( client ) != STYLE_LOWGRAV )
+    {
+        g_iCurThinkClient = 0;
+        
+        UnhookThinks( client );
+        return;
+    }
     
     g_iCurThinkClient = client;
     
@@ -188,6 +196,13 @@ public void E_PostThinkPost_Client( int client )
     g_iCurThinkClient = 0;
     
     g_ConVar_Gravity.FloatValue = g_flDefaultGravity;
+    
+    
+    if ( Influx_GetClientStyle( client ) != STYLE_LOWGRAV )
+    {
+        UnhookThinks( client );
+        return;
+    }
 }
 
 public Action Influx_OnSearchType( const char[] szArg, Search_t &type, int &value )
