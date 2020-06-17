@@ -1298,10 +1298,20 @@ stock void GotoCP( int client, int num )
 
 stock void DisableTas( int client )
 {
-    UnhookThinks( client );
+    RequestFrame( UnhookThinksCb, GetClientUserId( client ) );
     
     UnfreezeClient( client );
     
     
     SetClientCheats( client, false );
+}
+
+public void UnhookThinksCb( int userid ) // Can't unhook inside hook
+{
+    int client = GetClientOfUserId( userid );
+    if ( client <= 0 || !IsClientInGame( client ) )
+        return;
+
+
+    UnhookThinks( client );
 }

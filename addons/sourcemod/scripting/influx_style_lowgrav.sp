@@ -178,7 +178,7 @@ public void E_PreThinkPost_Client( int client )
     {
         g_iCurThinkClient = 0;
         
-        UnhookThinks( client );
+        RequestFrame( UnhookThinksCb, GetClientUserId( client ) );
         return;
     }
     
@@ -200,7 +200,7 @@ public void E_PostThinkPost_Client( int client )
     
     if ( Influx_GetClientStyle( client ) != STYLE_LOWGRAV )
     {
-        UnhookThinks( client );
+        RequestFrame( UnhookThinksCb, GetClientUserId( client ) );
         return;
     }
 }
@@ -227,6 +227,16 @@ public Action Influx_OnCheckClientStyle( int client, int style, float vel[3] )
     
     
     return Plugin_Stop;
+}
+
+public void UnhookThinksCb( int userid ) // Can't unhook inside hook
+{
+    int client = GetClientOfUserId( userid );
+    if ( client <= 0 || !IsClientInGame( client ) )
+        return;
+
+
+    UnhookThinks( client );
 }
 
 public Action Cmd_Style_LowGrav( int client, int args )

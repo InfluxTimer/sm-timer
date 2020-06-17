@@ -168,12 +168,22 @@ public void E_PreThinkPost_Client( int client )
     
     if ( Influx_GetClientMode( client ) != MODE_STOCKCAP )
     {
-        UnhookThinks( client );
+        RequestFrame( UnhookThinksCb, GetClientUserId( client ) );
         return;
     }
 
     g_ConVar_AirAccelerate.FloatValue = g_flAirAccelerate;
     g_ConVar_EnableBunnyhopping.BoolValue = false;
+}
+
+public void UnhookThinksCb( int userid ) // Can't unhook inside hook
+{
+    int client = GetClientOfUserId( userid );
+    if ( client <= 0 || !IsClientInGame( client ) )
+        return;
+
+
+    UnhookThinks( client );
 }
 
 public Action Cmd_Mode_StockCap( int client, int args )
