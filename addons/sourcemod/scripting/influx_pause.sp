@@ -236,7 +236,7 @@ stock bool PauseRun( int client )
     }
     
 
-    int runid = Influx_GetClientMode( client );
+    int runid = Influx_GetClientRunId( client );
     int modeid = Influx_GetClientMode( client );
     int styleid = Influx_GetClientStyle( client );
 
