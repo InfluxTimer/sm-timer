@@ -3130,15 +3130,24 @@ stock void BuildRunKvs( ArrayList kvs )
         
         CopyArray( data[RUN_TELEPOS], vec, 3 );
         // Make sure we're not saving invalid teleport locations
-        if (vec[0] != INVALID_TELEAXIS
-        ||  vec[1] != INVALID_TELEAXIS
-        ||  vec[2] != INVALID_TELEAXIS)
+        if ( Inf_IsValidTelePos( vec ) )
+        {
             kv.SetVector( "telepos", vec );
-        
+        }
+        else
+        {
+            LogError( INF_CON_PRE..."Run of id %i had invalid teleport location. No location will be saved.", data[RUN_ID] );
+        }
+
         float teleyaw = view_as<float>( data[RUN_TELEYAW] );
-        if ( teleyaw != INVALID_TELEANG )
+        if ( Inf_IsValidTeleAngle( teleyaw ) )
+        {
             kv.SetFloat( "teleyaw", view_as<float>( data[RUN_TELEYAW] ) );
-        
+        }
+        else
+        {
+            LogError( INF_CON_PRE..."Run of id %i had invalid teleport yaw. No yaw will be saved.", data[RUN_ID] );
+        }
         
         // Ask other plugins if they want to save some data.
         Call_StartForward( g_hForward_OnRunSave );
