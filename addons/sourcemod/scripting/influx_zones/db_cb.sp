@@ -24,15 +24,23 @@ public void Thrd_GetZones( Handle db, Handle res, const char[] szError, any data
     
     
     decl String:zonedata[1024];
+    int zoneid;
     KeyValues kv;
     
     
     while ( SQL_FetchRow( res ) )
     {
+        zoneid = SQL_FetchInt( res, 0 );
         SQL_FetchString( res, 1, zonedata, sizeof( zonedata ) );
         
         kv = new KeyValues( "" );
-        kv.ImportFromString( zonedata, "" );
+        if ( !kv.ImportFromString( zonedata, "" ) )
+        {
+            LogError( INF_CON_PRE..."Failed to import zone of id %i keyvalue data from database! Zone data:\n%s", zoneid, zonedata );
+
+            delete kv;
+            continue;
+        }
         
         
         LoadZoneFromKv( kv );

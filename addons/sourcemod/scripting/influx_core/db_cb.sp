@@ -385,6 +385,7 @@ public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, any data 
     }
     
     
+    int runid;
     decl String:rundata[1024];
     KeyValues kv;
     
@@ -393,10 +394,17 @@ public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, any data 
     
     while ( SQL_FetchRow( res ) )
     {
+        runid = SQL_FetchInt( res, 0 );
         SQL_FetchString( res, 1, rundata, sizeof( rundata ) );
         
         kv = new KeyValues( "" );
-        kv.ImportFromString( rundata, "" );
+        if ( !kv.ImportFromString( rundata, "" ) )
+        {
+            LogError( INF_CON_PRE..."Failed to import run of id %i keyvalue data from database! Run data:\n%s", runid, rundata );
+
+            delete kv;
+            continue;
+        }
         
         
         LoadRunFromKv( kv );
