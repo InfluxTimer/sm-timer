@@ -2502,18 +2502,34 @@ stock void ResetClientMode( int client )
 
 stock void TeleportOnSpawn( int client )
 {
-    if ( g_ConVar_TeleToStart.IntValue == 0 ) return;
-    
-    
     // We're paused, don't teleport to start.
-    if ( g_bLib_Pause && Influx_IsClientPaused( client ) ) return;
-    
+    if ( g_bLib_Pause && Influx_IsClientPaused( client ) )
+    {
+        return;
+    }
     
     
     bool teleport = false;
-    
-    
-    if ( g_ConVar_TeleToStart.IntValue == 1 )
+
+    //
+    // IMPORTANT
+    //
+    // Theory:
+    // CS:GO is a piece of shit and will refuse to move the player to a spawnpoint
+    // if the initial spawnpoint count isn't enough.
+    // So we have to check if they were moved to a valid spot or not.
+    //
+    float pos[3];
+    GetEntityOrigin( client, pos );
+
+    if ( !IsValidTeleLocation( pos ) )
+    {
+        teleport = true;
+
+        LogMessage( INF_CON_PRE... "Player spawned in solid (%.1f %.1f %.1f)! Moving them to start...", pos[0], pos[1], pos[2] );    
+    }
+    // Only if no spawn found.
+    else if ( g_ConVar_TeleToStart.IntValue == 1 )
     {
         char szSpawn[32];
         
@@ -2523,7 +2539,8 @@ stock void TeleportOnSpawn( int client )
         
         teleport = ( FindEntityByClassname( -1, szSpawn ) == -1 );
     }
-    else
+    // Always
+    else if ( g_ConVar_TeleToStart.IntValue == 2 )
     {
         teleport = true;
     }
