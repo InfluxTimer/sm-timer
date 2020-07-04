@@ -3082,11 +3082,17 @@ stock bool LoadRunFromKv( KeyValues kv )
         LogError( INF_CON_PRE..."Found duplicate run id %i!", runid );
         return false;
     }
-    
-    if ( !kv.GetSectionName( szRun, sizeof( szRun ) ) )
+
+
+    kv.GetString( "name", szRun, sizeof( szRun ), "" );
+    if ( szRun[0] == 0 )
     {
-        LogError( INF_CON_PRE..."Couldn't read run name!" );
-        return false;
+        // Fallback to section name.
+        if ( !kv.GetSectionName( szRun, sizeof( szRun ) ) )
+        {
+            LogError( INF_CON_PRE..."Couldn't read run name from kv!" );
+            return false;
+        }
     }
     
     
@@ -3109,6 +3115,8 @@ stock bool LoadRunFromKv( KeyValues kv )
 
 stock void BuildRunKvs( ArrayList kvs )
 {
+    char szRun[MAX_RUN_NAME];
+    char szKeyValueName[64];
     decl data[RUN_SIZE];
     float vec[3];
     
@@ -3117,11 +3125,14 @@ stock void BuildRunKvs( ArrayList kvs )
     {
         g_hRuns.GetArray( i, data );
         
+
+        int runid = data[RUN_ID];
+
+        FormatEx( szKeyValueName, sizeof( szKeyValueName ), "run%i", runid );
+        KeyValues kv = new KeyValues( szKeyValueName );
         
-        KeyValues kv = new KeyValues( view_as<char>( data[RUN_NAME] ) );
         
-        
-        kv.SetNum( "id", data[RUN_ID] );
+        kv.SetNum( "id", runid );
         
         
         kv.SetNum( "resflags", data[RUN_RESFLAGS] );
@@ -3148,17 +3159,21 @@ stock void BuildRunKvs( ArrayList kvs )
         {
             LogError( INF_CON_PRE..."Run of id %i had invalid teleport yaw. No yaw will be saved.", data[RUN_ID] );
         }
+
+        strcopy( szRun, sizeof( szRun ), view_as<char>( data[RUN_NAME] ) );
+        kv.SetString( "name", szRun );
         
+
         // Ask other plugins if they want to save some data.
         Call_StartForward( g_hForward_OnRunSave );
-        Call_PushCell( data[RUN_ID] );
+        Call_PushCell( runid );
         Call_PushCell( view_as<int>( kv ) );
         Call_Finish();
         
         
         decl arr[2];
         arr[0] = view_as<int>( kv );
-        arr[1] = data[RUN_ID];
+        arr[1] = runid;
         
         kvs.PushArray( arr );
     }

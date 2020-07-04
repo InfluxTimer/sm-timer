@@ -1160,8 +1160,9 @@ stock bool LoadZoneFromKv( KeyValues kv )
     ZoneType_t zonetype;
     int zoneid;
     
-    decl String:szType[32];
+    char szType[32];
     bool bInvalidZoneType;
+    char szZoneName[MAX_ZONE_NAME];
     
     
     kv.GetString( "type", szType, sizeof( szType ), "" );
@@ -1211,7 +1212,17 @@ stock bool LoadZoneFromKv( KeyValues kv )
     }
     
     
-    kv.GetSectionName( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME );
+    kv.GetString( "name", szZoneName, sizeof( szZoneName ), "" );
+    if ( szZoneName[0] == 0 )
+    {
+        // Fallback to section name.
+        if ( !kv.GetSectionName( szZoneName, sizeof( szZoneName ) ) )
+        {
+            LogError( INF_CON_PRE..."Couldn't find zone name! (id: %i)", zoneid );
+        }
+    }
+    
+    strcopy( view_as<char>( data[RUN_NAME] ), MAX_ZONE_NAME, szZoneName );
     
     
     // Ask other plugins what to load.
@@ -1316,36 +1327,60 @@ stock int SaveZones( bool bForceType = false, bool bUseDb = false )
 
 stock void BuildZoneKvs( ArrayList kvs )
 {
-    decl String:szBuffer[256];
+    char szBuffer[256];
+    char szKeyValueName[64];
     
     decl data[ZONE_SIZE];
-    int zoneid;
-    ZoneType_t zonetype;
-    int itype;
     
     
     for ( int i = 0; i < g_hZones.Length; i++ )
     {
         g_hZones.GetArray( i, data, sizeof( data ) );
         
-        // Forward slashes need to be removed since they create a subkey. WHY?!?!?!
-        ReplaceString( view_as<char>( data[ZONE_NAME] ), MAX_ZONE_NAME, "/", "" );
         
-        KeyValues kv = new KeyValues( view_as<char>( data[ZONE_NAME] ) );
-        
-        
-        
-        zoneid = data[ZONE_ID];
+        int zoneid = data[ZONE_ID];
         if ( zoneid < 1 ) continue;
         
         
-        zonetype = view_as<ZoneType_t>( data[ZONE_TYPE] );
+        ZoneType_t zonetype = view_as<ZoneType_t>( data[ZONE_TYPE] );
         
-        itype = FindZoneType( zonetype );
+        int itype = FindZoneType( zonetype );
         if ( itype == -1 )
         {
             continue;
         }
+        
+
+
+        FormatEx( szKeyValueName, sizeof( szKeyValueName ), "Zone%i", zoneid );
+        KeyValues kv = new KeyValues( szKeyValueName );
+        
+
+        kv.SetNum( "id", zoneid );
+        
+        
+        GetZoneTypeShortNameByIndex( itype, szBuffer, sizeof( szBuffer ) );
+        kv.SetString( "type", szBuffer );
+        
+        
+        FormatEx( szBuffer, sizeof( szBuffer ), "%.1f %.1f %.1f",
+            data[ZONE_MINS],
+            data[ZONE_MINS + 1],
+            data[ZONE_MINS + 2] );
+        kv.SetString( "mins", szBuffer );
+        
+        FormatEx( szBuffer, sizeof( szBuffer ), "%.1f %.1f %.1f",
+            data[ZONE_MAXS],
+            data[ZONE_MAXS + 1],
+            data[ZONE_MAXS + 2] );
+        kv.SetString( "maxs", szBuffer );
+
+
+        strcopy( szBuffer, sizeof( szBuffer ), view_as<char>( data[ZONE_NAME] ) );
+        kv.SetString( "name", szBuffer );
+
+
+
         
         
         // Ask other plugins what to save.
@@ -1375,27 +1410,6 @@ stock void BuildZoneKvs( ArrayList kvs )
         Call_PushCell( zonetype );
         Call_PushCell( view_as<int>( kv ) );
         Call_Finish();
-        
-        
-        
-        kv.SetNum( "id", zoneid );
-        
-        
-        GetZoneTypeShortNameByIndex( itype, szBuffer, sizeof( szBuffer ) );
-        kv.SetString( "type", szBuffer );
-        
-        
-        FormatEx( szBuffer, sizeof( szBuffer ), "%.1f %.1f %.1f",
-            data[ZONE_MINS],
-            data[ZONE_MINS + 1],
-            data[ZONE_MINS + 2] );
-        kv.SetString( "mins", szBuffer );
-        
-        FormatEx( szBuffer, sizeof( szBuffer ), "%.1f %.1f %.1f",
-            data[ZONE_MAXS],
-            data[ZONE_MAXS + 1],
-            data[ZONE_MAXS + 2] );
-        kv.SetString( "maxs", szBuffer );
         
         
         decl arr[2];
