@@ -167,7 +167,7 @@ public void OnPluginStart()
     g_ConVar_DefMapReward = CreateConVar( "influx_simpleranks_defmapreward", "8", "Default map reward.", FCVAR_NOTIFY, true, 0.0 );
     g_ConVar_NotifyReward = CreateConVar( "influx_simpleranks_displayreward", "1", "Do we notify the player with the amount of points they get?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_NotifyNewRank = CreateConVar( "influx_simpleranks_displaynewrank", "1", "Do we notify the player with the new rank they receive?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-    g_ConVar_NotFirst = CreateConVar( "influx_simpleranks_reward_notfirst_perc", "0.1", "Percentage of the normal amount we give to players. 0 = Disable", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_NotFirst = CreateConVar( "influx_simpleranks_reward_notfirst_perc", "0.1", "Percentage of the normal amount we give to players if it's not the first time. 0 = Disable", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_TopRankNumToPrint = CreateConVar( "influx_simpleranks_toprank_printnum", "10", "How many ranks to print with !toprank command. 0 = Disable", FCVAR_NOTIFY, true, 0.0, true, 25.0 );
     g_ConVar_UseClanTag = CreateConVar( "influx_simpleranks_useclantag", "1", "Is player's clan tag replaced with their rank?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
