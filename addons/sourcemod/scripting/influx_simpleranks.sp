@@ -93,6 +93,7 @@ ConVar g_ConVar_NotifyNewRank;
 ConVar g_ConVar_NotFirst;
 ConVar g_ConVar_TopRankNumToPrint;
 ConVar g_ConVar_UseClanTag;
+ConVar g_ConVar_GivePointsForSameModeNStyle;
 
 
 ArrayList g_hRanks;
@@ -170,6 +171,7 @@ public void OnPluginStart()
     g_ConVar_NotFirst = CreateConVar( "influx_simpleranks_reward_notfirst_perc", "0.1", "Percentage of the normal amount we give to players if it's not the first time. 0 = Disable", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_TopRankNumToPrint = CreateConVar( "influx_simpleranks_toprank_printnum", "10", "How many ranks to print with !toprank command. 0 = Disable", FCVAR_NOTIFY, true, 0.0, true, 25.0 );
     g_ConVar_UseClanTag = CreateConVar( "influx_simpleranks_useclantag", "1", "Is player's clan tag replaced with their rank?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    g_ConVar_GivePointsForSameModeNStyle = CreateConVar( "influx_simpleranks_givepointsforsamemodenstyle", "0", "If the player beats the map again with same mode and style, are points rewards for it?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     AutoExecConfig( true, "simpleranks", "influx" );
     

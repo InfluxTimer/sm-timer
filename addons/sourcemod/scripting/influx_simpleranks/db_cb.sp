@@ -107,6 +107,7 @@ public void Thrd_CheckClientRecCount( Handle db, Handle res, const char[] szErro
     int override_reward = -1;
     
     bool bFirst = SQL_GetRowCount( res ) ? false : true;
+    bool bGotPointsForSameModeNStyle = false;
     
     
     while ( SQL_FetchRow( res ) )
@@ -117,6 +118,9 @@ public void Thrd_CheckClientRecCount( Handle db, Handle res, const char[] szErro
         
         if ( mode != reqmode || style != reqstyle ) continue;
         
+
+        bGotPointsForSameModeNStyle = true;
+
         
         int oldreward = SQL_FetchInt( res, 2 );
         bool bOldFirst = SQL_FetchInt( res, 3 ) ? true : false;
@@ -126,13 +130,20 @@ public void Thrd_CheckClientRecCount( Handle db, Handle res, const char[] szErro
         // Hasn't changed.
         if ( oldreward >= curreward )
         {
-            return;
+            break;
         }
         
         override_reward = curreward - oldreward;
         bFirst = bOldFirst;
         
         break;
+    }
+
+    // Don't give points if we don't want to 
+    // give points for the same mode n style combo.
+    if ( bGotPointsForSameModeNStyle && !g_ConVar_GivePointsForSameModeNStyle.BoolValue )
+    {
+        return;
     }
     
     
