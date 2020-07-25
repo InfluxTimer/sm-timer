@@ -1392,12 +1392,9 @@ stock void BuildZoneKvs( ArrayList kvs )
         Call_PushCell( view_as<int>( kv ) );
         Call_Finish( res );
         
-        if ( res != Plugin_Handled )
+        if ( res == Plugin_Stop )
         {
-            if ( res == Plugin_Stop )
-            {
-                LogError( INF_CON_PRE..."Couldn't save zone %s (id: %i) with type %i!", data[ZONE_NAME], zoneid, zonetype );
-            }
+            LogError( INF_CON_PRE..."Couldn't save zone %s (id: %i) with type %i!", data[ZONE_NAME], zoneid, zonetype );
             
             kv.DeleteThis();
             //kv.GoBack();
