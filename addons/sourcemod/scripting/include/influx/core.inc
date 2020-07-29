@@ -38,8 +38,6 @@
 // NOTE: These cannot be more than 31 if you want to maintain compatibility!
 // However, if you're fine with mode-specific runs, and freestyle and block zones breaking, go ahead.
 #define MAX_RUNS                    31
-#define MAX_MODES                   6
-#define MAX_STYLES                  12
 
 #define VALID_RUN(%0)               ( %0 > 0 && %0 < MAX_RUNS )
 #define VALID_MODE(%0)              ( %0 > MODE_INVALID && %0 < MAX_MODES )
@@ -59,7 +57,12 @@ enum
     STYLE_BWD,
     STYLE_PARKOUR,
     STYLE_TAS,
-    STYLE_PRESPEED
+
+    // 10 - last style
+    STYLE_PRESPEED,
+
+    // 11
+    MAX_STYLES
 };
 
 enum
@@ -69,7 +72,12 @@ enum
     MODE_SCROLL,
     MODE_AUTO,
     MODE_VELCAP,
-    MODE_STOCKCAP
+
+    // 3 - last mode
+    MODE_STOCKCAP,
+
+    // 4
+    MAX_MODES
 };
 
 
