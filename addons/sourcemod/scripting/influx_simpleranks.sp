@@ -416,7 +416,7 @@ stock void SetClientRank( int client, int index, bool bChose, const char[] szOve
     
     if ( bPrint )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_RANKISNOW", client, g_szCurRank[client] );
+        Influx_PrintToChat( client, "%T", "INF_RANKISNOW", client, g_szCurRank[client] );
     }
 }
 
@@ -473,7 +473,7 @@ stock bool IncClientPoints( int client, int reward, bool allownegative = false, 
     
     if ( g_ConVar_NotifyReward.BoolValue && print )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_GOTPOINTS", client, reward, g_nPoints[client] );
+        Influx_PrintToChat( client, "%T", "INF_GOTPOINTS", client, reward, g_nPoints[client] );
     }
     
     if ( oldrank != newrank && newrank != -1 )

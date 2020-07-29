@@ -175,7 +175,7 @@ stock bool AttemptToSet( int client, int runid )
 {
     if ( Influx_FindRunById( runid ) == -1 )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_RUNNOTEXIST", client );
+        Influx_PrintToChat( client, "%T", "INF_RUNNOTEXIST", client );
         return false;
     }
     

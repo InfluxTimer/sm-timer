@@ -359,7 +359,7 @@ stock void AddValidatorTouchedByIndex( int client, int ival )
     
     if ( g_ConVar_MsgWhenTouched.BoolValue )
     {
-        Influx_PrintToChat( _, client, "You've entered a validator! ({MAINCLR1}%i{CHATCLR}/{MAINCLR1}%i{CHATCLR})",
+        Influx_PrintToChat( client, "You've entered a validator! ({MAINCLR1}%i{CHATCLR}/{MAINCLR1}%i{CHATCLR})",
             touched.Length,
             GetNumValidators( Influx_GetClientRunId( client ) ) );
     }

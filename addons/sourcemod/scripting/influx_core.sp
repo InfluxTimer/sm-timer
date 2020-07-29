@@ -47,8 +47,8 @@
 #define INF_UPDATE_CMD          "sm_updateinfluxdb"
 
 // Don't change these, change the cvars instead.
-#define DEF_CHATPREFIX              "{GREY}[{PINK}"...INF_NAME..."{GREY}]"
-#define DEF_CHATCLR                 "{WHITE}"
+//#define DEF_CHATPREFIX              "{GREY}[{PINK}"...INF_NAME..."{GREY}]"
+//#define DEF_CHATCLR                 "{WHITE}"
 
 #define DEF_VALIDMAPNAMES           "^(surf\\_|bhop\\_|kz\\_)\\w+"
 
@@ -105,11 +105,11 @@ float g_flLastValidWepSpd[INF_MAXPLAYERS];
 
 
 // CHAT COLOR
-char g_szChatPrefix[128];
-char g_szChatClr[64];
+//char g_szChatPrefix[128];
+//char g_szChatClr[64];
 
-ArrayList g_hChatClrs;
-int g_nChatClrLen;
+// ArrayList g_hChatClrs;
+//int g_nChatClrLen;
 
 
 
@@ -117,6 +117,9 @@ ArrayList g_hRuns;
 ArrayList g_hModes;
 ArrayList g_hStyles;
 ArrayList g_hRunResFlags;
+
+// Local color palette: key:val
+ArrayList g_hPalette;
 
 
 
@@ -168,9 +171,9 @@ ConVar g_ConVar_AirAccelerate;
 ConVar g_ConVar_EnableBunnyhopping;
 #endif
 
-ConVar g_ConVar_ChatPrefix;
-ConVar g_ConVar_ChatClr;
-ConVar g_ConVar_ChatMainClr1;
+//ConVar g_ConVar_ChatPrefix;
+//ConVar g_ConVar_ChatClr;
+//ConVar g_ConVar_ChatMainClr1;
 ConVar g_ConVar_SaveRunsOnMapEnd;
 ConVar g_ConVar_PreferDb;
 ConVar g_ConVar_SuppressMaxSpdWarning;
@@ -213,7 +216,7 @@ int g_iDefStyle;
 
 
 // MISC
-bool g_bIsCSGO;
+//bool g_bIsCSGO;
 bool g_bLate;
 int g_iCurDBVersion;
 
@@ -264,7 +267,6 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
         return APLRes_Failure;
     }
     
-    
     g_bLate = late;
     
     
@@ -280,11 +282,13 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     
     
     // In natives_chat.sp
-    CreateNative( "Influx_PrintToChat", Native_PrintToChat );
+    /*CreateNative( "Influx_PrintToChat", Native_PrintToChat );
     CreateNative( "Influx_PrintToChatAll", Native_PrintToChatAll );
-    CreateNative( "Influx_PrintToChatEx", Native_PrintToChatEx );
+    CreateNative( "Influx_PrintToChatEx", Native_PrintToChatEx );*/
+    //CreateNative( "Influx_FormatChatColors", Native_FormatChatColors );
+
+    CreateNative( "Influx_ReplaceChatColors", Native_ReplaceChatColors );
     CreateNative( "Influx_RemoveChatColors", Native_RemoveChatColors );
-    CreateNative( "Influx_FormatChatColors", Native_FormatChatColors );
     
     
     CreateNative( "Influx_StartTimer", Native_StartTimer );
@@ -375,14 +379,16 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_bIsCSGO = ( GetEngineVersion() == Engine_CSGO );
+    //g_bIsCSGO = ( GetEngineVersion() == Engine_CSGO );
     
     
     g_hRuns = new ArrayList( RUN_SIZE );
     g_hModes = new ArrayList( MODE_SIZE );
     g_hStyles = new ArrayList( STYLE_SIZE );
     g_hRunResFlags = new ArrayList( RUNRES_SIZE );
-    g_hChatClrs = new ArrayList( CLR_SIZE );
+    g_hPalette = new ArrayList(16, 0);
+    
+    // g_hChatClrs = new ArrayList( CLR_SIZE );
     
     g_hModeOvers = new ArrayList( MOVR_SIZE );
     g_hStyleOvers = new ArrayList( SOVR_SIZE );
@@ -470,14 +476,14 @@ public void OnPluginStart()
     // CONVARS
     CreateConVar( "influx_version", INF_VERSION, "Version of Influx. Do not change.", FCVAR_NOTIFY );
     
-    g_ConVar_ChatPrefix = CreateConVar( "influx_chatprefix", DEF_CHATPREFIX, "Prefix for chat messages.", FCVAR_NOTIFY );
+    /*g_ConVar_ChatPrefix = CreateConVar( "influx_chatprefix", DEF_CHATPREFIX, "Prefix for chat messages.", FCVAR_NOTIFY );
     g_ConVar_ChatPrefix.AddChangeHook( E_ConVarChanged_Prefix );
     
     g_ConVar_ChatClr = CreateConVar( "influx_chatcolor", DEF_CHATCLR, "Default chat color.", FCVAR_NOTIFY );
     g_ConVar_ChatClr.AddChangeHook( E_ConVarChanged_ChatClr );
     
     g_ConVar_ChatMainClr1 = CreateConVar( "influx_chatmainclr1", "{SKYBLUE}", "Override main color. This is used to highlight text. Eg Noclip: \"ON\"", FCVAR_NOTIFY );
-    g_ConVar_ChatMainClr1.AddChangeHook( E_ConVarChanged_ChatMainClr1 );
+    g_ConVar_ChatMainClr1.AddChangeHook( E_ConVarChanged_ChatMainClr1 );*/
     
     
     g_ConVar_SaveRunsOnMapEnd = CreateConVar( "influx_core_saveruns", "1", "Do we automatically save runs on map end?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
@@ -564,11 +570,11 @@ public void OnPluginStart()
 #endif
 
     
-#if defined TEST_COLORCHAT
+/*#if defined TEST_COLORCHAT
     RegAdminCmd( "sm_testchat", Cmd_TestColor, ADMFLAG_ROOT );
     
     RegAdminCmd( "sm_testchatremove", Cmd_TestColorRemove, ADMFLAG_ROOT );
-#endif
+#endif*/
 
 #if defined TEST_REGEX
     RegAdminCmd( "sm_testmapname", Cmd_TestMapName, ADMFLAG_ROOT );
@@ -582,7 +588,6 @@ public void OnPluginStart()
     
     // EVENTS
     HookEvent( "player_spawn", E_PlayerSpawn );
-    
     
     // LIBRARIES
     g_bLib_AdminMenu = LibraryExists( "adminmenu" );
@@ -903,6 +908,7 @@ public Action Influx_OnRecordInfoButtonPressed( int client, const char[] szInfo 
 public void OnMapStart()
 {
     g_hRuns.Clear();
+    g_hPalette.Clear();
     
     
     if ( g_hFunc_GetPlayerMaxSpeed == null && !g_ConVar_SuppressMaxSpdWarning.BoolValue )
@@ -924,7 +930,8 @@ public void OnMapStart()
     //LoadRuns();
     
     
-    InitColors();
+    //InitColors();
+    UpdatePalette();
 }
 
 public void OnMapEnd()
@@ -1063,7 +1070,7 @@ stock void CapWeaponSpeed( int client )
         &&  (GetEngineTime() - g_flLastValidWepSpd[client]) > 0.2 // We have the invalid weapon out for more than this.
         &&  g_flNextWepSpdPrintTime[client] < GetEngineTime() )
         {
-            Influx_PrintToChat( _, client, "%T", "INF_INVALIDWEAPONSPD", client, RoundFloat( modemaxspd ) );
+            Influx_PrintToChat( client, "%T", "INF_INVALIDWEAPONSPD", client, RoundFloat( modemaxspd ) );
             
             g_flNextWepSpdPrintTime[client] = GetEngineTime() + 10.0;
         }
@@ -1831,7 +1838,7 @@ stock void PrintValidModes( int client, int modeflags )
         strcopy( list, sizeof( list ), "{MAINCLR1}None{CHATCLR}!" );
     }
     
-    Influx_PrintToChat( _, client, "%T", "INF_VALIDMODES", client, list );
+    Influx_PrintToChat( client, "%T", "INF_VALIDMODES", client, list );
 }
 
 stock bool SetClientRun( int client, int runid, bool bTele = true, bool bPrintToChat = true )
@@ -1884,7 +1891,7 @@ stock bool SetClientRun( int client, int runid, bool bTele = true, bool bPrintTo
         
         if ( bPrintToChat )
         {
-            Influx_PrintToChat( _, client, "%T", "INF_RUNISNOW", client, sz );
+            Influx_PrintToChat( client, "%T", "INF_RUNISNOW", client, sz );
         }
     }
     
@@ -1946,7 +1953,7 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
     {
         if ( bPrintToChat )
         {
-            Influx_PrintToChat( _, client, "%T", "INF_NOACCESSTO", client, "INF_WORD_MODE" );
+            Influx_PrintToChat( client, "%T", "INF_NOACCESSTO", client, "INF_WORD_MODE" );
         }
         
         return false;
@@ -1969,7 +1976,7 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
     {
         if ( bPrintToChat )
         {
-            Influx_PrintToChat( _, client, "%T", "INF_WENTWRONGCHANGING", client, "INF_WORD_MODE" );
+            Influx_PrintToChat( client, "%T", "INF_WENTWRONGCHANGING", client, "INF_WORD_MODE" );
         }
         
         // Fallback to last mode.
@@ -1983,7 +1990,7 @@ stock bool SetClientMode( int client, int mode, bool bTele = true, bool bPrintTo
         char sz[MAX_MODE_NAME];
         GetModeNameByIndex( imode, sz, sizeof( sz ) );
         
-        Influx_PrintToChat( _, client, "%T", "INF_MODEORSTYLEISNOW", client, "INF_WORD_MODE", sz );
+        Influx_PrintToChat( client, "%T", "INF_MODEORSTYLEISNOW", client, "INF_WORD_MODE", sz );
     }
     
     
@@ -2034,7 +2041,7 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
     {
         if ( bPrintToChat )
         {
-            Influx_PrintToChat( _, client, "%T", "INF_NOACCESSTO", client, "INF_WORD_STYLE" );
+            Influx_PrintToChat( client, "%T", "INF_NOACCESSTO", client, "INF_WORD_STYLE" );
         }
         
         return false;
@@ -2055,7 +2062,7 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
     
     if ( res != Plugin_Continue )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_WENTWRONGCHANGING", client, "INF_WORD_STYLE" );
+        Influx_PrintToChat( client, "%T", "INF_WENTWRONGCHANGING", client, "INF_WORD_STYLE" );
         
         // Fallback to last style.
         style = laststyle;
@@ -2068,7 +2075,7 @@ stock bool SetClientStyle( int client, int style, bool bTele = true, bool bPrint
         char sz[MAX_STYLE_NAME];
         GetStyleNameByIndex( istyle, sz, sizeof( sz ) );
         
-        Influx_PrintToChat( _, client, "%T", "INF_MODEORSTYLEISNOW", client, "INF_WORD_STYLE", sz );
+        Influx_PrintToChat( client, "%T", "INF_MODEORSTYLEISNOW", client, "INF_WORD_STYLE", sz );
     }
     
     g_iStyleId[client] = style;
@@ -2112,7 +2119,7 @@ stock bool IsClientModeValidForRun( int client, int imode, int irun, bool bPrint
             GetModeNameByIndex( imode, mode, sizeof( mode ) );
             GetRunNameByIndex( irun, run, sizeof( run ) );
             
-            Influx_PrintToChat( _, client, "%T", "INF_MODEORSTYLENOTALLOWEDINRUN", client, "INF_WORD_MODE", mode, run );
+            Influx_PrintToChat( client, "%T", "INF_MODEORSTYLENOTALLOWEDINRUN", client, "INF_WORD_MODE", mode, run );
         }
         
         return false;
@@ -2139,7 +2146,7 @@ stock bool ChangeTele( int client )
         }
         
         
-        Influx_PrintToChat( _, client, "%T", "INF_WAITTILLSPAWN", client );
+        Influx_PrintToChat( client, "%T", "INF_WAITTILLSPAWN", client );
         return false;
     }
     
@@ -2283,7 +2290,7 @@ stock void InvalidateClientRun( int client )
     {
         if ( g_iRunState[client] == STATE_RUNNING )
         {
-            Influx_PrintToChat( _, client, "%T", "INF_TIMERDISABLED", client );
+            Influx_PrintToChat( client, "%T", "INF_TIMERDISABLED", client );
         }
         
         g_iRunState[client] = STATE_NONE;
@@ -2671,7 +2678,7 @@ stock bool RemoveClientTimes( int client, int irun, int mode, int style, bool bP
             Inf_FormatSeconds( time, szTime, sizeof( szTime ) );
             
             
-            Influx_PrintToChat( _, client, "%T", "INF_RUNS_DELETED", client, szRun, szTime );
+            Influx_PrintToChat( client, "%T", "INF_RUNS_DELETED", client, szRun, szTime );
         }
     }
     
@@ -2680,7 +2687,7 @@ stock bool RemoveClientTimes( int client, int irun, int mode, int style, bool bP
     
     if ( found )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_RUN_RUNS_DELETED", client, szRun );
+        Influx_PrintToChat( client, "%T", "INF_RUN_RUNS_DELETED", client, szRun );
     }
     
     
@@ -2937,7 +2944,7 @@ stock int AddRun(   int runid,
     }
     
     if ( bPrint )
-        Influx_PrintToChatAll( _, 0, "%T", "INF_RUN_CREATED", LANG_SERVER, szRun );
+        Influx_PrintToChat( 0, "%T", "INF_RUN_CREATED", LANG_SERVER, szRun );
     
     
     return runid;

@@ -156,7 +156,7 @@ public int Hndlr_DeleteRecording_Confirm( Menu menu, MenuAction action, int clie
         decl String:szPath[PLATFORM_MAX_PATH];
         FormatRecordingPath( szPath, sizeof( szPath ), runid, mode, style );
         
-        Influx_PrintToChat( _, client, "Successfully deleted '{MAINCLR1}...%s{CHATCLR}'!", szPath[16] );
+        Influx_PrintToChat( client, "%T", "INF_REPLAYDELETED", client, szPath[16] );
         
         
         ArrayList rec = GetRunRec( irun, mode, style );

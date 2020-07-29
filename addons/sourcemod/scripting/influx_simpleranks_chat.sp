@@ -1,25 +1,59 @@
-#include <sourcemod>
+#define MAXNAME_LENGTH 128
 
+// chat-processor.inc shared info
+forward Action CP_OnChatMessage(int& author, ArrayList recipients, char[] flagstring, char[] name, char[] message, bool & processcolors, bool & removecolors);
+
+public SharedPlugin __pl_chat_processor =
+{
+	name = "chat-processor",
+	file = "chat-processor.smx",
+	required = 0
+
+};
+// chat-processor end
+
+// scp.inc shared info
+forward Action OnChatMessage(int &author, Handle recipients, char[] name, char[] message);
+
+public SharedPlugin:_pl_scp = 
+{
+	name = "scp",
+	file = "simple-chatprocessor.smx",
+	required = 0
+};
+// scp.inc end
+
+// ccprocessor.inc shared info
+enum
+{
+	eMsg_TEAM = 0,
+	eMsg_ALL,
+	eMsg_CNAME,
+
+	/* The bind '{MSG}' is not called for this type*/
+	eMsg_RADIO,	
+
+	eMsg_SERVER,
+	
+	eMsg_MAX
+};
+
+forward void cc_proc_RebuildString(int iClient, int &pLevel, const char[] szBind, char[] szBuffer, int iSize);
+forward void cc_proc_MsgBroadType(const int iType);
+
+public SharedPlugin __pl_ccprocessor= 
+{
+	name = "ccprocessor",
+	file = "ccprocessor.smx",
+	required = 0
+};
+// ccprocessor.inc end
+
+#include <sourcemod>
 
 #include <influx/core>
 #include <influx/simpleranks>
 #include <influx/simpleranks_chat>
-
-#undef REQUIRE_PLUGIN
-#include <influx/silent_chatcmds>
-#include <basecomm>
-
-
-
-ConVar g_ConVar_PrintToServer;
-
-
-bool g_bHasBaseChat;
-
-
-bool g_bLib_BaseComm;
-bool g_bLib_SilentChatCmds;
-
 
 public Plugin myinfo =
 {
@@ -36,107 +70,91 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     RegPluginLibrary( INFLUX_LIB_SIMPLERANKS_CHAT );
 }
 
-public void OnPluginStart()
+public Action CP_OnChatMessage(int& author, ArrayList recipients, char[] flagstring, char[] name, char[] message, bool & processcolors, bool & removecolors)
 {
-    // CONVARS
-    g_ConVar_PrintToServer = CreateConVar( "influx_simpleranks_chat_printtoserver", "2", "Is the player's message printed to server console? 1 = Do it, 2 = Remove player rank as well.", FCVAR_NOTIFY );
-    
-    AutoExecConfig( true, "simpleranks_chat", "influx" );
-    
-    
-    // LIBRARIES
-    g_bLib_BaseComm = LibraryExists( "basecomm" );
-    g_bLib_SilentChatCmds = LibraryExists( INFLUX_LIB_SILENT_CHATCMDS );
-    
-    
-    
-    g_bHasBaseChat = ( FindPluginByFile( "basechat.smx" ) != null ) ? true : false;
-}
-
-public void OnLibraryAdded( const char[] lib )
-{
-    if ( StrEqual( lib, "basecomm" ) ) g_bLib_BaseComm = true;
-    if ( StrEqual( lib, INFLUX_LIB_SILENT_CHATCMDS ) ) g_bLib_SilentChatCmds = true;
-}
-
-public void OnLibraryRemoved( const char[] lib )
-{
-    if ( StrEqual( lib, "basecomm" ) ) g_bLib_BaseComm = false;
-    if ( StrEqual( lib, INFLUX_LIB_SILENT_CHATCMDS ) ) g_bLib_SilentChatCmds = false;
-}
-
-public Action OnClientSayCommand( int client, const char[] szCommand, const char[] szMsg )
-{
-    if ( !client ) return Plugin_Continue;
-    
-    if ( !IsClientInGame( client ) ) return Plugin_Continue;
-    
-    
-    // This is an admin command.
-    if ( szMsg[0] == '@' && ShouldIgnoreAtSign() )
+    if( !IsFakeClient( author ) )
     {
-        return Plugin_Continue;
-    }
-    
-    // Gagged?
-    if ( g_bLib_BaseComm && BaseComm_IsClientGagged( client ) )
-    {
-        return Plugin_Handled;
-    }
-    
-    // This message should be silenced.
-    if ( g_bLib_SilentChatCmds && IsChatTrigger() && Influx_ShouldSilenceCmd( szMsg ) )
-    {
-        return Plugin_Handled;
-    }
-    
-    static char szRank[256];
-    static char szName[MAX_NAME_LENGTH];
-    static char szNewMsg[512];
-    
-    
-    
-    GetClientName( client, szName, sizeof( szName ) );
-    Influx_RemoveChatColors( szName, sizeof( szName ) );
-    
-    
-    strcopy( szNewMsg, sizeof( szNewMsg ), szMsg );
-    Influx_RemoveChatColors( szNewMsg, sizeof( szNewMsg ) );
-    
-    Influx_GetClientSimpleRank( client, szRank, sizeof( szRank ) );
-    
-    if ( szRank[0] != 0 )
-    {
-        Influx_PrintToChatAll( PRINTFLAGS_NOPREFIX, client, "%s {TEAM}%s\x01 :  %s", szRank, szName, szNewMsg );
-        
-        
-        if ( g_ConVar_PrintToServer.IntValue > 0 )
-        {
-            static char szNoColorRank[256];
-            strcopy( szNoColorRank, sizeof( szNoColorRank ), szRank );
-            Influx_RemoveChatColors( szNoColorRank, sizeof( szNoColorRank ) );
+        char szRank[64];
 
-            // We don't want the rank?
-            if ( g_ConVar_PrintToServer.IntValue > 1 )
-            {
-                szNoColorRank[0] = 0;
-            }
-            
-            PrintToServer( "%s%s%s: %s",
-                szNoColorRank,
-                ( szNoColorRank[0] != 0 ) ? " " : "", // Add space if we have a rank.
-                szName,
-                szNewMsg );
+        GetClientRank( author, szRank, sizeof( szRank ), false );
+
+        if( szRank[0] )
+        {   
+            Format(name, MAXNAME_LENGTH, "%s %s", szRank, name );
+
+            return Plugin_Changed;
         }
         
-        
-        return Plugin_Handled;
     }
-    
+
     return Plugin_Continue;
 }
 
-bool ShouldIgnoreAtSign()
+public Action OnChatMessage(int &author, Handle recipients, char[] name, char[] message)
 {
-    return g_bHasBaseChat;
+    if( !IsFakeClient( author ) )
+    {
+        char szRank[64];
+
+        GetClientRank( author, szRank, sizeof( szRank ), false );
+
+        if( szRank[0] )
+        {   
+            Format(name, MAXNAME_LENGTH, "%s %s", szRank, name );
+
+            return Plugin_Changed;
+        }
+        
+    }
+
+    return Plugin_Continue;
+}
+
+int MType;
+
+public void cc_proc_MsgBroadType(const int iType)
+{
+    MType = iType;
+}
+
+public void cc_proc_RebuildString(int client, int &pLevel, const char[] szBind, char[] szBuffer, int iSize)
+{
+#define PLEVEL 1
+    
+    if(MType == eMsg_CNAME || MType == eMsg_SERVER)
+        return;
+
+    if(!StrEqual(szBind, "{PREFIX}"))
+        return;
+    
+    char szRank[64];
+
+    GetClientRank( client, szRank, sizeof( szRank ) );
+
+    if( !szRank[0] )
+        return;
+    
+    if(PLEVEL < pLevel)
+        return;
+    
+    pLevel = PLEVEL;
+    FormatEx( szBuffer, iSize, szRank );
+}
+
+stock void Influx_ClearParams(char[][] params, int count)
+{
+    for(int i; i < count; i++)
+        params[i][0] = '\0';
+}
+
+void GetClientRank(int client, char[] name, int size, bool IsCCP = true)
+{
+    Influx_GetClientSimpleRank( client, name, size );
+
+    if( !name[0] )
+        return;
+    
+    if(!IsCCP)
+        Influx_ReplaceChatColors(name, size, false);
+    
 }

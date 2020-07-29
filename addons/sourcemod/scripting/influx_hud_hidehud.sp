@@ -23,6 +23,8 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_hidehud", Cmd_Settings );
     RegConsoleCmd( "sm_togglehud", Cmd_Settings );
+
+    LoadTranslations( INFLUX_PHRASES );
 }
 
 public void Influx_OnRequestHUDMenuCmds()
@@ -75,7 +77,7 @@ public Action Cmd_Timer( int client, int args )
     Influx_SetClientHideFlags( client, hideflags );
     
     
-    Influx_PrintToChat( _, client, "Your timer is now {MAINCLR1}%s{CHATCLR}!", ( hideflags & HIDEFLAG_TIMER ) ? "hidden" : "visible" );
+    Influx_PrintToChat( client, "%T", "INF_HIDE_TIMER", client, ( hideflags & HIDEFLAG_TIMER ) ? "hidden" : "visible" );
     
     return Plugin_Handled;
 }
@@ -99,7 +101,7 @@ public Action Cmd_Sidebar( int client, int args )
     Influx_SetClientHideFlags( client, hideflags );
     
     
-    Influx_PrintToChat( _, client, "Your sidebar is now {MAINCLR1}%s{CHATCLR}!", ( hideflags & HIDEFLAG_SIDEBAR ) ? "hidden" : "visible" );
+    Influx_PrintToChat( client, "%T", "INF_HIDE_SIDEBAR", client, ( hideflags & HIDEFLAG_SIDEBAR ) ? "hidden" : "visible" );
     
     return Plugin_Handled;
 }

@@ -20,7 +20,7 @@ public Action Cmd_ReloadOverrides( int client, int args )
     
     if ( client )
     {
-        Influx_PrintToChat( _, client, "Reloaded mode/style overrides." );
+        PrintToChat( client, "Reloaded mode/style overrides." );
     }
     else
     {
@@ -74,16 +74,16 @@ public Action Cmd_Admin_SetTelePos( int client, int args )
             char szRun[MAX_RUN_NAME];
             GetRunNameByIndex( irun, szRun, sizeof( szRun ) );
             
-            Influx_PrintToChat( _, client, "Updated run's {MAINCLR1}%s{CHATCLR} teleport position and angle!", szRun );
+            PrintToChat( client, "Updated run's %s teleport position and angle!", szRun );
         }
         else
         {
-            Influx_PrintToChat( _, client, "That position isn't a valid teleport destination!" );
+            PrintToChat( client, "That position isn't a valid teleport destination!" );
         }
     }
     else
     {
-        Influx_PrintToChat( _, client, "%T", "INF_RUNIDNOTEXIST", client, runid );
+        PrintToChat( client, "%T", "INF_RUNIDNOTEXIST", client, runid );
     }
     
     return Plugin_Handled;
@@ -127,7 +127,7 @@ public Action Cmd_Admin_SetRunName( int client, int args )
         SetRunNameByIndex( index, szNew );
         
         
-        Influx_PrintToChatAll( _, client, "%T", "INF_RUN_RENAMED", LANG_SERVER, szOld, szNew );
+        PrintToChatAll( "%T", "INF_RUN_RENAMED", LANG_SERVER, szOld, szNew );
         
         
         if ( !client )
@@ -139,7 +139,7 @@ public Action Cmd_Admin_SetRunName( int client, int args )
     {
         if ( client )
         {
-            Influx_PrintToChat( _, client, "%T", "INF_RUNIDNOTEXIST", client, runid );
+            PrintToChat( client, "%T", "INF_RUNIDNOTEXIST", client, runid );
         }
         else
         {
@@ -175,7 +175,7 @@ public Action Cmd_Admin_DeleteRun( int client, int args )
     return Plugin_Handled;
 }
 
-public Action Cmd_TestColor( int client, int args )
+/*public Action Cmd_TestColor( int client, int args )
 {
     if ( args )
     {
@@ -197,9 +197,9 @@ public Action Cmd_TestColor( int client, int args )
     }
     
     return Plugin_Handled;
-}
+}*/
 
-public Action Cmd_TestColorRemove( int client, int args )
+/*public Action Cmd_TestColorRemove( int client, int args )
 {
     if ( args )
     {
@@ -221,7 +221,7 @@ public Action Cmd_TestColorRemove( int client, int args )
     }
     
     return Plugin_Handled;
-}
+}*/
 
 public Action Cmd_TestMapName( int client, int args )
 {

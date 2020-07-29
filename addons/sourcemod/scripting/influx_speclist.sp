@@ -42,6 +42,8 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_spectatorlist", Cmd_SpecList );
     RegConsoleCmd( "sm_listspecs", Cmd_SpecList );
     RegConsoleCmd( "sm_listspectators", Cmd_SpecList );
+
+    LoadTranslations( INFLUX_PHRASES );
 }
 
 public void Influx_RequestHelpCmds()
@@ -123,7 +125,7 @@ public Action Cmd_SpecList( int client, int args )
     
     switch ( g_ConVar_NotifyAll.IntValue )
     {
-        case 0 : Influx_PrintToChat( _, client, szMsg );
+        case 0 : Influx_PrintToChat( client, szMsg );
         case 1 : Influx_PrintToChatAll( _, client, szMsg );
         case 2 :
         {
@@ -133,7 +135,7 @@ public Action Cmd_SpecList( int client, int args )
             }
             else
             {
-                Influx_PrintToChat( _, client, szMsg );
+                Influx_PrintToChat( client, szMsg );
             }
         }
     }

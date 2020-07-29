@@ -58,6 +58,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+
     // FORWARDS
     g_hForward_OnRequestHelpCmds = CreateGlobalForward( "Influx_OnRequestHelpCmds", ET_Ignore );
     
@@ -101,7 +103,7 @@ public Action T_Show( Handle hTimer, int client )
 {
     if ( (client = GetClientOfUserId( client )) > 0 && IsClientInGame( client ) )
     {
-        Influx_PrintToChat( _, client, "Type {MAINCLR1}!help{CHATCLR} to see a list of commands." );
+        Influx_PrintToChat( client, "%T", "INF_HELP", client );
     }
 }
 

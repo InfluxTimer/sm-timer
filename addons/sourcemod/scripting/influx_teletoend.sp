@@ -49,7 +49,7 @@ public Action Cmd_GotoEnd( int client, int args )
         Influx_GetRunName( runid, szRun, sizeof( szRun ) );
         
         
-        Influx_PrintToChat( _, client, "Couldn't find end to {MAINCLR1}%s{CHATCLR}!", szRun );
+        Influx_PrintToChat( client, "Couldn't find end to {MAINCLR1}%s{CHATCLR}!", szRun );
     }
     
     return Plugin_Handled;

@@ -3,13 +3,13 @@ public Action Cmd_Empty( int client, int args ) { return Plugin_Handled; }
 
 public Action Cmd_CustomRank( int client, int args )
 {
-    if ( !client ) return Plugin_Handled;
+    if ( !client || !IsClientInGame( client ) ) return Plugin_Handled;
     
     if ( !CanUserUseCustomRank( client ) ) return Plugin_Handled;
     
     if ( !args )
     {
-        Influx_PrintToChat( _, client, "Usage: sm_customrank <rank>" );
+        Influx_PrintToChat( client, "%T", "INF_USAGE_CUSTOMRANK", client );
         return Plugin_Handled;
     }
     
@@ -19,7 +19,7 @@ public Action Cmd_CustomRank( int client, int args )
     
     if ( len >= MAX_RANK_SIZE )
     {
-        Influx_PrintToChat( _, client, "Rank length cannot exceed %i characters!", MAX_RANK_SIZE );
+        Influx_PrintToChat( client, "%T", "INF_INVALID_LEN", client, MAX_RANK_SIZE );
         return Plugin_Handled;
     }
     
@@ -33,11 +33,13 @@ public Action Cmd_CustomRank( int client, int args )
 
 public Action Cmd_SetMapReward( int client, int args )
 {
+    if ( !client || !IsClientInGame( client ) ) return Plugin_Handled;
+    
     if ( !CanUserSetMapReward( client ) ) return Plugin_Handled;
     
     if ( !args )
     {
-        Inf_ReplyToClient( client, "Usage: sm_setmapreward <mapname (optional)> <points>" );
+        Inf_ReplyToClient( client, "%T", "INF_USAGE_MAPREWARD", ( client ) ? client : LANG_SERVER );
         return Plugin_Handled;
     }
     
@@ -80,7 +82,7 @@ public Action Cmd_GivePoints( int client, int args )
     
     if ( !args )
     {
-        Inf_ReplyToClient( client, "Usage: sm_givesimplepoints <target (optional)> <amount> (Note: can be negative)" );
+        Inf_ReplyToClient( client, "%T", "INF_USAGE_GIVEPOINTS", ( client ) ? client : LANG_SERVER );
         return Plugin_Handled;
     }
     
@@ -123,13 +125,13 @@ public Action Cmd_GivePoints( int client, int args )
     
     if ( nTargets < 1 )
     {
-        Inf_ReplyToClient( client, "No targets found!" );
+        Inf_ReplyToClient( client, "%T", "INF_NO_TARGETS", ( client ) ? client : LANG_SERVER );
         return Plugin_Handled;
     }
     
     if ( !points )
     {
-        Inf_ReplyToClient( client, "You can't give zero points!" );
+        Inf_ReplyToClient( client, "%T", "INF_ZERO_POINTS", ( client ) ? client : LANG_SERVER );
         return Plugin_Handled;
     }
     

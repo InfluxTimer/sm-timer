@@ -392,7 +392,7 @@ public void E_PreThinkPost_Client( int client )
 
         if ( szError[0] != 0 && ShouldPrintMsg( client ) )
         {
-            Influx_PrintToChat( _, client, "%s", szError );
+            Influx_PrintToChat( client, "%s", szError );
             g_flLastPrint[client] = GetEngineTime();
         }
     }
@@ -589,8 +589,8 @@ stock CappingRet_t PerformCapping( int client, int runid, char[] errormsg, int e
                 }
                 else
                 {
-                    FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDEXCEED", client, RoundFloat( maxprespd ) );
-                    FormatEx( errormsg, error_len, "Your prespeed cannot exceed {MAINCLR1}%.0f{CHATCLR}!", maxprespd );
+                    FormatEx( errormsg, error_len, "%T", "INF_PRESPEEDEXCEED", client,  maxprespd );
+                    //FormatEx( errormsg, error_len, "Your prespeed cannot exceed {MAINCLR1}%.0f{CHATCLR}!", maxprespd );
                     return CAPPING_STOP;
                 }
             }

@@ -25,6 +25,8 @@ public void OnPluginStart()
     // CMDS
     RegConsoleCmd( "sm_viewmodel", Cmd_Viewmodel, "Toggle viewmodel." );
     RegConsoleCmd( "sm_vm", Cmd_Viewmodel );
+
+    LoadTranslations( INFLUX_PHRASES );
 }
 
 public void Influx_OnRequestHUDMenuCmds()
@@ -85,7 +87,7 @@ public Action Cmd_Viewmodel( int client, int args )
     SetDrawViewmodel( client, draw );
     
     
-    Influx_PrintToChat( _, client, "Your viewmodel is now {MAINCLR1}%s{CHATCLR}!", draw ? "visible" : "hidden" );
+    Influx_PrintToChat( client, "%T", "INF_HIDE_VIEWMODEL", client, draw ? "visible" : "hidden" );
     
     return Plugin_Handled;
 }

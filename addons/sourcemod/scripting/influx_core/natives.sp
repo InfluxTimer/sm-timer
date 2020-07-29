@@ -380,7 +380,7 @@ public int Native_StartTimer( Handle hPlugin, int nParms )
             strcopy( errormsg, sizeof( errormsg ), "You can't start this run!" );
         }
         
-        Influx_PrintToChat( _, client, "%s", errormsg );
+        Influx_PrintToChat( client, "%s", errormsg );
         
         // Reset the run so the hud is updated.
         g_iRunState[client] = STATE_NONE;
@@ -516,7 +516,7 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
             strcopy( errormsg, sizeof( errormsg ), "You can't finish this run!" );
         }
         
-        Influx_PrintToChat( _, client, "%s", errormsg );
+        Influx_PrintToChat( client, "%s", errormsg );
         
         return;
     }

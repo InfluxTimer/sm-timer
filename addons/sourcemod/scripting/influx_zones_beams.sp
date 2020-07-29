@@ -243,7 +243,7 @@ public Action Cmd_ShowHidden( int client, int args )
     
     g_bShowHidden[client] = !g_bShowHidden[client];
     
-    Influx_PrintToChat( _, client, "Hidden beams are now %s.", g_bShowHidden[client] ? "enabled" : "disabled" );
+    Influx_PrintToChat( client, "Hidden beams are now %s.", g_bShowHidden[client] ? "enabled" : "disabled" );
     
     return Plugin_Handled;
 }

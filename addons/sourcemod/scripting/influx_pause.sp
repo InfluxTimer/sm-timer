@@ -155,7 +155,7 @@ public Action Cmd_Practise_Continue( int client, int args )
     }
     else
     {
-        Influx_PrintToChat( _, client, "%T", "INF_NOTPAUSED", client );
+        Influx_PrintToChat( client, "%T", "INF_NOTPAUSED", client );
     }
     
     return Plugin_Handled;
@@ -167,7 +167,7 @@ public Action Cmd_Practise_Pause( int client, int args )
     
     if ( Influx_GetClientState( client ) != STATE_RUNNING )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_MUSTBERUNNING", client );
+        Influx_PrintToChat( client, "%T", "INF_MUSTBERUNNING", client );
         return Plugin_Handled;
     }
     
@@ -182,7 +182,7 @@ public Action Cmd_Practise_Pause( int client, int args )
     }
     else
     {
-        Influx_PrintToChat( _, client, "%T", "INF_CANTPAUSE_PRAC", client );
+        Influx_PrintToChat( client, "%T", "INF_CANTPAUSE_PRAC", client );
     }
     
     return Plugin_Handled;
@@ -194,21 +194,21 @@ stock bool PauseRun( int client )
 	
     if ( Influx_GetClientState( client ) != STATE_RUNNING )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_MUSTBERUNNING", client );
+        Influx_PrintToChat( client, "%T", "INF_MUSTBERUNNING", client );
         return false;
     }
     
     
     if ( !IsPlayerAlive( client ) )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_MUSTBEALIVE", client );
+        Influx_PrintToChat( client, "%T", "INF_MUSTBEALIVE", client );
         return false;
     }
     
     
     if ( g_flPauseLimit[client] > GetEngineTime() )
     {
-        Influx_PrintToChat( _, client, "%T",
+        Influx_PrintToChat( client, "%T",
             "INF_PAUSENOTSOFAST",
             client,
             RoundFloat( g_flPauseLimit[client] - GetEngineTime() ) );
@@ -220,13 +220,13 @@ stock bool PauseRun( int client )
     
     if ( !maxpauses )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_PAUSENOTALLOWED", client );
+        Influx_PrintToChat( client, "%T", "INF_PAUSENOTALLOWED", client );
         return false;
     }
     
     if ( maxpauses > 0 && g_nPauses[client] >= maxpauses )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_PAUSELIMIT", client, maxpauses );
+        Influx_PrintToChat( client, "%T", "INF_PAUSELIMIT", client, maxpauses );
         return false;
     }
     
@@ -284,7 +284,7 @@ stock bool PauseRun( int client )
     
     GetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client], sizeof( g_szPausedTargetName[] ) );
 
-    Influx_PrintToChat( _, client, "%T", "INF_NOWPAUSED", client );
+    Influx_PrintToChat( client, "%T", "INF_NOWPAUSED", client );
     
     
     // Send success post.
@@ -373,7 +373,7 @@ stock bool ContinueRun( int client )
     
     SetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client] );
 
-    Influx_PrintToChat( _, client, "%T", "INF_NOLONGERPAUSED", client );
+    Influx_PrintToChat( client, "%T", "INF_NOLONGERPAUSED", client );
     
     
     // Send success post.

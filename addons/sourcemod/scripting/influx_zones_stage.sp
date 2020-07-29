@@ -906,7 +906,7 @@ stock void TeleportToStage( int client, int stagenum )
     
     if ( index == -1 )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_STAGENUMBERNOTEXIST", client, stagenum );
+        Influx_PrintToChat( client, "%T", "INF_STAGENUMBERNOTEXIST", client, stagenum );
         return;
     }
     
@@ -963,11 +963,11 @@ public Action Cmd_SetStageTelePos( int client, int args )
         SetStageTeleYaw( index, ang[1] );
         
         
-        Influx_PrintToChat( _, client, "Set stage {MAINCLR1}%i{CHATCLR} tele position and yaw!", stagenum );
+        Influx_PrintToChat( client, "Set stage {MAINCLR1}%i{CHATCLR} tele position and yaw!", stagenum );
     }
     else
     {
-        Influx_PrintToChat( _, client, "%T", "INF_STAGENUMBERNOTEXIST", client, stagenum );
+        Influx_PrintToChat( client, "%T", "INF_STAGENUMBERNOTEXIST", client, stagenum );
     }
     
     return Plugin_Handled;
@@ -1095,7 +1095,7 @@ public Action Cmd_Back( int client, int args )
     
     if ( Influx_GetClientState( client ) != STATE_RUNNING )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_MUSTBERUNNING", client );
+        Influx_PrintToChat( client, "%T", "INF_MUSTBERUNNING", client );
         return Plugin_Handled;
     }
     
@@ -1110,7 +1110,7 @@ public Action Cmd_Back( int client, int args )
     
     if ( !g_bLeftStageZone[client] )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_LEAVEZONEFIRST", client );
+        Influx_PrintToChat( client, "%T", "INF_LEAVEZONEFIRST", client );
         return Plugin_Handled;
     }
     

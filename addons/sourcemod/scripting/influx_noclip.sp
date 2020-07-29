@@ -40,6 +40,8 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_fly", Cmd_Noclip );
     
     AddCommandListener( Lstnr_Noclip, "sm_noclip" );
+
+    LoadTranslations( INFLUX_PHRASES );
     
     
     // LIBRARIES
@@ -108,7 +110,7 @@ stock void HandleNoclip( int client )
 {
     if ( !IsPlayerAlive( client ) )
     {
-        Influx_PrintToChat( _, client, "You must be alive to use this command!" );
+        Influx_PrintToChat( client, "%T", "INF_NOCLIP_ALIVE", client );
         return;
     }
     
@@ -174,7 +176,6 @@ stock void ToggleNoclip( int client, bool bPrint = false )
     
     if ( bPrint )
     {
-        Influx_PrintToChat( _, client, "Noclip: {MAINCLR1}%s",
-            ( prevmove == MOVETYPE_NOCLIP ) ? "OFF" : "ON" );
+        Influx_PrintToChat( client, "Noclip: {MAINCLR1}%s", ( prevmove == MOVETYPE_NOCLIP ) ? "OFF" : "ON" );
     }
 }

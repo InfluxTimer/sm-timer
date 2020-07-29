@@ -56,7 +56,7 @@ public void E_ConVarChanged_DefStyle( ConVar convar, const char[] oldValue, cons
     g_iDefStyle = value;
 }
 
-public void E_ConVarChanged_Prefix( ConVar convar, const char[] oldValue, const char[] newValue )
+/*public void E_ConVarChanged_Prefix( ConVar convar, const char[] oldValue, const char[] newValue )
 {
     DetermineChatPrefix();
 }
@@ -69,7 +69,7 @@ public void E_ConVarChanged_ChatClr( ConVar convar, const char[] oldValue, const
 public void E_ConVarChanged_ChatMainClr1( ConVar convar, const char[] oldValue, const char[] newValue )
 {
     DetermineChatMainClr1();
-}
+}*/
 
 public void E_ConVarChanged_ValidMapNames( ConVar convar, const char[] oldValue, const char[] newValue )
 {

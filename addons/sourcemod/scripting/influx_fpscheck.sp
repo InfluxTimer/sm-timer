@@ -63,6 +63,8 @@ public void OnPluginStart()
     g_ConVar_Type = CreateConVar( "influx_fpscheck_type", "1", "How do we determine player's FPS in scroll modes? 0 = No limit. 1 = FPS can be more or equal to server's tickrate. 2 = FPS must be 300.", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
     
     AutoExecConfig( true, "fpscheck", "influx" );
+
+    LoadTranslations( INFLUX_PHRASES );
 }
 
 public void OnAllPluginsLoaded()
@@ -136,7 +138,7 @@ stock void PrintFpsStatus( int client )
     
     if ( !IsValidFps( client, szMsg, sizeof( szMsg ) ) && szMsg[0] != '\0' )
     {
-        Influx_PrintToChat( _, client, szMsg );
+        Influx_PrintToChat( client, szMsg );
     }
 }
 
@@ -180,7 +182,7 @@ stock bool IsValidFps( int client, char[] msg, int msg_len )
 {
     if ( g_iFpsVal[client] == FPSVAL_NOTCACHED )
     {
-        strcopy( msg, msg_len, "Your fps_max value hasn't been received yet!" );
+        FormatEx( msg, msg_len, "%T", "INF_FPS_NOTCACHED", client );
         return false;
     }
     else if ( g_iFpsVal[client] == FPSVAL_VALID )
@@ -191,7 +193,7 @@ stock bool IsValidFps( int client, char[] msg, int msg_len )
             {
                 if ( g_flFps[client] != 0.0 && g_flFps[client] < g_flTickRate )
                 {
-                    FormatEx( msg, msg_len, "Your FPS must be equal to or greater than {MAINCLR1}%.0f{CHATCLR}!", g_flTickRate );
+                    FormatEx( msg, msg_len, "%T", "INF_FPS_VALID_1", client, g_flTickRate );
                     return false;
                 }
             }
@@ -199,7 +201,7 @@ stock bool IsValidFps( int client, char[] msg, int msg_len )
             {
                 if ( g_flFps[client] != 300.0 )
                 {
-                    strcopy( msg, msg_len, "Your FPS must be {MAINCLR1}300{CHATCLR}!" );
+                    FormatEx( msg, msg_len, "%T", "INF_FPS_VALID_300", client );
                     return false;
                 }
             }

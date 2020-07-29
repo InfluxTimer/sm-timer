@@ -501,7 +501,7 @@ stock bool StartToBuild( int client, ZoneType_t zonetype, const char[] name = ""
     }
     
     
-    Influx_PrintToChat( _, client, "Started building {MAINCLR1}%s{CHATCLR}!", szName );
+    Influx_PrintToChat( client, "Started building {MAINCLR1}%s{CHATCLR}!", szName );
     
     return true;
 }
@@ -648,7 +648,7 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
     // Get name again in case it was updated.
     GetZoneName( zoneid, szName, sizeof( szName ) );
     
-    Influx_PrintToChat( _, client, "Created zone {MAINCLR1}%s{CHATCLR}!", szName );
+    Influx_PrintToChat( client, "Created zone {MAINCLR1}%s{CHATCLR}!", szName );
     
     
     // May be changed above.
@@ -703,7 +703,7 @@ stock void DeleteZoneWithClient( int client, int index )
 {
     if ( index <= -1 )
     {
-        Influx_PrintToChat( _, client, "Couldn't find a zone!" );
+        Influx_PrintToChat( client, "Couldn't find a zone!" );
         return;
     }
     
@@ -713,11 +713,11 @@ stock void DeleteZoneWithClient( int client, int index )
     
     if ( DeleteZoneByIndex( index ) )
     {
-        Influx_PrintToChat( _, client, "Deleted {MAINCLR1}%s{CHATCLR}!", szZone );
+        Influx_PrintToChat( client, "Deleted {MAINCLR1}%s{CHATCLR}!", szZone );
     }
     else
     {
-        Influx_PrintToChat( _, client, "Couldn't delete {MAINCLR1}%s{CHATCLR}!", szZone );
+        Influx_PrintToChat( client, "Couldn't delete {MAINCLR1}%s{CHATCLR}!", szZone );
     }
 }
 

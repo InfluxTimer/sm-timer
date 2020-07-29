@@ -845,11 +845,11 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
         {
             if ( SaveRecording( client, g_hRec[client], runid, mode, style, time ) )
             {
-                Influx_PrintToChat( _, client, "%T", "INF_RECORDINGSAVED", client );
+                Influx_PrintToChat( client, "%T", "INF_RECORDINGSAVED", client );
             }
             else
             {
-                Influx_PrintToChat( _, client, "%T", "INF_RECORDINGSAVEFAILED", client );
+                Influx_PrintToChat( client, "%T", "INF_RECORDINGSAVEFAILED", client );
             }
         }
         
@@ -942,7 +942,7 @@ stock void StartPlayback( ArrayList rec, int runid, int mode, int style, float t
     
     if ( !wasdead && requester && !CanUserChangeReplay( requester ) && g_hReplay == rec )
     {
-        Influx_PrintToChat( 0, requester, "%T", "INF_RECORDINGALREADYPLAYING", requester );
+        Influx_PrintToChat( requester, "%T", "INF_RECORDINGALREADYPLAYING", requester );
         return;
     }
     
@@ -1015,7 +1015,7 @@ stock void StartPlayback( ArrayList rec, int runid, int mode, int style, float t
     
     if ( IS_ENT_PLAYER( requester ) )
     {
-        Influx_PrintToChat( _, requester, "%T", "INF_RECORDINGNOWPLAYING", requester );
+        Influx_PrintToChat( requester, "%T", "INF_RECORDINGNOWPLAYING", requester );
     }
 }
 
@@ -1030,7 +1030,7 @@ stock void FinishPlayback()
         {
             if ( IsClientInGame( i ) && IsObservingTarget( i, g_iReplayBot ) )
             {
-                Influx_PrintToChat( _, i, "%T", "INF_REPLAYISFREENOW", i );
+                Influx_PrintToChat( i, "%T", "INF_REPLAYISFREENOW", i );
             }
         }
     }
@@ -1294,7 +1294,7 @@ stock void InsertFrame( int client )
     
     if ( g_hRec[client].PushArray( data ) > g_nMaxRecLength )
     {
-        Influx_PrintToChat( _, client, "%T", "INF_RECORDINGEXCEEDEDLIMIT", client, g_ConVar_MaxLength.IntValue );
+        Influx_PrintToChat( client, "%T", "INF_RECORDINGEXCEEDEDLIMIT", client, g_ConVar_MaxLength.IntValue );
         StopRecording( client );
     }
 }
@@ -1343,7 +1343,7 @@ stock bool CanChangeReplay( int issuer = 0, bool bCanAdminOverride = true )
     {
         if ( issuer )
         {
-            Influx_PrintToChat( _, issuer, "%T", "INF_REPLAYISNEW", issuer );
+            Influx_PrintToChat( issuer, "%T", "INF_REPLAYISNEW", issuer );
         }
         
         return false;
@@ -1373,14 +1373,14 @@ stock bool CanChangeReplay( int issuer = 0, bool bCanAdminOverride = true )
         {            
             if ( issuer == g_iReplayRequester )
             {
-                Influx_PrintToChat( _, issuer, "%T", "INF_REPLAYALREADYREQUESTED", issuer );
+                Influx_PrintToChat( issuer, "%T", "INF_REPLAYALREADYREQUESTED", issuer );
             }
             else
             {
                 char szName[32];
                 GetClientName( g_iReplayRequester, szName, sizeof( szName ) );
                 
-                Influx_PrintToChat( _, issuer, "%T", "INF_REPLAYISBEINGWATCHED", issuer, szName );
+                Influx_PrintToChat( issuer, "%T", "INF_REPLAYISBEINGWATCHED", issuer, szName );
             }
         }
         

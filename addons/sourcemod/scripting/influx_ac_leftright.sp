@@ -75,6 +75,8 @@ public void OnPluginStart()
             }
         }
     }
+
+    LoadTranslations( INFLUX_PHRASES );
 }
 
 public void OnLibraryAdded( const char[] lib )
@@ -173,18 +175,7 @@ public Action OnPlayerRunCmd( int client, int &buttons, int &impulse, float vel[
         
         if ( (GetEngineTime() - g_flLastPrint[client]) > NEXT_PRINT )
         {
-            switch ( g_ConVar_Type.IntValue )
-            {
-                case 1 :
-                {
-                    Influx_PrintToChat( _, client, "Please don't spam {MAINCLR1}+left{CHATCLR}/{MAINCLR1}+right{CHATCLR}!" );
-                }
-                case 2 :
-                {
-                    Influx_PrintToChat( _, client, "Please don't use {MAINCLR1}+left{CHATCLR}/{MAINCLR1}+right{CHATCLR}!" );
-                }
-            }
-            
+            Influx_PrintToChat( client, "%T", "INF_AC_GUARD", client, (g_ConVar_Type.IntValue == 1) ? "spam" : "use");
             
             g_flLastPrint[client] = GetEngineTime();
         }

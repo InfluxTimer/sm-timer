@@ -61,7 +61,7 @@ public Action Cmd_Admin_RunSettings( int client, int args )
     int index = FindRunById( runid );
     if ( index == -1 )
     {
-        Influx_PrintToChat( _, client, "You don't have run to edit!" );
+        Influx_PrintToChat( client, "You don't have run to edit!" );
         return Plugin_Handled;
     }
     

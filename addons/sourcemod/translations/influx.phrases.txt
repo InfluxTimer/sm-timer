@@ -18,40 +18,23 @@
 		"en"			"Style"
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
 	//
 	// General
 	//
 	"INF_MUSTBERUNNING"
 	{
-		"en"			"You must be running!"
+		"en"			"{G}[INFLUX] {B}You must be running!"
 	}
 	
 	"INF_MUSTBEALIVE"
 	{
-		"en"			"You must be alive!"
+		"en"			"{G}[INFLUX] {B}You must be alive!"
 	}
 	
 	"INF_TIMERDISABLED"
 	{
-		"en"			"Your timer has been disabled!"
+		"en"			"{G}[INFLUX] {B}Your timer has been disabled!"
 	}
-	
-	
-	
-	
-	
-	
 	
 	//
 	// Mode/Style
@@ -59,40 +42,37 @@
 	"INF_MODEORSTYLEISNOW"
 	{
 		"#format"		"{1:t},{2:s}"
-		"en"			"Your {1} is now {MAINCLR1}{2}{CHATCLR}!"
+		"en"			"{G}[INFLUX] {B}Your {G}{1} {B}is now {G}{2}!"
 	}
 	
 	"INF_MODEORSTYLENOTALLOWEDINRUN"
 	{
 		"#format"		"{1:t},{2:s},{3:s}"
-		"en"			"Sorry, {1} {MAINCLR1}{2}{CHATCLR} is not allowed in {MAINCLR1}{3}{CHATCLR}!"
+		"en"			"{G}[INFLUX] {B}Sorry, {G}{1} {GL}{2} {B}is not allowed in {G}{3}!"
 	}
 	
 	"INF_WENTWRONGCHANGING"
 	{
 		"#format"		"{1:t}"
-		"en"			"Something went wrong when changing your {1}!"
+		"en"			"[INFLUX] Something went wrong when changing your {1}!"
 	}
 	
 	"INF_WAITTILLSPAWN"
 	{
-		"en"			"You must enter a start zone/wait till next spawn."
+		"en"			"[INFLUX] You must enter a start zone/wait till next spawn."
 	}
 	
 	"INF_NOACCESSTO"
 	{
 		"#format"		"{1:t}"
-		"en"			"You do not have access to this {1}!"
+		"en"			"[INFLUX] You do not have access to this {1}!"
 	}
 	
 	"INF_VALIDMODES"
 	{
 		"#format"		"{1:s}"
-		"en"			"Valid mode(s): {1}"
+		"en"			"[INFLUX] Valid mode(s): {1}"
 	}
-	
-	
-	
 	
 	//
 	// Run Stuff
@@ -100,55 +80,55 @@
 	"INF_RUN_CREATED"
 	{
 		"#format"		"{1:s}"
-		"en"			"{MAINCLR1}{1}{CHATCLR} has been created!"
+		"en"			"[INFLUX] {1} has been created!"
 	}
 	
 	"INF_RUN_DELETED"
 	{
 		"#format"		"{1:s}"
-		"en"			"Run {MAINCLR1}{1}{CHATCLR} has been deleted! Remember to {MAINCLR1}!saveruns{CHATCLR}."
+		"en"			"[INFLUX] Run {1} has been deleted! Remember to !saveruns."
 	}
 	
 	"INF_RUNIDNOTEXIST"
 	{
 		"#format"		"{1:i}"
-		"en"			"Run with an ID of {MAINCLR1}{1}{CHATCLR} does not exist!"
+		"en"			"[INFLUX] Run with an ID of {1} does not exist!"
 	}
 	
 	"INF_RUNS_DELETED"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"Your {MAINCLR1}{1} {2}{CHATCLR} run has been deleted!"
+		"en"			"[INFLUX] Your {1} {2} run has been deleted!"
 	}
 	
 	"INF_RUN_RUNS_DELETED"
 	{
 		"#format"		"{1:s}"
-		"en"			"Your {MAINCLR1}{1}{CHATCLR} runs has been deleted!"
+		"en"			"[INFLUX] Your {1} runs has been deleted!"
 	}
 	
 	"INF_RUN_RENAMED"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"Run {MAINCLR1}{1}{CHATCLR} has been renamed to {MAINCLR1}{2}{CHATCLR}!"
+		"en"			"[INFLUX] Run {1} has been renamed to {2}!"
 	}
 	
 	"INF_RUNISNOW"
 	{
 		"#format"		"{1:s}"
-		"en"			"Your run is now {MAINCLR1}{1}{CHATCLR}!"
+		"en"			"[INFLUX] Your run is now {1}!"
 	}
 	
 	"INF_RUNNOTEXIST"
 	{
-		"en"			"That run does not exist!"
+		"en"			"[INFLUX] That run does not exist!"
 	}
 	
 	
 	"INF_RUNFINISHEDPRINT_IMPROVEDBY"
 	{
 		"#format"		"{1:s}"
-		"en"			" {LIGHTYELLOW}Improving by {1} seconds"
+		"en"			"[INFLUX]  {LIGHTYELLOW}Improving by {1} seconds"
 	}
 	
 	
@@ -164,7 +144,7 @@
 		// 7 = Style (if necessary) (has a space at the start)
 		//
 		"#format"		"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s}{7:s}"
-		"en"			"{MAINCLR1}{1}{CHATCLR} finished {MAINCLR1}{2}{CHATCLR} in {MAINCLR1}{3}{CHATCLR}!{4}{5}{6}{7}"
+		"en"			"[INFLUX] {1} finished {2} in {3}!{4}{5}{6}{7}"
 	}
 	
 	
@@ -177,7 +157,7 @@
 	"INF_INVALIDWEAPONSPD"
 	{
 		"#format"		"{1:i}"
-		"en"			"Invalid weapon speed! Can be {MAINCLR1}{1}{CHATCLR} at most!"
+		"en"			"[INFLUX] Invalid weapon speed! Can be {1} at most!"
 	}
 	
 	
@@ -186,24 +166,24 @@
 	//
 	"INF_PRESPEEDNONOCLIP"
 	{
-		"en"			"You cannot prespeed with noclip!"
+		"en"			"[INFLUX] You cannot prespeed with noclip!"
 	}
 	
 	"INF_PRESPEEDJUMPLIMIT"
 	{
 		"#format"		"{1:i}"
-		"en"			"You cannot jump more than {MAINCLR1}{1}{CHATCLR} time(s) at the start!"
+		"en"			"[INFLUX] You cannot jump more than {1} time(s) at the start!"
 	}
 	
 	"INF_PRESPEEDNOJUMP"
 	{
-		"en"			"You cannot jump at all at the start!"
+		"en"			"[INFLUX] You cannot jump at all at the start!"
 	}
 	
 	"INF_PRESPEEDEXCEED"
 	{
-		"#format"		"{1:i}"
-		"en"			"Your prespeed cannot exceed {MAINCLR1}{1}{CHATCLR}!"
+		"#format"		"{1:%.0f}"
+		"en"			"[INFLUX] Your prespeed cannot exceed {1}!"
 	}
 	
 	
@@ -213,49 +193,55 @@
 	//
 	"INF_RECORDINGSAVED"
 	{
-		"en"			"Your recording has been successfully saved!"
+		"en"			"[INFLUX] Your recording has been successfully saved!"
 	}
 	
 	"INF_RECORDINGSAVEFAILED"
 	{
-		"en"			"We were unable to save your recording, sorry!"
+		"en"			"[INFLUX] We were unable to save your recording, sorry!"
 	}
 	
 	"INF_RECORDINGALREADYPLAYING"
 	{
-		"en"			"That run is already being replayed!"
+		"en"			"[INFLUX] That run is already being replayed!"
 	}
 	
 	"INF_RECORDINGNOWPLAYING"
 	{
-		"en"			"Replay is now being played!"
+		"en"			"[INFLUX] Replay is now being played!"
 	}
 	
 	"INF_RECORDINGEXCEEDEDLIMIT"
 	{
 		"#format"		"{1:i}"
-		"en"			"Stopped recording. Recordings cannot exceed {1} minutes!"
+		"en"			"[INFLUX] Stopped recording. Recordings cannot exceed {1} minutes!"
 	}
 	
 	"INF_REPLAYISFREENOW"
 	{
-		"en"			"You can now request a replay by typing {MAINCLR1}!replay{CHATCLR} in chat."
+		"en"			"[INFLUX] You can now request a replay by typing !replay in chat."
 	}
 	
 	"INF_REPLAYISNEW"
 	{
-		"en"			"Replaying a new record. Please wait."
+		"en"			"[INFLUX] Replaying a new record. Please wait."
 	}
 	
 	"INF_REPLAYALREADYREQUESTED"
 	{
-		"en"			"You've already requested a replay!"
+		"en"			"[INFLUX] You've already requested a replay!"
 	}
 	
 	"INF_REPLAYISBEINGWATCHED"
 	{
 		"#format"		"{1:s}"
-		"en"			"Replay is being watched by {MAINCLR1}{1}{CHATCLR}. Please wait for the recording to finish."
+		"en"			"[INFLUX] Replay is being watched by {1}. Please wait for the recording to finish."
+	}
+
+	"INF_REPLAYDELETED"
+	{
+		"#format"		"{1:s}"
+		"en"			"Successfully deleted '../{1}'!"
 	}
 	
 	
@@ -266,12 +252,12 @@
 	"INF_STAGENUMBERNOTEXIST"
 	{
 		"#format"		"{1:i}"
-		"en"			"Stage {MAINCLR1}{1}{CHATCLR} does not exist!"
+		"en"			"[INFLUX] Stage {1} does not exist!"
 	}
 	
 	"INF_LEAVEZONEFIRST"
 	{
-		"en"			"You must leave the zone first!"
+		"en"			"[INFLUX] You must leave the zone first!"
 	}
 	
 	
@@ -283,39 +269,39 @@
 	//
 	"INF_NOTPAUSED"
 	{
-		"en"			"You aren't even paused!"
+		"en"			"[INFLUX] You aren't even paused!"
 	}
 	
     "INF_CANTPAUSE_PRAC"
 	{
-		"en"			"You cannot pause a practising run!"
+		"en"			"[INFLUX] You cannot pause a practising run!"
 	}
 	
 	"INF_NOWPAUSED"
 	{
-		"en"			"Your run is now paused. Type {MAINCLR1}!continue{CHATCLR} to resume."
+		"en"			"[INFLUX] Your run is now paused. Type !continue to resume."
 	}
 	
 	"INF_NOLONGERPAUSED"
 	{
-		"en"			"Your run is no longer paused."
+		"en"			"[INFLUX] Your run is no longer paused."
 	}
 	
 	"INF_PAUSENOTSOFAST"
 	{
 		"#format"		"{1:i}"
-		"en"			"You cannot pause so soon! Please wait {MAINCLR1}{1}{CHATCLR} seconds!"
+		"en"			"[INFLUX] You cannot pause so soon! Please wait {1} seconds!"
 	}
 	
 	"INF_PAUSENOTALLOWED"
 	{
-		"en"			"Pauses aren't allowed!"
+		"en"			"[INFLUX] Pauses aren't allowed!"
 	}
 	
 	"INF_PAUSELIMIT"
 	{
 		"#format"		"{1:i}"
-		"en"			"You cannot pause more than {1} time(s) every run!"
+		"en"			"[INFLUX] You cannot pause more than {1} time(s) every run!"
 	}
 	
 	
@@ -325,13 +311,13 @@
 	//
     "INF_MUSTBEPRACTISING"
 	{
-		"en"			"You must be practising!"
+		"en"			"[INFLUX] You must be practising!"
 	}
 	
 	"INF_PRACTICEMODECHANGE"
 	{
-		"#format"		"{1:s}"
-		"en"			"Practice mode: {MAINCLR1}{1}"
+		"#format"		"{1:t}"
+		"en"			"[INFLUX] Practice mode: {1}"
 	}
 	
 	
@@ -341,13 +327,45 @@
 	"INF_RANKISNOW"
 	{
 		"#format"		"{1:s}"
-		"en"			"Your rank is now '{MAINCLR1}{1}{CHATCLR}'!"
+		"en"			"[INFLUX] Your rank is now '{1}'!"
 	}
 	
 	"INF_GOTPOINTS"
 	{
 		"#format"		"{1:i},{2:i}"
-		"en"			"You've received {MAINCLR1}{1}{CHATCLR} points! You now have {MAINCLR1}{2}{CHATCLR} points!"
+		"en"			"[INFLUX] You've received {1} points! You now have {2} points!"
+	}
+
+	"INF_USAGE_CUSTOMRANK"
+	{
+		"en"			"Usage: sm_customrank <rank>"
+	}
+
+	"INF_INVALID_LEN"
+	{
+		"#format"		"{1:i}"
+		"en"			"Rank length cannot exceed {1} characters!"
+	}
+
+	// ReplyToClient
+	"INF_USAGE_MAPREWARD"
+	{
+		"en"			"Usage: sm_setmapreward <mapname (optional)> <points>"
+	}
+
+	"INF_USAGE_GIVEPOINTS"
+	{
+		"en"			"Usage: sm_givesimplepoints <target (optional)> <amount> (Note: can be negative)"
+	}
+
+	"INF_NO_TARGETS"
+	{
+		"en"			"No targets found!"
+	}
+
+	"INF_ZERO_POINTS"
+	{
+		"en"			"You can't give zero points!"
 	}
 	
 	
@@ -357,6 +375,111 @@
 	"INF_RANKCHAT"
 	{
 		"#format"		"{1:s},{2:i},{3:i}"
-		"en"			"{MAINCLR1}{1}{CHATCLR} is now ranked {MAINCLR1}{2}{CHATCLR}/{MAINCLR1}{3}{CHATCLR}!"
+		"en"			"[INFLUX] {1} is now ranked {2}/{3}!"
 	}
+
+	//
+	// AC L/R
+	// 
+	"spam"
+	{
+		"en"			"spam"
+	}
+
+	"use"
+	{
+		"en"			"use"
+	}
+
+	"INF_AC_GUARD"
+	{
+		"#format"		"{1:t}"
+		"en"			"{G}[INFLUX] {B}Please don't {1} {G}+left{B}/{G}+right{B}!"
+	}
+
+	//
+	// FPS Check
+	//
+	"INF_FPS_NOTCACHED"
+	{
+		"en"			"Your fps_max value hasn't been received yet!"
+	}
+
+	"INF_FPS_VALID_1"
+	{
+		"#format"		"{1:%.0f}"
+		"en"			"Your FPS must be equal to or greater than {1}!"
+	}
+
+	"INF_FPS_VALID_300"
+	{
+		"en"			"Your FPS must be 300!"
+	}
+
+	//
+	// HELP
+	//
+	"INF_HELP"
+	{
+		"en"			"Type !help to see a list of commands."
+	}
+
+	//
+	// HUD HIDE
+	//
+	"visible"
+	{
+		"en"			"visible"
+	}
+
+	"hidden"
+	{
+		"en"			"hidden"
+	}
+
+	"INF_HIDE_TIMER"
+	{
+		"#format"		"{1:t}"
+		"en"			"Your timer is now {1}!"
+	}
+
+	"INF_HIDE_SIDEBAR"
+	{
+		"#format"		"{1:t}"
+		"en"			"Your sidebar is now {1}!"
+	}
+
+	//
+	// HUD VIEWMODEL
+	//
+	"INF_HIDE_VIEWMODEL"
+	{
+		"#format"		"{1:t}"
+		"en"			"Your viewmodel is now {1}!"
+	}
+
+	//
+	// NOCLIP
+	//
+	"OFF"
+	{
+		"en"			"OFF"
+	}
+
+	"ON"
+	{
+		"en"			"ON"
+	}
+
+	"INF_NOCLIP_ALIVE"
+	{
+		"en"			"You must be alive to use this command!"
+	}
+
+	"INF_NOCLIP_STATUS"
+	{
+		"#format"		"{1:t}"
+		"en"			"Noclip: {1}"
+	}
+
 }
