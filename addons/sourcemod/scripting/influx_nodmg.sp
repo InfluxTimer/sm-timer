@@ -28,7 +28,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 public void OnPluginStart()
 {
     // CONVARS
-    g_ConVar_Type = CreateConVar( "influx_nodmg_type", "2", "0 = Don't do anything, 1 = Only block fall-damage, 2 = Block all damage", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
+    g_ConVar_Type = CreateConVar( "influx_nodmg_type", "2", "0 = Don't do anything, 1 = Only block fall-damage, 2 = Block all damage, 3 = Block player inflicted damage", FCVAR_NOTIFY, true, 0.0, true, 3.0 );
     g_ConVar_Type.AddChangeHook( E_ConVarChanged_Type );
     
     AutoExecConfig( true, "nodmg", "influx" );
@@ -77,7 +77,13 @@ public void E_PlayerSpawn_Delay( int client )
 
 public Action OnTakeDamageAlive_Client( int victim, int &attacker, int &inflictor, float &damage, int &damagetype )
 {
-    if ( damagetype == DMG_FALL )
+    if ( damagetype == DMG_FALL && ShouldBlockFallDamage() )
+    {
+        damage = 0.0;
+        return Plugin_Changed;
+    }
+
+    if ( IS_ENT_PLAYER( inflictor ) && ShouldBlockPlayerInflictedDamage() )
     {
         damage = 0.0;
         return Plugin_Changed;
@@ -88,9 +94,7 @@ public Action OnTakeDamageAlive_Client( int victim, int &attacker, int &inflicto
 
 stock void UpdateClient( int client, bool bAllowDmg )
 {
-    int val = g_ConVar_Type.IntValue;
-    
-    if ( !bAllowDmg && val == 1 )
+    if ( !bAllowDmg )
     {
         UnhookDamage( client );
         HookDamage( client );
@@ -102,7 +106,7 @@ stock void UpdateClient( int client, bool bAllowDmg )
 
     
     // Events only so we still have stamina affecting us.
-    if ( !bAllowDmg && val == 2 )
+    if ( !bAllowDmg && ShouldBlockAllDamage() )
     {
         SetTakeDamage( client, false );
     }
@@ -136,4 +140,20 @@ stock void UnhookDamage( int client )
 stock void SetTakeDamage( int client, bool bAllowDmg )
 {
     SetEntProp( client, Prop_Data, "m_takedamage", bAllowDmg ? 2 : 1 );
+}
+
+stock bool ShouldBlockFallDamage()
+{
+    int value = g_ConVar_Type.IntValue;
+    return value == 1 || value == 2;
+}
+
+stock bool ShouldBlockPlayerInflictedDamage()
+{
+    return g_ConVar_Type.IntValue == 3;
+}
+
+stock bool ShouldBlockAllDamage()
+{
+    return g_ConVar_Type.IntValue == 2;
 }
