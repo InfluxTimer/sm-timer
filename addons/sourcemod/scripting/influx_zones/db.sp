@@ -33,7 +33,7 @@ stock void DB_LoadZones()
         mapid );
     
     
-    SQL_TQuery( db, Thrd_GetZones, szQuery, _, DBPrio_High );
+    SQL_TQuery( db, Thrd_GetZones, szQuery, g_iMapParity, DBPrio_High );
 }
 
 stock void DB_RemoveZone( int zoneid )

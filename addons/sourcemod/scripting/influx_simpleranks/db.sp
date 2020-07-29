@@ -45,7 +45,7 @@ stock void DB_InitMap( int mapid )
         "SELECT runid,rewardpoints FROM "...INF_TABLE_SIMPLERANKS_MAPS..." WHERE mapid=%i", mapid );
     
     
-    SQL_TQuery( db, Thrd_InitMap, szQuery, _, DBPrio_Normal );
+    SQL_TQuery( db, Thrd_InitMap, szQuery, g_iMapParity, DBPrio_Normal );
 }
 
 stock void DB_InitClient( int client )

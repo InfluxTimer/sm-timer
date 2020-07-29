@@ -72,6 +72,7 @@ int g_iBuildBeamMat;
 int g_iBuildSprite;
 
 
+int g_iMapParity;
 bool g_bZonesLoaded = false;
 bool g_bLate;
 
@@ -332,6 +333,8 @@ public void OnMapStart()
 {
     // If we're late-loaded the above may not be called.
     PrecacheEverything();
+
+    CreateTimer( 1.0, T_ValidateZones, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 }
 
 public void OnMapEnd()
@@ -347,6 +350,7 @@ public void OnMapEnd()
 
 public void Influx_OnPostRunLoad()
 {
+    g_iMapParity++;
     LoadZones();
     
     //g_nNewZoneId = FindZoneHighestId() + 1;

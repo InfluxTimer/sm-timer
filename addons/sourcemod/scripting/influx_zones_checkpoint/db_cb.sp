@@ -6,11 +6,19 @@ public void Thrd_Empty( Handle db, Handle res, const char[] szError, int client 
     }
 }
 
-public void Thrd_GetCPSRTimes( Handle db, Handle res, const char[] szError, any data )
+public void Thrd_GetCPSRTimes( Handle db, Handle res, const char[] szError, int iMapParity )
 {
     if ( res == null )
     {
         Inf_DB_LogError( db, "getting cp server record times" );
+        return;
+    }
+
+    // It's possible for the map to change
+    // while we're waiting for the query.
+    if ( g_iMapParity != iMapParity )
+    {
+        LogError( INF_CON_PRE..."Thrd_GetCPSRTimes - Map parity differs! (is: %i | should be: %i)", g_iMapParity, iMapParity );
         return;
     }
     
@@ -124,11 +132,19 @@ public void Thrd_InitClientCPTimes( Handle db, Handle res, const char[] szError,
     }
 }
 
-public void Thrd_GetCPBestTimes( Handle db, Handle res, const char[] szError, any data )
+public void Thrd_GetCPBestTimes( Handle db, Handle res, const char[] szError, int iMapParity )
 {
     if ( res == null )
     {
         Inf_DB_LogError( db, "getting cp best times" );
+        return;
+    }
+
+    // It's possible for the map to change
+    // while we're waiting for the query.
+    if ( g_iMapParity != iMapParity )
+    {
+        LogError( INF_CON_PRE..."Thrd_GetCPSRTimes - Map parity differs! (is: %i | should be: %i)", g_iMapParity, iMapParity );
         return;
     }
     

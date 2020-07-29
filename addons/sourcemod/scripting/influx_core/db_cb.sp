@@ -39,11 +39,19 @@ public void Thrd_CheckVersion( Handle db, Handle res, const char[] szError, any 
     SQL_TQuery( g_hDB, Thrd_Empty, szQuery, _, DBPrio_High );
 }
 
-public void Thrd_GetMapId( Handle db, Handle res, const char[] szError, any data )
+public void Thrd_GetMapId( Handle db, Handle res, const char[] szError, int iMapParity )
 {
     if ( res == null )
     {
         Inf_DB_LogError( g_hDB, "getting map id" );
+        return;
+    }
+
+    // It's possible for the map to change
+    // while we're waiting for the query.
+    if ( g_iMapParity != iMapParity )
+    {
+        LogError( INF_CON_PRE..."Thrd_GetMapId - Map parity differs! (is: %i | should be: %i)", g_iMapParity, iMapParity );
         return;
     }
     
@@ -83,12 +91,18 @@ public void Thrd_GetMapId( Handle db, Handle res, const char[] szError, any data
         decl String:szQuery[256];
         FormatEx( szQuery, sizeof( szQuery ), "INSERT INTO "...INF_TABLE_MAPS..." (mapname) VALUES ('%s')", g_szCurrentMap );
         
-        SQL_TQuery( g_hDB, Thrd_NewMapId, szQuery, _, DBPrio_High );
+        SQL_TQuery( g_hDB, Thrd_NewMapId, szQuery, iMapParity, DBPrio_High );
     }
 }
 
-public void Thrd_NewMapId( Handle db, Handle res, const char[] szError, any data )
+public void Thrd_NewMapId( Handle db, Handle res, const char[] szError, int iMapParity )
 {
+    if ( g_iMapParity != iMapParity )
+    {
+        LogError( INF_CON_PRE..."Thrd_NewMapId - Map parity differs! (is: %i | should be: %i)", g_iMapParity, iMapParity );
+        return;
+    }
+
     DB_InitMap();
 }
 
@@ -290,7 +304,7 @@ public void Thrd_GetBestRecords_1( Handle db, Handle res, const char[] szError, 
     }
 }
 
-public void Thrd_GetBestRecords_2( Handle db, Handle res, const char[] szError, int counter )
+public void Thrd_GetBestRecords_2( Handle db, Handle res, const char[] szError, int iMapParity )
 {
     if ( res == null )
     {
@@ -298,6 +312,15 @@ public void Thrd_GetBestRecords_2( Handle db, Handle res, const char[] szError, 
         return;
     }
     
+
+    // It's possible for the map to change
+    // while we're waiting for the query.
+    if ( g_iMapParity != iMapParity )
+    {
+        LogError( INF_CON_PRE..."Thrd_GetBestRecords_2 - Map parity differs! (is: %i | should be: %i)", g_iMapParity, iMapParity );
+        return;
+    }
+
     
     int irun = -1;
     int lastrunid = -1;
@@ -351,10 +374,8 @@ public void Thrd_GetBestRecords_2( Handle db, Handle res, const char[] szError, 
             UpdateAllClientsCached( runid, mode, style );
         }
     }
-    
 
     // We've reached the end of our queries. All our times should be cached now!
-    if ( counter <= 1 )
     {
         PrintToServer( INF_CON_PRE..."Finished retrieving best records from database!" );
 
@@ -366,13 +387,22 @@ public void Thrd_GetBestRecords_2( Handle db, Handle res, const char[] szError, 
     }
 }
 
-public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, any data )
+public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, int iMapParity )
 {
     if ( res == null )
     {
         Inf_DB_LogError( db, "getting run data" );
 
         g_bRunsLoaded = true;
+        return;
+    }
+
+
+    // It's possible for the map to change
+    // while we're waiting for the query.
+    if ( g_iMapParity != iMapParity )
+    {
+        LogError( INF_CON_PRE..."Thrd_GetRuns - Map parity differs! (is: %i | should be: %i)", g_iMapParity, iMapParity );
         return;
     }
     

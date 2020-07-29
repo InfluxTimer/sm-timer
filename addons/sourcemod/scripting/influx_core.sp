@@ -202,6 +202,7 @@ bool g_bLib_Hud_Draw;
 char g_szCurrentMap[128];
 int g_iCurMapId;
 bool g_bNewMapId;
+int g_iMapParity;
 bool g_bRunsLoaded = false;
 bool g_bBestTimesCached = false;
 
@@ -913,6 +914,7 @@ public void OnMapStart()
     
     GetCurrentMapSafe( g_szCurrentMap, sizeof( g_szCurrentMap ) );
     
+    ++g_iMapParity;
     g_bNewMapId = false;
     g_bRunsLoaded = false;
     g_bBestTimesCached = false;

@@ -112,6 +112,7 @@ TopMenu g_hTopMenu;
 
 
 bool g_bLate;
+int g_iMapParity;
 
 
 #include "influx_zones_checkpoint/db_sql_queries.sp"
@@ -354,6 +355,7 @@ public void Influx_OnClientIdRetrieved( int client, int uid, bool bNew )
 
 public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
 {
+    g_iMapParity++;
     DB_InitCPTimes();
 }
 

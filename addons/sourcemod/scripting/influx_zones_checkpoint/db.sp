@@ -94,7 +94,7 @@ stock void DB_InitCPTimes( int runid = -1, int mode = -1, int style = -1, int cp
         mapid, szWhere2,
         mapid, szWhere3 );
     
-    SQL_TQuery( db, Thrd_GetCPSRTimes, szQuery, _, DBPrio_Normal );
+    SQL_TQuery( db, Thrd_GetCPSRTimes, szQuery, g_iMapParity, DBPrio_Normal );
     
     //
     // Get best times.
@@ -108,7 +108,7 @@ stock void DB_InitCPTimes( int runid = -1, int mode = -1, int style = -1, int cp
         mapid, szWhere,
         mapid, szWhere2 );
     
-    SQL_TQuery( db, Thrd_GetCPBestTimes, szQuery, _, DBPrio_Normal );
+    SQL_TQuery( db, Thrd_GetCPBestTimes, szQuery, g_iMapParity, DBPrio_Normal );
 }
 
 stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int flags )

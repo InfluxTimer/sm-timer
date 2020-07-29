@@ -232,7 +232,7 @@ stock void DB_InitMap()
     decl String:szQuery[256];
     FormatEx( szQuery, sizeof( szQuery ), "SELECT mapid FROM "...INF_TABLE_MAPS..." WHERE mapname='%s'", g_szCurrentMap );
     
-    SQL_TQuery( g_hDB, Thrd_GetMapId, szQuery, _, DBPrio_High );
+    SQL_TQuery( g_hDB, Thrd_GetMapId, szQuery, g_iMapParity, DBPrio_High );
 }
 
 stock void FormatWhereClause( char[] sz, int len, const char[] table, int runid, int mode, int style )
@@ -263,7 +263,7 @@ stock void DB_InitRecords( int runid = -1, int mode = MODE_INVALID, int style = 
         g_iCurMapId, szWhere,
         g_iCurMapId, szWhere2 );
     
-    SQL_TQuery( g_hDB, Thrd_GetBestRecords_2, szQuery, 1, DBPrio_Normal );
+    SQL_TQuery( g_hDB, Thrd_GetBestRecords_2, szQuery, g_iMapParity, DBPrio_Normal );
 }
 
 stock void DB_InitClient( int client )
@@ -439,7 +439,7 @@ stock void DB_LoadRuns()
         "ORDER BY runid ASC",
         g_iCurMapId );
         
-    SQL_TQuery( g_hDB, Thrd_GetRuns, szQuery, _, DBPrio_High );
+    SQL_TQuery( g_hDB, Thrd_GetRuns, szQuery, g_iMapParity, DBPrio_High );
 }
 
 stock void DB_RemoveRun( int runid )

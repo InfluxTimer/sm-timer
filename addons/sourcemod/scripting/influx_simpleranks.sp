@@ -99,6 +99,7 @@ ConVar g_ConVar_GivePointsForSameModeNStyle;
 ArrayList g_hRanks;
 
 bool g_bLate;
+int g_iMapParity;
 
 
 #include "influx_simpleranks/cmds.sp"
@@ -234,6 +235,7 @@ public void Influx_OnRequestHelpCmds()
 
 public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
 {
+    g_iMapParity++;
     DB_InitMap( mapid );
 }
 
