@@ -45,12 +45,12 @@
 
 	"hidden"
 	{
-		"en"			"{C}hidden{D}"
+		"en"			"{CO}hidden{D}"
 	}
 
 	"OFF"
 	{
-		"en"			"{C}OFF{D}"
+		"en"			"{CO}OFF{D}"
 	}
 
 	"ON"
@@ -655,7 +655,7 @@
 
 	"INF_TAS_LAGGEDMOVEMENTVALUE"
 	{
-		"en"			"{D}Make sure to use: {G}cl_clock_correction_force_server_tick{D}/{G}cl_clockdrift_max_ms {C}0 {D}to decrease laggy timescale!"
+		"en"			"{D}Make sure to use: {G}cl_clock_correction_force_server_tick{D}/{G}cl_clockdrift_max_ms {CO}0 {D}to decrease laggy timescale!"
 	}
 
 	"INF_TAS_SAVE_SUCCESS"

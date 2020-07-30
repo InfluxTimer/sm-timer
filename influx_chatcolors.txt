@@ -1,24 +1,15 @@
-Remember to add them inside {}-characters. Eg {RED}
-CSS can have any color by using hex values. Eg #FF0000 for red.
+#NOTE: The palette requires a chat processor
 
+Some information about the palette:
+The kernel uses a dynamic palette: 'addons/sourcemod/configs/influx_palette.ini'
 
-These colors are supported by both CSS and CS:GO
+In the config, the left column contains a color abbreviation that you can use to color your posts.
+The right column stores colors in hexadecimal (HEX html) or character representation.
+For example:
+    - HEX: #FFFFFF
+    - Character: 1 (special character: SOH)
 
-TEAM
-RED
-LIGHTRED
-LIGHTERRED
-GREEN
-LIGHTGREEN
-LIMEGREEN
-BLUE
-SKYBLUE
-LIGHTYELLOW
-GOLD
-WHITE
-PINK
-GREY
+CS:GO doesn't support hex colors, so the right column in the config cannot be changed
 
-
-For plugin creators, use MAINCLR1 if you want to highlight text.
-Eg "Noclip: {MAINCLR1}ON"
+NOTE:
+The maximum size for a color abbreviation, in the left column is limited to 15 single-byte characters
