@@ -492,7 +492,7 @@ stock bool IsValidReward( int reward, int issuer = 0, bool bPrint = false )
     {
         if ( bPrint )
         {
-            Inf_ReplyToClient( issuer, "Reward cannot be negative!" );
+            Influx_ReplyToClient( issuer, "Reward cannot be negative!" );
         }
         
         return false;
@@ -513,7 +513,7 @@ stock void SetCurrentMapReward( int issuer, int runid, int reward )
     char szRun[32];
     Influx_GetRunName( runid, szRun, sizeof( szRun ) );
     
-    Inf_ReplyToClient( issuer, "Set current map's {MAINCLR1}%s{CHATCLR} reward to {MAINCLR1}%i{CHATCLR} points.",
+    Influx_ReplyToClient( issuer, "Set current map's {MAINCLR1}%s{CHATCLR} reward to {MAINCLR1}%i{CHATCLR} points.",
         szRun,
         reward );
 }
@@ -691,11 +691,11 @@ stock void GivePoints( const int[] targets, int nTargets, int points, int issuer
             
             if ( points > 0 )
             {
-                Inf_ReplyToClient( target, "The universe gave you {MAINCLR1}%i{CHATCLR} points!", points, nTargets );
+                Influx_ReplyToClient( target, "The universe gave you {MAINCLR1}%i{CHATCLR} points!", points, nTargets );
             }
             else
             {
-                Inf_ReplyToClient( target, "The universe doesn't like you and took {MAINCLR1}%i{CHATCLR} points from you!", points, nTargets );
+                Influx_ReplyToClient( target, "The universe doesn't like you and took {MAINCLR1}%i{CHATCLR} points from you!", points, nTargets );
             }
             
             ++valids;
@@ -704,7 +704,7 @@ stock void GivePoints( const int[] targets, int nTargets, int points, int issuer
     
     if ( issuer >= 0 && (nTargets > 1 || targets[0] != issuer) )
     {
-        Inf_ReplyToClient( issuer, "Gave {MAINCLR1}%i{CHATCLR} points to {MAINCLR1}%i{CHATCLR} player(s)!", points, valids );
+        Influx_ReplyToClient( issuer, "Gave {MAINCLR1}%i{CHATCLR} points to {MAINCLR1}%i{CHATCLR} player(s)!", points, valids );
     }
 }
 

@@ -144,6 +144,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     g_hBeams = new ArrayList( BEAM_SIZE );
     g_hDef = new ArrayList( DEFBEAM_SIZE );
     
@@ -243,7 +245,7 @@ public Action Cmd_ShowHidden( int client, int args )
     
     g_bShowHidden[client] = !g_bShowHidden[client];
     
-    Influx_PrintToChat( client, "Hidden beams are now %s.", g_bShowHidden[client] ? "enabled" : "disabled" );
+    Influx_PrintToChat( client, "%T", "INF_ZONE_HIDDEN_BEAMS", client, g_bShowHidden[client] ? "ON" : "OFF" );
     
     return Plugin_Handled;
 }

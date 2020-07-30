@@ -35,6 +35,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     g_bIsCSGO = ( GetEngineVersion() == Engine_CSGO );
     
     

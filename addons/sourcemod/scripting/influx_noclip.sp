@@ -176,6 +176,6 @@ stock void ToggleNoclip( int client, bool bPrint = false )
     
     if ( bPrint )
     {
-        Influx_PrintToChat( client, "Noclip: {MAINCLR1}%s", ( prevmove == MOVETYPE_NOCLIP ) ? "OFF" : "ON" );
+        Influx_PrintToChat( client, "%T", "INF_NOCLIP_STATUS", client, ( prevmove == MOVETYPE_NOCLIP ) ? "OFF" : "ON" );
     }
 }

@@ -39,7 +39,7 @@ public Action Cmd_SetMapReward( int client, int args )
     
     if ( !args )
     {
-        Inf_ReplyToClient( client, "%T", "INF_USAGE_MAPREWARD", ( client ) ? client : LANG_SERVER );
+        Influx_ReplyToClient( client, "%T", "INF_USAGE_MAPREWARD", ( client ) ? client : LANG_SERVER );
         return Plugin_Handled;
     }
     
@@ -82,7 +82,7 @@ public Action Cmd_GivePoints( int client, int args )
     
     if ( !args )
     {
-        Inf_ReplyToClient( client, "%T", "INF_USAGE_GIVEPOINTS", ( client ) ? client : LANG_SERVER );
+        Influx_ReplyToClient( client, "%T", "INF_USAGE_GIVEPOINTS", ( client ) ? client : LANG_SERVER );
         return Plugin_Handled;
     }
     
@@ -125,13 +125,13 @@ public Action Cmd_GivePoints( int client, int args )
     
     if ( nTargets < 1 )
     {
-        Inf_ReplyToClient( client, "%T", "INF_NO_TARGETS", ( client ) ? client : LANG_SERVER );
+        Influx_ReplyToClient( client, "%T", "INF_NO_TARGETS", ( client ) ? client : LANG_SERVER );
         return Plugin_Handled;
     }
     
     if ( !points )
     {
-        Inf_ReplyToClient( client, "%T", "INF_ZERO_POINTS", ( client ) ? client : LANG_SERVER );
+        Influx_ReplyToClient( client, "%T", "INF_ZERO_POINTS", ( client ) ? client : LANG_SERVER );
         return Plugin_Handled;
     }
     

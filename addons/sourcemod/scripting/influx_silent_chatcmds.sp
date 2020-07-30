@@ -53,6 +53,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CONVARS
     g_ConVar_Cmds = CreateConVar( "influx_silent_chatcmds", "r,restart,rs,re,respawn,spawn", "These commands will not be shown in chat even when using public chat trigger. Separate with commas." );
     

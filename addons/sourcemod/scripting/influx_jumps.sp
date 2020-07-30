@@ -42,6 +42,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // FORWARDS
     g_hForward_ShouldCountJumps = CreateGlobalForward( "Influx_ShouldCountJumps", ET_Hook, Param_Cell );
     

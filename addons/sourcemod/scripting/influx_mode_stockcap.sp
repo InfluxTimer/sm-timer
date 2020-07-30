@@ -35,6 +35,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     if ( (g_ConVar_AirAccelerate = FindConVar( "sv_airaccelerate" )) == null )
     {
         SetFailState( INF_CON_PRE..."Couldn't find handle for sv_airaccelerate!" );

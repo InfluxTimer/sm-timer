@@ -35,6 +35,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CONVARS
     if ( (g_ConVar_AirAccelerate = FindConVar( "sv_airaccelerate" )) == null )
     {

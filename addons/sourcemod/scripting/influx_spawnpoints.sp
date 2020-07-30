@@ -44,6 +44,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     g_ConVar_Num = CreateConVar( "influx_spawnpoints_num", "32", "How many spawn points we need.", FCVAR_NOTIFY );
     g_ConVar_RemoveOthers = CreateConVar( "influx_spawnpoints_removeothers", "0", "If true, all other spawn point entities are removed. Don't use outside skill surf/bhop.", FCVAR_NOTIFY );
     g_ConVar_Prefer = CreateConVar( "influx_spawnpoints_prefer", "0", "Which spawn point to prefer first. 0 = CT, 1 = T, 2 = Balance both", FCVAR_NOTIFY );

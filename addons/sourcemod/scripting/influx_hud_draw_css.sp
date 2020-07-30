@@ -59,6 +59,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // LIBRARIES
     g_bLib_Hud = LibraryExists( INFLUX_LIB_HUD );
     g_bLib_Strafes = LibraryExists( INFLUX_LIB_STRAFES );

@@ -25,6 +25,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     AddCommandListener( Lstnr_Drop, "drop" );
 }
 

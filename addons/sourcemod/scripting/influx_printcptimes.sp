@@ -18,6 +18,11 @@ public Plugin myinfo =
     version = INF_VERSION
 };
 
+public void OnPluginStart()
+{
+    LoadTranslations( INFLUX_PHRASES );
+}
+
 
 public void Influx_OnClientCPSavePost( int client, int cpnum )
 {
@@ -83,9 +88,8 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
         Inf_FormatSeconds( srtime, szTime, sizeof( szTime ) );
         Inf_FormatSeconds( Inf_GetTimeDif( time, srtime, c ), szTimeDif, sizeof( szTimeDif ) );
         
-        FormatEx( szSR, sizeof( szSR ), "SR: {MAINCLR1}%s{CHATCLR} ({%s}%c%s{CHATCLR})",
+        FormatEx( szSR, sizeof( szSR ), "SR: \x04%s\x01 (\x04%c%s\x01)",
             szTime,
-            ( c == '-' ) ? "GREEN" : "LIGHTRED",
             c,
             szTimeDif );
     }
@@ -95,9 +99,8 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
         Inf_FormatSeconds( pbtime, szTime, sizeof( szTime ) );
         Inf_FormatSeconds( Inf_GetTimeDif( time, pbtime, c ), szTimeDif, sizeof( szTimeDif ) );
         
-        FormatEx( szPB, sizeof( szPB ), "PB: {MAINCLR1}%s{CHATCLR} ({%s}%c%s{CHATCLR})",
+        FormatEx( szPB, sizeof( szPB ), "PB: \x04%s\x01 (\x04%c%s\x01)",
             szTime,
-            ( c == '-' ) ? "GREEN" : "LIGHTRED",
             c,
             szTimeDif );
     }
@@ -107,9 +110,8 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
         Inf_FormatSeconds( besttime, szTime, sizeof( szTime ) );
         Inf_FormatSeconds( Inf_GetTimeDif( time, besttime, c ), szTimeDif, sizeof( szTimeDif ) );
         
-        FormatEx( szBest, sizeof( szBest ), "BEST: {MAINCLR1}%s{CHATCLR} ({%s}%c%s{CHATCLR})",
+        FormatEx( szBest, sizeof( szBest ), "BEST: \x04%s\x01 (\x04%c%s\x01)",
             szTime,
-            ( c == '-' ) ? "GREEN" : "LIGHTRED",
             c,
             szTimeDif );
     }
@@ -118,12 +120,17 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
     // Print if we have something to print!
     if ( szSR[0] != '\0' || szPB[0] != '\0' || szBest[0] != '\0' )
     {
-        Influx_PrintToChatEx( _, client, clients, nClients, "CP %i | %s%s%s%s%s",
-            cpnum,
-            szSR,
-            ( szSR[0] && szPB[0] ) ? " | " : "",
-            szPB,
-            ( (szSR[0] || szPB[0]) && szBest[0] ) ? " | " : "",
-            szBest );
+        for( int i; i < nClients; i++ )
+            if( clients[i] && IsClientInGame( clients[i] ) )
+                Influx_PrintToChat( 
+                    clients[i],
+                    "CP %i | %s%s%s%s%s",
+                    cpnum,
+                    szSR,
+                    ( szSR[0] && szPB[0] ) ? " | " : "",
+                    szPB,
+                    ( (szSR[0] || szPB[0]) && szBest[0] ) ? " | " : "",
+                    szBest
+                );
     }
 }

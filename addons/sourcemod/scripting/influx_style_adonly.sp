@@ -27,6 +27,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CMDS
     RegConsoleCmd( "sm_ad-only", Cmd_Style_AD, "Change your style to A/D-Only." );
     RegConsoleCmd( "sm_adonly", Cmd_Style_AD );

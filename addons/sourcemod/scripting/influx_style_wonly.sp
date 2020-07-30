@@ -16,6 +16,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CMDS
     RegConsoleCmd( "sm_w-only", Cmd_Style_W, "Change your style to w-only." );
     RegConsoleCmd( "sm_wonly", Cmd_Style_W, "" );

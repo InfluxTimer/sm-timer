@@ -150,7 +150,7 @@ public void Thrd_Display( Handle db, Handle res, const char[] szError, int clien
     
     
     
-    Influx_PrintToChatAll( _, client, "%T",
+    Influx_PrintToChatAll( "%T",
         "INF_RANKCHAT", LANG_SERVER,
         szName,
         rank,

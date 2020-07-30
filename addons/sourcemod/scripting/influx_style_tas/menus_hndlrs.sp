@@ -241,11 +241,11 @@ public int Hndlr_TasLoad( Menu menu, MenuAction action, int client, int index )
         Influx_SetClientTime( client, TickCountToTime( (g_iStoppedFrame[client] + 1) ) );
         
         
-        Influx_PrintToChat( _, client, "Loaded {MAINCLR1}%i{CHATCLR} frames from disk.", g_hFrames[client].Length );
+        Influx_PrintToChat( client, "%T", "INF_TAS_LOADED", client, g_hFrames[client].Length );
     }
     else
     {
-        Influx_PrintToChat( _, client, "Couldn't load file from disk!" );
+        Influx_PrintToChat( client, "%T", "INF_TAS_NOTLOAD", client );
     }
     
     return 0;

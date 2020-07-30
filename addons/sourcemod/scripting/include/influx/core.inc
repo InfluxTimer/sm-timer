@@ -268,15 +268,9 @@ native ArrayList Influx_GetRunsArray();
 
 
 
-//#define PRINTFLAGS_NOPREFIX         ( 1 << 0 )
-//#define PRINTFLAGS_CHATMSG          ( 1 << 1 ) // Sent by client. Currently not used.
-
-// Use these if you want the correct prefix.
-//native void Influx_PrintToChat( int flags = 0, int client, const char[] format, any ... );
-//native void Influx_PrintToChatAll( int flags = 0, int author, const char[] format, any ... );
-//native void Influx_PrintToChatEx( int flags = 0, int author, const int[] clients, int nClients, const char[] format, any ... );
-//native void Influx_FormatChatColors( char[] sz, int len );
-
+native void Influx_PrintToChat( int client, const char[] format, any ... );
+native void Influx_ReplyToClient( int client, const char[] format, any ... );
+native void Influx_PrintToChatAll( const char[] format, any ... );
 native void Influx_ReplaceChatColors( char[] sz, int len, bool bRemove );
 native void Influx_RemoveChatColors( char[] sz, int len );
 
@@ -483,7 +477,7 @@ stock bool Inf_GetClientSteam( int client, char[] out, int len )
         
         if ( IsClientInGame( client ) )
         {
-            PrintToChat( client, "Couldn't retrieve your Steam Id. Please reconnect and make sure you are connected to Steam!!" );
+            Influx_PrintToChat( client, "Couldn't retrieve your Steam Id. Please reconnect and make sure you are connected to Steam!!" );
         }
         
         return false;
@@ -508,7 +502,7 @@ stock void Inf_DB_LogError( Handle db, const char[] szAdd, int client = 0, const
     
     if ( IS_ENT_PLAYER( client ) && IsClientInGame( client ) && szClientMsg[0] != '\0' )
     {
-        PrintToChat( client, szClientMsg );
+        Influx_PrintToChat( client, szClientMsg );
     }
 }
 
@@ -534,7 +528,7 @@ stock bool Inf_HandleCmdSpam( int client, float delay = 1.0, float &lasttime, bo
     if ( dif > 0.0 )
     {
         if ( bPrint )
-            PrintToChat( client, "Please wait %.1f seconds before using this command!", dif );
+            Influx_PrintToChat( client, "Please wait %.1f seconds before using this command!", dif );
         
         return true;
     }
@@ -555,14 +549,6 @@ stock void Inf_Warning( int num = 1, const char[] format, any ... )
     for ( int i = 0; i < num; i++ ) PrintToServer( msg );
 }
 
-stock void Inf_ReplyToClient( int client, const char[] form, any ... )
-{
-    static char buffer[512];
-    VFormat( buffer, sizeof( buffer ), form, 3 );
-    
-    ReplyToCommand( client, buffer );
-}
-
 stock void Inf_ParseArgs( int args, int maxargs, int &uid, int &mapid, int &runid, int &mode, int &style, char[] szPlayerName, int player_len, char[] szMap, int map_len )
 {
     if ( args < 1 ) return;
@@ -573,7 +559,7 @@ stock void Inf_ParseArgs( int args, int maxargs, int &uid, int &mapid, int &runi
     
     
     
-    decl char szArg[64];
+    static char szArg[64];
     
     for ( int i = 1; i <= args; i++ )
     {
@@ -737,32 +723,6 @@ stock int Inf_GetClientRunIdParse( int client )
     return MAIN_RUN_ID;
 }
 
-// Local color library
-// Interaction with the chat processor is required.
-
-stock void Influx_PrintToChat( int client, const char[] format, any ...)
-{
-    static char szBuffer[512];
-    szBuffer = NULL_STRING;
-
-    VFormat( szBuffer, sizeof(szBuffer), format, 3 );
-
-    if( !szBuffer[0] )
-        return
-    
-    Influx_ReplaceChatColors(szBuffer, sizeof(szBuffer), false);
-
-    if( client )
-    {
-        PrintToChat( client, szBuffer );
-    }
-
-    else 
-    {
-        PrintToChatAll( szBuffer );
-    }
-}
-
 public SharedPlugin __pl_influx_core =
 {
     name = INFLUX_LIB_CORE,
@@ -815,9 +775,9 @@ public void __pl_influx_core_SetNTVOptional()
     MarkNativeAsOptional( "Influx_IsClientCached" );
     MarkNativeAsOptional( "Influx_IsMySQL" );
     MarkNativeAsOptional( "Influx_IsValidMapName" );
-    //MarkNativeAsOptional( "Influx_PrintToChat" );
-    //MarkNativeAsOptional( "Influx_PrintToChatAll" );
-    //MarkNativeAsOptional( "Influx_PrintToChatEx" );
+    MarkNativeAsOptional( "Influx_PrintToChat" );
+    MarkNativeAsOptional( "Influx_PrintToChatAll" );
+    MarkNativeAsOptional( "Influx_ReplyToClient" );
     MarkNativeAsOptional( "Influx_ReplaceChatColors" );
     MarkNativeAsOptional( "Influx_RemoveChatColors" );
     MarkNativeAsOptional( "Influx_RemoveMode" );

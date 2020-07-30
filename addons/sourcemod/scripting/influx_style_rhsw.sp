@@ -27,6 +27,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CMDS
     RegConsoleCmd( "sm_rhsw", Cmd_Style_RHSW, "Change your style to Real Half-Sideways." );
     RegConsoleCmd( "sm_realhalfsideways", Cmd_Style_RHSW );

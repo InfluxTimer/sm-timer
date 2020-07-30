@@ -27,6 +27,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CONVARS
     g_ConVar_Type = CreateConVar( "influx_nodmg_type", "2", "0 = Don't do anything, 1 = Only block fall-damage, 2 = Block all damage", FCVAR_NOTIFY, true, 0.0, true, 2.0 );
     g_ConVar_Type.AddChangeHook( E_ConVarChanged_Type );

@@ -17,23 +17,97 @@
 	{
 		"en"			"Style"
 	}
+
+	"database"
+	{
+		"en"			"database"
+	}
+
+	"file"
+	{
+		"en"			"file"
+	}
+
+	"spam"
+	{
+		"en"			"spam"
+	}
+
+	"use"
+	{
+		"en"			"use"
+	}
+
+	"visible"
+	{
+		"en"			"{G}visible{D}"
+	}
+
+	"hidden"
+	{
+		"en"			"{C}hidden{D}"
+	}
+
+	"OFF"
+	{
+		"en"			"{C}OFF{D}"
+	}
+
+	"ON"
+	{
+		"en"			"{G}ON{D}"
+	}
 	
 	//
 	// General
 	//
 	"INF_MUSTBERUNNING"
 	{
-		"en"			"{G}[INFLUX] {B}You must be running!"
+		"en"			"{D}You must be running!"
 	}
 	
 	"INF_MUSTBEALIVE"
 	{
-		"en"			"{G}[INFLUX] {B}You must be alive!"
+		"en"			"{D}You must be alive!"
 	}
 	
 	"INF_TIMERDISABLED"
 	{
-		"en"			"{G}[INFLUX] {B}Your timer has been disabled!"
+		"en"			"{D}Your timer has been disabled!"
+	}
+	
+	"INF_SAVE_RUNS"
+	{
+		"#format"		"{1:i},{2:t}"
+		"en"			"{D}Wrote {G}{1}{D} runs to {G}{2}{D}!"
+	}
+
+	"INF_UPDATENAME_DB"
+	{
+		"#format"		"{1:s}"
+		"en"			"{D}Set your name to {G}{1} {D}in database!"
+	}
+
+	"INF_CREDITS"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"{D}Server is running {G}{1}{D} version {G}{2}{D}!"
+	}
+
+	"INF_RELOAD_OVD"
+	{
+		"en"			"{D}Reloaded mode/style overrides."
+	}
+
+	"INF_SETELE_SUCCESS"
+	{
+		"#format"		"{1:s}"
+		"en"			"{D}Updated run's {G}{1} {D}teleport position and angle!"
+	}
+
+	"INF_SETELE_FAIL"
+	{
+		"en"			"{D}That position isn't a valid teleport destination!"
 	}
 	
 	//
@@ -42,36 +116,36 @@
 	"INF_MODEORSTYLEISNOW"
 	{
 		"#format"		"{1:t},{2:s}"
-		"en"			"{G}[INFLUX] {B}Your {G}{1} {B}is now {G}{2}!"
+		"en"			"{D}Your {G}{1} {D}is now {G}{2}!"
 	}
 	
 	"INF_MODEORSTYLENOTALLOWEDINRUN"
 	{
 		"#format"		"{1:t},{2:s},{3:s}"
-		"en"			"{G}[INFLUX] {B}Sorry, {G}{1} {GL}{2} {B}is not allowed in {G}{3}!"
+		"en"			"{D}Sorry, {1} {G}{2} {D}is not allowed in {G}{3} {D}!"
 	}
 	
 	"INF_WENTWRONGCHANGING"
 	{
 		"#format"		"{1:t}"
-		"en"			"[INFLUX] Something went wrong when changing your {1}!"
+		"en"			"{D}Something went wrong when changing your {G}{1} {D}!"
 	}
 	
 	"INF_WAITTILLSPAWN"
 	{
-		"en"			"[INFLUX] You must enter a start zone/wait till next spawn."
+		"en"			"{D}You must enter a start zone/wait till next spawn."
 	}
 	
 	"INF_NOACCESSTO"
 	{
 		"#format"		"{1:t}"
-		"en"			"[INFLUX] You do not have access to this {1}!"
+		"en"			"{D}You do not have access to this {1}!"
 	}
 	
 	"INF_VALIDMODES"
 	{
 		"#format"		"{1:s}"
-		"en"			"[INFLUX] Valid mode(s): {1}"
+		"en"			"{D}Valid mode(s): {G}{1}"
 	}
 	
 	//
@@ -80,55 +154,55 @@
 	"INF_RUN_CREATED"
 	{
 		"#format"		"{1:s}"
-		"en"			"[INFLUX] {1} has been created!"
+		"en"			"{G}{1} {D}has been created!"
 	}
 	
 	"INF_RUN_DELETED"
 	{
 		"#format"		"{1:s}"
-		"en"			"[INFLUX] Run {1} has been deleted! Remember to !saveruns."
+		"en"			"{D}Run {G}{1} {D}has been deleted! Remember to !saveruns."
 	}
 	
 	"INF_RUNIDNOTEXIST"
 	{
 		"#format"		"{1:i}"
-		"en"			"[INFLUX] Run with an ID of {1} does not exist!"
+		"en"			"{D}Run with an ID of {G}{1} {D}does not exist!"
 	}
 	
 	"INF_RUNS_DELETED"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"[INFLUX] Your {1} {2} run has been deleted!"
+		"en"			"{D}Your {G}{1} {GR}[ {PI}{2} {GR}] {D}run has been deleted!"
 	}
 	
 	"INF_RUN_RUNS_DELETED"
 	{
 		"#format"		"{1:s}"
-		"en"			"[INFLUX] Your {1} runs has been deleted!"
+		"en"			"{D}Your {G}{1} {D}runs has been deleted!"
 	}
 	
 	"INF_RUN_RENAMED"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"[INFLUX] Run {1} has been renamed to {2}!"
+		"en"			"{D}Run {G}{1} {D}has been renamed to {G}{2}{D}!"
 	}
 	
 	"INF_RUNISNOW"
 	{
 		"#format"		"{1:s}"
-		"en"			"[INFLUX] Your run is now {1}!"
+		"en"			"{D}Your run is now {G}{1}{D}!"
 	}
 	
 	"INF_RUNNOTEXIST"
 	{
-		"en"			"[INFLUX] That run does not exist!"
+		"en"			"{D}That run does not exist!"
 	}
 	
 	
 	"INF_RUNFINISHEDPRINT_IMPROVEDBY"
 	{
 		"#format"		"{1:s}"
-		"en"			"[INFLUX]  {LIGHTYELLOW}Improving by {1} seconds"
+		"en"			"{D}Improving by {GR}[ {PI}{1} {GR}] {D}seconds"
 	}
 	
 	
@@ -144,10 +218,24 @@
 		// 7 = Style (if necessary) (has a space at the start)
 		//
 		"#format"		"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s}{7:s}"
-		"en"			"[INFLUX] {1} finished {2} in {3}!{4}{5}{6}{7}"
+		"en"			"{G}{1} {D}finished {GR}[ {PI}{2} {GR}] {D}in {GR}[ {PI}{3} {G}{4} {GR}] {D}! {5} {6} {7}"
 	}
 	
-	
+	//
+	// Rec chat
+	//
+
+	"INF_MODE_DISPLAY_STYLE"
+	{
+		"#format"		"{1:s}"
+		"en"			"{GR}[ {PI}{1} {GR}]"
+	}
+
+	"INF_STYLE_DISPLAY_STYLE"
+	{
+		"#format"		"{1:s}"
+		"en"			"{GR}[ {PI}{1} {GR}]"
+	}
 	
 	
 	
@@ -157,7 +245,7 @@
 	"INF_INVALIDWEAPONSPD"
 	{
 		"#format"		"{1:i}"
-		"en"			"[INFLUX] Invalid weapon speed! Can be {1} at most!"
+		"en"			"{D}Invalid weapon speed! Can be {G}{1} {D}at most!"
 	}
 	
 	
@@ -166,24 +254,24 @@
 	//
 	"INF_PRESPEEDNONOCLIP"
 	{
-		"en"			"[INFLUX] You cannot prespeed with noclip!"
+		"en"			"{D}You cannot prespeed with noclip!"
 	}
 	
 	"INF_PRESPEEDJUMPLIMIT"
 	{
 		"#format"		"{1:i}"
-		"en"			"[INFLUX] You cannot jump more than {1} time(s) at the start!"
+		"en"			"{D}You cannot jump more than {G}{1} {D}time(s) at the start!"
 	}
 	
 	"INF_PRESPEEDNOJUMP"
 	{
-		"en"			"[INFLUX] You cannot jump at all at the start!"
+		"en"			"{D}You cannot jump at all at the start!"
 	}
 	
 	"INF_PRESPEEDEXCEED"
 	{
-		"#format"		"{1:%.0f}"
-		"en"			"[INFLUX] Your prespeed cannot exceed {1}!"
+		"#format"		"{1:.0f}"
+		"en"			"{D}Your prespeed cannot exceed {G}{1}{D}!"
 	}
 	
 	
@@ -193,55 +281,55 @@
 	//
 	"INF_RECORDINGSAVED"
 	{
-		"en"			"[INFLUX] Your recording has been successfully saved!"
+		"en"			"{D}Your recording has been successfully saved!"
 	}
 	
 	"INF_RECORDINGSAVEFAILED"
 	{
-		"en"			"[INFLUX] We were unable to save your recording, sorry!"
+		"en"			"{D}We were unable to save your recording, sorry!"
 	}
 	
 	"INF_RECORDINGALREADYPLAYING"
 	{
-		"en"			"[INFLUX] That run is already being replayed!"
+		"en"			"{D}That run is already being replayed!"
 	}
 	
 	"INF_RECORDINGNOWPLAYING"
 	{
-		"en"			"[INFLUX] Replay is now being played!"
+		"en"			"{D}Replay is now being played!"
 	}
 	
 	"INF_RECORDINGEXCEEDEDLIMIT"
 	{
 		"#format"		"{1:i}"
-		"en"			"[INFLUX] Stopped recording. Recordings cannot exceed {1} minutes!"
+		"en"			"{D}Stopped recording. Recordings cannot exceed {PI}{1} {D}minutes!"
 	}
 	
 	"INF_REPLAYISFREENOW"
 	{
-		"en"			"[INFLUX] You can now request a replay by typing !replay in chat."
+		"en"			"{D}You can now request a replay by typing {G}!replay {D}in chat."
 	}
 	
 	"INF_REPLAYISNEW"
 	{
-		"en"			"[INFLUX] Replaying a new record. Please wait."
+		"en"			"{D}Replaying a new record. Please wait..."
 	}
 	
 	"INF_REPLAYALREADYREQUESTED"
 	{
-		"en"			"[INFLUX] You've already requested a replay!"
+		"en"			"{D}You've already requested a replay!"
 	}
 	
 	"INF_REPLAYISBEINGWATCHED"
 	{
 		"#format"		"{1:s}"
-		"en"			"[INFLUX] Replay is being watched by {1}. Please wait for the recording to finish."
+		"en"			"{D}Replay is being watched by {G}{1}{D}. Please wait for the recording to finish."
 	}
 
 	"INF_REPLAYDELETED"
 	{
 		"#format"		"{1:s}"
-		"en"			"Successfully deleted '../{1}'!"
+		"en"			"{D}Successfully deleted: {G}'../{1}'{D}!"
 	}
 	
 	
@@ -252,56 +340,138 @@
 	"INF_STAGENUMBERNOTEXIST"
 	{
 		"#format"		"{1:i}"
-		"en"			"[INFLUX] Stage {1} does not exist!"
+		"en"			"{D}Stage {G}{1} {D}does not exist!"
 	}
 	
 	"INF_LEAVEZONEFIRST"
 	{
-		"en"			"[INFLUX] You must leave the zone first!"
+		"en"			"{D}You must leave the zone first!"
 	}
 	
 	
-	
-	
+	//
+	//	Zones
+	//
+	"INF_ZONE_BADSIZE"
+	{
+		"en"			"{D}Bad zone size! Please make the zone bigger."
+	}
+
+	"INF_ZONE_NOSET"
+	{
+		"en"			"{D}Sorry, no settings can be set for this zone!"
+	}
+
+	"INF_ZONE_SBUILDING"
+	{
+		"#format"		"{1:s}"
+		"en"			"{D}Started building {G}{1}{D}!"
+	}
+
+	"INF_ZONE_CREATED"
+	{
+		"#format"		"{1:s}"
+		"en"			"{D}Created zone {G}{1}{D}!"
+	}
+
+	"INF_ZONE_DELETE_SUCCESS"
+	{
+		"#format"		"{1:s}"
+		"en"			"{D}Deleted {G}{1}{D}!"
+	}
+
+	"INF_ZONE_DELETE_FAIL"
+	{
+		"#format"		"{1:s}"
+		"en"			"{D}Couldn't delete {G}{1}{D}!"
+	}
+
+	"INF_ZONE_SAVED"
+	{
+		"#format"		"{1:i}"
+		"en"			"{D}Wrote {G}{1} {D}zones to file/database!"
+	}
+
+	"INF_ZONE_SPAWNED"
+	{
+		"#format"		"{1:i}"
+		"en"			"{D}Spawned {G}{1} {D}zones!"
+	}
+
+	"INF_ZONE_NOTFOUND"
+	{
+		"en"			"{D}Couldn't find a zone!"
+	}
+
+	"INF_ZONE_HIDDEN_BEAMS"
+	{
+		"#format"		"{1:t}"
+		"en"			"{D}Hidden beams are now: {1}"
+	}
+
+	"INF_ZONE_STAGE_SET"
+	{
+		"#format"		"{1:i}"
+		"en"			"{D}Set stage {G}{1} {D}tele position and yaw!"
+	}
+
+	"INF_ZONE_COPY_LOC"
+	{
+		"#format"		"{1:i}"
+		"en"			"{D}Copying position and angles from entity {G}{1}{D}!"
+	}
+
+	"INF_ZONE_TELE_NOTFOUND"
+	{
+		"#format"		"{1:.0f}"
+		"en"			"{D}Couldn't find a teleport destination within {G}{1} {D}units!"
+	}
+
+	"INF_ZONE_VALIDATOR"
+	{
+		"#format"		"{1:i},{2:i}"
+		"en"			"{D}You've entered a validator! {GR}( {G}{1}{D}/{G}{2} {GR})"
+	}
+
 	
 	//
 	// Pause
 	//
 	"INF_NOTPAUSED"
 	{
-		"en"			"[INFLUX] You aren't even paused!"
+		"en"			"{D}You aren't even paused!"
 	}
 	
     "INF_CANTPAUSE_PRAC"
 	{
-		"en"			"[INFLUX] You cannot pause a practising run!"
+		"en"			"{D}You cannot pause a practising run!"
 	}
 	
 	"INF_NOWPAUSED"
 	{
-		"en"			"[INFLUX] Your run is now paused. Type !continue to resume."
+		"en"			"{D}Your run is now paused. Type {G}!continue {D}to resume."
 	}
 	
 	"INF_NOLONGERPAUSED"
 	{
-		"en"			"[INFLUX] Your run is no longer paused."
+		"en"			"{D}Your run is no longer paused."
 	}
 	
 	"INF_PAUSENOTSOFAST"
 	{
 		"#format"		"{1:i}"
-		"en"			"[INFLUX] You cannot pause so soon! Please wait {1} seconds!"
+		"en"			"{D}You cannot pause so soon! Please wait {G}{1} {D}seconds!"
 	}
 	
 	"INF_PAUSENOTALLOWED"
 	{
-		"en"			"[INFLUX] Pauses aren't allowed!"
+		"en"			"{D}Pauses aren't allowed!"
 	}
 	
 	"INF_PAUSELIMIT"
 	{
 		"#format"		"{1:i}"
-		"en"			"[INFLUX] You cannot pause more than {1} time(s) every run!"
+		"en"			"{D}You cannot pause more than {G}{1} {D}time(s) every run!"
 	}
 	
 	
@@ -311,13 +481,13 @@
 	//
     "INF_MUSTBEPRACTISING"
 	{
-		"en"			"[INFLUX] You must be practising!"
+		"en"			"{D}You must be practising!"
 	}
 	
 	"INF_PRACTICEMODECHANGE"
 	{
 		"#format"		"{1:t}"
-		"en"			"[INFLUX] Practice mode: {1}"
+		"en"			"{D}Practice mode: {1}"
 	}
 	
 	
@@ -327,45 +497,45 @@
 	"INF_RANKISNOW"
 	{
 		"#format"		"{1:s}"
-		"en"			"[INFLUX] Your rank is now '{1}'!"
+		"en"			"{D}Your rank is now '{1}'!"
 	}
 	
 	"INF_GOTPOINTS"
 	{
 		"#format"		"{1:i},{2:i}"
-		"en"			"[INFLUX] You've received {1} points! You now have {2} points!"
+		"en"			"{D}You've received {G}{1} {D}points! You now have {G}{2} {D}points!"
 	}
 
 	"INF_USAGE_CUSTOMRANK"
 	{
-		"en"			"Usage: sm_customrank <rank>"
+		"en"			"{D}Usage: {G}sm_customrank <rank>"
 	}
 
 	"INF_INVALID_LEN"
 	{
 		"#format"		"{1:i}"
-		"en"			"Rank length cannot exceed {1} characters!"
+		"en"			"{D}Rank length cannot exceed {G}{1} {D}characters!"
 	}
 
 	// ReplyToClient
 	"INF_USAGE_MAPREWARD"
 	{
-		"en"			"Usage: sm_setmapreward <mapname (optional)> <points>"
+		"en"			"{D}Usage: {G}sm_setmapreward <mapname (optional)> <points>"
 	}
 
 	"INF_USAGE_GIVEPOINTS"
 	{
-		"en"			"Usage: sm_givesimplepoints <target (optional)> <amount> (Note: can be negative)"
+		"en"			"{D}Usage: {G}sm_givesimplepoints <target (optional)> <amount> (Note: can be negative)"
 	}
 
 	"INF_NO_TARGETS"
 	{
-		"en"			"No targets found!"
+		"en"			"{D}No targets found!"
 	}
 
 	"INF_ZERO_POINTS"
 	{
-		"en"			"You can't give zero points!"
+		"en"			"{D}You can't give zero points!"
 	}
 	
 	
@@ -375,26 +545,18 @@
 	"INF_RANKCHAT"
 	{
 		"#format"		"{1:s},{2:i},{3:i}"
-		"en"			"[INFLUX] {1} is now ranked {2}/{3}!"
+		"en"			"{G}{1} {D}is now ranked {G}{2}{D}/{G}{3}!"
 	}
 
 	//
 	// AC L/R
 	// 
-	"spam"
-	{
-		"en"			"spam"
-	}
-
-	"use"
-	{
-		"en"			"use"
-	}
+	
 
 	"INF_AC_GUARD"
 	{
 		"#format"		"{1:t}"
-		"en"			"{G}[INFLUX] {B}Please don't {1} {G}+left{B}/{G}+right{B}!"
+		"en"			"{D}Please don't {1} {G}+left{D}/{G}+right{D}!"
 	}
 
 	//
@@ -402,18 +564,18 @@
 	//
 	"INF_FPS_NOTCACHED"
 	{
-		"en"			"Your fps_max value hasn't been received yet!"
+		"en"			"{D}Your fps_max value hasn't been received yet!"
 	}
 
 	"INF_FPS_VALID_1"
 	{
-		"#format"		"{1:%.0f}"
-		"en"			"Your FPS must be equal to or greater than {1}!"
+		"#format"		"{1:.0f}"
+		"en"			"{D}Your FPS must be equal to or greater than {G}{1}{D}!"
 	}
 
 	"INF_FPS_VALID_300"
 	{
-		"en"			"Your FPS must be 300!"
+		"en"			"{D}Your FPS must be {G}300{D}!"
 	}
 
 	//
@@ -421,32 +583,24 @@
 	//
 	"INF_HELP"
 	{
-		"en"			"Type !help to see a list of commands."
+		"en"			"{D}Type {G}!help {D}to see a list of commands."
 	}
 
 	//
 	// HUD HIDE
 	//
-	"visible"
-	{
-		"en"			"visible"
-	}
-
-	"hidden"
-	{
-		"en"			"hidden"
-	}
+	
 
 	"INF_HIDE_TIMER"
 	{
 		"#format"		"{1:t}"
-		"en"			"Your timer is now {1}!"
+		"en"			"{D}Your timer is now {G}{1}{D}!"
 	}
 
 	"INF_HIDE_SIDEBAR"
 	{
 		"#format"		"{1:t}"
-		"en"			"Your sidebar is now {1}!"
+		"en"			"{D}Your sidebar is now {G}{1}{D}!"
 	}
 
 	//
@@ -455,31 +609,111 @@
 	"INF_HIDE_VIEWMODEL"
 	{
 		"#format"		"{1:t}"
-		"en"			"Your viewmodel is now {1}!"
+		"en"			"{D}Your viewmodel is now {G}{1}{D}!"
 	}
 
 	//
 	// NOCLIP
 	//
-	"OFF"
-	{
-		"en"			"OFF"
-	}
-
-	"ON"
-	{
-		"en"			"ON"
-	}
+	
 
 	"INF_NOCLIP_ALIVE"
 	{
-		"en"			"You must be alive to use this command!"
+		"en"			"{D}You must be alive to use this command!"
 	}
 
 	"INF_NOCLIP_STATUS"
 	{
 		"#format"		"{1:t}"
-		"en"			"Noclip: {1}"
+		"en"			"{D}Noclip: {1}"
 	}
 
+	//
+	// TAS
+	//
+
+	"INF_TAS_LOADED"
+	{
+		"#format"		"{1:i}"
+		"en"			"{D}Loaded {G}{1} {D}frames from disk."
+	}
+
+	"INF_TAS_NOTLOAD"
+	{
+		"en"			"{D}Couldn't load file from disk!"
+	}
+
+	"INF_TAS_PAUSE"
+	{
+		"en"			"{D}You cannot pause in TAS style!"
+	}
+
+	"INF_TAS_PRACTISE"
+	{
+		"en"			"{D}You cannot practice in TAS style!"
+	}
+
+	"INF_TAS_LAGGEDMOVEMENTVALUE"
+	{
+		"en"			"{D}Make sure to use: {G}cl_clock_correction_force_server_tick{D}/{G}cl_clockdrift_max_ms {C}0 {D}to decrease laggy timescale!"
+	}
+
+	"INF_TAS_SAVE_SUCCESS"
+	{
+		"#format"		"{1:i},{2:s}"
+		"en"			"{D}Saved {G}{1} {D}frames to: {G}'../{2]'{D}."
+	}
+
+	"INF_TAS_SAVE_FAIL"
+	{
+		"en"			"{D}Couldn't save frames to disk!"
+	}
+
+	
+
+	//
+	//	Spec
+	//
+
+	"INF_SPEC_LIST"
+	{
+		"#format"		"{1:N},{2:i},{3:s}"
+		"en"			"{D}People spectating {G}{1} {D}( {G}{2} {D}): {G}{3}"
+	}
+
+	"INF_SPEC_NOBODY"
+	{
+		"#format"		"{1:N}"
+		"en"			"{D}Nobody is spectating {G}{1}{D}. :("
+	}
+
+	//
+	// Spawn cmds
+	//
+
+	"INF_CMD_SPEC"
+	{
+		"#format"		"{1:N}"
+		"en"			"{D}You are now spectating {G}{1}{D}!"
+	}
+
+	//
+	// Tele to end
+	//
+	
+	"INF_TELE_FAIL"
+	{
+		"#format"		"{1:s}"
+		"en"			"{D}Couldn't find end to {G}{1}!"
+	}
+
+	//
+	// Truevel
+	//
+	
+	"INF_TRUEVEL"
+	{
+		"#format"		"{1:t}"
+		"en"			"{D}Truevel: {1}"
+	}
 }

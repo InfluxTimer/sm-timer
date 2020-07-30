@@ -15,6 +15,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CMDS
     RegConsoleCmd( "sm_normal", Cmd_Style_Normal, INF_NAME..." - Change your style to normal." );
     RegConsoleCmd( "sm_default", Cmd_Style_Normal, "" );

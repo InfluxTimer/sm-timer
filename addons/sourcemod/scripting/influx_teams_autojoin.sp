@@ -25,6 +25,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     g_ConVar_Delay = CreateConVar( "influx_teams_autojoin_delay", "1", "How long we wait before autojoining a team.", FCVAR_NOTIFY, true, 0.1, true, 1337.0 );
     
     AutoExecConfig( true, "teams_autojoin", "influx" );

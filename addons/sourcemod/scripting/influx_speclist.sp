@@ -108,30 +108,30 @@ public Action Cmd_SpecList( int client, int args )
         {
             ++num;
             
-            Format( szMsg, sizeof( szMsg ), "%s%s{MAINCLR1}%N", szMsg, ( szMsg[0] ) ? "{CHATCLR}, " : "", i );
+            Format( szMsg, sizeof( szMsg ), "%s\x01\x04%N", szMsg, i );
         }
     }
     
     
     if ( num )
     {
-        Format( szMsg, sizeof( szMsg ), "People spectating {MAINCLR1}%N{CHATCLR} ({MAINCLR1}%i{CHATCLR}): %s", target, num, szMsg );
+        Format( szMsg, sizeof( szMsg ), "%T", "INF_SPEC_LIST" , LANG_SERVER, target, num, szMsg );
     }
     else
     {
-        FormatEx( szMsg, sizeof( szMsg ), "Nobody is spectating {MAINCLR1}%N{CHATCLR}. :(", target );
+        FormatEx( szMsg, sizeof( szMsg ), "%T", "INF_SPEC_NOBODY" , LANG_SERVER, target );
     }
     
     
     switch ( g_ConVar_NotifyAll.IntValue )
     {
         case 0 : Influx_PrintToChat( client, szMsg );
-        case 1 : Influx_PrintToChatAll( _, client, szMsg );
+        case 1 : Influx_PrintToChatAll( szMsg );
         case 2 :
         {
             if ( num >= g_ConVar_MinToNotifyAll.IntValue )
             {
-                Influx_PrintToChatAll( _, client, szMsg );
+                Influx_PrintToChatAll( szMsg );
             }
             else
             {

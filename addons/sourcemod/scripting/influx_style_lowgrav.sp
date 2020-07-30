@@ -41,7 +41,7 @@ public void OnPluginStart()
     g_ConVar_Gravity.Flags &= ~(FCVAR_REPLICATED | FCVAR_NOTIFY);
     
     
-    
+    LoadTranslations( INFLUX_PHRASES );
     
     
     

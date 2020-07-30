@@ -36,6 +36,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     g_hOtherSounds = new ArrayList( PLATFORM_MAX_PATH_CELL );
     g_hBestSounds = new ArrayList( PLATFORM_MAX_PATH_CELL );
     g_hPBSounds = new ArrayList( PLATFORM_MAX_PATH_CELL );

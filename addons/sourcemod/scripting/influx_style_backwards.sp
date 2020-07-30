@@ -26,6 +26,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CMDS
     RegConsoleCmd( "sm_backwards", Cmd_STYLE_BWD, "Change your style to backwards." );
     RegConsoleCmd( "sm_backward", Cmd_STYLE_BWD, "" );

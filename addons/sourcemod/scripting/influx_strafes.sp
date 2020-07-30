@@ -53,6 +53,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+
     // FORWARDS
     g_hForward_ShouldCountStrafes = CreateGlobalForward( "Influx_ShouldCountStrafes", ET_Hook, Param_Cell );
     

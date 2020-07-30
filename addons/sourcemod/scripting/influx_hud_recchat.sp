@@ -18,6 +18,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     RegConsoleCmd( "sm_recchat", Cmd_Chat );
 }
 

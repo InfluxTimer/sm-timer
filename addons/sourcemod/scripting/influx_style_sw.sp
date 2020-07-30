@@ -16,6 +16,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CMDS
     RegConsoleCmd( "sm_sideways", Cmd_Style_SW, "Change your style to sideways." );
     RegConsoleCmd( "sm_sw", Cmd_Style_SW, "" );

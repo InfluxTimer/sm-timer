@@ -145,7 +145,7 @@ public int Hndlr_ZoneSettings( Menu menu, MenuAction action, int client, int ind
         
         if ( res == Plugin_Continue )
         {
-            Influx_PrintToChat( _, client, "Sorry, no settings can be set for this zone!" );
+            Influx_PrintToChat( client, "%T", "INF_ZONE_NOSET", client );
             Inf_OpenZoneMenu( client );
         }
     }

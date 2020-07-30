@@ -27,6 +27,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CMDS
     RegConsoleCmd( "sm_spec", Cmd_Spec );
     RegConsoleCmd( "sm_spectate", Cmd_Spec );
@@ -104,7 +106,7 @@ public Action Cmd_Spec( int client, int args )
                 {
                     SetClientObserverTarget( client, target );
                     
-                    Influx_PrintToChat( client, "You are now spectating {MAINCLR1}%N{CHATCLR}!", target );
+                    Influx_PrintToChat( client, "%T", "INF_CMD_SPEC", client, target );
                 }
                 
                 SetClientObserverMode( client, OBS_MODE_IN_EYE );

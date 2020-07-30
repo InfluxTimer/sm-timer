@@ -42,6 +42,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CONVARS
     g_ConVar_Type = CreateConVar( "influx_mvpstar_type", "2", "1 = Maps beaten, 2 = Maps beaten (main only), 3 = Amount of top records, 4 = Map ranking | Else disabled.", FCVAR_NOTIFY );
     

@@ -14,6 +14,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // Disable radio menu cmds.
     AddCommandListener( Lstnr_Radio, "radio1" );
     AddCommandListener( Lstnr_Radio, "radio2" );

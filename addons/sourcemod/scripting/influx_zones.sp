@@ -167,6 +167,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // FORWARDS
     g_hForward_OnZoneCreated = CreateGlobalForward( "Influx_OnZoneCreated", ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
     g_hForward_OnZoneDeleted = CreateGlobalForward( "Influx_OnZoneDeleted", ET_Ignore, Param_Cell, Param_Cell );
@@ -433,7 +435,7 @@ stock void CheckZones( int issuer = 0, bool bForcePrint = false )
     
     if ( num || bForcePrint )
     {
-        Inf_ReplyToClient( issuer, "Spawned {MAINCLR1}%i{CHATCLR} zones!", num );
+        Influx_ReplyToClient( issuer, "%T", "INF_ZONE_SPAWNED", issuer, num );
     }
 }
 
@@ -501,7 +503,7 @@ stock bool StartToBuild( int client, ZoneType_t zonetype, const char[] name = ""
     }
     
     
-    Influx_PrintToChat( client, "Started building {MAINCLR1}%s{CHATCLR}!", szName );
+    Influx_PrintToChat( client, "%T", "INF_ZONE_SBUILDING", client, szName );
     
     return true;
 }
@@ -648,7 +650,7 @@ stock int CreateZone( int client, const float mins[3], const float maxs[3], Zone
     // Get name again in case it was updated.
     GetZoneName( zoneid, szName, sizeof( szName ) );
     
-    Influx_PrintToChat( client, "Created zone {MAINCLR1}%s{CHATCLR}!", szName );
+    Influx_PrintToChat( client, "%T", "INF_ZONE_CREATED", client, szName );
     
     
     // May be changed above.
@@ -703,7 +705,7 @@ stock void DeleteZoneWithClient( int client, int index )
 {
     if ( index <= -1 )
     {
-        Influx_PrintToChat( client, "Couldn't find a zone!" );
+        Influx_PrintToChat( client, "%T", "INF_ZONE_NOTFOUND", client );
         return;
     }
     
@@ -713,11 +715,11 @@ stock void DeleteZoneWithClient( int client, int index )
     
     if ( DeleteZoneByIndex( index ) )
     {
-        Influx_PrintToChat( client, "Deleted {MAINCLR1}%s{CHATCLR}!", szZone );
+        Influx_PrintToChat( client, "%T", "INF_ZONE_DELETE_SUCCESS", client, szZone );
     }
     else
     {
-        Influx_PrintToChat( client, "Couldn't delete {MAINCLR1}%s{CHATCLR}!", szZone );
+        Influx_PrintToChat( client, "%T", "INF_ZONE_DELETE_FAIL", client, szZone );
     }
 }
 

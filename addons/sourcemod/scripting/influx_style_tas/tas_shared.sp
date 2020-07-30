@@ -190,6 +190,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CONVARS
 #if !defined USE_LAGGEDMOVEMENTVALUE
     if ( (g_ConVar_Timescale = FindConVar( "host_timescale" )) == null )
@@ -361,7 +363,7 @@ public Action Influx_OnClientPause( int client )
 {
     if ( Influx_GetClientStyle( client ) == STYLE_TAS )
     {
-        Influx_PrintToChat( _, client, "You cannot pause in TAS style!" );
+        Influx_PrintToChat( client, "%T", "INF_TAS_PAUSE", client );
         return Plugin_Stop;
     }
     
@@ -373,7 +375,7 @@ public Action Influx_OnClientPracticeStart( int client )
 {
     if ( Influx_GetClientStyle( client ) == STYLE_TAS )
     {
-        Influx_PrintToChat( _, client, "You cannot practice in TAS style!" );
+        Influx_PrintToChat( client, "%T", "INF_TAS_PRACTISE", client );
         return Plugin_Stop;
     }
     
@@ -474,7 +476,7 @@ public void Influx_OnClientStyleChangePost( int client, int style, int laststyle
 #if !defined USE_LAGGEDMOVEMENTVALUE
         if ( laststyle != STYLE_TAS && GetEngineVersion() == Engine_CSGO )
         {
-            Influx_PrintToChat( _, client, "Make sure to use {MAINCLR1}cl_clock_correction_force_server_tick/cl_clockdrift_max_ms 0{CHATCLR} to decrease laggy timescale!" );
+            Influx_PrintToChat( client, "%T", "INF_TAS_LAGGEDMOVEMENTVALUE", client );
         }
 #endif
     }
@@ -1082,11 +1084,11 @@ stock void SaveFramesMsg( int client )
     
     if ( SaveFrames( client ) )
     {
-        Influx_PrintToChat( _, client, "Saved {MAINCLR1}%i{CHATCLR} frames to '{MAINCLR1}...%s{CHATCLR}'.", g_hFrames[client].Length, szPath[16] );
+        Influx_PrintToChat( client, "%T", "INF_TAS_SAVE_SUCCESS", client, g_hFrames[client].Length, szPath[16] );
     }
     else
     {
-        Influx_PrintToChat( _, client, "Couldn't save frames to disk!" );
+        Influx_PrintToChat( client, "%T", "INF_TAS_SAVE_FAIL", client );
     }
 }
 

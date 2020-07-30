@@ -54,6 +54,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     g_hTeles = new ArrayList( TELE_SIZE );
     
     
@@ -371,11 +373,11 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
                 SetPosByIndex( itele, pos );
                 SetAngByIndex( itele, ang );
                 
-                Influx_PrintToChat( client, "Copying position and angles from entity {MAINCLR1}%i{CHATCLR}!", closestent );
+                Influx_PrintToChat( client, "%T", "INF_ZONE_COPY_LOC", client, closestent );
             }
             else
             {
-                Influx_PrintToChat( client, "Couldn't find a teleport destination within {MAINCLR1}%.0f{CHATCLR} units!", DIST_TO_FIND );
+                Influx_PrintToChat( client, "%T", "INF_ZONE_TELE_NOTFOUND", client, DIST_TO_FIND );
             }
         }
     }

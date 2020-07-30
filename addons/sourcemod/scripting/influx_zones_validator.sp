@@ -59,6 +59,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 public void OnPluginStart()
 {
     g_hValidators = new ArrayList( VAL_SIZE );
+
+    LoadTranslations( INFLUX_PHRASES );
     
     
     // CONVARS
@@ -359,7 +361,7 @@ stock void AddValidatorTouchedByIndex( int client, int ival )
     
     if ( g_ConVar_MsgWhenTouched.BoolValue )
     {
-        Influx_PrintToChat( client, "You've entered a validator! ({MAINCLR1}%i{CHATCLR}/{MAINCLR1}%i{CHATCLR})",
+        Influx_PrintToChat( client, "%T", "INF_ZONE_VALIDATOR", client,
             touched.Length,
             GetNumValidators( Influx_GetClientRunId( client ) ) );
     }

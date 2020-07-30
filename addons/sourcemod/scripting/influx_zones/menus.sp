@@ -59,7 +59,7 @@ public Action Cmd_SaveZones( int client, int args )
     {
         int num = SaveZones();
         
-        Inf_ReplyToClient( client, "Wrote {MAINCLR1}%i{CHATCLR} zones to file/database!", num );
+        Influx_ReplyToClient( client, "%T", "INF_ZONE_SAVED", client, num );
     }
     
     return Plugin_Handled;
@@ -255,7 +255,7 @@ public Action Cmd_EndZone( int client, int args )
         {
             //g_iBuildingType[client] = ZONETYPE_INVALID;
             
-            Influx_PrintToChat( _, client, "Bad zone size! Please make the zone bigger." );
+            Influx_PrintToChat( client, "%T", "INF_ZONE_BADSIZE", client );
         }
     }
     

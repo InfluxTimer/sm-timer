@@ -69,6 +69,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // FORWARDS
     g_hForward_ShouldDrawHUD = CreateGlobalForward( "Influx_ShouldDrawHUD", ET_Hook, Param_Cell, Param_Cell, Param_Cell );
     g_hForward_OnDrawHUD = CreateGlobalForward( "Influx_OnDrawHUD", ET_Hook, Param_Cell, Param_Cell, Param_Cell );

@@ -32,6 +32,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
 #if defined TEST
     RegConsoleCmd( "sm_test_specalltalk", Cmd_Test );
 #endif

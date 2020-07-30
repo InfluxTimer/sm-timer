@@ -18,6 +18,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     RegConsoleCmd( "sm_hide", Cmd_Hide, "Display hide settings." );
     RegConsoleCmd( "sm_hideplayers", Cmd_Hide );
     RegConsoleCmd( "sm_hidebots", Cmd_Hide );

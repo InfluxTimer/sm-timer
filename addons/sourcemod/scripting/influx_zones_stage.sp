@@ -963,7 +963,7 @@ public Action Cmd_SetStageTelePos( int client, int args )
         SetStageTeleYaw( index, ang[1] );
         
         
-        Influx_PrintToChat( client, "Set stage {MAINCLR1}%i{CHATCLR} tele position and yaw!", stagenum );
+        Influx_PrintToChat( client, "%T", "INF_ZONE_STAGE_SET", client, stagenum );
     }
     else
     {

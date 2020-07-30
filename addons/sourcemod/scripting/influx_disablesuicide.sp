@@ -25,6 +25,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CONVARS
     g_ConVar_Type = CreateConVar( "influx_disablesuicide_type", "1", "0 = Allow suicide, 1 = Change to spectator team, 2 = Teleport to start, 3 = Don't do anything, just block.", FCVAR_NOTIFY, true, 0.0, true, 3.0 );
     

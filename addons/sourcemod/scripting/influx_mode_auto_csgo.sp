@@ -41,6 +41,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CONVARS
     if ( (g_ConVar_AirAccelerate = FindConVar( "sv_airaccelerate" )) == null )
     {

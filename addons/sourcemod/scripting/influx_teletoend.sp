@@ -14,6 +14,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CMDS
     RegConsoleCmd( "sm_end", Cmd_GotoEnd );
     RegConsoleCmd( "sm_goend", Cmd_GotoEnd );
@@ -49,7 +51,7 @@ public Action Cmd_GotoEnd( int client, int args )
         Influx_GetRunName( runid, szRun, sizeof( szRun ) );
         
         
-        Influx_PrintToChat( client, "Couldn't find end to {MAINCLR1}%s{CHATCLR}!", szRun );
+        Influx_PrintToChat( client, "%T", "INF_TELE_FAIL", client, szRun );
     }
     
     return Plugin_Handled;

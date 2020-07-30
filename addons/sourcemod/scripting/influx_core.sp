@@ -228,8 +228,9 @@ TopMenuObject g_InfluxAdminMenu = INVALID_TOPMENUOBJECT;
 
 #include "influx_core/modestyle_ovrs.sp"
 
-#include "influx_core/cmds.sp"
 #include "influx_core/colorchat.sp"
+#include "influx_core/natives_chat.sp"
+#include "influx_core/cmds.sp"
 #include "influx_core/db_sql_queries.sp"
 #include "influx_core/db.sp"
 #include "influx_core/db_cb.sp"
@@ -240,7 +241,6 @@ TopMenuObject g_InfluxAdminMenu = INVALID_TOPMENUOBJECT;
 #include "influx_core/menus_admin.sp"
 #include "influx_core/menus_hndlrs_admin.sp"
 #include "influx_core/natives.sp"
-#include "influx_core/natives_chat.sp"
 #include "influx_core/runcmd.sp"
 
 
@@ -282,13 +282,11 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     
     
     // In natives_chat.sp
-    /*CreateNative( "Influx_PrintToChat", Native_PrintToChat );
+    CreateNative( "Influx_PrintToChat", Native_PrintToChat );
     CreateNative( "Influx_PrintToChatAll", Native_PrintToChatAll );
-    CreateNative( "Influx_PrintToChatEx", Native_PrintToChatEx );*/
-    //CreateNative( "Influx_FormatChatColors", Native_FormatChatColors );
-
     CreateNative( "Influx_ReplaceChatColors", Native_ReplaceChatColors );
     CreateNative( "Influx_RemoveChatColors", Native_RemoveChatColors );
+    CreateNative( "Influx_ReplyToClient", Native_ReplyToClient );
     
     
     CreateNative( "Influx_StartTimer", Native_StartTimer );
@@ -2956,7 +2954,7 @@ stock void RemoveRunById( int runid, int client = 0 )
     
     if ( irun == -1 )
     {
-        Inf_ReplyToClient( client, "%T", "INF_RUNIDNOTEXIST", client, runid );
+        Influx_ReplyToClient( client, "%T", "INF_RUNIDNOTEXIST", client, runid );
         return;
     }
     
@@ -2978,7 +2976,7 @@ stock void RemoveRunById( int runid, int client = 0 )
     DB_RemoveRun( runid );
     
     
-    Inf_ReplyToClient( client, "%T", "INF_RUN_DELETED", client, szRun );
+    Influx_ReplyToClient( client, "%T", "INF_RUN_DELETED", client, szRun );
 }
 
 stock void TeleportClientsOutOfRun( int runid )

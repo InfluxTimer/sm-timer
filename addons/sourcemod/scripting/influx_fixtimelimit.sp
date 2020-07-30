@@ -22,6 +22,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     g_ConVar_IgnoreCond = FindConVar( "mp_ignore_round_win_conditions" );
     
     if ( g_ConVar_IgnoreCond == null )

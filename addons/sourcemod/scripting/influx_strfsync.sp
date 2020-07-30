@@ -55,6 +55,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     g_nMaxTicks = RoundFloat( 1.0 / GetTickInterval() );
     
     

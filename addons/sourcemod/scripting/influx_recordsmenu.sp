@@ -79,6 +79,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // FORWARDS
     g_hForward_OnPrintRecordInfo = CreateGlobalForward( "Influx_OnPrintRecordInfo", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Cell );
     g_hForward_OnRecordInfoButtonPressed = CreateGlobalForward( "Influx_OnRecordInfoButtonPressed", ET_Hook, Param_Cell, Param_String );

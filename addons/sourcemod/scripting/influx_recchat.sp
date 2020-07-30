@@ -112,7 +112,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     if ( !nClients ) return;
     
     
-    bool isbest = ( flags & RES_TIME_ISBEST ) ? true : false;
+    //bool isbest = ( flags & RES_TIME_ISBEST ) ? true : false;
     
     // Format our second formatting string.
     decl String:szFormSec[10];
@@ -133,8 +133,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
         
         Inf_FormatSeconds( Inf_GetTimeDif( time, prev_best, c ), szForm, sizeof( szForm ), szFormSec );
         
-        FormatEx( szRec, sizeof( szRec ), " {CHATCLR}({%s}%c%s{CHATCLR})",
-            isbest ? "GREEN" : "LIGHTRED", // Is new best?
+        FormatEx( szRec, sizeof( szRec ), " \x01(\x04%c%s\x01)",
             c,
             szForm );
     }
@@ -165,7 +164,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     if ( Influx_ShouldModeDisplay( mode ) )
     {
         Influx_GetModeShortName( mode, szMode, sizeof( szMode ) );
-        Format( szMode, sizeof( szMode ), " {GREY}[{PINK}%s{GREY}]", szMode );
+        Format( szMode, sizeof( szMode ), " %T", "INF_MODE_DISPLAY_STYLE", LANG_SERVER, szMode );
     }
     else
     {
@@ -176,7 +175,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     if ( Influx_ShouldStyleDisplay( style ) )
     {
         Influx_GetStyleShortName( style, szStyle, sizeof( szStyle ) );
-        Format( szStyle, sizeof( szStyle ), " [{PINK}%s{GREY}]", szStyle ); // {CHATCLR}
+        Format( szStyle, sizeof( szStyle ), " %T", "INF_STYLE_DISPLAY_STYLE", LANG_SERVER, szStyle ); // \x01
     }
     else
     {
@@ -192,13 +191,17 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     Influx_RemoveChatColors( szName, sizeof( szName ) );
     
     // Use the influx phrases file to modify this.
-    Influx_PrintToChatEx( _, client, clients, nClients, "%T",
-        "INF_RUNFINISHEDPRINT", LANG_SERVER,
-        szName,
-        szRun,
-        szForm,
-        szRec,
-        szImprove,
-        szMode,
-        szStyle );
+    for(int i; i < nClients; i++)
+        if( clients[i] && IsClientInGame( clients[i] ) )
+            Influx_PrintToChat( 
+                clients[i], "%T",
+                "INF_RUNFINISHEDPRINT", clients[i],
+                szName,
+                szRun,
+                szForm,
+                szRec,
+                szImprove,
+                szMode,
+                szStyle
+            );
 }

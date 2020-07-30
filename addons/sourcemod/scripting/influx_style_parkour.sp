@@ -29,6 +29,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CMDS
     RegConsoleCmd( "sm_parkour", Cmd_Style_Parkour, "Change your style to parkour." );
 }

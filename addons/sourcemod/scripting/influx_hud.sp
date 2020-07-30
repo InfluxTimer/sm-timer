@@ -59,6 +59,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     if ( (g_hCookie_HideFlags = RegClientCookie( "influx_hideflags", INF_NAME..." HUD Flags", CookieAccess_Protected )) == null )
     {
         SetFailState( INF_CON_PRE..."Couldn't register hideflags cookie!" );

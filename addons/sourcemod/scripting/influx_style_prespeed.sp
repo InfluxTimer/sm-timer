@@ -17,6 +17,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CMDS
     RegConsoleCmd( "sm_prespeed", Cmd_Style_Prespeed, INF_NAME..." - Change your style to Prespeed." );
 }

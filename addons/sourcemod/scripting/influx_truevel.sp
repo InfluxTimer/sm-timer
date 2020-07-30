@@ -32,6 +32,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CMDS
     RegConsoleCmd( "sm_truevel", Cmd_Truevel );
 }
@@ -54,7 +56,7 @@ public Action Cmd_Truevel( int client, int args )
     g_bTruevel[client] = !g_bTruevel[client];
     
     
-    Influx_PrintToChat( client, "Truevel: {MAINCLR1}%s{CHATCLR}!", g_bTruevel[client] ? "ON" : "OFF" );
+    Influx_PrintToChat( client, "%T", "INF_TRUEVEL", client, g_bTruevel[client] ? "ON" : "OFF" );
     
     return Plugin_Handled;
 }

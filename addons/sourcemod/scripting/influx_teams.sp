@@ -40,6 +40,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
+    LoadTranslations( INFLUX_PHRASES );
+    
     // CONVARS
     g_ConVar_BalanceTeams = CreateConVar( "influx_teams_balanceteams", "0", "0 = use mp_limitteams cvar's value. 1 = Balance teams. 2 = Always use preferred team first.", FCVAR_NOTIFY );
     g_ConVar_PreferredTeam = CreateConVar( "influx_teams_preferredteam", "0", "0 = CT, 1 = T", FCVAR_NOTIFY );

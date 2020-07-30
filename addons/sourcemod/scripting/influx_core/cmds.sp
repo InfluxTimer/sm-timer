@@ -17,16 +17,9 @@ public Action Cmd_ReloadOverrides( int client, int args )
     
     UpdateModeOverrides();
     UpdateStyleOverrides();
-    
-    if ( client )
-    {
-        PrintToChat( client, "Reloaded mode/style overrides." );
-    }
-    else
-    {
-        PrintToServer( INF_CON_PRE..."Reloaded mode/style overrides." );
-    }
-    
+
+    Influx_ReplyToClient( client, "%T", "INF_RELOAD_OVD", client );
+
     return Plugin_Handled;
 }
 
@@ -74,16 +67,16 @@ public Action Cmd_Admin_SetTelePos( int client, int args )
             char szRun[MAX_RUN_NAME];
             GetRunNameByIndex( irun, szRun, sizeof( szRun ) );
             
-            PrintToChat( client, "Updated run's %s teleport position and angle!", szRun );
+            Influx_PrintToChat( client, "%T", "INF_SETELE_SUCCESS", client, szRun );
         }
         else
         {
-            PrintToChat( client, "That position isn't a valid teleport destination!" );
+            Influx_PrintToChat( client, "%T", "INF_SETELE_FAIL", client );
         }
     }
     else
     {
-        PrintToChat( client, "%T", "INF_RUNIDNOTEXIST", client, runid );
+        Influx_PrintToChat( client, "%T", "INF_RUNIDNOTEXIST", client, runid );
     }
     
     return Plugin_Handled;
@@ -96,7 +89,7 @@ public Action Cmd_Admin_SaveRuns( int client, int args )
     
     int num = SaveRuns();
     
-    Inf_ReplyToClient( client, "Wrote {MAINCLR1}%i{CHATCLR} runs to %s!", num, WantsRunsToDb() ? "database" : "file" );
+    Influx_ReplyToClient( client, "%T", "INF_SAVE_RUNS", client, num, WantsRunsToDb() ? "database" : "file" );
     
     return Plugin_Handled;
 }
@@ -127,7 +120,7 @@ public Action Cmd_Admin_SetRunName( int client, int args )
         SetRunNameByIndex( index, szNew );
         
         
-        PrintToChatAll( "%T", "INF_RUN_RENAMED", LANG_SERVER, szOld, szNew );
+        Influx_PrintToChatAll( "%T", "INF_RUN_RENAMED", LANG_SERVER, szOld, szNew );
         
         
         if ( !client )
@@ -137,14 +130,7 @@ public Action Cmd_Admin_SetRunName( int client, int args )
     }
     else
     {
-        if ( client )
-        {
-            PrintToChat( client, "%T", "INF_RUNIDNOTEXIST", client, runid );
-        }
-        else
-        {
-            PrintToServer( INF_CON_PRE..."Run with an ID of %i does not exist!", runid );
-        }
+        Influx_ReplyToClient( client, "%T", "INF_RUNIDNOTEXIST", client, runid );
     }
     
     return Plugin_Handled;
@@ -290,7 +276,7 @@ public Action Cmd_Change_Name_Db( int client, int args )
         SQL_TQuery( Influx_GetDB(), Thrd_Empty, szQuery, _, DBPrio_Normal );
 
 
-        Inf_ReplyToClient( client, "Set your name to '%s' in database!", szName );
+        Influx_ReplyToClient( client, "%T", "INF_UPDATENAME_DB", client, szName );
     }
 
     return Plugin_Handled;
