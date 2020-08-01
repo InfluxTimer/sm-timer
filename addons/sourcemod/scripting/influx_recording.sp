@@ -124,6 +124,7 @@ ConVar g_ConVar_Repeat;
 ConVar g_ConVar_BotName;
 ConVar g_ConVar_PreRunTime;
 ConVar g_ConVar_IgnoreDifTickrate;
+ConVar g_ConVar_KillBotWhenNoPlayersAlive;
 
 ConVar g_ConVar_MaxVelocity;
 
@@ -225,6 +226,8 @@ public void OnPluginStart()
     
     g_ConVar_PreRunTime = CreateConVar( "influx_recording_prerunrecord", "0", "How many seconds we record before the player leaves the start. 0 = Disable", FCVAR_NOTIFY, true, 0.0, true, 1337.0 );
     g_ConVar_PreRunTime.AddChangeHook( E_CvarChange_PreRunTime );
+
+    g_ConVar_KillBotWhenNoPlayersAlive = CreateConVar( "influx_recording_killbotwhennoplayersalive", "0", "Do we kill the replay bot when no players alive?", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     
     
     AutoExecConfig( true, "recording", "influx" );
@@ -367,7 +370,7 @@ public void Influx_OnPostRunLoad()
 
 public void OnMapStart()
 {
-    CreateTimer( 1.0, T_CheckCvars, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
+    CreateTimer( 1.0, T_CheckBot, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 }
 
 public void OnMapEnd()
@@ -1663,9 +1666,71 @@ stock void CheckCvarChanges()
     SetCvarValueWarn( "bot_join_team", "any" );
 }
 
-public Action T_CheckCvars( Handle hTimer )
+stock void CheckBot()
+{
+    bool bHasValidBot = IsValidReplayBot();
+
+    bool bKillBotWhenNoPlayersAlive = g_ConVar_KillBotWhenNoPlayersAlive.BoolValue;
+
+    int nPlayersAlive = 0;
+
+    for ( int i = 1; i <= MaxClients; i++ )
+    {
+        if ( !IsClientInGame( i ) )
+            continue;
+
+        if ( !bHasValidBot && IsFakeClient( i ) && !IsClientSourceTV( i ) )
+        {
+            g_iReplayBot = i;
+            bHasValidBot = true;
+        }
+
+        if ( !IsFakeClient( i ) && IsPlayerAlive( i ) )
+        {
+            ++nPlayersAlive;
+        }
+    }
+
+
+    if ( !bHasValidBot )
+    {
+        return;
+    }
+
+
+    SetBotName();
+
+
+    if ( bKillBotWhenNoPlayersAlive && nPlayersAlive < 1 )
+    {
+        if ( IsPlayerAlive( g_iReplayBot ) )
+        {
+            ChangeClientTeam( g_iReplayBot, CS_TEAM_SPECTATOR );
+
+            LogMessage( INF_CON_PRE..."Set replay bot team to spectator due to no players alive..." );
+        }
+    }
+    else
+    {
+        if ( GetClientTeam( g_iReplayBot ) <= CS_TEAM_SPECTATOR )
+        {
+            ChangeClientTeam( g_iReplayBot, CS_TEAM_CT );
+        }
+
+        if ( !IsPlayerAlive( g_iReplayBot ) )
+        {
+            CS_RespawnPlayer( g_iReplayBot );
+
+            LogMessage( INF_CON_PRE..."Respawned replay bot..." );
+        }
+    }
+}
+
+public Action T_CheckBot( Handle hTimer )
 {
     CheckCvarChanges();
+
+    CheckBot();
 
     return Plugin_Continue;
 }
