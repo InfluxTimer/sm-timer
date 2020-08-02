@@ -13,6 +13,8 @@
 ConVar g_ConVar_NotifyAll;
 ConVar g_ConVar_MinToNotifyAll;
 
+char g_szClrSeparator[16];
+
 
 float g_flLastCmd[INF_MAXPLAYERS];
 
@@ -25,6 +27,16 @@ public Plugin myinfo =
     description = "Displays a list of spectators in chat.",
     version = INF_VERSION
 };
+
+public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int error_len )
+{
+    if( late )
+    {
+        OnAllPluginsLoaded();
+    }
+        
+    return APLRes_Success;
+}
 
 public void OnPluginStart()
 {
@@ -44,6 +56,21 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_listspectators", Cmd_SpecList );
 
     LoadTranslations( INFLUX_PHRASES );
+}
+
+public void OnAllPluginsLoaded()
+{
+    GetClrSeparator();
+}
+
+public void OnConfigsExecuted()
+{
+    OnAllPluginsLoaded();
+}
+
+void GetClrSeparator()
+{
+    Influx_GetClrSeparator(g_szClrSeparator, sizeof(g_szClrSeparator));
 }
 
 public void Influx_RequestHelpCmds()
@@ -108,7 +135,7 @@ public Action Cmd_SpecList( int client, int args )
         {
             ++num;
             
-            Format( szMsg, sizeof( szMsg ), "%s\x01\x04%N", szMsg, i );
+            Format( szMsg, sizeof( szMsg ), "%s%s%N", szMsg, g_szClrSeparator, i );
         }
     }
     

@@ -377,7 +377,7 @@ public int Native_StartTimer( Handle hPlugin, int nParms )
     {
         if ( errormsg[0] == '\0' )
         {
-            strcopy( errormsg, sizeof( errormsg ), "You can't start this run!" );
+            FormatEx( errormsg, sizeof( errormsg ), "%T", "INF_CANT_START", client );
         }
         
         Influx_PrintToChat( client, "%s", errormsg );
@@ -513,7 +513,7 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     {
         if ( errormsg[0] == '\0' )
         {
-            strcopy( errormsg, sizeof( errormsg ), "You can't finish this run!" );
+            FormatEx( errormsg, sizeof( errormsg ), "%T", "INF_CANT_FINISH", client );
         }
         
         Influx_PrintToChat( client, "%s", errormsg );

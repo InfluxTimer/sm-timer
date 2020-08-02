@@ -164,7 +164,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     if ( Influx_ShouldModeDisplay( mode ) )
     {
         Influx_GetModeShortName( mode, szMode, sizeof( szMode ) );
-        Format( szMode, sizeof( szMode ), " %T", "INF_MODE_DISPLAY_STYLE", LANG_SERVER, szMode );
+        Format( szMode, sizeof( szMode ), "%T", "INF_MODE_DISPLAY_STYLE", LANG_SERVER, szMode );
     }
     else
     {
@@ -175,7 +175,7 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     if ( Influx_ShouldStyleDisplay( style ) )
     {
         Influx_GetStyleShortName( style, szStyle, sizeof( szStyle ) );
-        Format( szStyle, sizeof( szStyle ), " %T", "INF_STYLE_DISPLAY_STYLE", LANG_SERVER, szStyle ); // \x01
+        Format( szStyle, sizeof( szStyle ), "%T", "INF_STYLE_DISPLAY_STYLE", LANG_SERVER, szStyle ); // \x01
     }
     else
     {

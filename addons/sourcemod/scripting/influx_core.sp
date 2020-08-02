@@ -107,6 +107,7 @@ float g_flLastValidWepSpd[INF_MAXPLAYERS];
 // CHAT COLOR
 //char g_szChatPrefix[128];
 //char g_szChatClr[64];
+char g_szClrSeparator[16] = "{D}, {G}";
 
 // ArrayList g_hChatClrs;
 //int g_nChatClrLen;
@@ -171,7 +172,6 @@ ConVar g_ConVar_AirAccelerate;
 ConVar g_ConVar_EnableBunnyhopping;
 #endif
 
-//ConVar g_ConVar_ChatPrefix;
 //ConVar g_ConVar_ChatClr;
 //ConVar g_ConVar_ChatMainClr1;
 ConVar g_ConVar_SaveRunsOnMapEnd;
@@ -287,6 +287,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_ReplaceChatColors", Native_ReplaceChatColors );
     CreateNative( "Influx_RemoveChatColors", Native_RemoveChatColors );
     CreateNative( "Influx_ReplyToClient", Native_ReplyToClient );
+    CreateNative( "Influx_GetClrSeparator", Native_ClrSeparator );
     
     
     CreateNative( "Influx_StartTimer", Native_StartTimer );
@@ -294,8 +295,6 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_ResetTimer", Native_ResetTimer );
     
     CreateNative( "Influx_TeleportToStart", Native_TeleportToStart );
-    
-    
     
     CreateNative( "Influx_IsClientCached", Native_IsClientCached );
     CreateNative( "Influx_GetClientId", Native_GetClientId );
@@ -473,11 +472,8 @@ public void OnPluginStart()
     
     // CONVARS
     CreateConVar( "influx_version", INF_VERSION, "Version of Influx. Do not change.", FCVAR_NOTIFY );
-    
-    /*g_ConVar_ChatPrefix = CreateConVar( "influx_chatprefix", DEF_CHATPREFIX, "Prefix for chat messages.", FCVAR_NOTIFY );
-    g_ConVar_ChatPrefix.AddChangeHook( E_ConVarChanged_Prefix );
-    
-    g_ConVar_ChatClr = CreateConVar( "influx_chatcolor", DEF_CHATCLR, "Default chat color.", FCVAR_NOTIFY );
+        
+    /*g_ConVar_ChatClr = CreateConVar( "influx_chatcolor", DEF_CHATCLR, "Default chat color.", FCVAR_NOTIFY );
     g_ConVar_ChatClr.AddChangeHook( E_ConVarChanged_ChatClr );
     
     g_ConVar_ChatMainClr1 = CreateConVar( "influx_chatmainclr1", "{SKYBLUE}", "Override main color. This is used to highlight text. Eg Noclip: \"ON\"", FCVAR_NOTIFY );
@@ -1823,9 +1819,9 @@ stock void PrintValidModes( int client, int modeflags )
         {
             GetModeNameByIndex( i, mode, sizeof( mode ) );
             
-            Format( list, sizeof( list ), "%s%s{MAINCLR1}%s{CHATCLR}",
+            Format( list, sizeof( list ), "%s%s%s",
                 list,
-                ( list[0] != '\0' ) ? ", " : "",
+                g_szClrSeparator,
                 mode );
         }
     }
@@ -1833,7 +1829,7 @@ stock void PrintValidModes( int client, int modeflags )
     // No modes were added to the list!
     if ( list[0] == '\0' )
     {
-        strcopy( list, sizeof( list ), "{MAINCLR1}None{CHATCLR}!" );
+        FormatEx( list, sizeof( list ), "%T", "None", client );
     }
     
     Influx_PrintToChat( client, "%T", "INF_VALIDMODES", client, list );

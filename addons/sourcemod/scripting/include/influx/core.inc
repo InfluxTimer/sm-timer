@@ -273,6 +273,7 @@ native void Influx_ReplyToClient( int client, const char[] format, any ... );
 native void Influx_PrintToChatAll( const char[] format, any ... );
 native void Influx_ReplaceChatColors( char[] sz, int len, bool bRemove );
 native void Influx_RemoveChatColors( char[] sz, int len );
+native void Influx_GetClrSeparator( char[] sz, int len );
 
 
 
@@ -477,7 +478,7 @@ stock bool Inf_GetClientSteam( int client, char[] out, int len )
         
         if ( IsClientInGame( client ) )
         {
-            Influx_PrintToChat( client, "Couldn't retrieve your Steam Id. Please reconnect and make sure you are connected to Steam!!" );
+            Influx_PrintToChat( client, "%T", "INF_AUTH_FAIL", client );
         }
         
         return false;
@@ -528,7 +529,7 @@ stock bool Inf_HandleCmdSpam( int client, float delay = 1.0, float &lasttime, bo
     if ( dif > 0.0 )
     {
         if ( bPrint )
-            Influx_PrintToChat( client, "Please wait %.1f seconds before using this command!", dif );
+            Influx_ReplyToClient( client, "%T", "INF_CMD_SPAM", client, dif );
         
         return true;
     }
@@ -780,6 +781,7 @@ public void __pl_influx_core_SetNTVOptional()
     MarkNativeAsOptional( "Influx_ReplyToClient" );
     MarkNativeAsOptional( "Influx_ReplaceChatColors" );
     MarkNativeAsOptional( "Influx_RemoveChatColors" );
+    MarkNativeAsOptional( "Influx_GetClrSeparator" );
     MarkNativeAsOptional( "Influx_RemoveMode" );
     MarkNativeAsOptional( "Influx_RemoveStyle" );
     MarkNativeAsOptional( "Influx_ResetTimer" );

@@ -26,7 +26,7 @@ public int Native_PrintToChat(Handle hPlugin, int nParms)
 {
     int client = GetNativeCell( 1 );
 
-    if( !client )
+    if( !client || !IsClientInGame( client ))
         return;
 
     char szMessage[512];
@@ -72,4 +72,10 @@ public int Native_ReplyToClient(Handle hPlugin, int nParms)
         Influx_ReplaceColors( szMessage, sizeof( szMessage ), true );
         PrintToServer( szMessage );
     }
+}
+
+public int Native_ClrSeparator(Handle hPlugin, int nParms)
+{
+    SetNativeString( 1, g_szClrSeparator, sizeof( g_szClrSeparator ) );
+    SetNativeCellRef( 2, sizeof( g_szClrSeparator ) );
 }

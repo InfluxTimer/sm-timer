@@ -187,13 +187,13 @@ public void Thrd_SetMapReward( Handle db, Handle res, const char[] szError, Arra
     // So... we'll check if this one record we have is the same one we are receiving the reward for.
     if ( SQL_GetRowCount( res ) > 1 )
     {
-        Influx_ReplyToClient( client, "Found multiple maps with similar name! Try to be more specific." );
+        Influx_ReplyToClient( client, "%T", "INF_MAP_FOUNDONEMORE", client );
         return;
     }
     
     if ( !SQL_FetchRow( res ) )
     {
-        Influx_ReplyToClient( client, "Couldn't find a similar map!" );
+        Influx_ReplyToClient( client, "%T", "INF_MAP_NOTFOUND", client );
         return;
     }
     
@@ -212,9 +212,7 @@ public void Thrd_SetMapReward( Handle db, Handle res, const char[] szError, Arra
     
     DB_UpdateMapReward( mapid, runid, reward );
     
-    Influx_ReplyToClient( client, "Setting {MAINCLR1}%s{CHATCLR}'s reward to {MAINCLR1}%i{CHATCLR}!",
-        szMap,
-        reward );
+    Influx_ReplyToClient( client, "%T", "INF_MAP_REWARD", client, szMap, reward );
 }
 
 public void Thrd_DisplayTopRanks( Handle db, Handle res, const char[] szError, ArrayList array )

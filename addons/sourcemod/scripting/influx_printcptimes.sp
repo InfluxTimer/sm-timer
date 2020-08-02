@@ -88,10 +88,7 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
         Inf_FormatSeconds( srtime, szTime, sizeof( szTime ) );
         Inf_FormatSeconds( Inf_GetTimeDif( time, srtime, c ), szTimeDif, sizeof( szTimeDif ) );
         
-        FormatEx( szSR, sizeof( szSR ), "SR: \x04%s\x01 (\x04%c%s\x01)",
-            szTime,
-            c,
-            szTimeDif );
+        FormatEx( szSR, sizeof( szSR ), "%T", "INF_CP_SR", LANG_SERVER, szTime, c, szTimeDif );
     }
     
     if ( pbtime != INVALID_RUN_TIME )
@@ -99,10 +96,7 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
         Inf_FormatSeconds( pbtime, szTime, sizeof( szTime ) );
         Inf_FormatSeconds( Inf_GetTimeDif( time, pbtime, c ), szTimeDif, sizeof( szTimeDif ) );
         
-        FormatEx( szPB, sizeof( szPB ), "PB: \x04%s\x01 (\x04%c%s\x01)",
-            szTime,
-            c,
-            szTimeDif );
+        FormatEx( szPB, sizeof( szPB ), "%T", "INF_CP_PB", LANG_SERVER, szTime, c, szTimeDif );
     }
     
     if ( besttime != INVALID_RUN_TIME && besttime != srtime )
@@ -110,10 +104,7 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
         Inf_FormatSeconds( besttime, szTime, sizeof( szTime ) );
         Inf_FormatSeconds( Inf_GetTimeDif( time, besttime, c ), szTimeDif, sizeof( szTimeDif ) );
         
-        FormatEx( szBest, sizeof( szBest ), "BEST: \x04%s\x01 (\x04%c%s\x01)",
-            szTime,
-            c,
-            szTimeDif );
+        FormatEx( szBest, sizeof( szBest ), "%T", "INF_CP_BEST", LANG_SERVER, szTime, c, szTimeDif );
     }
     
     
@@ -124,7 +115,7 @@ public void Influx_OnClientCPSavePost( int client, int cpnum )
             if( clients[i] && IsClientInGame( clients[i] ) )
                 Influx_PrintToChat( 
                     clients[i],
-                    "CP %i | %s%s%s%s%s",
+                    "%T", "INF_CP_PRINT", LANG_SERVER,
                     cpnum,
                     szSR,
                     ( szSR[0] && szPB[0] ) ? " | " : "",

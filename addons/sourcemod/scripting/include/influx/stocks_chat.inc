@@ -42,7 +42,7 @@ stock void Inf_RemoveColors( char[] sz, int len )
 }
 */
 
-stock void Inf_SendSayText2( int author, int[] clients, int nClients, const char[] msg )
+/*stock void Inf_SendSayText2( int author, int[] clients, int nClients, const char[] msg )
 {
     static UserMsg UserMsg_SayText2 = INVALID_MESSAGE_ID;
     
@@ -84,4 +84,4 @@ stock void Inf_SendSayText2( int author, int[] clients, int nClients, const char
         
         EndMessage();
     }
-}
+}*/

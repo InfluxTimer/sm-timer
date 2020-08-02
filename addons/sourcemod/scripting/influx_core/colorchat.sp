@@ -39,9 +39,17 @@ SMCResult OnKeyValue(SMCParser smc, const char[] sKey, const char[] sValue, bool
 {
     if(!sKey[0] || !sValue[0] || !g_bValidSection)
         return SMCParse_Continue;
-
+    
     static char szValue[16];
     szValue = NULL_STRING;
+
+    if(!strcmp("ColorSeparator", sKey, false))
+    {
+        strcopy(g_szClrSeparator, sizeof(g_szClrSeparator), sValue);
+        Influx_ReplaceColors(g_szClrSeparator, sizeof(g_szClrSeparator), false);
+
+        return SMCParse_Continue;
+    }
 
     int iBuffer = strlen(sValue);
 

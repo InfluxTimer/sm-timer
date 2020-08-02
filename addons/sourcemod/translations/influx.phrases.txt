@@ -1,719 +1,835 @@
 "Phrases"
 {
-	//
-	// Words
-	//
-	"INF_WORD_RUN"
-	{
-		"en"			"Run"
-	}
-	
-	"INF_WORD_MODE"
-	{
-		"en"			"Mode"
-	}
-	
-	"INF_WORD_STYLE"
-	{
-		"en"			"Style"
-	}
+    //
+    // Words
+    //
+    "INF_WORD_RUN"
+    {
+        "en"			"Run"
+    }
+    
+    "INF_WORD_MODE"
+    {
+        "en"			"Mode"
+    }
+    
+    "INF_WORD_STYLE"
+    {
+        "en"			"Style"
+    }
 
-	"database"
-	{
-		"en"			"database"
-	}
+    "database"
+    {
+        "en"			"database"
+    }
 
-	"file"
-	{
-		"en"			"file"
-	}
+    "file"
+    {
+        "en"			"file"
+    }
 
-	"spam"
-	{
-		"en"			"spam"
-	}
+    "spam"
+    {
+        "en"			"spam"
+    }
 
-	"use"
-	{
-		"en"			"use"
-	}
+    "use"
+    {
+        "en"			"use"
+    }
 
-	"visible"
-	{
-		"en"			"{G}visible{D}"
-	}
+    "visible"
+    {
+        "en"			"{G}visible{D}"
+    }
 
-	"hidden"
-	{
-		"en"			"{CO}hidden{D}"
-	}
+    "hidden"
+    {
+        "en"			"{CO}hidden{D}"
+    }
 
-	"OFF"
-	{
-		"en"			"{CO}OFF{D}"
-	}
+    "OFF"
+    {
+        "en"			"{CO}OFF{D}"
+    }
 
-	"ON"
-	{
-		"en"			"{G}ON{D}"
-	}
-	
-	//
-	// General
-	//
-	"INF_MUSTBERUNNING"
-	{
-		"en"			"{D}You must be running!"
-	}
-	
-	"INF_MUSTBEALIVE"
-	{
-		"en"			"{D}You must be alive!"
-	}
-	
-	"INF_TIMERDISABLED"
-	{
-		"en"			"{D}Your timer has been disabled!"
-	}
-	
-	"INF_SAVE_RUNS"
-	{
-		"#format"		"{1:i},{2:t}"
-		"en"			"{D}Wrote {G}{1}{D} runs to {G}{2}{D}!"
-	}
+    "ON"
+    {
+        "en"			"{G}ON{D}"
+    }
 
-	"INF_UPDATENAME_DB"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Set your name to {G}{1} {D}in database!"
-	}
+    "None"
+    {
+        "en"            "{G}None{D}"
+    }
+    
+    //
+    // General
+    //
+    "INF_MUSTBERUNNING"
+    {
+        "en"			"{G}[TIMER] {D}You must be running!"
+    }
+    
+    "INF_MUSTBEALIVE"
+    {
+        "en"			"{G}[TIMER] {D}You must be alive!"
+    }
+    
+    "INF_TIMERDISABLED"
+    {
+        "en"			"{G}[TIMER] {D}Your timer has been disabled!"
+    }
+    
+    "INF_SAVE_RUNS"
+    {
+        "#format"		"{1:i},{2:t}"
+        "en"			"{G}[TIMER] {D}Wrote {G}{1}{D} runs to {G}{2}{D}!"
+    }
 
-	"INF_CREDITS"
-	{
-		"#format"		"{1:s},{2:s}"
-		"en"			"{D}Server is running {G}{1}{D} version {G}{2}{D}!"
-	}
+    "INF_UPDATENAME_DB"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Set your name to {G}{1} {D}in database!"
+    }
 
-	"INF_RELOAD_OVD"
-	{
-		"en"			"{D}Reloaded mode/style overrides."
-	}
+    "INF_CREDITS"
+    {
+        "#format"		"{1:s},{2:s}"
+        "en"			"{G}[TIMER] {D}Server is running {G}{1}{D} version {G}{2}{D}!"
+    }
 
-	"INF_SETELE_SUCCESS"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Updated run's {G}{1} {D}teleport position and angle!"
-	}
+    "INF_RELOAD_OVD"
+    {
+        "en"			"{G}[TIMER] {D}Reloaded mode/style overrides."
+    }
 
-	"INF_SETELE_FAIL"
-	{
-		"en"			"{D}That position isn't a valid teleport destination!"
-	}
-	
-	//
-	// Mode/Style
-	//
-	"INF_MODEORSTYLEISNOW"
-	{
-		"#format"		"{1:t},{2:s}"
-		"en"			"{D}Your {G}{1} {D}is now {G}{2}!"
-	}
-	
-	"INF_MODEORSTYLENOTALLOWEDINRUN"
-	{
-		"#format"		"{1:t},{2:s},{3:s}"
-		"en"			"{D}Sorry, {1} {G}{2} {D}is not allowed in {G}{3} {D}!"
-	}
-	
-	"INF_WENTWRONGCHANGING"
-	{
-		"#format"		"{1:t}"
-		"en"			"{D}Something went wrong when changing your {G}{1} {D}!"
-	}
-	
-	"INF_WAITTILLSPAWN"
-	{
-		"en"			"{D}You must enter a start zone/wait till next spawn."
-	}
-	
-	"INF_NOACCESSTO"
-	{
-		"#format"		"{1:t}"
-		"en"			"{D}You do not have access to this {1}!"
-	}
-	
-	"INF_VALIDMODES"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Valid mode(s): {G}{1}"
-	}
-	
-	//
-	// Run Stuff
-	//
-	"INF_RUN_CREATED"
-	{
-		"#format"		"{1:s}"
-		"en"			"{G}{1} {D}has been created!"
-	}
-	
-	"INF_RUN_DELETED"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Run {G}{1} {D}has been deleted! Remember to !saveruns."
-	}
-	
-	"INF_RUNIDNOTEXIST"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}Run with an ID of {G}{1} {D}does not exist!"
-	}
-	
-	"INF_RUNS_DELETED"
-	{
-		"#format"		"{1:s},{2:s}"
-		"en"			"{D}Your {G}{1} {GR}[ {PI}{2} {GR}] {D}run has been deleted!"
-	}
-	
-	"INF_RUN_RUNS_DELETED"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Your {G}{1} {D}runs has been deleted!"
-	}
-	
-	"INF_RUN_RENAMED"
-	{
-		"#format"		"{1:s},{2:s}"
-		"en"			"{D}Run {G}{1} {D}has been renamed to {G}{2}{D}!"
-	}
-	
-	"INF_RUNISNOW"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Your run is now {G}{1}{D}!"
-	}
-	
-	"INF_RUNNOTEXIST"
-	{
-		"en"			"{D}That run does not exist!"
-	}
-	
-	
-	"INF_RUNFINISHEDPRINT_IMPROVEDBY"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Improving by {GR}[ {PI}{1} {GR}] {D}seconds"
-	}
-	
-	
-	"INF_RUNFINISHEDPRINT"
-	{
-		//
-		// 1 = Player name
-		// 2 = Run Name
-		// 3 = Time
-		// 4 = Time difference
-		// 5 = ' Improving by...' (above) (if necessary) (has a space at the start)
-		// 6 = Mode (if necessary) (has a space at the start)
-		// 7 = Style (if necessary) (has a space at the start)
-		//
-		"#format"		"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s}{7:s}"
-		"en"			"{G}{1} {D}finished {GR}[ {PI}{2} {GR}] {D}in {GR}[ {PI}{3} {G}{4} {GR}] {D}! {5} {6} {7}"
-	}
-	
-	//
-	// Rec chat
-	//
+    "INF_SETELE_SUCCESS"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Updated run's {G}{1} {D}teleport position and angle!"
+    }
 
-	"INF_MODE_DISPLAY_STYLE"
-	{
-		"#format"		"{1:s}"
-		"en"			"{GR}[ {PI}{1} {GR}]"
-	}
+    "INF_SETELE_FAIL"
+    {
+        "en"			"{G}[TIMER] {D}That position isn't a valid teleport destination!"
+    }
 
-	"INF_STYLE_DISPLAY_STYLE"
-	{
-		"#format"		"{1:s}"
-		"en"			"{GR}[ {PI}{1} {GR}]"
-	}
-	
-	
-	
-	//
-	// Misc.
-	//
-	"INF_INVALIDWEAPONSPD"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}Invalid weapon speed! Can be {G}{1} {D}at most!"
-	}
-	
-	
-	//
-	// Prespeed
-	//
-	"INF_PRESPEEDNONOCLIP"
-	{
-		"en"			"{D}You cannot prespeed with noclip!"
-	}
-	
-	"INF_PRESPEEDJUMPLIMIT"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}You cannot jump more than {G}{1} {D}time(s) at the start!"
-	}
-	
-	"INF_PRESPEEDNOJUMP"
-	{
-		"en"			"{D}You cannot jump at all at the start!"
-	}
-	
-	"INF_PRESPEEDEXCEED"
-	{
-		"#format"		"{1:.0f}"
-		"en"			"{D}Your prespeed cannot exceed {G}{1}{D}!"
-	}
-	
-	
-	
-	//
-	// Recording
-	//
-	"INF_RECORDINGSAVED"
-	{
-		"en"			"{D}Your recording has been successfully saved!"
-	}
-	
-	"INF_RECORDINGSAVEFAILED"
-	{
-		"en"			"{D}We were unable to save your recording, sorry!"
-	}
-	
-	"INF_RECORDINGALREADYPLAYING"
-	{
-		"en"			"{D}That run is already being replayed!"
-	}
-	
-	"INF_RECORDINGNOWPLAYING"
-	{
-		"en"			"{D}Replay is now being played!"
-	}
-	
-	"INF_RECORDINGEXCEEDEDLIMIT"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}Stopped recording. Recordings cannot exceed {PI}{1} {D}minutes!"
-	}
-	
-	"INF_REPLAYISFREENOW"
-	{
-		"en"			"{D}You can now request a replay by typing {G}!replay {D}in chat."
-	}
-	
-	"INF_REPLAYISNEW"
-	{
-		"en"			"{D}Replaying a new record. Please wait..."
-	}
-	
-	"INF_REPLAYALREADYREQUESTED"
-	{
-		"en"			"{D}You've already requested a replay!"
-	}
-	
-	"INF_REPLAYISBEINGWATCHED"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Replay is being watched by {G}{1}{D}. Please wait for the recording to finish."
-	}
+    "INF_RUNEDIT_FAIL"
+    {
+        "en"            "{G}[TIMER] {D}You don't have run to edit!"
+    }
 
-	"INF_REPLAYDELETED"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Successfully deleted: {G}'../{1}'{D}!"
-	}
-	
-	
-	
-	//
-	// Stages
-	//
-	"INF_STAGENUMBERNOTEXIST"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}Stage {G}{1} {D}does not exist!"
-	}
-	
-	"INF_LEAVEZONEFIRST"
-	{
-		"en"			"{D}You must leave the zone first!"
-	}
-	
-	
-	//
-	//	Zones
-	//
-	"INF_ZONE_BADSIZE"
-	{
-		"en"			"{D}Bad zone size! Please make the zone bigger."
-	}
+    "INF_CANT_START"
+    {
+        "en"            "{G}[TIMER] {D}You can't start this run!"
+    }
 
-	"INF_ZONE_NOSET"
-	{
-		"en"			"{D}Sorry, no settings can be set for this zone!"
-	}
+    "INF_CANT_FINISH"
+    {
+        "en"            "{G}[TIMER] {D}You can't finish this run!"
+    }
+    
+    //
+    // Mode/Style
+    //
+    "INF_MODEORSTYLEISNOW"
+    {
+        "#format"		"{1:t},{2:s}"
+        "en"			"{G}[TIMER] {D}Your {G}{1} {D}is now {G}{2}!"
+    }
+    
+    "INF_MODEORSTYLENOTALLOWEDINRUN"
+    {
+        "#format"		"{1:t},{2:s},{3:s}"
+        "en"			"{G}[TIMER] {D}Sorry, {1} {G}{2} {D}is not allowed in {G}{3} {D}!"
+    }
+    
+    "INF_WENTWRONGCHANGING"
+    {
+        "#format"		"{1:t}"
+        "en"			"{G}[TIMER] {D}Something went wrong when changing your {G}{1} {D}!"
+    }
+    
+    "INF_WAITTILLSPAWN"
+    {
+        "en"			"{G}[TIMER] {D}You must enter a start zone/wait till next spawn."
+    }
+    
+    "INF_NOACCESSTO"
+    {
+        "#format"		"{1:t}"
+        "en"			"{G}[TIMER] {D}You do not have access to this {1}!"
+    }
+    
+    "INF_VALIDMODES"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Valid mode(s): {G}{1}"
+    }
+    
+    //
+    // Run Stuff
+    //
+    "INF_RUN_CREATED"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {G}{1} {D}has been created!"
+    }
+    
+    "INF_RUN_DELETED"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Run {G}{1} {D}has been deleted! Remember to !saveruns."
+    }
+    
+    "INF_RUNIDNOTEXIST"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}Run with an ID of {G}{1} {D}does not exist!"
+    }
+    
+    "INF_RUNS_DELETED"
+    {
+        "#format"		"{1:s},{2:s}"
+        "en"			"{G}[TIMER] {D}Your {G}{1} {GR}[ {PI}{2} {GR}] {D}run has been deleted!"
+    }
+    
+    "INF_RUN_RUNS_DELETED"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Your {G}{1} {D}runs has been deleted!"
+    }
+    
+    "INF_RUN_RENAMED"
+    {
+        "#format"		"{1:s},{2:s}"
+        "en"			"{G}[TIMER] {D}Run {G}{1} {D}has been renamed to {G}{2}{D}!"
+    }
+    
+    "INF_RUNISNOW"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Your run is now {G}{1}{D}!"
+    }
+    
+    "INF_RUNNOTEXIST"
+    {
+        "en"			"{G}[TIMER] {D}That run does not exist!"
+    }
+    
+    
+    "INF_RUNFINISHEDPRINT_IMPROVEDBY"
+    {
+        "#format"		"{1:s}"
+        "en"			"{D}Improving by {GR}[ {PI}{1} {GR}] {D}seconds"
+    }
+    
+    
+    "INF_RUNFINISHEDPRINT"
+    {
+        //
+        // 1 = Player name
+        // 2 = Run Name
+        // 3 = Time
+        // 4 = Time difference
+        // 5 = ' Improving by...' (above) (if necessary) (has a space at the start)		=> INF_RUNFINISHEDPRINT_IMPROVEDBY
+        // 6 = Mode (if necessary) (has a space at the start)							=> INF_MODE_DISPLAY_STYLE
+        // 7 = Style (if necessary) (has a space at the start)							=> INF_STYLE_DISPLAY_STYLE
+        //
+        "#format"		"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s}{7:s}"
+        "en"			"{G}[TIMER] {G}{1} {D}finished {GR}[ {PI}{2} {GR}] {D}in {GR}[ {PI}{3} {G}{4} {GR}] {D}! {5} {6} {7}"
+    }
+    
+    //
+    // Rec chat
+    //
 
-	"INF_ZONE_SBUILDING"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Started building {G}{1}{D}!"
-	}
+    "INF_MODE_DISPLAY_STYLE"
+    {
+        "#format"		"{1:s}"
+        "en"			"{GR}[ {PI}{1} {GR}]"
+    }
 
-	"INF_ZONE_CREATED"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Created zone {G}{1}{D}!"
-	}
+    "INF_STYLE_DISPLAY_STYLE"
+    {
+        "#format"		"{1:s}"
+        "en"			"{GR}[ {PI}{1} {GR}]"
+    }
+    
+    
+    
+    //
+    // Misc.
+    //
+    "INF_INVALIDWEAPONSPD"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}Invalid weapon speed! Can be {G}{1} {D}at most!"
+    }
+    
+    
+    //
+    // Prespeed
+    //
+    "INF_PRESPEEDNONOCLIP"
+    {
+        "en"			"{G}[TIMER] {D}You cannot prespeed with noclip!"
+    }
+    
+    "INF_PRESPEEDJUMPLIMIT"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}You cannot jump more than {G}{1} {D}time(s) at the start!"
+    }
+    
+    "INF_PRESPEEDNOJUMP"
+    {
+        "en"			"{G}[TIMER] {D}You cannot jump at all at the start!"
+    }
+    
+    "INF_PRESPEEDEXCEED"
+    {
+        "#format"		"{1:.0f}"
+        "en"			"{G}[TIMER] {D}Your prespeed cannot exceed {G}{1}{D}!"
+    }
+    
+    
+    
+    //
+    // Recording
+    //
+    "INF_RECORDINGSAVED"
+    {
+        "en"			"{G}[TIMER] {D}Your recording has been successfully saved!"
+    }
+    
+    "INF_RECORDINGSAVEFAILED"
+    {
+        "en"			"{G}[TIMER] {D}We were unable to save your recording, sorry!"
+    }
+    
+    "INF_RECORDINGALREADYPLAYING"
+    {
+        "en"			"{G}[TIMER] {D}That run is already being replayed!"
+    }
+    
+    "INF_RECORDINGNOWPLAYING"
+    {
+        "en"			"{G}[TIMER] {D}Replay is now being played!"
+    }
+    
+    "INF_RECORDINGEXCEEDEDLIMIT"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}Stopped recording. Recordings cannot exceed {PI}{1} {D}minutes!"
+    }
+    
+    "INF_REPLAYISFREENOW"
+    {
+        "en"			"{G}[TIMER] {D}You can now request a replay by typing {G}!replay {D}in chat."
+    }
+    
+    "INF_REPLAYISNEW"
+    {
+        "en"			"{G}[TIMER] {D}Replaying a new record. Please wait..."
+    }
+    
+    "INF_REPLAYALREADYREQUESTED"
+    {
+        "en"			"{G}[TIMER] {D}You've already requested a replay!"
+    }
+    
+    "INF_REPLAYISBEINGWATCHED"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Replay is being watched by {G}{1}{D}. Please wait for the recording to finish."
+    }
 
-	"INF_ZONE_DELETE_SUCCESS"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Deleted {G}{1}{D}!"
-	}
+    "INF_REPLAYDELETED"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Successfully deleted: {G}'../{1}'{D}!"
+    }
+    
+    
+    
+    //
+    // Stages
+    //
+    "INF_STAGENUMBERNOTEXIST"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}Stage {G}{1} {D}does not exist!"
+    }
+    
+    "INF_LEAVEZONEFIRST"
+    {
+        "en"			"{G}[TIMER] {D}You must leave the zone first!"
+    }
+    
+    
+    //
+    //	Zones
+    //
+    "INF_ZONE_BADSIZE"
+    {
+        "en"			"{G}[TIMER] {D}Bad zone size! Please make the zone bigger."
+    }
 
-	"INF_ZONE_DELETE_FAIL"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Couldn't delete {G}{1}{D}!"
-	}
+    "INF_ZONE_NOSET"
+    {
+        "en"			"{G}[TIMER] {D}Sorry, no settings can be set for this zone!"
+    }
 
-	"INF_ZONE_SAVED"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}Wrote {G}{1} {D}zones to file/database!"
-	}
+    "INF_ZONE_SBUILDING"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Started building {G}{1}{D}!"
+    }
 
-	"INF_ZONE_SPAWNED"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}Spawned {G}{1} {D}zones!"
-	}
+    "INF_ZONE_CREATED"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Created zone {G}{1}{D}!"
+    }
 
-	"INF_ZONE_NOTFOUND"
-	{
-		"en"			"{D}Couldn't find a zone!"
-	}
+    "INF_ZONE_DELETE_SUCCESS"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Deleted {G}{1}{D}!"
+    }
 
-	"INF_ZONE_HIDDEN_BEAMS"
-	{
-		"#format"		"{1:t}"
-		"en"			"{D}Hidden beams are now: {1}"
-	}
+    "INF_ZONE_DELETE_FAIL"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Couldn't delete {G}{1}{D}!"
+    }
 
-	"INF_ZONE_STAGE_SET"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}Set stage {G}{1} {D}tele position and yaw!"
-	}
+    "INF_ZONE_SAVED"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}Wrote {G}{1} {D}zones to file/database!"
+    }
 
-	"INF_ZONE_COPY_LOC"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}Copying position and angles from entity {G}{1}{D}!"
-	}
+    "INF_ZONE_SPAWNED"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}Spawned {G}{1} {D}zones!"
+    }
 
-	"INF_ZONE_TELE_NOTFOUND"
-	{
-		"#format"		"{1:.0f}"
-		"en"			"{D}Couldn't find a teleport destination within {G}{1} {D}units!"
-	}
+    "INF_ZONE_NOTFOUND"
+    {
+        "en"			"{G}[TIMER] {D}Couldn't find a zone!"
+    }
 
-	"INF_ZONE_VALIDATOR"
-	{
-		"#format"		"{1:i},{2:i}"
-		"en"			"{D}You've entered a validator! {GR}( {G}{1}{D}/{G}{2} {GR})"
-	}
+    "INF_ZONE_HIDDEN_BEAMS"
+    {
+        "#format"		"{1:t}"
+        "en"			"{G}[TIMER] {D}Hidden beams are now: {1}"
+    }
 
-	
-	//
-	// Pause
-	//
-	"INF_NOTPAUSED"
-	{
-		"en"			"{D}You aren't even paused!"
-	}
-	
+    "INF_ZONE_STAGE_SET"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}Set stage {G}{1} {D}tele position and yaw!"
+    }
+
+    "INF_ZONE_COPY_LOC"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}Copying position and angles from entity {G}{1}{D}!"
+    }
+
+    "INF_ZONE_TELE_NOTFOUND"
+    {
+        "#format"		"{1:.0f}"
+        "en"			"{G}[TIMER] {D}Couldn't find a teleport destination within {G}{1} {D}units!"
+    }
+
+    "INF_ZONE_VALIDATOR"
+    {
+        "#format"		"{1:i},{2:i}"
+        "en"			"{G}[TIMER] {D}You've entered a validator! {GR}( {G}{1}{D}/{G}{2} {GR})"
+    }
+
+    
+    //
+    // Pause
+    //
+    "INF_NOTPAUSED"
+    {
+        "en"			"{G}[TIMER] {D}You aren't even paused!"
+    }
+    
     "INF_CANTPAUSE_PRAC"
-	{
-		"en"			"{D}You cannot pause a practising run!"
-	}
-	
-	"INF_NOWPAUSED"
-	{
-		"en"			"{D}Your run is now paused. Type {G}!continue {D}to resume."
-	}
-	
-	"INF_NOLONGERPAUSED"
-	{
-		"en"			"{D}Your run is no longer paused."
-	}
-	
-	"INF_PAUSENOTSOFAST"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}You cannot pause so soon! Please wait {G}{1} {D}seconds!"
-	}
-	
-	"INF_PAUSENOTALLOWED"
-	{
-		"en"			"{D}Pauses aren't allowed!"
-	}
-	
-	"INF_PAUSELIMIT"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}You cannot pause more than {G}{1} {D}time(s) every run!"
-	}
-	
-	
-	
-	//
+    {
+        "en"			"{G}[TIMER] {D}You cannot pause a practising run!"
+    }
+    
+    "INF_NOWPAUSED"
+    {
+        "en"			"{G}[TIMER] {D}Your run is now paused. Type {G}!continue {D}to resume."
+    }
+    
+    "INF_NOLONGERPAUSED"
+    {
+        "en"			"{G}[TIMER] {D}Your run is no longer paused."
+    }
+    
+    "INF_PAUSENOTSOFAST"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}You cannot pause so soon! Please wait {G}{1} {D}seconds!"
+    }
+    
+    "INF_PAUSENOTALLOWED"
+    {
+        "en"			"{G}[TIMER] {D}Pauses aren't allowed!"
+    }
+    
+    "INF_PAUSELIMIT"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}You cannot pause more than {G}{1} {D}time(s) every run!"
+    }
+    
+    
+    
+    //
     // Practise
-	//
+    //
     "INF_MUSTBEPRACTISING"
-	{
-		"en"			"{D}You must be practising!"
-	}
-	
-	"INF_PRACTICEMODECHANGE"
-	{
-		"#format"		"{1:t}"
-		"en"			"{D}Practice mode: {1}"
-	}
-	
-	
-	//
-	// Simple ranks
-	//
-	"INF_RANKISNOW"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Your rank is now '{1}'!"
-	}
-	
-	"INF_GOTPOINTS"
-	{
-		"#format"		"{1:i},{2:i}"
-		"en"			"{D}You've received {G}{1} {D}points! You now have {G}{2} {D}points!"
-	}
+    {
+        "en"			"{G}[TIMER] {D}You must be practising!"
+    }
+    
+    "INF_PRACTICEMODECHANGE"
+    {
+        "#format"		"{1:t}"
+        "en"			"{G}[TIMER] {D}Practice mode: {1}"
+    }
+    
+    
+    //
+    // Simple ranks
+    //
+    "INF_RANKISNOW"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Your rank is now '{1}'!"
+    }
+    
+    "INF_GOTPOINTS"
+    {
+        "#format"		"{1:i},{2:i}"
+        "en"			"{G}[TIMER] {D}You've received {G}{1} {D}points! You now have {G}{2} {D}points!"
+    }
 
-	"INF_USAGE_CUSTOMRANK"
-	{
-		"en"			"{D}Usage: {G}sm_customrank <rank>"
-	}
+    "INF_USAGE_CUSTOMRANK"
+    {
+        "en"			"{G}[TIMER] {D}Usage: {G}sm_customrank <rank>"
+    }
 
-	"INF_INVALID_LEN"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}Rank length cannot exceed {G}{1} {D}characters!"
-	}
+    "INF_INVALID_LEN"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}Rank length cannot exceed {G}{1} {D}characters!"
+    }
 
-	// ReplyToClient
-	"INF_USAGE_MAPREWARD"
-	{
-		"en"			"{D}Usage: {G}sm_setmapreward <mapname (optional)> <points>"
-	}
+    // ReplyToClient
+    "INF_USAGE_MAPREWARD"
+    {
+        "en"			"{G}[TIMER] {D}Usage: {G}sm_setmapreward <mapname (optional)> <points>"
+    }
 
-	"INF_USAGE_GIVEPOINTS"
-	{
-		"en"			"{D}Usage: {G}sm_givesimplepoints <target (optional)> <amount> (Note: can be negative)"
-	}
+    "INF_USAGE_GIVEPOINTS"
+    {
+        "en"			"{G}[TIMER] {D}Usage: {G}sm_givesimplepoints <target (optional)> <amount> (Note: can be negative)"
+    }
 
-	"INF_NO_TARGETS"
-	{
-		"en"			"{D}No targets found!"
-	}
+    "INF_NO_TARGETS"
+    {
+        "en"			"{G}[TIMER] {D}No targets found!"
+    }
 
-	"INF_ZERO_POINTS"
-	{
-		"en"			"{D}You can't give zero points!"
-	}
-	
-	
-	//
-	// Rank chat
-	//
-	"INF_RANKCHAT"
-	{
-		"#format"		"{1:s},{2:i},{3:i}"
-		"en"			"{G}{1} {D}is now ranked {G}{2}{D}/{G}{3}!"
-	}
+    "INF_ZERO_POINTS"
+    {
+        "en"			"{G}[TIMER] {D}You can't give zero points!"
+    }
 
-	//
-	// AC L/R
-	// 
-	
+    "INF_MAP_FOUNDONEMORE"
+    {
+        "en"            "{G}[TIMER] {D}Found multiple maps with similar name! Try to be more specific."
+    }
 
-	"INF_AC_GUARD"
-	{
-		"#format"		"{1:t}"
-		"en"			"{D}Please don't {1} {G}+left{D}/{G}+right{D}!"
-	}
+    "INF_MAP_NOTFOUND"
+    {
+        "en"            "{G}[TIMER] {D}Couldn't find a similar map!"
+    }
 
-	//
-	// FPS Check
-	//
-	"INF_FPS_NOTCACHED"
-	{
-		"en"			"{D}Your fps_max value hasn't been received yet!"
-	}
+    "INF_MAP_REWARD"
+    {
+        "#format"       "{1:s},{2:i}"
+        "en"            "{G}[TIMER] {D}Setting {G}{1}{D}'s reward to {G}{2}{D}!"
+    }
 
-	"INF_FPS_VALID_1"
-	{
-		"#format"		"{1:.0f}"
-		"en"			"{D}Your FPS must be equal to or greater than {G}{1}{D}!"
-	}
+    "INF_CURRENTMAP_REWARD"
+    {
+        "#format"       "{1:s},{2:i}"
+        "en"            "{G}[TIMER] {D}Set current map's {G}{1}{D} reward to {G}{2}{D} points."
+    }
 
-	"INF_FPS_VALID_300"
-	{
-		"en"			"{D}Your FPS must be {G}300{D}!"
-	}
+    "INF_REWARD_NEGATIVE"
+    {
+        "en"            "{G}[TIMER] {D}Reward cannot be negative!"
+    }
 
-	//
-	// HELP
-	//
-	"INF_HELP"
-	{
-		"en"			"{D}Type {G}!help {D}to see a list of commands."
-	}
+    "INF_POINTS_INCREASE"
+    {
+        "#format"        "{1:i}"
+        "en"             "{G}[TIMER] {D}The universe gave you {G}{1}{D} points!"
+    }
 
-	//
-	// HUD HIDE
-	//
-	
+    "INF_POINTS_DECREASE"
+    {
+        "#format"        "{1:i}"
+        "en"             "{G}[TIMER] {D}The universe doesn't like you and took {G}{1}{D} points from you!"
+    }
 
-	"INF_HIDE_TIMER"
-	{
-		"#format"		"{1:t}"
-		"en"			"{D}Your timer is now {G}{1}{D}!"
-	}
+    "INF_POINTS_GIVE"
+    {
+        "#format"        "{1:i},{2:i}"
+        "en"             "{G}[TIMER] {D}Gave {G}{1}{D} points to {G}{2}{D} player(s)!"
+    }
+    
+    
+    //
+    // Rank chat
+    //
+    "INF_RANKCHAT"
+    {
+        "#format"		"{1:s},{2:i},{3:i}"
+        "en"			"{G}[TIMER] {G}{1} {D}is now ranked {G}{2}{D}/{G}{3}!"
+    }
 
-	"INF_HIDE_SIDEBAR"
-	{
-		"#format"		"{1:t}"
-		"en"			"{D}Your sidebar is now {G}{1}{D}!"
-	}
+    //
+    // AC L/R
+    // 
+    
 
-	//
-	// HUD VIEWMODEL
-	//
-	"INF_HIDE_VIEWMODEL"
-	{
-		"#format"		"{1:t}"
-		"en"			"{D}Your viewmodel is now {G}{1}{D}!"
-	}
+    "INF_AC_GUARD"
+    {
+        "#format"		"{1:t}"
+        "en"			"{G}[TIMER] {D}Please don't {1} {G}+left{D}/{G}+right{D}!"
+    }
 
-	//
-	// NOCLIP
-	//
-	
 
-	"INF_NOCLIP_ALIVE"
-	{
-		"en"			"{D}You must be alive to use this command!"
-	}
+    //
+    // FPS Check
+    //
+    "INF_FPS_NOTCACHED"
+    {
+        "en"			"{G}[TIMER] {D}Your fps_max value hasn't been received yet!"
+    }
 
-	"INF_NOCLIP_STATUS"
-	{
-		"#format"		"{1:t}"
-		"en"			"{D}Noclip: {1}"
-	}
+    "INF_FPS_VALID_1"
+    {
+        "#format"		"{1:.0f}"
+        "en"			"{G}[TIMER] {D}Your FPS must be equal to or greater than {G}{1}{D}!"
+    }
 
-	//
-	// TAS
-	//
+    "INF_FPS_VALID_300"
+    {
+        "en"			"{G}[TIMER] {D}Your FPS must be {G}300{D}!"
+    }
 
-	"INF_TAS_LOADED"
-	{
-		"#format"		"{1:i}"
-		"en"			"{D}Loaded {G}{1} {D}frames from disk."
-	}
+    //
+    // HELP
+    //
+    "INF_HELP"
+    {
+        "en"			"{G}[TIMER] {D}Type {G}!help {D}to see a list of commands."
+    }
 
-	"INF_TAS_NOTLOAD"
-	{
-		"en"			"{D}Couldn't load file from disk!"
-	}
+    //
+    // HUD HIDE
+    //
+    
 
-	"INF_TAS_PAUSE"
-	{
-		"en"			"{D}You cannot pause in TAS style!"
-	}
+    "INF_HIDE_TIMER"
+    {
+        "#format"		"{1:t}"
+        "en"			"{G}[TIMER] {D}Your timer is now {G}{1}{D}!"
+    }
 
-	"INF_TAS_PRACTISE"
-	{
-		"en"			"{D}You cannot practice in TAS style!"
-	}
+    "INF_HIDE_SIDEBAR"
+    {
+        "#format"		"{1:t}"
+        "en"			"{G}[TIMER] {D}Your sidebar is now {G}{1}{D}!"
+    }
 
-	"INF_TAS_LAGGEDMOVEMENTVALUE"
-	{
-		"en"			"{D}Make sure to use: {G}cl_clock_correction_force_server_tick{D}/{G}cl_clockdrift_max_ms {CO}0 {D}to decrease laggy timescale!"
-	}
+    //
+    // HUD VIEWMODEL
+    //
+    "INF_HIDE_VIEWMODEL"
+    {
+        "#format"		"{1:t}"
+        "en"			"{G}[TIMER] {D}Your viewmodel is now {G}{1}{D}!"
+    }
 
-	"INF_TAS_SAVE_SUCCESS"
-	{
-		"#format"		"{1:i},{2:s}"
-		"en"			"{D}Saved {G}{1} {D}frames to: {G}'../{2]'{D}."
-	}
+    //
+    // NOCLIP
+    //
+    
 
-	"INF_TAS_SAVE_FAIL"
-	{
-		"en"			"{D}Couldn't save frames to disk!"
-	}
+    "INF_NOCLIP_ALIVE"
+    {
+        "en"			"{G}[TIMER] {D}You must be alive to use this command!"
+    }
 
-	
+    "INF_NOCLIP_STATUS"
+    {
+        "#format"		"{1:t}"
+        "en"			"{G}[TIMER] {D}Noclip: {1}"
+    }
 
-	//
-	//	Spec
-	//
+    //
+    // TAS
+    //
 
-	"INF_SPEC_LIST"
-	{
-		"#format"		"{1:N},{2:i},{3:s}"
-		"en"			"{D}People spectating {G}{1} {D}( {G}{2} {D}): {G}{3}"
-	}
+    "INF_TAS_LOADED"
+    {
+        "#format"		"{1:i}"
+        "en"			"{G}[TIMER] {D}Loaded {G}{1} {D}frames from disk."
+    }
 
-	"INF_SPEC_NOBODY"
-	{
-		"#format"		"{1:N}"
-		"en"			"{D}Nobody is spectating {G}{1}{D}. :("
-	}
+    "INF_TAS_NOTLOAD"
+    {
+        "en"			"{G}[TIMER] {D}Couldn't load file from disk!"
+    }
 
-	//
-	// Spawn cmds
-	//
+    "INF_TAS_PAUSE"
+    {
+        "en"			"{G}[TIMER] {D}You cannot pause in TAS style!"
+    }
 
-	"INF_CMD_SPEC"
-	{
-		"#format"		"{1:N}"
-		"en"			"{D}You are now spectating {G}{1}{D}!"
-	}
+    "INF_TAS_PRACTISE"
+    {
+        "en"			"{G}[TIMER] {D}You cannot practice in TAS style!"
+    }
 
-	//
-	// Tele to end
-	//
-	
-	"INF_TELE_FAIL"
-	{
-		"#format"		"{1:s}"
-		"en"			"{D}Couldn't find end to {G}{1}!"
-	}
+    "INF_TAS_LAGGEDMOVEMENTVALUE"
+    {
+        "en"			"{G}[TIMER] {D}Make sure to use: {G}cl_clock_correction_force_server_tick{D}/{G}cl_clockdrift_max_ms {CO}0 {D}to decrease laggy timescale!"
+    }
 
-	//
-	// Truevel
-	//
-	
-	"INF_TRUEVEL"
-	{
-		"#format"		"{1:t}"
-		"en"			"{D}Truevel: {1}"
-	}
+    "INF_TAS_SAVE_SUCCESS"
+    {
+        "#format"		"{1:i},{2:s}"
+        "en"			"{G}[TIMER] {D}Saved {G}{1} {D}frames to: {G}'../{2]'{D}."
+    }
+
+    "INF_TAS_SAVE_FAIL"
+    {
+        "en"			"{G}[TIMER] {D}Couldn't save frames to disk!"
+    }
+
+    
+
+    //
+    //	Spec
+    //
+
+    "INF_SPEC_LIST"
+    {
+        "#format"		"{1:N},{2:i},{3:s}"
+        "en"			"{G}[TIMER] {D}People spectating {G}{1} {D}( {G}{2} {D}): {G}{3}"
+    }
+
+    "INF_SPEC_NOBODY"
+    {
+        "#format"		"{1:N}"
+        "en"			"{G}[TIMER] {D}Nobody is spectating {G}{1}{D}. :("
+    }
+
+    //
+    // Spawn cmds
+    //
+
+    "INF_CMD_SPEC"
+    {
+        "#format"		"{1:N}"
+        "en"			"{G}[TIMER] {D}You are now spectating {G}{1}{D}!"
+    }
+
+    //
+    // Tele to end
+    //
+    
+    "INF_TELE_FAIL"
+    {
+        "#format"		"{1:s}"
+        "en"			"{G}[TIMER] {D}Couldn't find end to {G}{1}!"
+    }
+
+    //
+    // Truevel
+    //
+    
+    "INF_TRUEVEL"
+    {
+        "#format"		"{1:t}"
+        "en"			"{G}[TIMER] {D}Truevel: {1}"
+    }
+
+    //
+    // core.inc
+    //
+
+    "INF_CMD_SPAM"
+    {
+        "#format"       "{1:.1f}"
+        "en"            "{G}[TIMER] {D}Please wait {G}{1} {D}seconds before using this command!"
+    }
+
+    "INF_AUTH_FAIL"
+    {
+        "en"            "{G}[TIMER] {D}Couldn't retrieve your Steam Id. Please reconnect and make sure you are connected to Steam!!"
+    }
+
+    //
+    //  cptimes.sp
+    //
+
+    "INF_CP_SR"
+    {
+        "#format"        "{1:s},{2:c},{3:s}"
+        "en"             "{D}SR: {G}{1} {GR}( {PI}{2}{3} {GR}){D}"
+    }
+
+    "INF_CP_PB"
+    {
+        "#format"        "{1:s},{2:c},{3:s}"
+        "en"             "{D}PB: {G}{1} {GR}( {PI}{2}{3} {GR}){D}"
+    }
+
+    "INF_CP_BEST"
+    {
+        "#format"        "{1:s},{2:c},{3:s}"
+        "en"             "{D}BEST: {G}{1} {GR}( {PI}{2}{3} {GR}){D}"
+    }
+
+    "INF_CP_PRINT"
+    {
+        // 1 - cp-num
+        // 2 - INF_CP_SR
+        // 3 - separator
+        // 4 - INF_CP_PB
+        // 5 - separator
+        // 6 - INF_CP_BES
+
+        "#format"        "{1:i},{2:s},{3:s},{4:s},{5:s},{6:s}"
+        "en"             "{G}[TIMER] {D}CP {G}{1}{D} | {2}{3}{4}{5}{6}"
+    }
 }
