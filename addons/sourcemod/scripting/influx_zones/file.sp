@@ -97,7 +97,7 @@ stock int WriteZoneFile( ArrayList kvs )
             LogError( INF_CON_PRE..."Can't save zone file '%s'!!", szPath );
         }
     }
-    else
+    else if ( kvs.Length > 0 )
     {
         LogError( INF_CON_PRE..."No valid zones exist to save. Can't save zone file '%s'!", szPath );
     }
