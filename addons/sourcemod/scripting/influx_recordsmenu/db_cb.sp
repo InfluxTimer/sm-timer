@@ -308,12 +308,12 @@ public void Thrd_PrintStyleSelect( Handle db, Handle res, const char[] szError, 
 
 public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, ArrayList array )
 {
-    decl data[PCB_SIZE];
+    RecordsCallback_t data;
     
-    array.GetArray( 0, data, sizeof( data ) );
+    array.GetArray( 0, data );
     delete array;
     
-    int client = GetClientOfUserId( data[PCB_USERID] );
+    int client = GetClientOfUserId( data.iUserId );
     
     if ( client < 1 || !IsClientInGame( client ) ) return;
     
@@ -324,13 +324,13 @@ public void Thrd_PrintRecords( Handle db, Handle res, const char[] szError, Arra
     }
     
     
-    int requid = data[PCB_UID];
-    int reqmapid = data[PCB_MAPID];
-    int runid = data[PCB_RUNID]; // Runid is always requested.
-    int reqmode = data[PCB_MODE];
-    int reqstyle = data[PCB_STYLE];
-    int offset = data[PCB_OFFSET];
-    int totalrecords = data[PCB_TOTALRECORDS];
+    int requid = data.iUId;
+    int reqmapid = data.iMapId;
+    int runid = data.iRunId; // Runid is always requested.
+    int reqmode = data.iModeId;
+    int reqstyle = data.iStyleId;
+    int offset = data.nOffset;
+    int totalrecords = data.nTotalRecords;
     
     
     // This is the first query, this will be our number.

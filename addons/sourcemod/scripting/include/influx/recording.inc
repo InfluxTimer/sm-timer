@@ -22,15 +22,13 @@
 #define RECFLAG_FLASHLIGHT  ( 1 << 6 ) // impulse 100
 
 
-enum
+enum struct RecordingFrame_t
 {
-    REC_POS[3],
-    REC_ANG[2],
-    
-    REC_FLAGS,
-    
-    REC_SIZE
-};
+    float vecPos[3];
+    float angles[2];
+
+    int fFlags;
+}
 
 /*
 #define MAX_RUNREC_WEPNAME          12
@@ -43,23 +41,15 @@ enum
 #define RUNRECFLAG_ZOOM2            ( 1 << 3 )
 */
 
-enum
+enum struct RunRecordingData_t
 {
-    RUNREC_RUN_ID = 0,
-    
-    RUNREC_REC[MAX_MODES * MAX_STYLES],
-    //RUNREC_REC_UID[MAX_MODES * MAX_STYLES],
-    RUNREC_REC_TIME[MAX_MODES * MAX_STYLES],
-    
-    RUNREC_REC_NAME[MAX_MODES * MAX_STYLES * MAX_BEST_NAME_CELL],
-    
-    //RUNREC_REC_START_PRIMWEP[MAX_MODES * MAX_STYLES * MAX_RUNREC_WEPNAME_CELL],
-    //RUNREC_REC_START_SECWEP[MAX_MODES * MAX_STYLES * MAX_RUNREC_WEPNAME_CELL],
-    
-    //RUNREC_REC_FLAGS[MAX_MODES * MAX_STYLES],
-    
-    RUNREC_SIZE
-};
+    int iRunId;
+
+    ArrayList hRecordings[MAX_MODES * MAX_STYLES];
+    float flRecTimes[MAX_MODES * MAX_STYLES];
+    // char
+    int szRecNames[MAX_MODES * MAX_STYLES * MAX_BEST_NAME_CELL];
+}
 
 
 // 4 byte | "inf!"
@@ -74,26 +64,24 @@ enum
 #define MAX_RECFILE_PLYNAME             32
 #define MAX_RECFILE_PLYNAME_CELL        MAX_RECFILE_PLYNAME / 4
 
-enum
+enum struct RecFileHeader_t
 {
-    RECFILE_MAGIC = 0,
-    RECFILE_VERSION,
-    RECFILE_HEADERSIZE,
-    
-    RECFILE_TICKRATE,
-    
-    RECFILE_TIME,
-    RECFILE_RUNID,
-    RECFILE_MODE,
-    RECFILE_STYLE,
-    
-    RECFILE_MAPNAME[MAX_RECFILE_MAPNAME_CELL],
-    RECFILE_PLYNAME[MAX_RECFILE_PLYNAME_CELL],
-    
-    RECFILE_FRAMELEN
-};
+    int iMagic;
+    int iVersion;
+    int nHeaderSize;
 
-#define INF_CURHEADERSIZE       RECFILE_FRAMELEN
+    int iTickrate;
+
+    float flTime;
+    int iRunId;
+    int iModeId;
+    int iStyleId;
+
+    char szMapName[MAX_RECFILE_MAPNAME];
+    char szPlyName[MAX_RECFILE_PLYNAME];
+}
+
+#define INF_CURHEADERSIZE       sizeof( RecFileHeader_t )
 
 
 // Return != Plugin_Continue to disable recording for this run.

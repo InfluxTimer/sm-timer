@@ -114,6 +114,48 @@ stock int WriteRunFile( ArrayList kvs )
     return len;
 }
 
+stock bool LoadSharedModeNStyleOverride( KeyValues kv, ModeNStyleOverride_t ovr, int invalid_id )
+{
+    if ( !kv.GetSectionName( ovr.szSafeName, sizeof( ModeNStyleOverride_t::szSafeName ) ) )
+    {
+        LogError( INF_CON_PRE..."Couldn't read override name!" );
+        return false;
+    }
+    
+    
+    if ( IsCharNumeric( ovr.szSafeName[0] ) )
+    {
+        ovr.iId = StringToInt( ovr.szSafeName );
+        ovr.szSafeName[0] = 0;
+    }
+    else
+    {
+        ovr.iId = invalid_id;
+    }
+    
+    
+    ovr.nOrder = kv.GetNum( "order", 0 );
+    kv.GetString( "name_override", ovr.szOverrideName, sizeof( ModeNStyleOverride_t::szOverrideName ), "" );
+    kv.GetString( "shortname_override", ovr.szOverrideShortName, sizeof( ModeNStyleOverride_t::szOverrideShortName ), "" );
+    
+    
+    char szTemp[32];
+    kv.GetString( "flags", szTemp, sizeof( szTemp ), "" );
+    
+    if ( szTemp[0] != 0 )
+    {
+        ovr.bUseAdminFlags = true;
+        ovr.fAdminFlags = ReadFlagString( szTemp );
+    }
+    else
+    {
+        ovr.bUseAdminFlags = false;
+        ovr.fAdminFlags = 0;
+    }
+
+    return true;
+}
+
 stock void ReadModeOverrides()
 {
     char szPath[PLATFORM_MAX_PATH];
@@ -131,57 +173,22 @@ stock void ReadModeOverrides()
     
     g_hModeOvers.Clear();
     
-    int data[MOVR_SIZE];
-    
-    decl String:szTemp[32];
+    ModeNStyleOverride_t ovr;
     
     do
     {
-        if ( !kv.GetSectionName( view_as<char>( data[MOVR_NAME_ID] ), MAX_SAFENAME ) )
+        if ( !LoadSharedModeNStyleOverride( kv, ovr, MODE_INVALID ) )
         {
-            LogError( INF_CON_PRE..."Couldn't read mode override name!" );
+            continue;
+        }
+
+        if ( FindModeOver( ovr.iId, ovr.szSafeName ) != -1 )
+        {
+            LogError( INF_CON_PRE..."Mode override already exists for '%s' (%i)!", ovr.szSafeName, ovr.iId );
             continue;
         }
         
-        
-        if ( IsCharNumeric( view_as<char>( data[MOVR_NAME_ID] ) ) )
-        {
-            data[MOVR_ID] = StringToInt( view_as<char>( data[MOVR_NAME_ID] ) );
-            data[MOVR_NAME_ID] = 0;
-            
-            if ( !VALID_MODE( data[MOVR_ID] ) ) continue;
-        }
-        else
-        {
-            data[MOVR_ID] = MODE_INVALID;
-        }
-        
-        if ( FindModeOver( data[MOVR_ID], view_as<char>( data[MOVR_NAME_ID] ) ) != -1 )
-        {
-            LogError( INF_CON_PRE..."Mode override already exists for '%s' (%i)!", data[MOVR_NAME_ID], data[MOVR_ID] );
-            continue;
-        }
-        
-        
-        data[MOVR_ORDER] = kv.GetNum( "order", 0 );
-        kv.GetString( "name_override", view_as<char>( data[MOVR_OVRNAME] ), MAX_MODE_NAME, "" );
-        kv.GetString( "shortname_override", view_as<char>( data[MOVR_OVRSHORTNAME] ), MAX_MODE_SHORTNAME, "" );
-        
-        
-        kv.GetString( "flags", szTemp, sizeof( szTemp ), "" );
-        
-        if ( szTemp[0] != 0 )
-        {
-            data[MOVR_USEADMFLAGS] = 1;
-            data[MOVR_ADMFLAGS] = ReadFlagString( szTemp );
-        }
-        else
-        {
-            data[MOVR_USEADMFLAGS] = 0;
-        }
-        
-        
-        g_hModeOvers.PushArray( data );
+        g_hModeOvers.PushArray( ovr );
     }
     while ( kv.GotoNextKey() );
     
@@ -205,57 +212,23 @@ stock void ReadStyleOverrides()
     
     g_hStyleOvers.Clear();
     
-    int data[SOVR_SIZE];
-    
-    decl String:szTemp[32];
+    ModeNStyleOverride_t ovr;
     
     do
     {
-        if ( !kv.GetSectionName( view_as<char>( data[SOVR_NAME_ID] ), MAX_SAFENAME ) )
+        if ( !LoadSharedModeNStyleOverride( kv, ovr, STYLE_INVALID ) )
         {
-            LogError( INF_CON_PRE..."Couldn't read style override name!" );
+            continue;
+        }
+
+        if ( FindStyleOver( ovr.iId, ovr.szSafeName ) != -1 )
+        {
+            LogError( INF_CON_PRE..."Style override already exists for '%s' (%i)!", ovr.szSafeName, ovr.iId );
             continue;
         }
         
         
-        if ( IsCharNumeric( view_as<char>( data[SOVR_NAME_ID] ) ) )
-        {
-            data[SOVR_ID] = StringToInt( view_as<char>( data[SOVR_NAME_ID] ) );
-            data[SOVR_NAME_ID] = 0;
-            
-            if ( !VALID_STYLE( data[SOVR_ID] ) ) continue;
-        }
-        else
-        {
-            data[SOVR_ID] = STYLE_INVALID;
-        }
-        
-        if ( FindStyleOver( data[SOVR_ID], view_as<char>( data[SOVR_NAME_ID] ) ) != -1 )
-        {
-            LogError( INF_CON_PRE..."Style override already exists for '%s' (%i)!", data[SOVR_NAME_ID], data[SOVR_ID] );
-            continue;
-        }
-        
-        
-        data[SOVR_ORDER] = kv.GetNum( "order", 0 );
-        kv.GetString( "name_override", view_as<char>( data[SOVR_OVRNAME] ), MAX_STYLE_NAME, "" );
-        kv.GetString( "shortname_override", view_as<char>( data[SOVR_OVRSHORTNAME] ), MAX_STYLE_SHORTNAME, "" );
-        
-        
-        kv.GetString( "flags", szTemp, sizeof( szTemp ), "" );
-        
-        if ( szTemp[0] != 0 )
-        {
-            data[SOVR_USEADMFLAGS] = 1;
-            data[SOVR_ADMFLAGS] = ReadFlagString( szTemp );
-        }
-        else
-        {
-            data[SOVR_USEADMFLAGS] = 0;
-        }
-        
-        
-        g_hStyleOvers.PushArray( data );
+        g_hStyleOvers.PushArray( ovr );
     }
     while ( kv.GotoNextKey() );
     

@@ -13,17 +13,13 @@
 #include <influx/zones_beams>
 
 
-enum
+enum struct FreestyleZone_t
 {
-    FS_ZONE_ID = 0,
-    
-    //FS_ENTREF,
-    
-    FS_MODEFLAGS,
-    FS_STYLEFLAGS,
-    
-    FS_SIZE
-};
+    int iZoneId;
+
+    int fModeFlags;
+    int fStyleFlags;
+}
 
 enum
 {
@@ -68,7 +64,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hFreestyles = new ArrayList( FS_SIZE );
+    g_hFreestyles = new ArrayList( sizeof( FreestyleZone_t ) );
     
     // MENUS
     RegConsoleCmd( "sm_zonesettings_fs", Cmd_ZoneSettings );
@@ -129,14 +125,14 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     if ( zonetype != ZONETYPE_FS ) return Plugin_Continue;
     
     
-    decl data[FS_SIZE];
+    FreestyleZone_t fs;
     
-    data[FS_ZONE_ID] = zoneid;
+    fs.iZoneId = zoneid;
     
-    data[FS_MODEFLAGS] = kv.GetNum( "modeflags", 0 );
-    data[FS_STYLEFLAGS] = kv.GetNum( "styleflags", 0 );
+    fs.fModeFlags = kv.GetNum( "modeflags", 0 );
+    fs.fStyleFlags = kv.GetNum( "styleflags", 0 );
     
-    g_hFreestyles.PushArray( data );
+    g_hFreestyles.PushArray( fs );
     
     return Plugin_Handled;
 }
@@ -154,11 +150,12 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
         return Plugin_Stop;
     }
     
-    decl data[FS_SIZE];
-    g_hFreestyles.GetArray( index, data );
+
+    FreestyleZone_t fs;
+    g_hFreestyles.GetArray( index, fs );
     
-    if ( data[FS_MODEFLAGS] ) kv.SetNum( "modeflags", data[FS_MODEFLAGS] );
-    if ( data[FS_STYLEFLAGS] ) kv.SetNum( "styleflags", data[FS_STYLEFLAGS] );
+    if ( fs.fModeFlags ) kv.SetNum( "modeflags", fs.fModeFlags );
+    if ( fs.fStyleFlags ) kv.SetNum( "styleflags", fs.fStyleFlags );
     
     return Plugin_Handled;
 }
@@ -186,11 +183,11 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     if ( zonetype != ZONETYPE_FS ) return;
     
     
-    int data[FS_SIZE];
-    data[FS_ZONE_ID] = zoneid;
-    //data[FS_ENTREF] = INVALID_ENT_REFERENCE;
+    FreestyleZone_t fs;
+    fs.iZoneId = zoneid;
+    //fs.iEntRef = INVALID_ENT_REFERENCE;
     
-    g_hFreestyles.PushArray( data );
+    g_hFreestyles.PushArray( fs );
     
     
     if ( g_bLib_Zones_Beams )
@@ -265,10 +262,10 @@ public Action Cmd_ZoneSettings( int client, int args )
     decl String:szInfo[32];
     
     
-    int flags = g_hFreestyles.Get( index, FS_MODEFLAGS );
+    int flags = g_hFreestyles.Get( index, FreestyleZone_t::fModeFlags );
     for ( int i = 0; i < modeslen; i++ )
     {
-        id = modes.Get( i, MODE_ID );
+        id = modes.Get( i, Mode_t::iId );
         
         modes.GetString( i, szName, sizeof( szName ) );
         
@@ -296,10 +293,10 @@ public Action Cmd_ZoneSettings( int client, int args )
     }
     
     
-    flags = g_hFreestyles.Get( index, FS_STYLEFLAGS );
+    flags = g_hFreestyles.Get( index, FreestyleZone_t::fStyleFlags );
     for ( int i = 0; i < styleslen; i++ )
     {
-        id = styles.Get( i, STYLE_ID );
+        id = styles.Get( i, Style_t::iId );
         
         // EXCEPTIONS
         if ( id == STYLE_NORMAL ) continue;
@@ -346,7 +343,7 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
         // Finally, toggle our flag.
         int ourflag = ( 1 << id );
         
-        int block_flags = ( type == FLAGTYPE_MODE ) ? FS_MODEFLAGS : FS_STYLEFLAGS;
+        int block_flags = ( type == FLAGTYPE_MODE ) ? FreestyleZone_t::fModeFlags : FreestyleZone_t::fStyleFlags;
         
         int flags = g_hFreestyles.Get( izone, block_flags );
         
@@ -382,8 +379,8 @@ public void E_StartTouchPost_Freestyle( int ent, int activator )
     int index = FindFreestyleById( Inf_GetZoneProp( ent ) );
     if ( index == -1 ) return;
     
-    int modeflags = g_hFreestyles.Get( index, FS_MODEFLAGS );
-    int styleflags = g_hFreestyles.Get( index, FS_STYLEFLAGS );
+    int modeflags = g_hFreestyles.Get( index, FreestyleZone_t::fModeFlags );
+    int styleflags = g_hFreestyles.Get( index, FreestyleZone_t::fStyleFlags );
     
     int mode = Influx_GetClientMode( activator );
     int style = Influx_GetClientStyle( activator );
@@ -464,7 +461,7 @@ stock int FindFreestyleById( int id )
     {
         for ( int i = 0; i < len; i++ )
         {
-            if ( g_hFreestyles.Get( i, FS_ZONE_ID ) == id )
+            if ( g_hFreestyles.Get( i, FreestyleZone_t::iZoneId ) == id )
             {
                 return i;
             }

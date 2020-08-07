@@ -4,13 +4,12 @@
 
 
 
-enum
+enum struct BonusData_t
 {
-    BONUS_NUM = 0,
-    BONUS_RUN_ID,
-    
-    BONUS_SIZE
-};
+    int iRunid;
+
+    int iNum;
+}
 
 
 int g_iRunId_Main;
@@ -41,7 +40,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hBonuses = new ArrayList( BONUS_SIZE );
+    g_hBonuses = new ArrayList( sizeof( BonusData_t ) );
     
     
     // PHRASES
@@ -90,7 +89,7 @@ public void OnPluginStart()
             
             for ( int i = 0; i < len; i++ )
             {
-                Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+                Influx_OnRunCreated( runs.Get( i, Run_t::iRunId ) );
             }
         }
     }
@@ -221,7 +220,7 @@ public Action Cmd_Bonus( int client, int args )
     
     if ( index != -1 )
     {
-        AttemptToSet( client, g_hBonuses.Get( index, BONUS_RUN_ID ) );
+        AttemptToSet( client, g_hBonuses.Get( index, BonusData_t::iRunid ) );
     }
     else
     {
@@ -254,7 +253,7 @@ public Action Cmd_Change_Run( int client, int args )
     int id;
     for ( int i = 0; i < len; i++ )
     {
-        id = runs.Get( i, RUN_ID );
+        id = runs.Get( i, Run_t::iId );
         
         
         Influx_GetRunName( id, szRun, sizeof( szRun ) );
@@ -291,7 +290,7 @@ stock int FindBonusByNum( int num )
     int len = g_hBonuses.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hBonuses.Get( i, BONUS_NUM ) == num )
+        if ( g_hBonuses.Get( i, BonusData_t::iNum ) == num )
             return i;
     }
     
@@ -303,7 +302,7 @@ stock int FindBonusById( int runid )
     int len = g_hBonuses.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hBonuses.Get( i, BONUS_RUN_ID ) == runid )
+        if ( g_hBonuses.Get( i, BonusData_t::iRunid ) == runid )
             return i;
     }
     
@@ -318,10 +317,10 @@ stock int AddBonus( int num, int runid )
     if ( index != -1 ) return index;
     
     
-    int data[BONUS_SIZE];
+    BonusData_t data;
     
-    data[BONUS_NUM] = num;
-    data[BONUS_RUN_ID] = runid;
+    data.iNum = num;
+    data.iRunid = runid;
     
     index = g_hBonuses.PushArray( data );
     

@@ -287,9 +287,7 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
             float time = INVALID_RUN_TIME;
             float cptime = INVALID_RUN_TIME;
             
-            decl String:pre[2];
-            pre[0] = 0;
-            pre[1] = 0;
+            int pre = 0;
             
             
             decl String:szForm[32];
@@ -328,7 +326,7 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
                 
                 
                 
-                time = Inf_GetTimeDif( lastcptime, cptime, view_as<int>( pre[0] ) );
+                time = Inf_GetTimeDif( lastcptime, cptime, pre );
                 strcopy( szForm, sizeof( szForm ), szSecFormat );
                 
                 strcopy( szColor, sizeof( szColor ), " color='#42f4a1'" );
@@ -350,7 +348,8 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
             
             if ( time != INVALID_RUN_TIME )
             {
-                curlinelen += strlen( pre );
+                if ( pre != 0 )
+                    curlinelen += 1;
                 
                 
                 curlinelen += strlen( szTimeName );
@@ -362,7 +361,7 @@ Influx_GetModeName( Influx_GetReplayMode(), szTemp, sizeof( szTemp ), true );
                 Format( szMsg, sizeof( szMsg ), "%s%s%s%s",
                     szMsg,
                     szTimeName,
-                    ( pre[0] != 0 ) ? pre : "",
+                    ( pre != 0 ) ? pre : 0,
                     szTemp );
             }
         }

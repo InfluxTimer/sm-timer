@@ -31,47 +31,38 @@
 #define INF_PRIVCOM_REMOVECPRECORDS     "sm_inf_removecprecords"
 
 
-enum
+enum struct CheckpointZone_t
 {
-    CPZONE_ID = 0,
-    
-    CPZONE_RUN_ID,
-    
-    CPZONE_NUM,
-    
-    CPZONE_ENTREF,
-    
-    CPZONE_SIZE
-};
+    int iZoneId;
+    int iRunId;
 
-enum
-{
-    CP_NAME[MAX_CP_NAME_CELL] = 0,
-    
-    CP_NUM,
-    
-    CP_RUN_ID,
-    
-    CP_BESTTIMES[MAX_MODES * MAX_STYLES],
-    CP_BESTTIMES_UID[MAX_MODES * MAX_STYLES],
-    //CP_BESTTIMES_NAME[MAX_MODES * MAX_STYLES * MAX_BEST_NAME_CELL],
-    
-    CP_RECTIMES[MAX_MODES * MAX_STYLES],
-    CP_RECTIMES_UID[MAX_MODES * MAX_STYLES],
-    
-    CP_CLIENTTIMES[MAX_MODES * MAX_STYLES * INF_MAXPLAYERS],
-    
-    CP_SIZE
-};
+    int nCpNum;
 
-enum
+    int iEntRef;
+}
+
+enum struct CheckpointData_t
 {
-    CCP_NUM = 0,
-    
-    CCP_TIME,
-    
-    CCP_SIZE
-};
+    char szCheckpointName[MAX_CP_NAME];
+
+    int iRunId;
+    int nCpNum;
+
+    float flBestTimes[MAX_MODES * MAX_STYLES];
+    int iBestTimeUIds[MAX_MODES * MAX_STYLES];
+
+    float flSRTimes[MAX_MODES * MAX_STYLES];
+    int iSRTimeUIds[MAX_MODES * MAX_STYLES];
+
+    float flClientTimes[MAX_MODES * MAX_STYLES * INF_MAXPLAYERS];
+}
+
+enum struct ClientCpData_t
+{
+    int nCpNum;
+
+    float flTime;
+}
 
 
 ArrayList g_hCPZones;
@@ -155,9 +146,9 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hCPs = new ArrayList( CP_SIZE );
+    g_hCPs = new ArrayList( sizeof( CheckpointData_t ) );
     
-    g_hCPZones = new ArrayList( CPZONE_SIZE );
+    g_hCPZones = new ArrayList( sizeof( CheckpointZone_t ) );
     
     
     // FORWARDS
@@ -209,7 +200,7 @@ public void OnPluginStart()
             
             for ( int i = 0; i < len; i++ )
             {
-                Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+                Influx_OnRunCreated( runs.Get( i, Run_t::iRunId ) );
             }
         }
     }
@@ -278,7 +269,7 @@ public void OnClientPutInServer( int client )
     {
         delete g_hClientCP[client];
         
-        g_hClientCP[client] = new ArrayList( CCP_SIZE );
+        g_hClientCP[client] = new ArrayList( sizeof( ClientCpData_t ) );
         
         
         ResetClientCPTimes( client );
@@ -319,10 +310,10 @@ public void Influx_OnRunCreated( int runid )
     len = g_hCPs.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hCPs.Get( i, CP_RUN_ID ) != -1 ) continue;
+        if ( g_hCPs.Get( i, CheckpointData_t::iRunId ) != -1 ) continue;
         
         
-        g_hCPs.Set( i, runid, CP_RUN_ID );
+        g_hCPs.Set( i, runid, CheckpointData_t::iRunId );
     }
     
     
@@ -335,15 +326,15 @@ public void Influx_OnRunCreated( int runid )
     len = g_hCPZones.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hCPZones.Get( i, CPZONE_RUN_ID ) != -1 ) continue;
+        if ( g_hCPZones.Get( i, CheckpointZone_t::iRunId ) != -1 ) continue;
         
         
-        g_hCPZones.Set( i, runid, CPZONE_RUN_ID );
+        g_hCPZones.Set( i, runid, CheckpointZone_t::iRunId );
         
         
-        FormatEx( szName, sizeof( szName ), "%s CP %i", szRun, g_hCPZones.Get( i, CPZONE_NUM ) );
+        FormatEx( szName, sizeof( szName ), "%s CP %i", szRun, g_hCPZones.Get( i, CheckpointZone_t::nCpNum ) );
         
-        Influx_SetZoneName( g_hCPZones.Get( i, CPZONE_ID ), szName );
+        Influx_SetZoneName( g_hCPZones.Get( i, CheckpointZone_t::iZoneId ), szName );
     }
 }
 
@@ -445,17 +436,16 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     //kv.GetString( "cp_name", szName, sizeof( szName ), "" );
     
     
-    decl data[CPZONE_SIZE];
+    CheckpointZone_t cpzone;
     
-    data[CPZONE_ID] = zoneid;
+    cpzone.iZoneId = zoneid;
+    cpzone.iRunId = runid;
     
-    data[CPZONE_RUN_ID] = runid;
+    cpzone.nCpNum = cpnum;
     
-    data[CPZONE_NUM] = cpnum;
+    cpzone.iEntRef = INVALID_ENT_REFERENCE;
     
-    data[CPZONE_ENTREF] = INVALID_ENT_REFERENCE;
-    
-    g_hCPZones.PushArray( data );
+    g_hCPZones.PushArray( cpzone );
     
     
     AddCP( runid, cpnum );
@@ -477,9 +467,9 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
         return Plugin_Stop;
     }
     
-    kv.SetNum( "run_id", g_hCPZones.Get( index, CPZONE_RUN_ID ) );
+    kv.SetNum( "run_id", g_hCPZones.Get( index, CheckpointZone_t::iRunId ) );
     
-    kv.SetNum( "cp_num", g_hCPZones.Get( index, CPZONE_NUM ) );
+    kv.SetNum( "cp_num", g_hCPZones.Get( index, CheckpointZone_t::nCpNum ) );
     
     return Plugin_Handled;
 }
@@ -502,17 +492,16 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     }
     
     
-    decl data[CPZONE_SIZE];
+    CheckpointZone_t cpzone;
     
-    data[CPZONE_ID] = zoneid;
+    cpzone.iZoneId = zoneid;
+    cpzone.iRunId = runid;
     
-    data[CPZONE_RUN_ID] = runid;
+    cpzone.nCpNum = cpnum;
     
-    data[CPZONE_NUM] = cpnum;
+    cpzone.iEntRef = INVALID_ENT_REFERENCE;
     
-    data[CPZONE_ENTREF] = INVALID_ENT_REFERENCE;
-    
-    g_hCPZones.PushArray( data );
+    g_hCPZones.PushArray( cpzone );
     
     
     AddCP( runid, cpnum );
@@ -531,8 +520,8 @@ public void Influx_OnZoneDeleted( int zoneid, ZoneType_t zonetype )
     }
     
     
-    int runid = g_hCPZones.Get( index, CPZONE_RUN_ID );
-    int cpnum = g_hCPZones.Get( index, CPZONE_NUM );
+    int runid = g_hCPZones.Get( index, CheckpointZone_t::iRunId );
+    int cpnum = g_hCPZones.Get( index, CheckpointZone_t::nCpNum );
     
     
     g_hCPZones.Erase( index );
@@ -561,13 +550,13 @@ public void Influx_OnZoneSpawned( int zoneid, ZoneType_t zonetype, int ent )
     
     
     // Update ent reference.
-    g_hCPZones.Set( index, EntIndexToEntRef( ent ), CPZONE_ENTREF );
+    g_hCPZones.Set( index, EntIndexToEntRef( ent ), CheckpointZone_t::iEntRef );
     
     
     SDKHook( ent, SDKHook_StartTouchPost, E_StartTouchPost_CP );
     
     
-    Inf_SetZoneProp( ent, g_hCPZones.Get( index, CPZONE_ID ) );
+    Inf_SetZoneProp( ent, g_hCPZones.Get( index, CheckpointZone_t::iZoneId ) );
 }
 
 public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
@@ -603,10 +592,10 @@ public Action Influx_OnZoneBuildAsk( int client, ZoneType_t zonetype )
     int len = g_hCPs.Length;
     for( int i = 0; i < len; i++ )
     {
-        if ( g_hCPs.Get( i, CP_RUN_ID ) != runid ) continue;
+        if ( g_hCPs.Get( i, CheckpointData_t::iRunId ) != runid ) continue;
         
         
-        cpnum = g_hCPs.Get( i, CP_NUM );
+        cpnum = g_hCPs.Get( i, CheckpointData_t::nCpNum );
         
         if ( cpnum > highest )
         {
@@ -714,12 +703,12 @@ public int Hndlr_CreateZone_SelectMethod( Menu oldmenu, MenuAction action, int c
             int len = g_hCPZones.Length;
             for ( int i = 0; i < len; i++ )
             {
-                if ( g_hCPZones.Get( i, CPZONE_RUN_ID ) != runid ) continue;
+                if ( g_hCPZones.Get( i, CheckpointZone_t::iRunId ) != runid ) continue;
                 
-                if ( g_hCPZones.Get( i, CPZONE_NUM ) != cpnum ) continue;
+                if ( g_hCPZones.Get( i, CheckpointZone_t::nCpNum ) != cpnum ) continue;
                 
                 
-                int zoneid = g_hCPZones.Get( i, CPZONE_ID );
+                int zoneid = g_hCPZones.Get( i, CheckpointZone_t::iZoneId );
                 
                 
                 Influx_DeleteZone( zoneid );
@@ -753,19 +742,19 @@ public void E_StartTouchPost_CP( int ent, int activator )
     
     
     
-    int runid = g_hCPZones.Get( zindex, CPZONE_RUN_ID );
+    int runid = g_hCPZones.Get( zindex, CheckpointZone_t::iRunId );
     
     if ( Influx_GetClientRunId( activator ) != runid ) return;
     
     
     
-    if ( ent != EntRefToEntIndex( g_hCPZones.Get( zindex, CPZONE_ENTREF ) ) )
+    if ( ent != EntRefToEntIndex( g_hCPZones.Get( zindex, CheckpointZone_t::iEntRef ) ) )
     {
         return;
     }
     
     
-    int cpnum = g_hCPZones.Get( zindex, CPZONE_NUM );
+    int cpnum = g_hCPZones.Get( zindex, CheckpointZone_t::nCpNum );
     
     SaveClientCP( activator, cpnum );
 }
@@ -803,11 +792,11 @@ stock void SaveClientCP( int client, int cpnum )
     PrintToServer( INF_DEBUG_PRE..."Inserting new client time %.3f", time );
 #endif
     
-    decl data[CCP_SIZE];
-    data[CCP_NUM] = cpnum;
-    data[CCP_TIME] = view_as<int>( time );
+    ClientCpData_t cpdata;
+    cpdata.nCpNum = cpnum;
+    cpdata.flTime = time;
     
-    g_hClientCP[client].PushArray( data );
+    g_hClientCP[client].PushArray( cpdata );
     
     
     
@@ -860,7 +849,7 @@ stock int GetRunCPCount( int runid )
     int len = g_hCPs.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hCPs.Get( i, CP_RUN_ID ) == runid )
+        if ( g_hCPs.Get( i, CheckpointData_t::iRunId ) == runid )
         {
             ++num;
         }
@@ -874,7 +863,7 @@ stock int FindCPZoneById( int id )
     int len = g_hCPZones.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hCPZones.Get( i, CPZONE_ID ) == id )
+        if ( g_hCPZones.Get( i, CheckpointZone_t::iZoneId ) == id )
         {
             return i;
         }
@@ -888,9 +877,9 @@ stock int FindCPByNum( int runid, int num )
     int len = g_hCPs.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hCPs.Get( i, CP_RUN_ID ) != runid ) continue;
+        if ( g_hCPs.Get( i, CheckpointData_t::iRunId ) != runid ) continue;
         
-        if ( g_hCPs.Get( i, CP_NUM ) == num )
+        if ( g_hCPs.Get( i, CheckpointData_t::nCpNum ) == num )
         {
             return i;
         }
@@ -909,7 +898,7 @@ stock int FindCPByRunId( int runid, int startindex = -1 )
     int len = g_hCPs.Length;
     for ( int i = startindex; i < len; i++ )
     {
-        if ( g_hCPs.Get( i, CP_RUN_ID ) == runid )
+        if ( g_hCPs.Get( i, CheckpointData_t::iRunId ) == runid )
         {
             return i;
         }
@@ -923,9 +912,9 @@ stock int FindCPZoneByNum( int runid, int num )
     int len = g_hCPZones.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hCPZones.Get( i, CPZONE_RUN_ID ) != runid ) continue;
+        if ( g_hCPZones.Get( i, CheckpointZone_t::iRunId ) != runid ) continue;
         
-        if ( g_hCPZones.Get( i, CPZONE_NUM ) == num )
+        if ( g_hCPZones.Get( i, CheckpointZone_t::nCpNum ) == num )
         {
             return i;
         }
@@ -944,7 +933,7 @@ stock bool ShouldSaveCP( int client, int cpnum )
     // Start from the end.
     /*for ( int i = g_hClientCP[client].Length - 1; i >= 0; i-- )
     {
-        if ( g_hClientCP[client].Get( i, CCP_NUM ) >= cpnum )
+        if ( g_hClientCP[client].Get( i, ClientCpData_t::nCpNum ) >= cpnum )
         {
             return false;
         }
@@ -969,7 +958,7 @@ stock int AddCP( int runid, int cpnum, const char[] szName = "", bool bUpdateNam
             
             for ( int i = 0; i < MAX_CP_NAME_CELL; i++ )
             {
-                g_hCPs.Set( index, name[i], CP_NAME + i );
+                g_hCPs.Set( index, name[i], CheckpointData_t::szCheckpointName + i );
             }
         }
         
@@ -977,19 +966,19 @@ stock int AddCP( int runid, int cpnum, const char[] szName = "", bool bUpdateNam
     }
     
     
-    int data[CP_SIZE];
+    int data[sizeof( CheckpointData_t )];
     
     if ( szName[0] != '\0' )
     {
-        strcopy( view_as<char>( data[CP_NAME] ), MAX_CP_NAME, szName );
+        strcopy( view_as<char>( data[CheckpointData_t::szCheckpointName] ), MAX_CP_NAME, szName );
     }
     else
     {
-        FormatEx( view_as<char>( data[CP_NAME] ), MAX_CP_NAME, "CP #%i", cpnum );
+        FormatEx( view_as<char>( data[CheckpointData_t::szCheckpointName] ), MAX_CP_NAME, "CP #%i", cpnum );
     }
     
-    data[CP_NUM] = cpnum;
-    data[CP_RUN_ID] = runid;
+    data[CheckpointData_t::nCpNum] = cpnum;
+    data[CheckpointData_t::iRunId] = runid;
     
     index = g_hCPs.PushArray( data );
     
@@ -1010,7 +999,7 @@ stock void GetCPName( int index, char[] sz, int len )
     
     for ( int i = 0; i < MAX_CP_NAME_CELL; i++ )
     {
-        data[i] = g_hCPs.Get( index, CP_NAME + i );
+        data[i] = g_hCPs.Get( index, CheckpointData_t::szCheckpointName + i );
     }
     
     strcopy( sz, len, view_as<char>( data ) );
@@ -1018,12 +1007,12 @@ stock void GetCPName( int index, char[] sz, int len )
 
 stock float GetBestTime( int index, int mode, int style )
 {
-    return view_as<float>( g_hCPs.Get( index, CP_BESTTIMES + OFFSET_MODESTYLE( mode, style ) ) );
+    return view_as<float>( g_hCPs.Get( index, CheckpointData_t::flBestTimes + OFFSET_MODESTYLE( mode, style ) ) );
 }
 
 stock int GetBestTimeId( int index, int mode, int style )
 {
-    return g_hCPs.Get( index, CP_BESTTIMES_UID + OFFSET_MODESTYLE( mode, style ) );
+    return g_hCPs.Get( index, CheckpointData_t::iBestTimeUIds + OFFSET_MODESTYLE( mode, style ) );
 }
 
 stock void SetBestTime( int index, int mode, int style, float time, int uid = 0 )
@@ -1034,18 +1023,18 @@ stock void SetBestTime( int index, int mode, int style, float time, int uid = 0 
     
     int offset = OFFSET_MODESTYLE( mode, style );
     
-    g_hCPs.Set( index, time, CP_BESTTIMES + offset );
-    g_hCPs.Set( index, uid, CP_BESTTIMES_UID + offset );
+    g_hCPs.Set( index, time, CheckpointData_t::flBestTimes + offset );
+    g_hCPs.Set( index, uid, CheckpointData_t::iBestTimeUIds + offset );
 }
 
 stock float GetRecordTime( int index, int mode, int style )
 {
-    return view_as<float>( g_hCPs.Get( index, CP_RECTIMES + OFFSET_MODESTYLE( mode, style ) ) );
+    return view_as<float>( g_hCPs.Get( index, CheckpointData_t::flSRTimes + OFFSET_MODESTYLE( mode, style ) ) );
 }
 
 stock int GetRecordTimeId( int index, int mode, int style )
 {
-    return g_hCPs.Get( index, CP_RECTIMES_UID + OFFSET_MODESTYLE( mode, style ) );
+    return g_hCPs.Get( index, CheckpointData_t::iSRTimeUIds + OFFSET_MODESTYLE( mode, style ) );
 }
 
 stock void SetRecordTime( int index, int mode, int style, float time, int uid = 0 )
@@ -1056,13 +1045,13 @@ stock void SetRecordTime( int index, int mode, int style, float time, int uid = 
     
     int offset = OFFSET_MODESTYLE( mode, style );
     
-    g_hCPs.Set( index, time, CP_RECTIMES + offset );
-    g_hCPs.Set( index, uid, CP_RECTIMES_UID + offset );
+    g_hCPs.Set( index, time, CheckpointData_t::flSRTimes + offset );
+    g_hCPs.Set( index, uid, CheckpointData_t::iSRTimeUIds + offset );
 }
 
 stock float GetClientCPTime( int index, int client, int mode, int style )
 {
-    return g_hCPs.Get( index, CP_CLIENTTIMES + OFFSET_MODESTYLECLIENT( mode, style, client ) );
+    return g_hCPs.Get( index, CheckpointData_t::flClientTimes + OFFSET_MODESTYLECLIENT( mode, style, client ) );
 }
 
 stock void SetClientCPTime( int index, int client, int mode, int style, float time )
@@ -1071,7 +1060,7 @@ stock void SetClientCPTime( int index, int client, int mode, int style, float ti
     PrintToServer( INF_DEBUG_PRE..."Setting client %i cp time (%i, %i, %.3f)", client, mode, style, time );
 #endif
     
-    g_hCPs.Set( index, time, CP_CLIENTTIMES + OFFSET_MODESTYLECLIENT( mode, style, client ) );
+    g_hCPs.Set( index, time, CheckpointData_t::flClientTimes + OFFSET_MODESTYLECLIENT( mode, style, client ) );
 }
 
 /*stock void GetRunRecordName( ArrayList stages, int index, int mode, int style, char[] out, int len )
@@ -1156,7 +1145,7 @@ stock int FindClientCPByNum( int client, int num )
     int len = GetArrayLength_Safe( g_hClientCP[client] );
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hClientCP[client].Get( i, CCP_NUM ) == num )
+        if ( g_hClientCP[client].Get( i, ClientCpData_t::nCpNum ) == num )
         {
             return i;
         }
@@ -1227,8 +1216,8 @@ public Action Cmd_PrintCps( int client, int args )
     for ( int i = 0; i < len; i++ )
     {
         PrintToServer( INF_DEBUG_PRE..."CP #%i | Run Id: %i",
-            g_hCPs.Get( i, CP_NUM ),
-            g_hCPs.Get( i, CP_RUN_ID ) );
+            g_hCPs.Get( i, CheckpointData_t::nCpNum ),
+            g_hCPs.Get( i, CheckpointData_t::iRunId ) );
     }
     
     return Plugin_Handled;

@@ -6,16 +6,14 @@
 #define CLR_COLOR_SIZE              8 // "\x07{HEX}" | "XFFFFFF"
 #define CLR_COLOR_SIZE_CELL         CLR_COLOR_SIZE / 4
 
-enum
+enum struct ClrData_t
 {
-    CLR_NAME[CLR_NAME_SIZE_CELL] = 0,
-    
-    CLR_COLOR[CLR_COLOR_SIZE_CELL],
-    
-    CLR_COLOR_CSGO,
-    
-    CLR_SIZE
-};
+    char szName[CLR_NAME_SIZE];
+
+    char szColor[CLR_COLOR_SIZE];
+
+    char szColorCSGO[4];
+}
 
 
 
@@ -170,12 +168,12 @@ stock void FormatColors( char[] sz, int len )
                 {
                     for ( j = 0; j < CLR_COLOR_SIZE_CELL; j++ )
                     {
-                        color[j] = g_hChatClrs.Get( index, CLR_COLOR + j );
+                        color[j] = g_hChatClrs.Get( index, ClrData_t::szColor + j );
                     }
                 }
                 else
                 {
-                    color[0] = g_hChatClrs.Get( index, CLR_COLOR_CSGO );
+                    color[0] = g_hChatClrs.Get( index, ClrData_t::szColorCSGO );
                 }
                 
 #if defined DEBUG_COLORCHAT
@@ -265,23 +263,23 @@ stock void AddColor( const char[] clrname, const char[] c, const char[] c_csgo =
     }
     
     
-    int data[CLR_SIZE];
+    ClrData_t clrdata;
     
     int index = FindColorByName( clrname );
     
-    strcopy( view_as<char>( data[CLR_NAME] ), CLR_NAME_SIZE, clrname );
-    strcopy( view_as<char>( data[CLR_COLOR] ), CLR_COLOR_SIZE, color );
-    strcopy( view_as<char>( data[CLR_COLOR_CSGO] ), 4, color_csgo );
+    strcopy( clrdata.szName, sizeof( ClrData_t::szName ), clrname );
+    strcopy( clrdata.szColor, sizeof( ClrData_t::szColor ), color );
+    strcopy( clrdata.szColorCSGO, sizeof( ClrData_t::szColorCSGO ), color_csgo );
     
     
     // Replace existing one.
     if ( index != -1 )
     {
-        g_hChatClrs.SetArray( index, data );
+        g_hChatClrs.SetArray( index, clrdata );
     }
     else // Add new one.
     {
-        g_hChatClrs.PushArray( data );
+        g_hChatClrs.PushArray( clrdata );
         g_nChatClrLen = g_hChatClrs.Length;
     }
     

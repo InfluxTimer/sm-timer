@@ -21,7 +21,7 @@ stock void ReadRanks()
     
     
     decl String:szTemp[256];
-    decl data[RANK_SIZE];
+    Rank_t rank;
     
     do
     {
@@ -37,27 +37,27 @@ stock void ReadRanks()
             continue;
         }
         
-        strcopy( view_as<char>( data[RANK_NAME] ), MAX_RANK_SIZE, szTemp );
+        strcopy( rank.szRank, sizeof( Rank_t::szRank ), szTemp );
         
         
         int points = kv.GetNum( "points", -1 );
         
         if ( points < 0 )
         {
-            LogError( INF_CON_PRE..."Invalid rank points %i! Must be above or equal to 0! (%s)", points, data[RANK_NAME] );
+            LogError( INF_CON_PRE..."Invalid rank points %i! Must be above or equal to 0! (%s)", points, rank.szRank );
             continue;
         }
         
         
-        data[RANK_POINTS] = points;
-        data[RANK_UNLOCK] = kv.GetNum( "unlock", 0 );
+        rank.nPoints = points;
+        rank.bUnlock = kv.GetNum( "unlock", 0 );
         
         kv.GetString( "flags", szTemp, sizeof( szTemp ), "" );
         
-        data[RANK_FLAGS] = ReadFlagString( szTemp );
+        rank.fAdminFlags = ReadFlagString( szTemp );
         
         
-        g_hRanks.PushArray( data );
+        g_hRanks.PushArray( rank );
     }
     while ( kv.GotoNextKey() );
     
@@ -90,7 +90,7 @@ stock void ReadPoints( ArrayList array, const char[] szKvName, const char[] szFi
     
     
     decl String:szTemp[64];
-    decl data[P_SIZE];
+    ModeNStyleReward_t reward;
     
     do
     {
@@ -101,26 +101,26 @@ stock void ReadPoints( ArrayList array, const char[] szKvName, const char[] szFi
         }
         
         
-        data[P_ID] = -1;
-        data[P_NAME_ID] = 0;
+        reward.iId = -1;
+        reward.szSafeName[0] = 0;
         
         if ( IsCharNumeric( szTemp[0] ) )
         {
-            data[P_ID] = StringToInt( szTemp );
+            reward.iId = StringToInt( szTemp );
         }
         else
         {
-            strcopy( view_as<char>( data[P_NAME_ID] ), MAX_P_NAME_ID, szTemp );
+            strcopy( reward.szSafeName, sizeof( ModeNStyleReward_t::szSafeName ), szTemp );
         }
         
         
-        data[P_VAL] = kv.GetNum( "points", 0 );
+        reward.nPoints = kv.GetNum( "points", 0 );
         
 #if defined DEBUG
-        PrintToServer( INF_DEBUG_PRE..."%s reward: %i", szTemp, data[P_VAL] );
+        PrintToServer( INF_DEBUG_PRE..."%s reward: %i", szTemp, reward.nPoints );
 #endif
         
-        array.PushArray( data );
+        array.PushArray( reward );
     }
     while ( kv.GotoNextKey() );
     

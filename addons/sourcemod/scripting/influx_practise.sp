@@ -12,22 +12,20 @@
 #include <influx/pause>
 
 
-enum
+enum struct Cp_t
 {
-    PRAC_TIME = 0,
-    PRAC_ID,
-    
-    PRAC_POS[3],
-    PRAC_ANG[2],
-    PRAC_VEL[3],
-    
-    PRAC_SIZE
-};
+    float flTime;
+    int iId;
+
+    float vecPos[3];
+    float angles[2];
+    float vecVel[3];
+}
 
 #define MAX_CHECKPOINTS     50
 
 
-ArrayList g_hPrac[INF_MAXPLAYERS];
+ArrayList g_hClientCps[INF_MAXPLAYERS];
 bool g_bPractising[INF_MAXPLAYERS];
 int g_iCurIndex[INF_MAXPLAYERS];
 int g_nId[INF_MAXPLAYERS];
@@ -146,7 +144,7 @@ public void OnClientPutInServer( int client )
     g_iUseAng[client] = USEANG_NORMAL;
     g_iUseVel[client] = USEVEL_NORMAL;
     
-    delete g_hPrac[client];
+    delete g_hClientCps[client];
 }
 
 public void Influx_RequestHelpCmds()
@@ -271,7 +269,7 @@ public Action Cmd_CPMenu( int client, int args )
             i = MAX_CHECKPOINTS - 1;
         }
         
-        id = g_hPrac[client].Get( i, view_as<int>( PRAC_ID ) );
+        id = g_hClientCps[client].Get( i, Cp_t::iId );
         if ( id <= 0 ) break;
         
         
@@ -330,7 +328,7 @@ public int Hndlr_CP( Menu menu, MenuAction action, int client, int menuindex )
         {
             for ( int i = 0; i < MAX_CHECKPOINTS; i++ )
             {
-                if ( id == g_hPrac[client].Get( i, view_as<int>( PRAC_ID ) ) )
+                if ( id == g_hClientCps[client].Get( i, Cp_t::iId ) )
                 {
                     TeleportClientToCP( client, i );
                 }
@@ -447,7 +445,7 @@ stock bool TeleportClientToLastUsedCP( int client )
 {
     int index = g_iLastUsed[client];
     
-    if ( g_hPrac[client].Get( index, view_as<int>( PRAC_ID ) ) > 0 )
+    if ( g_hClientCps[client].Get( index, Cp_t::iId ) > 0 )
     {
         return TeleportClientToCP( client, index );
     }
@@ -462,7 +460,7 @@ stock bool TeleportClientToLastCreatedCP( int client )
     if ( index < 0 ) index = MAX_CHECKPOINTS - 1;
     
     
-    if ( g_hPrac[client].Get( index, view_as<int>( PRAC_ID ) ) > 0 )
+    if ( g_hClientCps[client].Get( index, Cp_t::iId ) > 0 )
     {
         return TeleportClientToCP( client, index );
     }
@@ -474,21 +472,22 @@ stock bool TeleportClientToCP( int client, int index )
 {
     g_iLastUsed[client] = index;
     
-    decl data[PRAC_SIZE];
-    g_hPrac[client].GetArray( index, data );
+    Cp_t cp;
+    g_hClientCps[client].GetArray( index, cp );
     
-    decl Float:pos[3], Float:ang[3], Float:vel[3];
-    CopyArray( data[PRAC_POS], pos, 3 );
-    CopyArray( data[PRAC_ANG], ang, 2 );
-    CopyArray( data[PRAC_VEL], vel, 3 );
+    float ang[3];
+    CopyArray( cp.angles, ang, 2 );
     
     ang[2] = 0.0; // Don't tilt me bro
+
+    float vel[3];
+    CopyArray( cp.vecVel, vel, 3 );
     
     
     // If we're not paused, change our time.
     if ( !g_bLib_Pause || !Influx_IsClientPaused( client ) )
     {
-        float practime = view_as<float>( data[PRAC_TIME] );
+        float practime = cp.flTime;
 
         if ( practime > 0.0 )
         {
@@ -517,37 +516,37 @@ stock bool TeleportClientToCP( int client, int index )
     
     TeleportEntity(
         client,
-        g_bUsePos[client]                   ? pos : NULL_VECTOR,
-        g_iUseAng[client] != USEANG_INHERIT ? ang : NULL_VECTOR,
-        g_iUseVel[client] != USEVEL_INHERIT ? vel : NULL_VECTOR );
+        g_bUsePos[client]                   ? cp.vecPos : NULL_VECTOR,
+        g_iUseAng[client] != USEANG_INHERIT ? ang       : NULL_VECTOR,
+        g_iUseVel[client] != USEVEL_INHERIT ? vel       : NULL_VECTOR );
     
     return true;
 }
 
 stock bool AddClientCP( int client )
 {
-    decl Float:pos[3], Float:ang[3], Float:vel[3];
-    GetClientAbsOrigin( client, pos );
-    GetClientEyeAngles( client, ang );
-    GetEntityVelocity( client, vel );
+    Cp_t cp;
     
-    decl data[PRAC_SIZE];
+    GetClientAbsOrigin( client, cp.vecPos );
+    
+    float ang[3];
+    GetClientEyeAngles( client, ang );
+    CopyArray( ang, cp.angles, 2 );
+    
+    GetEntityVelocity( client, cp.vecVel );
     
     if ( Influx_GetClientState( client ) == STATE_RUNNING )
     {
-        data[PRAC_TIME] = view_as<int>( Influx_GetClientTime( client ) );
+        cp.flTime = Influx_GetClientTime( client );
     }
     else
     {
-        data[PRAC_TIME] = view_as<int>( 0.0 );
+        cp.flTime = 0.0;
     }
     
-    data[PRAC_ID] = ++g_nId[client];
-    CopyArray( pos, data[PRAC_POS], 3 );
-    CopyArray( ang, data[PRAC_ANG], 2 );
-    CopyArray( vel, data[PRAC_VEL], 3 );
-    
-    g_hPrac[client].SetArray( g_iCurIndex[client]++, data );
+    cp.iId = ++g_nId[client];
+
+    g_hClientCps[client].SetArray( g_iCurIndex[client]++, cp );
     
     if ( g_iCurIndex[client] >= MAX_CHECKPOINTS )
     {
@@ -581,8 +580,8 @@ stock bool StartPractising( int client )
     
     g_bPractising[client] = true;
     
-    delete g_hPrac[client];
-    g_hPrac[client] = new ArrayList( PRAC_SIZE, MAX_CHECKPOINTS );
+    delete g_hClientCps[client];
+    g_hClientCps[client] = new ArrayList( sizeof( Cp_t ), MAX_CHECKPOINTS );
     g_iCurIndex[client] = 0;
     g_nId[client] = 0;
     
@@ -591,7 +590,7 @@ stock bool StartPractising( int client )
     // Reset ids, since creating an array with start size has garbage in it.
     for ( int i = 0; i < MAX_CHECKPOINTS; i++ )
     {
-        g_hPrac[client].Set( i, 0, view_as<int>( PRAC_ID ) );
+        g_hClientCps[client].Set( i, 0, view_as<int>( Cp_t::iId ) );
     }
     
     

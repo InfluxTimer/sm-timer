@@ -40,20 +40,18 @@ enum CappingRet_t
 }
 
 
-enum
+enum struct Prespeed_t
 {
-    PRESPEED_RUN_ID = 0,
-    
-    PRESPEED_MAX,
-    PRESPEED_MAXJUMPS,
-    
-    PRESPEED_CAP,
-    PRESPEED_USETRUEVEL,
-    
-    PRESPEED_SIZE
-};
+    int iRunId;
 
-ArrayList g_hPre;
+    float flMaxSpeed;
+    int nMaxJumps;
+
+    int iDoCap;
+    int iUseTrueVel;
+}
+
+ArrayList g_hRunPrespeeds;
 
 
 
@@ -105,7 +103,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hPre = new ArrayList( PRESPEED_SIZE );
+    g_hRunPrespeeds = new ArrayList( sizeof( Prespeed_t ) );
     
     
     // PHRASES
@@ -156,7 +154,7 @@ public void OnPluginStart()
             
             for ( int i = 0; i < len; i++ )
             {
-                Influx_OnRunCreated( runs.Get( i, RUN_ID ) );
+                Influx_OnRunCreated( runs.Get( i, Run_t::iRunId ) );
             }    
         }
 
@@ -217,65 +215,65 @@ public void OnClientPutInServer( int client )
 
 public void Influx_OnPreRunLoad()
 {
-    g_hPre.Clear();
+    g_hRunPrespeeds.Clear();
 }
 
 public void Influx_OnRunCreated( int runid )
 {
-    if ( FindPreById( runid ) != -1 ) return;
+    if ( FindPreByRunId( runid ) != -1 ) return;
     
     
-    decl data[PRESPEED_SIZE];
+    Prespeed_t data;
     
-    data[PRESPEED_RUN_ID] = runid;
+    data.iRunId = runid;
     
-    data[PRESPEED_MAX] = view_as<int>( INVALID_MAXSPD );
-    data[PRESPEED_MAXJUMPS] = INVALID_MAXJUMPS;
-    data[PRESPEED_USETRUEVEL] = INVALID_USETRUEVEL;
-    data[PRESPEED_CAP] = INVALID_DOCAP;
+    data.flMaxSpeed = INVALID_MAXSPD;
+    data.nMaxJumps = INVALID_MAXJUMPS;
+    data.iUseTrueVel = INVALID_USETRUEVEL;
+    data.iDoCap = INVALID_DOCAP;
     
-    g_hPre.PushArray( data );
+    g_hRunPrespeeds.PushArray( data );
 }
 
 public void Influx_OnRunDeleted( int runid )
 {
-    int index = FindPreById( runid );
+    int index = FindPreByRunId( runid );
     if ( index != -1 )
     {
-        g_hPre.Erase( index );
+        g_hRunPrespeeds.Erase( index );
     }
 }
 
 public void Influx_OnRunLoad( int runid, KeyValues kv )
 {
-    if ( FindPreById( runid ) != -1 ) return;
+    if ( FindPreByRunId( runid ) != -1 ) return;
     
     
-    decl data[PRESPEED_SIZE];
+    Prespeed_t data;
     
-    data[PRESPEED_RUN_ID] = runid;
+    data.iRunId = runid;
     
-    data[PRESPEED_MAX] = view_as<int>( kv.GetFloat( "prespeed_max", INVALID_MAXSPD ) );
-    data[PRESPEED_MAXJUMPS] = kv.GetNum( "prespeed_maxjumps", INVALID_MAXJUMPS );
-    data[PRESPEED_USETRUEVEL] = kv.GetNum( "prespeed_usetruevel", INVALID_USETRUEVEL );
-    data[PRESPEED_CAP] = kv.GetNum( "prespeed_cap", INVALID_DOCAP );
+    data.flMaxSpeed = kv.GetFloat( "prespeed_max", INVALID_MAXSPD );
+    data.nMaxJumps = kv.GetNum( "prespeed_maxjumps", INVALID_MAXJUMPS );
+    data.iUseTrueVel = kv.GetNum( "prespeed_usetruevel", INVALID_USETRUEVEL );
+    data.iDoCap = kv.GetNum( "prespeed_cap", INVALID_DOCAP );
     
-    g_hPre.PushArray( data );
+    g_hRunPrespeeds.PushArray( data );
 }
 
 public void Influx_OnRunSave( int runid, KeyValues kv )
 {
-    int index = FindPreById( runid );
+    int index = FindPreByRunId( runid );
     if ( index == -1 ) return;
     
     
-    decl data[PRESPEED_SIZE];
-    g_hPre.GetArray( index, data );
+    Prespeed_t data;
+    g_hRunPrespeeds.GetArray( index, data );
     
-    float maxprespd = view_as<float>( data[PRESPEED_MAX] );
-    int maxjumps = data[PRESPEED_MAXJUMPS];
-    int truevel = data[PRESPEED_USETRUEVEL];
-    int cap = data[PRESPEED_CAP];
+    float maxprespd = data.flMaxSpeed;
+    int maxjumps = data.nMaxJumps;
+    int truevel = data.iUseTrueVel;
+    int cap = data.iDoCap;
     
     if ( maxprespd != INVALID_MAXSPD && maxprespd != g_ConVar_Max.FloatValue )
     {
@@ -398,14 +396,14 @@ public void E_PreThinkPost_Client( int client )
     }
 }
 
-stock int FindPreById( int id )
+stock int FindPreByRunId( int id )
 {
-    int len = g_hPre.Length;
+    int len = g_hRunPrespeeds.Length;
     if ( len > 0 )
     {
         for ( int i = 0; i < len; i++ )
         {
-            if ( g_hPre.Get( i, PRESPEED_RUN_ID ) == id ) return i;
+            if ( g_hRunPrespeeds.Get( i, Prespeed_t::iRunId ) == id ) return i;
         }
     }
     
@@ -441,9 +439,9 @@ stock void GetMaxJumpsName( int maxjumps, char[] buffer, int len )
     FormatEx( buffer, len, "%i jump(s)", maxjumps );
 }
 
-stock int GetMaxJumps( any data[PRESPEED_SIZE] )
+stock int GetMaxJumps( Prespeed_t data )
 {
-    return data[PRESPEED_MAXJUMPS] == INVALID_MAXJUMPS ? g_ConVar_MaxJumps.IntValue : data[PRESPEED_MAXJUMPS];
+    return data.nMaxJumps == INVALID_MAXJUMPS ? g_ConVar_MaxJumps.IntValue : data.nMaxJumps;
 }
 
 stock int GetMaxJumpsByIndexSafe( int index )
@@ -451,13 +449,13 @@ stock int GetMaxJumpsByIndexSafe( int index )
     if ( index == -1 )
         return g_ConVar_MaxJumps.IntValue;
 
-    int jumps = g_hPre.Get( index, PRESPEED_MAXJUMPS );
+    int jumps = g_hPre.Get( index, Prespeed_t::nMaxJumps );
     return ( jumps == INVALID_MAXJUMPS ) ? g_ConVar_MaxJumps.IntValue : jumps;
 }
 
-stock float GetMaxSpeed( any data[PRESPEED_SIZE] )
+stock float GetMaxSpeed( Prespeed_t data )
 {
-    return view_as<float>( data[PRESPEED_MAX] ) == INVALID_MAXSPD ? g_ConVar_Max.FloatValue : view_as<float>( data[PRESPEED_MAX] );
+    return data.flMaxSpeed == INVALID_MAXSPD ? g_ConVar_Max.FloatValue : data.flMaxSpeed;
 }
 
 stock float GetMaxSpeedByIndexSafe( int index )
@@ -465,7 +463,7 @@ stock float GetMaxSpeedByIndexSafe( int index )
     if ( index == -1 )
         return g_ConVar_Max.FloatValue;
 
-    float spd = g_hPre.Get( index, PRESPEED_MAX );
+    float spd = g_hPre.Get( index, Prespeed_t::flMaxSpeed );
     return ( spd == INVALID_MAXSPD ) ? g_ConVar_Max.FloatValue : spd;
 }
 
@@ -474,7 +472,7 @@ stock int GetUseTrueVelByIndexSafe( int index )
     if ( index == -1 )
         return g_ConVar_UseTrueVel.IntValue;
 
-    int usetruevel = g_hPre.Get( index, PRESPEED_USETRUEVEL );
+    int usetruevel = g_hPre.Get( index, Prespeed_t::iUseTrueVel );
     return ( usetruevel == INVALID_USETRUEVEL ) ? g_ConVar_UseTrueVel.IntValue : usetruevel;
 }
 
@@ -483,7 +481,7 @@ stock int GetCapStyleByIndexSafe( int index )
     if ( index == -1 )
         return g_ConVar_Cap.IntValue;
 
-    int capstyle = g_hPre.Get( index, PRESPEED_CAP );
+    int capstyle = g_hPre.Get( index, Prespeed_t::iDoCap );
     return ( capstyle == INVALID_DOCAP ) ? g_ConVar_Cap.IntValue : capstyle;
 }
 
@@ -720,15 +718,15 @@ public Action Cmd_Menu_PrespeedSettings( int client, int args )
     
     // Player is not in a valid run.
     int runid = Influx_GetClientRunId( client );
-    int ipre = FindPreById( runid );
+    int ipre = FindPreByRunId( runid );
     if ( ipre == -1 )
     {
         return Plugin_Handled;
     }
     
     
-    decl data[PRESPEED_SIZE];
-    g_hPre.GetArray( ipre, data );
+    Prespeed_t data;
+    g_hRunPrespeeds.GetArray( ipre, data );
     
     
     Menu menu = new Menu( Hndlr_PrespeedSettings );
@@ -752,7 +750,7 @@ public Action Cmd_Menu_PrespeedSettings( int client, int args )
     }
     
     
-    if ( view_as<float>( data[PRESPEED_MAX] ) == INVALID_MAXSPD )
+    if ( data.flMaxSpeed == INVALID_MAXSPD )
     {
         Format( szMaxSpeed, sizeof( szMaxSpeed ), "Default (%s)", szMaxSpeed );
     }
@@ -764,7 +762,7 @@ public Action Cmd_Menu_PrespeedSettings( int client, int args )
     int maxjumps = GetMaxJumps( data );
     GetMaxJumpsName( maxjumps, szMaxJumps, sizeof( szMaxJumps ) );
     
-    if ( data[PRESPEED_MAXJUMPS] == INVALID_MAXJUMPS )
+    if ( data.nMaxJumps == INVALID_MAXJUMPS )
     {
         Format( szMaxJumps, sizeof( szMaxJumps ), "Default (%s)", szMaxJumps );
     }
@@ -802,13 +800,13 @@ public int Hndlr_PrespeedSettings( Menu menu, MenuAction action, int client, int
     
     
     int runid = Influx_GetClientRunId( client );
-    int ipre = FindPreById( runid );
+    int ipre = FindPreByRunId( runid );
     if ( ipre == -1 )
         return 0;
     
     
-    decl data[PRESPEED_SIZE];
-    g_hPre.GetArray( ipre, data );
+    Prespeed_t data;
+    g_hRunPrespeeds.GetArray( ipre, data );
     
     switch ( szInfo[0] )
     {
@@ -817,7 +815,7 @@ public int Hndlr_PrespeedSettings( Menu menu, MenuAction action, int client, int
             float maxspd = GetMaxSpeed( data );
             maxspd += 50.0;
             
-            g_hPre.Set( ipre, maxspd, PRESPEED_MAX );
+            g_hRunPrespeeds.Set( ipre, maxspd, Prespeed_t::flMaxSpeed );
         }
         case 'b' : // Decrease max speed
         {
@@ -826,17 +824,17 @@ public int Hndlr_PrespeedSettings( Menu menu, MenuAction action, int client, int
             if ( maxspd < 0.0 )
                 maxspd = 0.0;
             
-            g_hPre.Set( ipre, maxspd, PRESPEED_MAX );
+            g_hRunPrespeeds.Set( ipre, maxspd, Prespeed_t::flMaxSpeed );
         }
         case 'c' : // Use default max speed
         {
-            g_hPre.Set( ipre, INVALID_MAXSPD, PRESPEED_MAX );
+            g_hRunPrespeeds.Set( ipre, INVALID_MAXSPD, Prespeed_t::flMaxSpeed );
         }
         case 'd' : // Increase max jumps
         {
             int maxjumps = GetMaxJumps( data ) + 1;
             
-            g_hPre.Set( ipre, maxjumps, PRESPEED_MAXJUMPS );
+            g_hRunPrespeeds.Set( ipre, maxjumps, Prespeed_t::nMaxJumps );
         }
         case 'e' : // Decrease max jumps
         {
@@ -844,11 +842,11 @@ public int Hndlr_PrespeedSettings( Menu menu, MenuAction action, int client, int
             if ( maxjumps < -1 )
                 maxjumps = -1;
             
-            g_hPre.Set( ipre, maxjumps, PRESPEED_MAXJUMPS );
+            g_hRunPrespeeds.Set( ipre, maxjumps, Prespeed_t::nMaxJumps );
         }
         case 'f' : // Use default max jumps
         {
-            g_hPre.Set( ipre, INVALID_MAXJUMPS, PRESPEED_MAXJUMPS );
+            g_hRunPrespeeds.Set( ipre, INVALID_MAXJUMPS, Prespeed_t::nMaxJumps );
         }
     }
     

@@ -37,7 +37,7 @@ public Action Cmd_Replay( int client, int args )
     int len = g_hRunRec.Length;
     for ( irun = 0; irun < len; irun++ )
     {
-        runid = g_hRunRec.Get( irun, RUNREC_RUN_ID );
+        runid = g_hRunRec.Get( irun, RunRecordingData_t::iRunId );
         
         Influx_GetRunName( runid, szRun, sizeof( szRun ) );
 
@@ -118,7 +118,7 @@ public Action Cmd_DeleteRecordings( int client, int args )
     int len = g_hRunRec.Length;
     for ( irun = 0; irun < len; irun++ )
     {
-        runid = g_hRunRec.Get( irun, RUNREC_RUN_ID );
+        runid = g_hRunRec.Get( irun, RunRecordingData_t::iRunId );
         
         Influx_GetRunName( runid, szRun, sizeof( szRun ) );
 

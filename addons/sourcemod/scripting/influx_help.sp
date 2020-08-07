@@ -12,14 +12,12 @@
 #define MAX_MSG             128
 #define MAX_MSG_CELL        MAX_MSG / 4
 
-enum
+enum struct Command_t
 {
-    C_CMD[MAX_CMD_CELL] = 0,
-    C_MSG[MAX_MSG_CELL],
-    C_ADMINONLY,
-    
-    C_SIZE
-};
+    char szCmd[MAX_CMD];
+    char szMsg[MAX_MSG];
+    bool bAdminOnly;
+}
 
 
 float g_flLastCmd[INF_MAXPLAYERS];
@@ -73,7 +71,7 @@ public void OnPluginStart()
     
     
     
-    g_hComs = new ArrayList( C_SIZE );
+    g_hComs = new ArrayList( sizeof( Command_t ) );
 }
 
 public void OnAllPluginsLoaded()
@@ -107,7 +105,7 @@ public Action T_Show( Handle hTimer, int client )
 
 public Action Cmd_Help( int client, int args )
 {
-    decl data[C_SIZE];
+    Command_t cmd;
     
     int len = GetArrayLength_Safe( g_hComs );
     int i;
@@ -132,14 +130,14 @@ public Action Cmd_Help( int client, int args )
         
         for ( i = 0; i < len; i++ )
         {
-            g_hComs.GetArray( i, data );
+            g_hComs.GetArray( i, cmd );
             
-            if ( !bIsAdmin && data[C_ADMINONLY] ) continue;
+            if ( !bIsAdmin && cmd.bAdminOnly ) continue;
             
             FormatEx( szDisplay, sizeof( szDisplay ), "%s - %s%s",
-                data[C_CMD],
-                data[C_MSG],
-                data[C_ADMINONLY] ? " (ADMIN)" : "" );
+                cmd.szCmd,
+                cmd.szMsg,
+                cmd.bAdminOnly ? " (ADMIN)" : "" );
             
             // ITEMDRAW_DEFAULT ITEMDRAW_DISABLED
             menu.AddItem( "", szDisplay, ITEMDRAW_DISABLED );
@@ -158,12 +156,12 @@ public Action Cmd_Help( int client, int args )
     {
         for ( i = 0; i < len; i++ )
         {
-            g_hComs.GetArray( i, data );
+            g_hComs.GetArray( i, cmd );
             
             PrintToServer( "%s | %s%s",
-                data[C_CMD],
-                data[C_MSG],
-                data[C_ADMINONLY] ? " (ADMIN)" : "" );
+                cmd.szCmd,
+                cmd.szMsg,
+                cmd.bAdminOnly ? " (ADMIN)" : "" );
             
             ++num;
         }
@@ -191,13 +189,13 @@ public int Native_AddHelpCommand( Handle hPlugin, int nParms )
     if ( g_hComs == null ) return 0;
     
     
-    int data[C_SIZE];
+    Command_t cmd;
     
-    GetNativeString( 1, view_as<char>( data[C_CMD] ), MAX_CMD );
-    GetNativeString( 2, view_as<char>( data[C_MSG] ), MAX_MSG );
-    data[C_ADMINONLY] = GetNativeCell( 3 );
+    GetNativeString( 1, cmd.szCmd, sizeof( Command_t::szCmd ) );
+    GetNativeString( 2, cmd.szMsg, sizeof( Command_t::szMsg ) );
+    cmd.bAdminOnly = GetNativeCell( 3 );
     
-    g_hComs.PushArray( data );
+    g_hComs.PushArray( cmd );
     
     return 1;
 }

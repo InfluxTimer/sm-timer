@@ -13,21 +13,6 @@
 #define MAX_ZONE_NAME_CELL      MAX_ZONE_NAME / 4
 
 
-enum
-{
-    ZONE_NAME[MAX_ZONE_NAME_CELL] = 0,
-    
-    ZONE_TYPE,
-    ZONE_ID,
-    
-    ZONE_ENTREF,
-    
-    ZONE_MINS[3],
-    ZONE_MAXS[3],
-    
-    ZONE_SIZE
-};
-
 enum ZoneType_t
 {
     ZONETYPE_INVALID = -1,
@@ -45,6 +30,19 @@ enum ZoneType_t
     
     ZONETYPE_MAX
 };
+
+enum struct Zone_t
+{
+    char szName[MAX_ZONE_NAME];
+
+    ZoneType_t iZoneType;
+    int iZoneId;
+
+    int iEntRef;
+
+    float vecMins[3];
+    float vecMaxs[3];
+}
 
 // Deprecated
 #define VALID_ZONETYPE(%0)          ( %0 > ZONETYPE_INVALID && %0 < ZONETYPE_MAX )

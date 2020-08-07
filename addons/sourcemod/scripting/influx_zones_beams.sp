@@ -37,54 +37,48 @@
 #define MAX_SHORTNAME_CELL      ( MAX_SHORTNAME / 4 )
 
 
-enum
+enum struct DefBeamData_t
 {
-    DEFBEAM_SHORTNAME[MAX_SHORTNAME_CELL] = 0,
-    
-    DEFBEAM_ZONETYPE,
-    
-    DEFBEAM_DISPLAYTYPE,
-    
-    DEFBEAM_MATINDEX,
-    
-    DEFBEAM_WIDTH,
-    DEFBEAM_FRAMERATE,
-    DEFBEAM_SPEED,
-    
-    DEFBEAM_OFFSET,
-    DEFBEAM_OFFSET_Z,
-    
-    DEFBEAM_CLR[4],
-    
-    DEFBEAM_SIZE
-};
+    char szShortName[MAX_SHORTNAME];
 
-enum
+    int iZoneType;
+    DisplayType_t iDisplayType;
+
+    int iMatIndex;
+
+    float flWidth;
+    int iFrameRate;
+    int iSpeed;
+
+    float flOffset;
+    float flOffsetZ;
+
+    int clr[4];
+}
+
+enum struct ZoneBeams_t
 {
-    BEAM_ZONE_ID = 0,
-    
-    BEAM_DISPLAYTYPE,
-    
-    BEAM_MATINDEX,
-    
-    BEAM_WIDTH,
-    BEAM_FRAMERATE,
-    BEAM_SPEED,
-    
-    BEAM_CLR[4],
-    
-    BEAM_P1[3],
-    BEAM_P2[3],
-    BEAM_P3[3],
-    BEAM_P4[3],
-    
-    BEAM_P5[3],
-    BEAM_P6[3],
-    BEAM_P7[3],
-    BEAM_P8[3],
-    
-    BEAM_SIZE
-};
+    int iZoneId;
+
+    DisplayType_t iDisplayType;
+
+    int iMatIndex;
+
+    float flWidth;
+    int iFrameRate;
+    int iSpeed;
+
+    int clr[4];
+
+    float p1[3];
+    float p2[3];
+    float p3[3];
+    float p4[3];
+    float p5[3];
+    float p6[3];
+    float p7[3];
+    float p8[3];
+}
 
 
 float g_flShowBeams[INF_MAXPLAYERS];
@@ -144,8 +138,8 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hBeams = new ArrayList( BEAM_SIZE );
-    g_hDef = new ArrayList( DEFBEAM_SIZE );
+    g_hBeams = new ArrayList( sizeof( ZoneBeams_t ) );
+    g_hDef = new ArrayList( sizeof( DefBeamData_t ) );
     
     
     // FORWARDS
@@ -193,8 +187,8 @@ public void OnPluginStart()
         {
             float mins[3], maxs[3];
             
-            int zoneid = zones.Get( i, ZONE_ID );
-            ZoneType_t zonetype = view_as<ZoneType_t>( zones.Get( i, ZONE_TYPE ) );
+            int zoneid = zones.Get( i, Zone_t::iZoneId );
+            ZoneType_t zonetype = view_as<ZoneType_t>( zones.Get( i, Zone_t::iZoneType ) );
             
             Influx_GetZoneMinsMaxs( zoneid, mins, maxs );
             
@@ -274,7 +268,7 @@ public Action Cmd_BeamSettings( int client, int args )
     int len = zones.Length;
     for ( int i = 0; i < len; i++ )
     {
-        zoneid = zones.Get( i, ZONE_ID );
+        zoneid = zones.Get( i, Zone_t::iZoneId );
         
         zones.GetString( i, szName, sizeof( szName ) );
         
@@ -282,7 +276,7 @@ public Action Cmd_BeamSettings( int client, int args )
         if ( (ibeam = FindBeamById( zoneid )) != -1 )
         {
             Inf_DisplayTypeToNameEx(
-                view_as<DisplayType_t>( g_hBeams.Get( ibeam, BEAM_DISPLAYTYPE ) ),
+                view_as<DisplayType_t>( g_hBeams.Get( ibeam, ZoneBeams_t::iDisplayType ) ),
                 szType,
                 sizeof( szType ) );
         }
@@ -329,7 +323,7 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
     int ibeam = FindBeamById( zoneid );
     if ( ibeam != -1 )
     {
-        DisplayType_t type = g_hBeams.Get( ibeam, BEAM_DISPLAYTYPE );
+        DisplayType_t type = g_hBeams.Get( ibeam, ZoneBeams_t::iDisplayType );
         
         ++type;
         if ( !VALID_DISPLAYTYPE( type ) )
@@ -337,7 +331,7 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
             type = DISPLAYTYPE_NONE;
         }
         
-        g_hBeams.Set( ibeam, type, BEAM_DISPLAYTYPE );
+        g_hBeams.Set( ibeam, type, ZoneBeams_t::iDisplayType );
     }
     else
     {
@@ -348,7 +342,7 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
         float mins[3], maxs[3];
         Influx_GetZoneMinsMaxs( zoneid, mins, maxs );
         
-        InsertBeams( zoneid, view_as<ZoneType_t>( zones.Get( izone, ZONE_TYPE ) ), mins, maxs );
+        InsertBeams( zoneid, view_as<ZoneType_t>( zones.Get( izone, Zone_t::iZoneType ) ), mins, maxs );
     }
     
     Inf_OpenBeamSettings( client );
@@ -400,9 +394,8 @@ stock void ReadDefaultSettingsFile()
     g_hDef.Clear();
     
     char szType[32];
-    int clr[4];
     
-    decl data[DEFBEAM_SIZE];
+    DefBeamData_t defbeam;
     
     decl String:szDownload[2048];
     decl String:szDlBuffer[8][256];
@@ -483,35 +476,32 @@ stock void ReadDefaultSettingsFile()
         }
         
         
-        data[DEFBEAM_ZONETYPE] = view_as<int>( zonetype );
+        defbeam.iZoneType = view_as<int>( zonetype );
         
-        strcopy( view_as<char>( data[DEFBEAM_SHORTNAME] ), MAX_SHORTNAME, szType );
+        strcopy( defbeam.szShortName, sizeof( DefBeamData_t::szShortName ), szType );
         
-        data[DEFBEAM_DISPLAYTYPE] = view_as<int>( displaytype );
+        defbeam.iDisplayType = displaytype;
         
-        data[DEFBEAM_MATINDEX] = mat;
+        defbeam.iMatIndex = mat;
         
-        data[DEFBEAM_WIDTH] = view_as<int>( kv.GetFloat( "width", 0.0 ) );
-        data[DEFBEAM_FRAMERATE] = kv.GetNum( "framerate", -1 );
-        data[DEFBEAM_SPEED] = kv.GetNum( "speed", 0 );
+        defbeam.flWidth = kv.GetFloat( "width", 0.0 );
+        defbeam.iFrameRate = kv.GetNum( "framerate", -1 );
+        defbeam.iSpeed = kv.GetNum( "speed", 0 );
         
-        data[DEFBEAM_OFFSET] = view_as<int>( kv.GetFloat( "offset", 0.0 ) );
-        data[DEFBEAM_OFFSET_Z] = view_as<int>( kv.GetFloat( "offset_z", 0.0 ) );
+        defbeam.flOffset = kv.GetFloat( "offset", 0.0 );
+        defbeam.flOffsetZ = kv.GetFloat( "offset_z", 0.0 );
         
         
-        FillArray( clr, 0, sizeof( clr ) );
-        kv.GetColor4( "color", clr );
+        FillArray( defbeam.clr, 0, sizeof( DefBeamData_t::clr ) );
+        kv.GetColor4( "color", defbeam.clr );
         
-        if ( IsInvisibleColor( clr ) )
+        if ( IsInvisibleColor( defbeam.clr ) )
         {
             LogError( INF_CON_PRE..."Zone type '%s' has no/invalid color specified! Assuming default color.", szType );
         }
         
         
-        CopyArray( clr, data[DEFBEAM_CLR], 4 );
-        
-        
-        g_hDef.PushArray( data );
+        g_hDef.PushArray( defbeam );
         
 #if defined DEBUG
         PrintToServer( INF_DEBUG_PRE..."Added default zone type beams '%s' | Num: %i!", szType, zonetype );
@@ -596,7 +586,7 @@ public void Influx_OnZoneSavePost( int zoneid, ZoneType_t zonetype, KeyValues kv
         
         
         // Add display type.
-        temp = g_hBeams.Get( ibeam, BEAM_DISPLAYTYPE );
+        temp = g_hBeams.Get( ibeam, ZoneBeams_t::iDisplayType );
         if ( view_as<DisplayType_t>( temp ) != DEF_DISPLAYTYPE )
         {
             Inf_DisplayTypeToName( view_as<DisplayType_t>( temp ), sz, sizeof( sz ) );
@@ -609,7 +599,7 @@ public void Influx_OnZoneSavePost( int zoneid, ZoneType_t zonetype, KeyValues kv
         decl clr[4];
         for ( i = 0; i < 4; i++ )
         {
-            clr[i] = g_hBeams.Get( ibeam, BEAM_CLR ) + i;
+            clr[i] = g_hBeams.Get( ibeam, ZoneBeams_t::clr ) + i;
         }
         
         
@@ -696,7 +686,7 @@ stock void InsertBeams( int zoneid,
         clr[2],
         clr[3] );
 #endif
-    int data[BEAM_SIZE];
+    ZoneBeams_t beams;
     
     float p1[3], p2[3], p3[3], p4[3];
     
@@ -718,35 +708,34 @@ stock void InsertBeams( int zoneid,
     p4[1] = mins[1] + offset;
     p4[2] = p1[2];
     
-    CopyArray( p1, data[BEAM_P1], 3 );
-    CopyArray( p2, data[BEAM_P2], 3 );
-    CopyArray( p3, data[BEAM_P3], 3 );
-    CopyArray( p4, data[BEAM_P4], 3 );
+    beams.p1 = p1;
+    beams.p2 = p2;
+    beams.p3 = p3;
+    beams.p4 = p4;
     
     p1[2] = maxs[2] - offset_z;
     p2[2] = maxs[2] - offset_z;
     p3[2] = maxs[2] - offset_z;
     p4[2] = maxs[2] - offset_z;
     
-    CopyArray( p1, data[BEAM_P5], 3 );
-    CopyArray( p2, data[BEAM_P6], 3 );
-    CopyArray( p3, data[BEAM_P7], 3 );
-    CopyArray( p4, data[BEAM_P8], 3 );
+    beams.p5 = p1;
+    beams.p6 = p2;
+    beams.p7 = p3;
+    beams.p8 = p4;
     
-    data[BEAM_ZONE_ID] = zoneid;
+    beams.iZoneId = zoneid;
     
-    data[BEAM_MATINDEX] = beammat;
+    beams.iMatIndex = beammat;
     
-    data[BEAM_DISPLAYTYPE] = view_as<int>( displaytype );
+    beams.iDisplayType = displaytype;
     
-    data[BEAM_WIDTH] = view_as<int>( width );
-    data[BEAM_FRAMERATE] = framerate;
-    data[BEAM_SPEED] = speed;
+    beams.flWidth = width;
+    beams.iFrameRate = framerate;
+    beams.iSpeed = speed;
     
+    beams.clr = clr;
     
-    CopyArray( clr, data[BEAM_CLR], 4 );
-    
-    g_hBeams.PushArray( data );
+    g_hBeams.PushArray( beams );
 }
 
 stock bool SetDefaultBeamSettings( int zoneid, ZoneType_t zonetype, DisplayType_t &displaytype, int &mat, float &width, int &framerate, int &speed, float &offset, float &offset_z, int clr[4] )
@@ -761,50 +750,52 @@ stock bool SetDefaultBeamSettings( int zoneid, ZoneType_t zonetype, DisplayType_
     PrintToServer( INF_DEBUG_PRE..."Setting default beam settings to zone %i!", zoneid );
 #endif
 
-    decl data[DEFBEAM_SIZE];
-    g_hDef.GetArray( index, data );
+    DefBeamData_t defbeams;
+    g_hDef.GetArray( index, defbeams );
     
     if ( displaytype == DISPLAYTYPE_INVALID )
     {
-        displaytype = view_as<DisplayType_t>( data[DEFBEAM_DISPLAYTYPE] );
+        displaytype = defbeams.iDisplayType;
     }
     
     if ( mat < 1 )
     {
 #if defined DEBUG
-        PrintToServer( INF_DEBUG_PRE..."Setting default beam material to zone %i! (%i)", zoneid, data[DEFBEAM_MATINDEX] );
+        PrintToServer( INF_DEBUG_PRE..."Setting default beam material to zone %i! (%i)",
+            zoneid,
+            defbeams.iMatIndex );
 #endif
-        mat = data[DEFBEAM_MATINDEX];
+        mat = defbeams.iMatIndex;
     }
     
     if ( width == 0.0 )
     {
-        width = view_as<float>( data[DEFBEAM_WIDTH] );
+        width = defbeams.flWidth;
     }
     
     if ( framerate == -1 )
     {
-        framerate = data[DEFBEAM_FRAMERATE];
+        framerate = defbeams.iFrameRate;
     }
     
     //if ( speed == -1 )
     //{
-    speed = data[DEFBEAM_SPEED];
+    speed = defbeams.iSpeed;
     //}
     
     if ( offset == 0 )
     {
-        offset = view_as<float>( data[DEFBEAM_OFFSET] );
+        offset = defbeams.flOffset;
     }
     
     if ( offset_z == 0 )
     {
-        offset_z = view_as<float>( data[DEFBEAM_OFFSET_Z] );
+        offset_z = defbeams.flOffsetZ;
     }
     
     if ( clr[3] == 0 )
     {
-        CopyArray( data[DEFBEAM_CLR], clr, 4 );
+        clr = defbeams.clr;
     }
     
     return true;
@@ -830,7 +821,7 @@ stock int FindDefByType( ZoneType_t zonetype = ZONETYPE_INVALID, const char[] sz
     int len = g_hDef.Length;
     for ( int i = 0; i < len; i++ )
     {
-        myzonetype = view_as<ZoneType_t>( g_hDef.Get( i, DEFBEAM_ZONETYPE ) );
+        myzonetype = view_as<ZoneType_t>( g_hDef.Get( i, DefBeamData_t::iZoneType ) );
         
         if ( myzonetype != ZONETYPE_INVALID && zonetype != ZONETYPE_INVALID )
         {
@@ -842,7 +833,7 @@ stock int FindDefByType( ZoneType_t zonetype = ZONETYPE_INVALID, const char[] sz
             
             if ( StrEqual( szMyName, szShortName, false ) )
             {
-                g_hDef.Set( i, zonetype, DEFBEAM_ZONETYPE );
+                g_hDef.Set( i, zonetype, DefBeamData_t::iZoneType );
                 
                 return i;
             }
@@ -857,7 +848,7 @@ stock int FindBeamById( int zoneid )
     int len = g_hBeams.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hBeams.Get( i, BEAM_ZONE_ID ) == zoneid )
+        if ( g_hBeams.Get( i, ZoneBeams_t::iZoneId ) == zoneid )
         {
             return i;
         }
@@ -891,8 +882,7 @@ public Action T_DrawBeams( Handle hTimer )
         float drawinterval = g_ConVar_DrawInterval.FloatValue;
         
         
-        float drawdistsqr = g_ConVar_BeamDrawDist.FloatValue;
-        drawdistsqr *= drawdistsqr;
+        float drawdistsqr = g_ConVar_BeamDrawDist.FloatValue * g_ConVar_BeamDrawDist.FloatValue;
         
         
         float engtime = GetEngineTime();
@@ -907,24 +897,24 @@ public Action T_DrawBeams( Handle hTimer )
         decl Float:width;
         
         DisplayType_t displaytype;
+
+        ZoneBeams_t beams;
         
         int[] clients = new int[MaxClients];
         
         for ( int i = 0; i < len; i++ )
         {
-            displaytype = view_as<DisplayType_t>( g_hBeams.Get( i, BEAM_DISPLAYTYPE ) );
+            displaytype = view_as<DisplayType_t>( g_hBeams.Get( i, ZoneBeams_t::iDisplayType ) );
             
             
             static float p1[3], p2[3], p3[3], p4[3], p5[3], p6[3], p7[3], p8[3];
             
             
-            static int data[BEAM_SIZE];
-            g_hBeams.GetArray( i, data );
+            g_hBeams.GetArray( i, beams );
             
             
-            
-            CopyArray( data[BEAM_P1], p1, 3 );
-            CopyArray( data[BEAM_P7], p7, 3 );
+            p1 = beams.p1;
+            p7 = beams.p7;
             
             nClients = 0;
             
@@ -977,21 +967,21 @@ public Action T_DrawBeams( Handle hTimer )
             
 #if defined DEBUG_DRAW
             PrintToServer( INF_DEBUG_PRE..."Drawing beam of zone %i to %i clients!",
-                data[BEAM_ZONE_ID],
+                beams.iZoneId,
                 nClients );
 #endif
             
-            framerate = data[BEAM_FRAMERATE];
-            spd = data[BEAM_SPEED];
-            width = view_as<float>( data[BEAM_WIDTH] );
+            framerate = beams.iFrameRate;
+            spd = beams.iSpeed;
+            width = beams.flWidth;
             
-            matindex = data[BEAM_MATINDEX];
+            matindex = beams.iMatIndex;
             
-            CopyArray( data[BEAM_P2], p2, 3 );
-            CopyArray( data[BEAM_P3], p3, 3 );
-            CopyArray( data[BEAM_P4], p4, 3 );
-            
-            CopyArray( data[BEAM_CLR], clr, 4 );
+            p2 = beams.p2;
+            p3 = beams.p3;
+            p4 = beams.p4;
+
+            clr = beams.clr;
             
 #define BEAM_FADE       1
             
@@ -1007,10 +997,10 @@ public Action T_DrawBeams( Handle hTimer )
             
             if ( displaytype == DISPLAYTYPE_BEAMS_FULL || displaytype == DISPLAYTYPE_NONE)
             {
-                CopyArray( data[BEAM_P5], p5, 3 );
-                CopyArray( data[BEAM_P6], p6, 3 );
-                
-                CopyArray( data[BEAM_P8], p8, 3 );
+                p5 = beams.p5;
+                p6 = beams.p6;
+
+                p8 = beams.p8;
                 
                 TE_SetupBeamPoints( p5, p6, matindex, 0, 0, framerate, drawinterval, width, width, BEAM_FADE, 0.0, clr, spd );
                 TE_Send( clients, nClients, 0.0 );
@@ -1069,7 +1059,7 @@ stock bool GetZoneTypeDefColor( ZoneType_t zonetype, int clr[4] )
     
     for ( int i = 0; i < sizeof( clr ); i++ )
     {
-        clr[i] = g_hDef.Get( index, DEFBEAM_CLR + i );
+        clr[i] = g_hDef.Get( index, DefBeamData_t::clr + i );
     }
     
     return true;
@@ -1130,7 +1120,7 @@ public int Native_SetZoneBeamDisplayType( Handle hPlugin, int nParms )
     if ( !VALID_DISPLAYTYPE( displaytype ) ) return 0;
     
     
-    g_hBeams.Set( index, displaytype, BEAM_DISPLAYTYPE );
+    g_hBeams.Set( index, displaytype, ZoneBeams_t::iDisplayType );
     
     return 1;
 }
@@ -1142,8 +1132,8 @@ public int Native_GetDefaultBeamOffsets( Handle hPlugin, int nParms )
     
     
     decl offsets[2];
-    offsets[0] = g_hDef.Get( index, DEFBEAM_OFFSET )
-    offsets[1] = g_hDef.Get( index, DEFBEAM_OFFSET_Z );
+    offsets[0] = g_hDef.Get( index, DefBeamData_t::flOffset )
+    offsets[1] = g_hDef.Get( index, DefBeamData_t::flOffsetZ );
     
     SetNativeArray( 2, offsets, sizeof( offsets ) );
     

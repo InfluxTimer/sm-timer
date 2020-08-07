@@ -35,39 +35,32 @@
 #define MAX_RANK_SIZE                   128
 #define MAX_RANK_SIZE_CELL              ( MAX_RANK_SIZE / 4 )
 
-enum
+enum struct Rank_t
 {
-    RANK_NAME[MAX_RANK_SIZE_CELL] = 0,
-    
-    RANK_POINTS,
-    RANK_UNLOCK,
-    
-    RANK_FLAGS,
-    
-    RANK_SIZE
-};
+    char szRank[MAX_RANK_SIZE];
 
-enum
+    int nPoints;
+    int bUnlock;
+
+    int fAdminFlags;
+}
+
+enum struct Reward_t
 {
-    REWARD_RUN_ID = 0,
-    
-    REWARD_POINTS,
-    
-    REWARD_SIZE
-};
+    int iRunId;
+    int nPoints;
+}
 
 
 #define MAX_P_NAME_ID       32
 #define MAX_P_NAME_ID_CELL  ( MAX_P_NAME_ID / 4 )
 
-enum
+enum struct ModeNStyleReward_t
 {
-    P_NAME_ID[MAX_P_NAME_ID_CELL] = 0,
-    P_ID,
-    
-    P_VAL,
-    
-    P_SIZE
+    char szSafeName[MAX_P_NAME_ID];
+    int iId;
+
+    int nPoints;
 }
 
 
@@ -133,12 +126,12 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hRanks = new ArrayList( RANK_SIZE );
+    g_hRanks = new ArrayList( sizeof( Rank_t ) );
     
-    g_hMapRewards = new ArrayList( REWARD_SIZE );
+    g_hMapRewards = new ArrayList( sizeof( Reward_t ) );
     
-    g_hModePoints = new ArrayList( P_SIZE );
-    g_hStylePoints = new ArrayList( P_SIZE );
+    g_hModePoints = new ArrayList( sizeof( ModeNStyleReward_t ) );
+    g_hStylePoints = new ArrayList( sizeof( ModeNStyleReward_t ) );
     //g_nMapReward = -1;
     
     
@@ -268,9 +261,9 @@ stock int GetRankClosest( int points, bool bIgnoreUnlock = true )
     int len = g_hRanks.Length;
     for ( int i = 0; i < len; i++ )
     {
-        p = g_hRanks.Get( i, RANK_POINTS );
+        p = g_hRanks.Get( i, Rank_t::nPoints );
         
-        if ( bIgnoreUnlock && g_hRanks.Get( i, RANK_UNLOCK ) ) continue;
+        if ( bIgnoreUnlock && g_hRanks.Get( i, Rank_t::bUnlock ) ) continue;
         
         if ( GetRankFlags( i ) != 0 ) continue;
         
@@ -292,14 +285,14 @@ stock int GetRankClosest( int points, bool bIgnoreUnlock = true )
     return closest_index;
 }
 
-stock bool CanUseRankFlags( int client, const any data[RANK_SIZE] )
+stock bool CanUseRankFlags( int client, const Rank_t rank )
 {
-    return Inf_CanClientUseAdminFlags( client, data[RANK_FLAGS] );
+    return Inf_CanClientUseAdminFlags( client, rank.fAdminFlags );
 }
 
 stock bool CanUseRankFlagsByIndex( int client, int irank )
 {
-    int flags = g_hRanks.Get( irank, RANK_FLAGS );
+    int flags = g_hRanks.Get( irank, Rank_t::fAdminFlags );
 
     return Inf_CanClientUseAdminFlags( client, flags );
 }
@@ -308,19 +301,19 @@ stock bool CanUseRankByIndex( int client, int index )
 {
     if ( index == -1 ) return false;
     
-    decl data[RANK_SIZE];
-    g_hRanks.GetArray( index, data, sizeof( data ) );
+    Rank_t rank;
+    g_hRanks.GetArray( index, rank );
     
-    return CanUseRank( client, data );
+    return CanUseRank( client, rank );
 }
 
-stock bool CanUseRank( int client, const any data[RANK_SIZE] )
+stock bool CanUseRank( int client, const Rank_t rank )
 {
-    if ( g_nPoints[client] < data[RANK_POINTS] )
+    if ( g_nPoints[client] < rank.nPoints )
         return false;
     
     
-    return CanUseRankFlags( client, data );
+    return CanUseRankFlags( client, rank );
 }
 
 stock bool ShouldDisplayRankByIndex( int client, int index )
@@ -328,15 +321,15 @@ stock bool ShouldDisplayRankByIndex( int client, int index )
     if ( index == -1 ) return false;
     
     
-    decl data[RANK_SIZE];
-    g_hRanks.GetArray( index, data, sizeof( data ) );
+    Rank_t rank;
+    g_hRanks.GetArray( index, rank );
     
-    return CanUseRankFlags( client, data );
+    return CanUseRankFlags( client, rank );
 }
 
-stock bool ShouldDisplayRank( int client, const any data[RANK_SIZE] )
+stock bool ShouldDisplayRank( int client, const Rank_t rank )
 {
-    return CanUseRankFlags( client, data );
+    return CanUseRankFlags( client, rank );
 }
 
 stock int FindRankByName( const char[] szName )
@@ -361,7 +354,7 @@ stock int GetRankPoints( int index )
 {
     if ( index == -1 ) return 133700;
     
-    return g_hRanks.Get( index, RANK_POINTS );
+    return g_hRanks.Get( index, Rank_t::nPoints );
 }
 
 stock void GetRankName( int index, char[] out, int len )
@@ -376,7 +369,7 @@ stock int GetRankFlags( int index )
 {
     if ( index == -1 ) return 0;
     
-    return g_hRanks.Get( index, RANK_FLAGS );
+    return g_hRanks.Get( index, Rank_t::fAdminFlags );
 }
 
 stock void SetClientDefRank( int client )
@@ -539,17 +532,17 @@ stock int SetMapReward( int runid, int points )
     int index = FindMapRewardById( runid );
     if ( index != -1 )
     {
-        g_hMapRewards.Set( index, points, REWARD_POINTS );
+        g_hMapRewards.Set( index, points, Reward_t::nPoints );
         return index;
     }
     
-    decl data[REWARD_SIZE];
+    Reward_t reward;
     
-    data[REWARD_RUN_ID] = runid;
-    data[REWARD_POINTS] = points;
+    reward.iRunId = runid;
+    reward.nPoints = points;
     
     
-    return g_hMapRewards.PushArray( data );
+    return g_hMapRewards.PushArray( reward );
 }
 
 stock int FindMapRewardById( int runid )
@@ -557,7 +550,7 @@ stock int FindMapRewardById( int runid )
     int len = g_hMapRewards.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hMapRewards.Get( i, REWARD_RUN_ID ) == runid )
+        if ( g_hMapRewards.Get( i, Reward_t::iRunId ) == runid )
         {
             return i;
         }
@@ -584,7 +577,7 @@ stock int GetMapRewardPoints( int runid )
     if ( index == -1 ) return -1;
     
     
-    return g_hMapRewards.Get( index, REWARD_POINTS );
+    return g_hMapRewards.Get( index, Reward_t::nPoints );
 }
 
 stock int GetSecondReward( int reward )
@@ -608,7 +601,7 @@ stock int GetModePoints( int mode )
     if ( index == -1 ) return 0;
     
     
-    return g_hModePoints.Get( index, P_VAL );
+    return g_hModePoints.Get( index, ModeNStyleReward_t::nPoints );
 }
 
 stock int GetStylePoints( int style )
@@ -620,7 +613,7 @@ stock int GetStylePoints( int style )
     if ( index == -1 ) return 0;
     
     
-    return g_hStylePoints.Get( index, P_VAL );
+    return g_hStylePoints.Get( index, ModeNStyleReward_t::nPoints );
 }
 
 stock int FindMultById( int id, const char[] sz, ArrayList array )
@@ -632,7 +625,7 @@ stock int FindMultById( int id, const char[] sz, ArrayList array )
     int len = array.Length;
     for ( int i = 0; i < len; i++ )
     {
-        myid = array.Get( i, P_ID );
+        myid = array.Get( i, ModeNStyleReward_t::iId );
         
         if ( myid != -1 )
         {

@@ -16,19 +16,17 @@
 //#define DEBUG
 
 
-enum
+enum struct TeleZone_t
 {
-    TELE_ZONE_ID = 0,
-    
-    TELE_ISSET,
-    
-    TELE_RESETVEL,
-    
-    TELE_POS[3],
-    TELE_ANG[2],
-    
-    TELE_SIZE
-};
+    int iZoneId;
+
+    bool bSet;
+
+    bool bResetVel;
+
+    float vecPos[3];
+    float angles[2];
+}
 
 ArrayList g_hTeles;
 
@@ -54,7 +52,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 
 public void OnPluginStart()
 {
-    g_hTeles = new ArrayList( TELE_SIZE );
+    g_hTeles = new ArrayList( sizeof( TeleZone_t ) );
     
     
     // CMDS
@@ -109,13 +107,13 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     
     
     float vec[3];
-    decl data[TELE_SIZE];
+    TeleZone_t tele;
     
-    data[TELE_ZONE_ID] = zoneid;
+    tele.iZoneId = zoneid;
     
-    data[TELE_ISSET] = 1;
+    tele.bSet = true;
     
-    data[TELE_RESETVEL] = kv.GetNum( "resetvel", 0 );
+    tele.bResetVel = kv.GetNum( "resetvel", 0 ) ? true : false;
     
     
     kv.GetVector( "telepos", vec, ORIGIN_VECTOR );
@@ -126,13 +124,13 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
             zoneid );
     }
     
-    CopyArray( vec, data[TELE_POS], 3 );
+    CopyArray( vec, tele.vecPos, 3 );
     
     
     kv.GetVector( "teleangles", vec, ORIGIN_VECTOR );
-    CopyArray( vec, data[TELE_ANG], 2 );
+    CopyArray( vec, tele.angles, 2 );
     
-    g_hTeles.PushArray( data );
+    g_hTeles.PushArray( tele );
     
     return Plugin_Handled;
 }
@@ -150,24 +148,23 @@ public Action Influx_OnZoneSave( int zoneid, ZoneType_t zonetype, KeyValues kv )
         return Plugin_Stop;
     }
     
-    decl data[TELE_SIZE];
-    g_hTeles.GetArray( index, data );
+    TeleZone_t tele;
+    g_hTeles.GetArray( index, tele );
     
-    if ( !data[TELE_ISSET] )
+    if ( !tele.bSet )
     {
         LogError( INF_CON_PRE..."Teleporter zone (id: %i) has no teleport location! Cannot save!",
             zoneid );
         return Plugin_Stop;
     }
     
-    kv.SetNum( "resetvel", data[TELE_RESETVEL] );
+    kv.SetNum( "resetvel", tele.bResetVel ? 1 : 0 );
     
+
+    kv.SetVector( "telepos", tele.vecPos );
+
     float vec[3];
-    
-    CopyArray( data[TELE_POS], vec, 3 );
-    kv.SetVector( "telepos", vec );
-    
-    CopyArray( data[TELE_ANG], vec, 2 );
+    CopyArray( tele.angles, vec, 2 );
     vec[2] = 0.0; // Reset roll.
     kv.SetVector( "teleangles", vec );
     
@@ -193,11 +190,11 @@ public void Influx_OnZoneCreated( int client, int zoneid, ZoneType_t zonetype )
     if ( zonetype != ZONETYPE_TELE ) return;
     
     
-    int data[TELE_SIZE];
-    data[TELE_ZONE_ID] = zoneid;
-    data[TELE_ISSET] = 0;
+    TeleZone_t tele;
+    tele.iZoneId = zoneid;
+    tele.bSet = false;
     
-    g_hTeles.PushArray( data );
+    g_hTeles.PushArray( tele );
     
     
     if ( g_bLib_Zones_Beams )
@@ -245,8 +242,8 @@ public Action Cmd_ZoneSettings( int client, int args )
     if ( index == -1 ) return Plugin_Handled;
     
     
-    decl data[TELE_SIZE];
-    g_hTeles.GetArray( index, data );
+    TeleZone_t tele;
+    g_hTeles.GetArray( index, tele );
     
     
     decl String:szZone[32];
@@ -263,17 +260,17 @@ public Action Cmd_ZoneSettings( int client, int args )
     
     FormatEx( szInfo, sizeof( szInfo ), "a%i", zoneid );
     FormatEx( szDisplay, sizeof( szDisplay ), "Go to teleport destination\nPos: (%.1f, %.1f, %.1f) | Ang: (%.1f, %.1f)\n ",
-        data[TELE_POS],
-        data[TELE_POS] + 1,
-        data[TELE_POS] + 2,
-        data[TELE_ANG],
-        data[TELE_ANG + 1] );
+        tele.vecPos[0],
+        tele.vecPos[1],
+        tele.vecPos[2],
+        tele.angles[0],
+        tele.angles[1] );
     
     
-    menu.AddItem( szInfo, szDisplay, data[TELE_ISSET] ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
+    menu.AddItem( szInfo, szDisplay, tele.bSet ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
     
     
-    FormatEx( szDisplay, sizeof( szDisplay ), "Reset Velocity: %s", data[TELE_RESETVEL] ? "ON" : "OFF" );
+    FormatEx( szDisplay, sizeof( szDisplay ), "Reset Velocity: %s", tele.bResetVel ? "ON" : "OFF" );
     FormatEx( szInfo, sizeof( szInfo ), "b%i", zoneid );
     menu.AddItem( szInfo, szDisplay );
     
@@ -319,7 +316,7 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
         }
         case 'b' : // Set velocity reset
         {
-            g_hTeles.Set( itele, !g_hTeles.Get( itele, TELE_RESETVEL ), TELE_RESETVEL );
+            g_hTeles.Set( itele, !g_hTeles.Get( itele, TeleZone_t::bResetVel ), TeleZone_t::bResetVel );
         }
         case 'c' : // Set pos
         {
@@ -387,14 +384,14 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
 
 stock void SetPosByIndex( int index, const float pos[3] )
 {
-    for ( int i = 0; i < 3; i++ ) g_hTeles.Set( index, pos[i], TELE_POS + i );
+    for ( int i = 0; i < 3; i++ ) g_hTeles.Set( index, pos[i], TeleZone_t::vecPos + i );
     
-    g_hTeles.Set( index, 1, TELE_ISSET );
+    g_hTeles.Set( index, true, TeleZone_t::bSet );
 }
 
 stock void SetAngByIndex( int index, const float ang[3] )
 {
-    for ( int i = 0; i < 2; i++ ) g_hTeles.Set( index, ang[i], TELE_ANG + i );
+    for ( int i = 0; i < 2; i++ ) g_hTeles.Set( index, ang[i], TeleZone_t::angles + i );
 }
 
 public void E_StartTouchPost_Teleport( int ent, int activator )
@@ -408,7 +405,7 @@ public void E_StartTouchPost_Teleport( int ent, int activator )
     if ( index == -1 ) return;
     
     
-    if ( g_hTeles.Get( index, TELE_ISSET ) )
+    if ( g_hTeles.Get( index, TeleZone_t::bSet ) )
     {
         TeleportToIndex( index, activator );
     }
@@ -416,24 +413,21 @@ public void E_StartTouchPost_Teleport( int ent, int activator )
 
 stock void TeleportToIndex( int index, int client )
 {
-    decl data[TELE_SIZE];
-    g_hTeles.GetArray( index, data );
+    TeleZone_t tele;
+    g_hTeles.GetArray( index, tele );
     
-    decl Float:pos[3];
-    CopyArray( data[TELE_POS], pos, 3 );
-    
-    decl Float:ang[3];
-    CopyArray( data[TELE_ANG], ang, 2 );
+    float ang[3];
+    CopyArray( tele.angles, ang, 2 );
     ang[2] = 0.0;
     
-    TeleportEntity( client, pos, ang, data[TELE_RESETVEL] ? ORIGIN_VECTOR : NULL_VECTOR );
+    TeleportEntity( client, tele.vecPos, ang, tele.bResetVel ? ORIGIN_VECTOR : NULL_VECTOR );
     
 #if defined DEBUG
     PrintToServer( INF_DEBUG_PRE..."Client %i was teleported to (%.1f, %.1f, %.1f)",
         client,
-        pos[0],
-        pos[1],
-        pos[2] );
+        tele.vecPos[0],
+        tele.vecPos[1],
+        tele.vecPos[2] );
 #endif
 }
 
@@ -444,7 +438,7 @@ stock int FindTeleById( int id )
     {
         for ( int i = 0; i < len; i++ )
         {
-            if ( g_hTeles.Get( i, TELE_ZONE_ID ) == id )
+            if ( g_hTeles.Get( i, TeleZone_t::iZoneId ) == id )
             {
                 return i;
             }

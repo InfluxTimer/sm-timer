@@ -67,17 +67,17 @@ public int Hndlr_RunSettings( Menu menu, MenuAction action, int client, int inde
                 return 0;
             }
             
-            int block = ( buffer[1][0] == 'c' ) ? RUN_RESFLAGS : RUN_MODEFLAGS;
+            int block = ( buffer[1][0] == 'c' ) ? Run_t::fResFlags : Run_t::fModeFlags;
             
             int value = StringToInt( buffer[2] );
             
-            if ( block == RUN_MODEFLAGS && !VALID_MODE( value ) )
+            if ( block == Run_t::fModeFlags && !VALID_MODE( value ) )
             {
                 return 0;
             }
             
             int flag;
-            if ( block == RUN_RESFLAGS )
+            if ( block == Run_t::fResFlags )
             {
                 flag = value;
                 

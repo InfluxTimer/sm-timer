@@ -10,16 +10,14 @@ ConVar g_ConVar_WaitTime;
 ConVar g_ConVar_MinRecords;
 
 
-enum
+enum struct CbData_t
 {
-    PCB_USERID = 0,
-    
-    PCB_RUNID,
-    PCB_MODE,
-    PCB_STYLE,
-    
-    PCB_SIZE
-};
+    int iUserId;
+
+    int iRunId;
+    int iModeId;
+    int iStyleId;
+}
 
 
 public Plugin myinfo =
@@ -69,13 +67,13 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
     }
     
     
-    ArrayList array = new ArrayList( PCB_SIZE );
+    ArrayList array = new ArrayList( sizeof( CbData_t ) );
     
-    decl data[PCB_SIZE];
-    data[PCB_USERID] = GetClientUserId( client );
-    data[PCB_RUNID] = runid;
-    data[PCB_MODE] = mode;
-    data[PCB_STYLE] = style;
+    CbData_t data;
+    data.iUserId = GetClientUserId( client );
+    data.iRunId = runid;
+    data.iModeId = mode;
+    data.iStyleId = style;
     
     
     array.PushArray( data );
@@ -85,14 +83,13 @@ public void Influx_OnTimerFinishPost( int client, int runid, int mode, int style
 
 public Action T_Display( Handle hTimer, ArrayList array )
 {
-    decl data[PCB_SIZE];
-    
+    CbData_t data;
     array.GetArray( 0, data );
     
     delete array;
     
     
-    int client = GetClientOfUserId( data[PCB_USERID] );
+    int client = GetClientOfUserId( data.iUserId );
     if ( client < 1 || !IsClientInGame( client ) ) return Plugin_Stop;
     
     
@@ -111,11 +108,11 @@ public Action T_Display( Handle hTimer, ArrayList array )
         "FROM "...INF_TABLE_TIMES..." AS _t NATURAL JOIN "...INF_TABLE_USERS..." WHERE uid=%i AND mapid=%i AND runid=%i AND mode=%i AND style=%i",
         Influx_GetClientId( client ),
         mapid,
-        data[PCB_RUNID],
-        data[PCB_MODE],
-        data[PCB_STYLE] );
+        data.iRunId,
+        data.iModeId,
+        data.iStyleId );
         
-    SQL_TQuery( db, Thrd_Display, szQuery, data[PCB_USERID], DBPrio_Normal );
+    SQL_TQuery( db, Thrd_Display, szQuery, data.iUserId, DBPrio_Normal );
     
     return Plugin_Stop;
 }

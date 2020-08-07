@@ -17,25 +17,24 @@
 
 #define PCB_NUM_ELEMENTS            7 // This is for menu string parsing.
 
-enum
+enum struct RecordsCallback_t
 {
-    PCB_USERID = 0,
-    
-    PCB_UID,
-    PCB_MAPID,
-    PCB_RUNID,
-    PCB_MODE,
-    PCB_STYLE,
-    PCB_OFFSET,
-    PCB_TOTALRECORDS,
-    
-    
+    int iUserId;
+
+
+    int iUId;
+    int iMapId;
+    int iRunId;
+    int iModeId;
+    int iStyleId;
+
+    int nOffset;
+    int nTotalRecords;
+
     // For now ignore player names
-    //PCB_PLYNAME[MAX_PCB_PLYNAME_CELL],
-    //PCB_MAPNAME[], // Map name is not necessary since we ALWAYS retrieve the map id.
-    
-    PCB_SIZE
-};
+    //char szPlyName[MAX_PCB_PLYNAME];
+    //char szMapName[];
+}
 
 
 float g_flLastRecPrintTime[INF_MAXPLAYERS];

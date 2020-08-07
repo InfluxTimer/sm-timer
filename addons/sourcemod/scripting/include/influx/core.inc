@@ -122,67 +122,51 @@ enum
 #define OFFSET_MODESTYLECLIENT(%0,%1,%2)       ( (%0 * MAX_STYLES * INF_MAXPLAYERS) + (%1 * INF_MAXPLAYERS) + %2 )
 
 
-
-enum
+enum struct Run_t
 {
-    // Strings need to be put first so we can use GetString on them.
-    RUN_NAME[MAX_RUN_NAME_CELL] = 0,
-    
-    RUN_ID,
-    
-    
-    RUN_RESFLAGS,
-    
-    RUN_MODEFLAGS, // Allow admins to disable some modes.
-    
-    
-    RUN_TELEPOS[3],
-    RUN_TELEYAW,
-    
-    
-    // Multidimensional arrays don't work. :(
-    
-    RUN_BESTTIMES[MAX_MODES * MAX_STYLES],
-    RUN_BESTTIMES_UID[MAX_MODES * MAX_STYLES],
-    RUN_BESTTIMES_NAME[MAX_MODES * MAX_STYLES * MAX_BEST_NAME_CELL],
-    
-    //RUN_NUMRECORDS[MAX_MODES * MAX_STYLES],
-    
-    RUN_CLIENTTIMES[MAX_MODES * MAX_STYLES * INF_MAXPLAYERS],
-    
-    RUN_SIZE
-};
+    char szName[MAX_RUN_NAME];
 
-enum
+    int iId;
+    
+    int fResFlags;
+    int fModeFlags;
+
+    float vecTelePos[3];
+    float flTeleYaw;
+
+    float flBestTimes[MAX_MODES * MAX_STYLES];
+    int flBestTimesIds[MAX_MODES * MAX_STYLES];
+    // char
+    int flBestTimesNames[MAX_MODES * MAX_STYLES * MAX_BEST_NAME_CELL];
+
+    float flClientTimes[MAX_MODES * MAX_STYLES * INF_MAXPLAYERS];
+}
+
+enum struct Mode_t
 {
-    MODE_NAME[MAX_MODE_NAME_CELL] = 0,
-    MODE_SHORTNAME[MAX_MODE_SHORTNAME_CELL],
-    MODE_SAFENAME[MAX_SAFENAME_CELL],
-    
-    MODE_ID,
-    MODE_DISPLAY,
-    
-    MODE_ADMFLAGS,
-    
-    MODE_MAXSPEED,
-    
-    MODE_SIZE
-};
+    char szName[MAX_MODE_NAME];
+    char szShortName[MAX_MODE_SHORTNAME];
+    char szSafeName[MAX_SAFENAME];
 
-enum
+    int iId;
+    int fAdmFlags;
+
+    bool bDisplay;
+
+    float flMaxSpeed;
+}
+
+enum struct Style_t
 {
-    STYLE_NAME[MAX_STYLE_NAME_CELL] = 0,
-    STYLE_SHORTNAME[MAX_STYLE_SHORTNAME_CELL],
-    STYLE_SAFENAME[MAX_SAFENAME_CELL],
-    
-    STYLE_ID,
-    STYLE_DISPLAY,
-    
-    STYLE_ADMFLAGS,
-    
-    STYLE_SIZE
-};
+    char szName[MAX_STYLE_NAME];
+    char szShortName[MAX_STYLE_SHORTNAME];
+    char szSafeName[MAX_SAFENAME];
 
+    int iId;
+    int fAdmFlags;
+
+    bool bDisplay;
+}
 
 #define INF_TABLE_USERS             "inf_users"
 #define INF_TABLE_MAPS              "inf_maps"
@@ -297,15 +281,13 @@ native bool Influx_ShouldStyleDisplay( int style );
 
 
 #define MAX_RUNRES_NAME         64
-#define MAX_RUNRES_NAME_CELL    ( MAX_RUNRES_NAME / 4 )
 
-enum
+enum struct RunRes_t
 {
-    RUNRES_NAME[MAX_RUNRES_NAME_CELL] = 0,
-    RUNRES_FLAG,
-    
-    RUNRES_SIZE
-};
+    char szName[MAX_RUNRES_NAME];
+
+    int iFlag;
+}
 
 #define RES_TIME_FIRSTREC           ( 1 << 0 ) // Is very first record for that run, mode and style.
 #define RES_TIME_ISBEST             ( 1 << 1 ) // Is new best record.

@@ -485,7 +485,7 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     
     
     // Add run result flags.
-    resultflags |= g_hRuns.Get( irun, RUN_RESFLAGS );
+    resultflags |= g_hRuns.Get( irun, Run_t::fResFlags );
     
     
     decl String:errormsg[256];

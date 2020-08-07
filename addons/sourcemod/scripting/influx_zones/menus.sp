@@ -24,7 +24,7 @@ stock int FillZoneMenu( Menu menu, bool bReqSettings = true, bool bZoneYouAreIn 
     
     for ( int i = 0; i < len; i++ )
     {
-        zonetype = view_as<ZoneType_t>( g_hZones.Get( i, ZONE_TYPE ) );
+        zonetype = view_as<ZoneType_t>( g_hZones.Get( i, Zone_t::iZoneType ) );
         if ( bReqSettings && !ZoneTypeHasSettings( zonetype ) ) continue;
         
         
@@ -36,7 +36,7 @@ stock int FillZoneMenu( Menu menu, bool bReqSettings = true, bool bZoneYouAreIn 
             strcopy( szZone, sizeof( szZone ), "N/A" );
         }
         
-        uid = g_hZones.Get( i, ZONE_ID );
+        uid = g_hZones.Get( i, Zone_t::iZoneId );
         
         FormatEx( szDisplay, sizeof( szDisplay ), "%s [%s] [%i]",
             szZone,

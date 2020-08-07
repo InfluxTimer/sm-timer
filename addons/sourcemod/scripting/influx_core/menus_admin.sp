@@ -69,7 +69,7 @@ public Action Cmd_Admin_RunSettings( int client, int args )
     int flags;
     int len;
     
-    decl data[RUNRES_SIZE];
+    RunRes_t data;
     
     decl String:szDisplay[92];
     decl String:szInfo[32];
@@ -97,16 +97,16 @@ public Action Cmd_Admin_RunSettings( int client, int args )
     
     
     // Result settings...
-    flags = g_hRuns.Get( index, RUN_RESFLAGS );
+    flags = g_hRuns.Get( index, Run_t::fResFlags );
     len = g_hRunResFlags.Length;
     for ( int i = 0; i < len; i++ )
     {
         g_hRunResFlags.GetArray( i, data );
         
-        int resflag = data[RUNRES_FLAG];
+        int resflag = data.iFlag;
         
         FormatEx( szDisplay, sizeof( szDisplay ), "%s: %s",
-            data[RUNRES_NAME],
+            data.szName,
             ( flags & resflag ) ? "ON" : "OFF" );
         
         FormatEx( szInfo, sizeof( szInfo ), "%i_c_%i", runid, resflag );
@@ -115,11 +115,11 @@ public Action Cmd_Admin_RunSettings( int client, int args )
     }
     
     // Mode settings
-    flags = g_hRuns.Get( index, RUN_MODEFLAGS );
+    flags = g_hRuns.Get( index, Run_t::fModeFlags );
     len = g_hModes.Length;
     for ( int i = 0; i < len; i++ )
     {
-        int mode = g_hModes.Get( i, MODE_ID );
+        int mode = g_hModes.Get( i, Mode_t::iId );
         
         GetModeNameByIndex( i, szTemp, sizeof( szTemp ) );
         

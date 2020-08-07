@@ -11,18 +11,14 @@
 
 
 #define MAX_MENUCMD_NAME        24
-#define MAX_MENUCMD_NAME_CELL   MAX_MENUCMD_NAME / 4
 
 #define MAX_MENUCMD_CMD         24
-#define MAX_MENUCMD_CMD_CELL    MAX_MENUCMD_CMD / 4
 
-enum
+enum struct MenuCmd_t
 {
-    MENUCMD_NAME[MAX_MENUCMD_NAME_CELL] = 0,
-    MENUCMD_CMD[MAX_MENUCMD_CMD_CELL],
-    
-    MENUCMD_SIZE
-};
+    char szName[MAX_MENUCMD_NAME];
+    char szCmd[MAX_MENUCMD_NAME];
+}
 
 ArrayList g_hMenuCmds;
 
@@ -76,7 +72,7 @@ public void OnPluginStart()
 public void OnAllPluginsLoaded()
 {
     delete g_hMenuCmds;
-    g_hMenuCmds = new ArrayList( MENUCMD_SIZE );
+    g_hMenuCmds = new ArrayList( sizeof( MenuCmd_t ) );
     
     
     Call_StartForward( g_hForward_OnRequestHUDMenuCmds );
@@ -132,13 +128,13 @@ public Action Cmd_Hud( int client, int args )
     Menu menu = new Menu( Hndlr_Settings );
     menu.SetTitle( "Settings:\n " );
     
-    decl data[MENUCMD_SIZE];
+    MenuCmd_t cmd;
     
     for ( int i = 0; i < len; i++ )
     {
-        g_hMenuCmds.GetArray( i, data );
+        g_hMenuCmds.GetArray( i, cmd );
         
-        menu.AddItem( view_as<char>( data[MENUCMD_CMD] ), view_as<char>( data[MENUCMD_NAME] ) );
+        menu.AddItem( cmd.szCmd, cmd.szName );
     }
     
     menu.Display( client, MENU_TIME_FOREVER );
@@ -180,12 +176,12 @@ public int Native_AddHUDMenuCmd( Handle hPlugin, int numParams )
     if ( g_hMenuCmds == null ) return 0;
     
     
-    decl data[MENUCMD_SIZE];
+    MenuCmd_t cmd;
     
-    GetNativeString( 1, view_as<char>( data[MENUCMD_CMD] ), MAX_MENUCMD_CMD );
-    GetNativeString( 2, view_as<char>( data[MENUCMD_NAME] ), MAX_MENUCMD_NAME );
+    GetNativeString( 1, cmd.szCmd, sizeof( MenuCmd_t::szCmd ) );
+    GetNativeString( 2, cmd.szName, sizeof( MenuCmd_t::szName ) );
     
-    g_hMenuCmds.PushArray( data );
+    g_hMenuCmds.PushArray( cmd );
     
     return 1;
 }

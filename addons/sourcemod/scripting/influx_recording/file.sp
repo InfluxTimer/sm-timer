@@ -286,12 +286,12 @@ stock bool LoadRecording( const char[] szPath, ArrayList &rec, int &runid, int &
     }
     
     
-    rec = new ArrayList( REC_SIZE );
+    rec = new ArrayList( sizeof( RecordingFrame_t ) );
     
-    int data[REC_SIZE];
+    int[] frame = new int[sizeof( RecordingFrame_t )];
     for ( int i = 0; i < len; i++ )
     {
-        if ( file.Read( data, REC_SIZE, 4 ) == -1 )
+        if ( file.Read( frame, sizeof( RecordingFrame_t ), 4 ) == -1 )
         {
             LogError( INF_CON_PRE..."Encountered a sudden end of file!" );
             
@@ -300,9 +300,11 @@ stock bool LoadRecording( const char[] szPath, ArrayList &rec, int &runid, int &
         }
         
 
-        FixAngles( view_as<float>( data[REC_ANG] ), view_as<float>( data[REC_ANG + 1] ) );
+        FixAngles(
+            view_as<float>( frame[RecordingFrame_t::angles] ),
+            view_as<float>( frame[RecordingFrame_t::angles + 1] ) );
         
-        rec.PushArray( data, REC_SIZE );
+        rec.PushArray( frame );
     }
     
     delete file;
@@ -373,18 +375,20 @@ stock bool SaveRecording( int client, ArrayList rec, int runid, int mode, int st
     file.Write( plyname, sizeof( plyname ), 4 );
     
     
-    decl data[REC_SIZE];
+    int[] frame = new int[sizeof( RecordingFrame_t )];
     
     int len = rec.Length;
     file.WriteInt32( len );
     
     for ( int i = 0; i < len; i++ )
     {
-        rec.GetArray( i, data );
+        rec.GetArray( i, frame );
         
-        FixAngles( view_as<float>( data[REC_ANG] ), view_as<float>( data[REC_ANG + 1] ) );
+        FixAngles(
+            view_as<float>( frame[RecordingFrame_t::angles] ),
+            view_as<float>( frame[RecordingFrame_t::angles + 1] ) );
         
-        file.Write( data, sizeof( data ), 4 );
+        file.Write( frame, sizeof( RecordingFrame_t ), 4 );
     }
     
     delete file;
