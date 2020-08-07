@@ -177,7 +177,7 @@ stock bool ReadFrames( File file, ArrayList frames, int len )
             return false;
         }
         
-        frames.PushArray( data );
+        frames.PushArray( frame );
     }
     
     return true;

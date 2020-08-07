@@ -533,7 +533,7 @@ stock int SetMapReward( int runid, int points )
     reward.nPoints = points;
     
     
-    return g_hMapRewards.PushArray( data );
+    return g_hMapRewards.PushArray( reward );
 }
 
 stock int FindMapRewardById( int runid )

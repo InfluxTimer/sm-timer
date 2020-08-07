@@ -32,7 +32,7 @@ public Action Cmd_Menu_Rank( int client, int args )
         if ( !ShouldDisplayRank( client, rank ) )
             continue;
         
-        FormatEx( szDisplay, sizeof( szDisplay ), "%s (%i)", rank.szName, rank.nPoints );
+        FormatEx( szDisplay, sizeof( szDisplay ), "%s (%i)", rank.szRank, rank.nPoints );
         FormatEx( szInfo, sizeof( szInfo ), "%i", i );
         
         Influx_RemoveChatColors( szDisplay, sizeof( szDisplay ) );

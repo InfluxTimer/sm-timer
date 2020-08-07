@@ -207,16 +207,16 @@ stock bool DB_InsertClientTimes( int client, int runid, int mode, int style, int
     int len = g_hCPs.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hCPs.Get( i, CP_RUN_ID ) != runid ) continue;
+        if ( g_hCPs.Get( i, CheckpointData_t::iRunId ) != runid ) continue;
         
         
-        cpnum = g_hCPs.Get( i, CP_NUM );
+        cpnum = g_hCPs.Get( i, CheckpointData_t::nCpNum );
         
         // Get our time.
         int index = FindClientCPByNum( client, cpnum );
         if ( index != -1 )
         {
-            time = g_hClientCP[client].Get( index, CCP_TIME );
+            time = g_hClientCP[client].Get( index, ClientCpData_t::flTime );
         }
         else
         {

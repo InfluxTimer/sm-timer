@@ -34,24 +34,7 @@ enum struct RecordsCallback_t
     // For now ignore player names
     //char szPlyName[MAX_PCB_PLYNAME];
     //char szMapName[];
-
-    PCB_USERID = 0,
-    
-    PCB_UID,
-    PCB_MAPID,
-    PCB_RUNID,
-    PCB_MODE,
-    PCB_STYLE,
-    PCB_OFFSET,
-    PCB_TOTALRECORDS,
-    
-    
-    // For now ignore player names
-    //PCB_PLYNAME[MAX_PCB_PLYNAME_CELL],
-    //PCB_MAPNAME[], // Map name is not necessary since we ALWAYS retrieve the map id.
-    
-    PCB_SIZE
-};
+}
 
 
 float g_flLastRecPrintTime[INF_MAXPLAYERS];

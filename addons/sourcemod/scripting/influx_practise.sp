@@ -479,12 +479,15 @@ stock bool TeleportClientToCP( int client, int index )
     CopyArray( cp.angles, ang, 2 );
     
     ang[2] = 0.0; // Don't tilt me bro
+
+    float vel[3];
+    CopyArray( cp.vecVel, vel, 3 );
     
     
     // If we're not paused, change our time.
     if ( !g_bLib_Pause || !Influx_IsClientPaused( client ) )
     {
-        if ( cp.flTime > 0 )
+        if ( cp.iStartTick > 0 )
         {
             Influx_SetClientState( client, STATE_RUNNING );
             
@@ -515,7 +518,7 @@ stock bool TeleportClientToCP( int client, int index )
         client,
         g_bUsePos[client]                   ? cp.vecPos : NULL_VECTOR,
         g_iUseAng[client] != USEANG_INHERIT ? ang       : NULL_VECTOR,
-        g_iUseVel[client] != USEVEL_INHERIT ? cp.vecVel : NULL_VECTOR );
+        g_iUseVel[client] != USEVEL_INHERIT ? vel       : NULL_VECTOR );
     
     return true;
 }
@@ -543,7 +546,7 @@ stock bool AddClientCP( int client )
     
     cp.iId = ++g_nId[client];
 
-    g_hClientCps[client].SetArray( g_iCurIndex[client]++, data );
+    g_hClientCps[client].SetArray( g_iCurIndex[client]++, cp );
     
     if ( g_iCurIndex[client] >= MAX_CHECKPOINTS )
     {

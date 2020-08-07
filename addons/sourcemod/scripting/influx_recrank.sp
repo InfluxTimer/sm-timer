@@ -10,22 +10,14 @@ ConVar g_ConVar_WaitTime;
 ConVar g_ConVar_MinRecords;
 
 
-enum CbData_t
+enum struct CbData_t
 {
     int iUserId;
 
     int iRunId;
     int iModeId;
     int iStyleId;
-
-    PCB_USERID = 0,
-    
-    PCB_RUNID,
-    PCB_MODE,
-    PCB_STYLE,
-    
-    PCB_SIZE
-};
+}
 
 
 public Plugin myinfo =

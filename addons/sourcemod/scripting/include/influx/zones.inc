@@ -42,18 +42,6 @@ enum struct Zone_t
 
     float vecMins[3];
     float vecMaxs[3];
-
-    Zone_t::szName[MAX_ZONE_NAME_CELL] = 0,
-    
-    Zone_t::iZoneType,
-    Zone_t::iZoneId,
-    
-    Zone_t::iEntRef,
-    
-    Zone_t::vecMins[3],
-    Zone_t::vecMaxs[3],
-    
-    sizeof( Zone_t )
 }
 
 // Deprecated

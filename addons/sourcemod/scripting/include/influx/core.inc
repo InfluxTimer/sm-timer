@@ -270,15 +270,13 @@ native bool Influx_ShouldStyleDisplay( int style );
 
 
 #define MAX_RUNRES_NAME         64
-#define MAX_RUNRES_NAME_CELL    ( MAX_RUNRES_NAME / 4 )
 
-enum
+enum struct RunRes_t
 {
-    RUNRES_NAME[MAX_RUNRES_NAME_CELL] = 0,
-    RUNRES_FLAG,
-    
-    RUNRES_SIZE
-};
+    char szName[MAX_RUNRES_NAME];
+
+    int iFlag;
+}
 
 #define RES_TIME_FIRSTREC           ( 1 << 0 ) // Is very first record for that run, mode and style.
 #define RES_TIME_ISBEST             ( 1 << 1 ) // Is new best record.

@@ -12,7 +12,7 @@ enum struct ClrData_t
 
     char szColor[CLR_COLOR_SIZE];
 
-    int iColorCSGO;
+    char szColorCSGO[4];
 }
 
 
@@ -173,7 +173,7 @@ stock void FormatColors( char[] sz, int len )
                 }
                 else
                 {
-                    color[0] = g_hChatClrs.Get( index, ClrData_t::iColorCSGO );
+                    color[0] = g_hChatClrs.Get( index, ClrData_t::szColorCSGO );
                 }
                 
 #if defined DEBUG_COLORCHAT
@@ -269,17 +269,17 @@ stock void AddColor( const char[] clrname, const char[] c, const char[] c_csgo =
     
     strcopy( clrdata.szName, sizeof( ClrData_t::szName ), clrname );
     strcopy( clrdata.szColor, sizeof( ClrData_t::szColor ), color );
-    strcopy( clrdata.iColorCSGO, 4, color_csgo );
+    strcopy( clrdata.szColorCSGO, sizeof( ClrData_t::szColorCSGO ), color_csgo );
     
     
     // Replace existing one.
     if ( index != -1 )
     {
-        g_hChatClrs.SetArray( index, data );
+        g_hChatClrs.SetArray( index, clrdata );
     }
     else // Add new one.
     {
-        g_hChatClrs.PushArray( data );
+        g_hChatClrs.PushArray( clrdata );
         g_nChatClrLen = g_hChatClrs.Length;
     }
     

@@ -134,7 +134,7 @@ public Action Cmd_Hud( int client, int args )
     {
         g_hMenuCmds.GetArray( i, cmd );
         
-        menu.AddItem( cmd.szCmd, menu.szName );
+        menu.AddItem( cmd.szCmd, cmd.szName );
     }
     
     menu.Display( client, MENU_TIME_FOREVER );
@@ -181,7 +181,7 @@ public int Native_AddHUDMenuCmd( Handle hPlugin, int numParams )
     GetNativeString( 1, cmd.szCmd, sizeof( MenuCmd_t::szCmd ) );
     GetNativeString( 2, cmd.szName, sizeof( MenuCmd_t::szName ) );
     
-    g_hMenuCmds.PushArray( data );
+    g_hMenuCmds.PushArray( cmd );
     
     return 1;
 }

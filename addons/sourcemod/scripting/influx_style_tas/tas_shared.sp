@@ -396,8 +396,6 @@ public Action Influx_OnRecordingFinish( int client, ArrayList hRecording )
     static RecordingFrame_t recframe;
     
     
-    int ang_index = g_ConVar_SilentStrafer.BoolValue ? TasFrame_t::angles : TasFrame_t::anglesReal;
-    
     
     int len = g_hFrames[client].Length;
     for ( int i = 0; i < len; i++ )
@@ -405,8 +403,8 @@ public Action Influx_OnRecordingFinish( int client, ArrayList hRecording )
         g_hFrames[client].GetArray( i, framedata );
         
         recframe.vecPos = framedata.vecPos;
-        CopyArray( framedata[ang_index], recframe.angles, 2 );
-        
+        CopyArray( g_ConVar_SilentStrafer.BoolValue ? framedata.angles : framedata.anglesReal, recframe.angles, 2 );
+
         
         recframe.fFlags = 0;
         
@@ -762,7 +760,7 @@ stock void InsertFrame( int client )
     
     
     GetEntityName( client, frame.szTargetName, sizeof( TasFrame_t::szTargetName ) );
-    GetEntityClassname( client, frame.szClassName, sizeof( TasFrame_t::szClassName ) );
+    GetEntityClassname( client, frame.szClassname, sizeof( TasFrame_t::szClassname ) );
     
     g_iStoppedFrame[client] = g_hFrames[client].PushArray( frame );
     
@@ -854,7 +852,7 @@ stock bool SetFrame( int client, int i, bool bContinue, bool bPrint = false )
     
     
     SetEntityName( client, frame.szTargetName );
-    SetEntityClassname( client, frame.szClassName );
+    SetEntityClassname( client, frame.szClassname );
     
     
     g_iStoppedFrame[client] = i;

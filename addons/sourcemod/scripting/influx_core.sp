@@ -379,8 +379,8 @@ public void OnPluginStart()
     g_hRuns = new ArrayList( sizeof( Run_t ) );
     g_hModes = new ArrayList( sizeof( Mode_t ) );
     g_hStyles = new ArrayList( sizeof( Style_t ) );
-    g_hRunResFlags = new ArrayList( RUNRES_SIZE );
-    g_hChatClrs = new ArrayList( sizeof( ) );
+    g_hRunResFlags = new ArrayList( sizeof( RunRes_t ) );
+    g_hChatClrs = new ArrayList( sizeof( ClrData_t ) );
     
     g_hModeOvers = new ArrayList( sizeof( ModeNStyleOverride_t ) );
     g_hStyleOvers = new ArrayList( sizeof( ModeNStyleOverride_t ) );
@@ -1449,7 +1449,7 @@ stock bool AddResultFlag( const char[] szName, int flag )
     int len = g_hRunResFlags.Length;
     for ( int i = 0; i < len; i++ )
     {
-        if ( g_hRunResFlags.Get( i, RUNRES_FLAG ) & flag )
+        if ( g_hRunResFlags.Get( i, RunRes_t::iFlag ) & flag )
         {
             LogError( INF_CON_PRE..."Attempted to add an already existing result flag (%i)!", flag );
             return false;
@@ -1457,10 +1457,10 @@ stock bool AddResultFlag( const char[] szName, int flag )
     }
     
     
-    decl data[RUNRES_SIZE];
+    RunRes_t data;
     
-    data[RUNRES_FLAG] = flag;
-    strcopy( view_as<char>( data[RUNRES_NAME] ), MAX_RUNRES_NAME, szName );
+    data.iFlag = flag;
+    strcopy( data.szName, sizeof( RunRes_t::szName ), szName );
     
     g_hRunResFlags.PushArray( data );
     

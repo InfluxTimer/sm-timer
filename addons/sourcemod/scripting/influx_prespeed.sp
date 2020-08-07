@@ -221,7 +221,7 @@ public void Influx_OnRunLoad( int runid, KeyValues kv )
     
     data.iRunId = runid;
     
-    data.flMaxSpeed = view_as<int>( kv.GetFloat( "prespeed_max", INVALID_MAXSPD ) );
+    data.flMaxSpeed = kv.GetFloat( "prespeed_max", INVALID_MAXSPD );
     data.nMaxJumps = kv.GetNum( "prespeed_maxjumps", INVALID_MAXJUMPS );
     data.iUseTrueVel = kv.GetNum( "prespeed_usetruevel", INVALID_USETRUEVEL );
     data.iDoCap = kv.GetNum( "prespeed_cap", INVALID_DOCAP );

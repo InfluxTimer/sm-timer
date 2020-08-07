@@ -47,7 +47,7 @@ enum struct DefBeamData_t
     int iMatIndex;
 
     float flWidth;
-    float flFrameRate;
+    int iFrameRate;
     int iSpeed;
 
     float flOffset;
@@ -65,7 +65,7 @@ enum struct ZoneBeams_t
     int iMatIndex;
 
     float flWidth;
-    float flFrameRate;
+    int iFrameRate;
     int iSpeed;
 
     int clr[4];
@@ -394,7 +394,6 @@ stock void ReadDefaultSettingsFile()
     g_hDef.Clear();
     
     char szType[32];
-    int clr[4];
     
     DefBeamData_t defbeam;
     
@@ -486,7 +485,7 @@ stock void ReadDefaultSettingsFile()
         defbeam.iMatIndex = mat;
         
         defbeam.flWidth = kv.GetFloat( "width", 0.0 );
-        defbeam.flFrameRate = kv.GetNum( "framerate", -1 );
+        defbeam.iFrameRate = kv.GetNum( "framerate", -1 );
         defbeam.iSpeed = kv.GetNum( "speed", 0 );
         
         defbeam.flOffset = kv.GetFloat( "offset", 0.0 );
@@ -731,7 +730,7 @@ stock void InsertBeams( int zoneid,
     beams.iDisplayType = displaytype;
     
     beams.flWidth = width;
-    beams.flFrameRate = framerate;
+    beams.iFrameRate = framerate;
     beams.iSpeed = speed;
     
     beams.clr = clr;
@@ -776,7 +775,7 @@ stock bool SetDefaultBeamSettings( int zoneid, ZoneType_t zonetype, DisplayType_
     
     if ( framerate == -1 )
     {
-        framerate = defbeams.flFrameRate;
+        framerate = defbeams.iFrameRate;
     }
     
     //if ( speed == -1 )
@@ -883,8 +882,7 @@ public Action T_DrawBeams( Handle hTimer )
         float drawinterval = g_ConVar_DrawInterval.FloatValue;
         
         
-        float drawdistsqr = g_ConVar_BeamDrawDist.FloatValue;
-        drawdistsqr *= drawdistsqr;
+        float drawdistsqr = g_ConVar_BeamDrawDist.FloatValue * g_ConVar_BeamDrawDist.FloatValue;
         
         
         float engtime = GetEngineTime();
@@ -973,7 +971,7 @@ public Action T_DrawBeams( Handle hTimer )
                 nClients );
 #endif
             
-            framerate = beams.flFrameRate;
+            framerate = beams.iFrameRate;
             spd = beams.iSpeed;
             width = beams.flWidth;
             

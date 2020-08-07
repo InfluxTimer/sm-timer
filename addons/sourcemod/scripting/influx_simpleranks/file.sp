@@ -21,7 +21,7 @@ stock void ReadRanks()
     
     
     decl String:szTemp[256];
-    decl data[RANK_SIZE];
+    Rank_t rank;
     
     do
     {
@@ -37,27 +37,27 @@ stock void ReadRanks()
             continue;
         }
         
-        strcopy( view_as<char>( data[RANK_NAME] ), MAX_RANK_SIZE, szTemp );
+        strcopy( rank.szRank, sizeof( Rank_t::szRank ), szTemp );
         
         
         int points = kv.GetNum( "points", -1 );
         
         if ( points < 0 )
         {
-            LogError( INF_CON_PRE..."Invalid rank points %i! Must be above or equal to 0! (%s)", points, data[RANK_NAME] );
+            LogError( INF_CON_PRE..."Invalid rank points %i! Must be above or equal to 0! (%s)", points, rank.szRank );
             continue;
         }
         
         
-        data[RANK_POINTS] = points;
-        data[RANK_UNLOCK] = kv.GetNum( "unlock", 0 );
+        rank.nPoints = points;
+        rank.bUnlock = kv.GetNum( "unlock", 0 );
         
         kv.GetString( "flags", szTemp, sizeof( szTemp ), "" );
         
-        data[RANK_FLAGS] = ReadFlagString( szTemp );
+        rank.fAdminFlags = ReadFlagString( szTemp );
         
         
-        g_hRanks.PushArray( data );
+        g_hRanks.PushArray( rank );
     }
     while ( kv.GotoNextKey() );
     
@@ -102,7 +102,7 @@ stock void ReadPoints( ArrayList array, const char[] szKvName, const char[] szFi
         
         
         reward.iId = -1;
-        reward.szName[0] = 0;
+        reward.szSafeName[0] = 0;
         
         if ( IsCharNumeric( szTemp[0] ) )
         {
@@ -110,7 +110,7 @@ stock void ReadPoints( ArrayList array, const char[] szKvName, const char[] szFi
         }
         else
         {
-            strcopy( reward.szName, sizeof( ModeNStyleReward_t::szName ), szTemp );
+            strcopy( reward.szSafeName, sizeof( ModeNStyleReward_t::szSafeName ), szTemp );
         }
         
         
@@ -120,7 +120,7 @@ stock void ReadPoints( ArrayList array, const char[] szKvName, const char[] szFi
         PrintToServer( INF_DEBUG_PRE..."%s reward: %i", szTemp, reward.nPoints );
 #endif
         
-        array.PushArray( data );
+        array.PushArray( reward );
     }
     while ( kv.GotoNextKey() );
     

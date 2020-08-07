@@ -132,7 +132,7 @@ public Action Influx_OnZoneLoad( int zoneid, ZoneType_t zonetype, KeyValues kv )
     fs.fModeFlags = kv.GetNum( "modeflags", 0 );
     fs.fStyleFlags = kv.GetNum( "styleflags", 0 );
     
-    g_hFreestyles.PushArray( data );
+    g_hFreestyles.PushArray( fs );
     
     return Plugin_Handled;
 }

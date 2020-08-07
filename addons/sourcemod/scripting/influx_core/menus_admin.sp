@@ -69,7 +69,7 @@ public Action Cmd_Admin_RunSettings( int client, int args )
     int flags;
     int len;
     
-    decl data[RUNRES_SIZE];
+    RunRes_t data;
     
     decl String:szDisplay[92];
     decl String:szInfo[32];
@@ -103,10 +103,10 @@ public Action Cmd_Admin_RunSettings( int client, int args )
     {
         g_hRunResFlags.GetArray( i, data );
         
-        int resflag = data[RUNRES_FLAG];
+        int resflag = data.iFlag;
         
         FormatEx( szDisplay, sizeof( szDisplay ), "%s: %s",
-            data[RUNRES_NAME],
+            data.szName,
             ( flags & resflag ) ? "ON" : "OFF" );
         
         FormatEx( szInfo, sizeof( szInfo ), "%i_c_%i", runid, resflag );

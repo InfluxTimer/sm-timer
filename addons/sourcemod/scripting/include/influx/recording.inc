@@ -64,26 +64,24 @@ enum struct RunRecordingData_t
 #define MAX_RECFILE_PLYNAME             32
 #define MAX_RECFILE_PLYNAME_CELL        MAX_RECFILE_PLYNAME / 4
 
-enum
+enum struct RecFileHeader_t
 {
-    RECFILE_MAGIC = 0,
-    RECFILE_VERSION,
-    RECFILE_HEADERSIZE,
-    
-    RECFILE_TICKRATE,
-    
-    RECFILE_TIME,
-    RECFILE_RUNID,
-    RECFILE_MODE,
-    RECFILE_STYLE,
-    
-    RECFILE_MAPNAME[MAX_RECFILE_MAPNAME_CELL],
-    RECFILE_PLYNAME[MAX_RECFILE_PLYNAME_CELL],
-    
-    RECFILE_FRAMELEN
-};
+    int iMagic;
+    int iVersion;
+    int nHeaderSize;
 
-#define INF_CURHEADERSIZE       RECFILE_FRAMELEN
+    int iTickrate;
+
+    float flTime;
+    int iRunId;
+    int iModeId;
+    int iStyleId;
+
+    char szMapName[MAX_RECFILE_MAPNAME];
+    char szPlyName[MAX_RECFILE_PLYNAME];
+}
+
+#define INF_CURHEADERSIZE       sizeof( RecFileHeader_t )
 
 
 // Return != Plugin_Continue to disable recording for this run.
