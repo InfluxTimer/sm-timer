@@ -1226,7 +1226,7 @@ stock bool LoadZoneFromKv( KeyValues kv )
     
     
     // Ask other plugins what to load.
-    Action res = Plugin_Handled;
+    Action res = Plugin_Continue;
     
     Call_StartForward( g_hForward_OnZoneLoad );
     Call_PushCell( zoneid );
@@ -1234,17 +1234,9 @@ stock bool LoadZoneFromKv( KeyValues kv )
     Call_PushCell( view_as<int>( kv ) );
     Call_Finish( res );
     
-    if ( res != Plugin_Handled )
+    if ( res == Plugin_Stop )
     {
-#if defined DEBUG_LOADZONES
-        PrintToServer( INF_DEBUG_PRE..."OnZoneLoad failed (id: %i)!", zoneid );
-#endif
-
-        if ( res == Plugin_Stop )
-        {
-            LogError( INF_CON_PRE..."Couldn't load zone %s with type %i from file! (id: %i)", data[ZONE_NAME], zonetype, zoneid );
-        }
-        
+        LogError( INF_CON_PRE..."Couldn't load zone %s with type %i from file! (id: %i)", data[ZONE_NAME], zonetype, zoneid );
         return false;
     }
     
