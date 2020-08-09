@@ -188,11 +188,6 @@ fulllist = pluginlist.getPluginNameList()
 for p in fulllist:
     Plugin(source='addons/sourcemod/scripting/'+p+'.sp')
 
-# Remove auto version
-try:
-    os.remove('addons/sourcemod/scripting/include/influx/autoversion.inc')
-except Exception:
-    pass
 
 Package(
     name='full',

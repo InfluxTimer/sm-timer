@@ -2,6 +2,8 @@
 
 echo "Deploying..."
 
+python remove_autoversion.py
+
 cd builds
 
 # Zip em and roll em into a tar ball
