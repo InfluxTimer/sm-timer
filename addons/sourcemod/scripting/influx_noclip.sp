@@ -14,7 +14,8 @@
 
 
 
-#define MIN_TIME_TO_PAUSE       60.0
+ConVar g_ConVar_PauseTime;
+ConVar g_ConVar_AutoPracticeMode;
 
 
 // LIBRARIES
@@ -33,6 +34,13 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    // CONVARS
+    g_ConVar_PauseTime = CreateConVar( "influx_noclip_pausetime", "60", "How many seconds into the run do we pause the players run when starting to noclip. -1 = Disable", FCVAR_NOTIFY );
+    g_ConVar_AutoPracticeMode = CreateConVar( "influx_noclip_setpracticemode", "1", "If the player starts noclipping, set them to practice mode (if not paused).", FCVAR_NOTIFY, true, 0.0 , true, 1.0 );
+
+    AutoExecConfig( true, "noclip", "influx" );
+
+
     // CMDS
     RegConsoleCmd( "sm_noclip", Cmd_Noclip_Override );
     
@@ -125,7 +133,9 @@ stock void HandleNoclip( int client )
         float time = ( state == STATE_RUNNING ) ? Influx_GetClientTime( client ) : INVALID_RUN_TIME;
         
         // If our run is long enough, just pause it instead of putting us to practise mode.
-        bool shouldpause = ( time > MIN_TIME_TO_PAUSE );
+        float pausetime = g_ConVar_PauseTime.FloatValue;
+
+        bool shouldpause = ( pausetime >= 0.0 && time >= pausetime );
         
         
         bool handled = false;
@@ -144,6 +154,7 @@ stock void HandleNoclip( int client )
         
         // If that didn't work, just put us into practise mode.
         if (!handled
+        &&  g_ConVar_AutoPracticeMode.BoolValue // If server wants this.
         &&  state == STATE_RUNNING
         &&  g_bLib_Practise
         &&  !Influx_IsClientPractising( client ))
