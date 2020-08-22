@@ -23,6 +23,7 @@ float g_vecContinueVel[INF_MAXPLAYERS][3];
 int g_iPausedRunId[INF_MAXPLAYERS] = { -1, ... };
 int g_iPausedModeId[INF_MAXPLAYERS] = { MODE_INVALID, ... };
 int g_iPausedStyleId[INF_MAXPLAYERS] = { STYLE_INVALID, ... };
+char g_szPausedClassname[INF_MAXPLAYERS][128];
 char g_szPausedTargetName[INF_MAXPLAYERS][128];
 float g_flPausedTime[INF_MAXPLAYERS];
 bool g_bPaused[INF_MAXPLAYERS];
@@ -283,6 +284,7 @@ stock bool PauseRun( int client )
     GetEntityAbsVelocity( client, g_vecContinueVel[client] );
     
     GetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client], sizeof( g_szPausedTargetName[] ) );
+    GetEntityClassname( client, g_szPausedClassname[client], sizeof( g_szPausedClassname[] ) );
 
     Influx_PrintToChat( _, client, "%T", "INF_NOWPAUSED", client );
     
@@ -372,6 +374,7 @@ stock bool ContinueRun( int client )
     g_flPauseLimit[client] = GetEngineTime() + g_ConVar_Cooldown.FloatValue;
     
     SetEntPropString( client, Prop_Data, "m_iName", g_szPausedTargetName[client] );
+    SetEntityClassname( client, g_szPausedClassname[client] );
 
     Influx_PrintToChat( _, client, "%T", "INF_NOLONGERPAUSED", client );
     
