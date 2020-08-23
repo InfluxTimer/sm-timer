@@ -44,6 +44,10 @@ Handle g_hForward_OnClientContinuePost;
 ConVar g_ConVar_MaxPausesPerRun;
 ConVar g_ConVar_Cooldown;
 ConVar g_ConVar_UseVel;
+ConVar g_ConVar_ForceSpectator;
+
+// Are we in the continue process? For player spawn checking.
+bool g_bInContinueProcess = false;
 
 
 public Plugin myinfo =
@@ -83,13 +87,18 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_pause", Cmd_Practise_Pause );
     RegConsoleCmd( "sm_continue", Cmd_Practise_Continue );
     RegConsoleCmd( "sm_resume", Cmd_Practise_Continue );
+
+
+    // HOOKS
+    HookEvent( "player_spawn", E_PlayerSpawn );
     
     
     // CONVARS
     g_ConVar_MaxPausesPerRun = CreateConVar( "influx_pause_maxperrun", "-1", "Maximum pauses per run. -1 = disable limit, 0 = disable completely", FCVAR_NOTIFY, true, -1.0 );
     g_ConVar_Cooldown = CreateConVar( "influx_pause_cooldown", "10", "How many seconds the player has to wait before being able to pause again.", FCVAR_NOTIFY, true, 0.0 );
     g_ConVar_UseVel = CreateConVar( "influx_pause_usevelocity", "0", "When player resumes, will their velocity also be set?", FCVAR_NOTIFY, true, 0.0 , true, 1.0 );
-    
+    g_ConVar_ForceSpectator = CreateConVar( "influx_pause_forcespectator", "0", "Forces the player to move to spectator team when pausing.", FCVAR_NOTIFY, true, 0.0 , true, 1.0 );
+
     AutoExecConfig( true, "pause", "influx" );
     
     
@@ -107,6 +116,11 @@ public void OnLibraryRemoved( const char[] lib )
 {
     if ( StrEqual( lib, INFLUX_LIB_PRACTISE ) ) g_bLib_Practise = false;
     if ( StrEqual( lib, INFLUX_LIB_TEAMS ) ) g_bLib_Teams = false;
+}
+
+public void OnMapStart()
+{
+    g_bInContinueProcess = false;
 }
 
 public void OnClientPutInServer( int client )
@@ -293,6 +307,12 @@ stock bool PauseRun( int client )
     Call_StartForward( g_hForward_OnClientPausePost );
     Call_PushCell( client );
     Call_Finish();
+
+
+    if ( g_ConVar_ForceSpectator.BoolValue )
+    {
+        ChangeClientTeam( client, CS_TEAM_SPECTATOR );
+    }
     
     return true;
 }
@@ -315,6 +335,9 @@ stock bool ContinueRun( int client )
     }
     
     
+    // This is for the player spawn check.
+    g_bInContinueProcess = true;
+
     
     // Spawn them if they are dead.
     if ( GetClientTeam( client ) <= CS_TEAM_SPECTATOR )
@@ -329,6 +352,8 @@ stock bool ContinueRun( int client )
         CS_RespawnPlayer( client );
     }
     
+
+    g_bInContinueProcess = false;
     
     // Spawning failed.
     if ( !IsPlayerAlive( client ) ) return false;
@@ -385,6 +410,29 @@ stock bool ContinueRun( int client )
     Call_Finish();
     
     return true;
+}
+
+public void E_PlayerSpawn( Event event, const char[] szEvent, bool bImUselessWhyDoIExist )
+{
+    int client = GetClientOfUserId( event.GetInt( "userid" ) );
+    if ( client < 1 || !IsClientInGame( client ) ) return;
+    
+    if ( GetClientTeam( client ) <= CS_TEAM_SPECTATOR || !IsPlayerAlive( client ) ) return;
+    
+    
+    if ( !g_ConVar_ForceSpectator.BoolValue )
+        return;
+
+    // We are currently being continued. Ignore.
+    if ( g_bInContinueProcess )
+        return;
+
+    if ( g_bPaused[client] )
+    {
+        g_bPaused[client] = false;
+
+        Influx_PrintToChat( _, client, "%T", "INF_NOLONGERPAUSED", client );
+    }
 }
 
 public int Native_IsClientPaused( Handle hPlugin, int nParams )
