@@ -449,6 +449,11 @@ stock bool Inf_SDKHook( int entity, SDKHookType type, SDKHookCB callback )
 
 stock bool Inf_SendConVarValueFloat( int client, Handle convar, float value, const char[] szFormat = "%.0f" )
 {
+    if ( IsFakeClient( client ) )
+    {
+        return true;
+    }
+
     char szValue[6];
     FormatEx( szValue, sizeof( szValue ), szFormat, value );
     
@@ -463,6 +468,11 @@ stock bool Inf_SendConVarValueFloat( int client, Handle convar, float value, con
 
 stock bool Inf_SendConVarValueBool( int client, Handle convar, bool value )
 {
+    if ( IsFakeClient( client ) )
+    {
+        return true;
+    }
+    
     if ( !SendConVarValue( client, convar, value ? "1" : "0" ) )
     {
         LogError( INF_CON_PRE..."Couldn't send bool convar value!" );
