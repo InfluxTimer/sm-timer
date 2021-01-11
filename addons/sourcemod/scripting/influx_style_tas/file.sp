@@ -261,14 +261,11 @@ stock bool SaveFrames( int client )
     int style = Influx_GetClientStyle( client );
     
     
-    decl String:szMode[MAX_MODE_SHORTNAME];
-    decl String:szStyle[MAX_STYLE_SHORTNAME];
+    char szMode[MAX_SAFENAME];
+    char szStyle[MAX_SAFENAME];
     
-    Influx_GetModeShortName( mode, szMode, sizeof( szMode ) );
-    StringToLower( szMode );
-    
-    Influx_GetStyleShortName( style, szStyle, sizeof( szStyle ) );
-    StringToLower( szStyle );
+    Influx_GetModeSafeName( mode, szMode, sizeof( szMode ) );
+    Influx_GetStyleSafeName( style, szStyle, sizeof( szStyle ) );
     
     
     Format( szPath, sizeof( szPath ), "%s/%i_%s_%s.tas",
