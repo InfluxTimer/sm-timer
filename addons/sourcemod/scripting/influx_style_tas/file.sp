@@ -52,6 +52,7 @@ stock bool LoadFrames( int client, ArrayList &frames, int runid, int mode, int s
     
     if ( file == null )
     {
+        LogError( INF_CON_PRE..."Couldn't open TAS file '%s' for read!", szPath );
         return false;
     }
     
@@ -82,6 +83,10 @@ stock bool LoadFrames( int client, ArrayList &frames, int runid, int mode, int s
     file.ReadInt32( temp );
     if ( temp != TASFILE_CURHEADERSIZE )
     {
+        LogError( INF_CON_PRE..."Found TAS file '%s' with a different header size! (Current: %i | File: %i)",
+            szPath,
+            TASFILE_CURHEADERSIZE,
+            temp );
         delete file;
         return false;
     }
@@ -104,6 +109,8 @@ stock bool LoadFrames( int client, ArrayList &frames, int runid, int mode, int s
     file.ReadInt32( temp );
     if ( temp != runid )
     {
+        Influx_PrintToChat( _, client, "Your run id differs! (file: %i)", temp );
+
         delete file;
         return false;
     }
@@ -111,6 +118,8 @@ stock bool LoadFrames( int client, ArrayList &frames, int runid, int mode, int s
     file.ReadInt32( temp );
     if ( temp != mode )
     {
+        Influx_PrintToChat( _, client, "Your mode id differs! (file: %i)", temp );
+
         delete file;
         return false;
     }
@@ -118,6 +127,8 @@ stock bool LoadFrames( int client, ArrayList &frames, int runid, int mode, int s
     file.ReadInt32( temp );
     if ( temp != style )
     {
+        Influx_PrintToChat( _, client, "Your style id differs! (file: %i)", temp );
+
         delete file;
         return false;
     }
@@ -134,6 +145,10 @@ stock bool LoadFrames( int client, ArrayList &frames, int runid, int mode, int s
     file.ReadInt32( len );
     if ( len < 1 )
     {
+        LogError( INF_CON_PRE..."TAS file '%s' has invalid number of frames! (%i)",
+            szPath,
+            len );
+
         delete file;
         return false;
     }
