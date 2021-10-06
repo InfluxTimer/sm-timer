@@ -433,10 +433,15 @@ public int Native_FinishTimer( Handle hPlugin, int nParms )
     if ( time <= INVALID_RUN_TIME ) return;
     
     
-    
-    if ( !IsProperlyCached( client ) )
+    if ( !g_bBestTimesCached )
     {
-        LogError( INF_CON_PRE..."Attempted to finish a run but client's and/or run's times haven't been cached yet! Check for SQL errors." );
+        LogError( INF_CON_PRE..."Attempted to finish player's run but run's %i times haven't been cached in memory yet! Check for SQL errors.", runid );
+        return;
+    }
+    
+    if ( !g_bCachedTimes[client] )
+    {
+        LogError( INF_CON_PRE..."Attempted to finish player's run but client's times haven't been cached in memory yet! Check for SQL errors." );
         return;
     }
     

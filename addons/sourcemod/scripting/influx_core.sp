@@ -2267,16 +2267,6 @@ stock float GetModeMaxspeedByIndex( int index )
     }
 }
 
-stock bool IsProperlyCached( int client = 0 )
-{
-    // Check if we are cached properly.
-    
-    if ( !client ) return g_bBestTimesCached;
-    
-    
-    return ( g_bBestTimesCached && g_bCachedTimes[client] );
-}
-
 stock void InvalidateClientRun( int client )
 {
     if ( g_iRunState[client] != STATE_NONE )
