@@ -80,7 +80,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
 public void OnPluginStart()
 {
     // CONVARS
-    g_ConVar_Title = CreateConVar( "influx_hud_draw_title", "\tInflux Timer", "Title to be shown to all players.", FCVAR_NOTIFY );
+    g_ConVar_Title = CreateConVar( "influx_hud_draw_title", "Welcome to Influx Timer!", "Title to be shown to all players when they join. Not shown if empty.", FCVAR_NOTIFY );
     g_ConVar_Title.AddChangeHook( E_ConVarChanged_Title );
     g_ConVar_Title.GetString( g_szTitle, sizeof( g_szTitle ) );
     
@@ -200,6 +200,7 @@ public Action Influx_OnDrawHUD( int client, int target, HudType_t hudtype )
         
         
         if (state <= STATE_START
+        &&  g_szTitle[0] != 0 // Not empty
         &&  (g_ConVar_TitleDisplayAlways.BoolValue || (g_flJoin[client] + 15.0 > GetEngineTime())))
         {
             FormatEx( szMsg, sizeof( szMsg ), "%s", g_szTitle );
