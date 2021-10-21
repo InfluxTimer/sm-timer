@@ -1,0 +1,70 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ master, dev ]
+  pull_request:
+    branches: [ master, dev ]
+  
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      BUILD_NUMBER: ${{ github.run_number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Download SM & add it to PATH
+        run: |
+          wget "https://sourcemod.net/latest.php?os=linux&version=1.10" -O /tmp/sourcemod.tar.gz
+          mkdir ~/sm && cd ~/sm
+          tar xzf /tmp/sourcemod.tar.gz addons/sourcemod/scripting
+          echo "$PWD/addons/sourcemod/scripting" >> $GITHUB_PATH
+
+      - name: Download & install SM Builder
+        run: |
+          git clone "https://github.com/TotallyMehis/sm-builder" ~/sm-builder
+          cd ~/sm-builder
+          pip install --user -r requirements.txt
+          python setup.py install --prefix=~/.local
+
+      - name: Generate autoversion.inc
+        run: python generate_auto_version.py build-$BUILD_NUMBER
+
+      - name: Build plugins
+        run: smbuilder --flags " -i=addons/sourcemod/scripting/include"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifact
+          path: |
+            builds/
+            deploy.sh
+            remove_autoversion.py
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' # Only deploy on push
+    env:
+      INF_DEPLOY_KEY: ${{ secrets.INF_DEPLOY_KEY }}
+      INF_DEPLOY_SITE: ${{ secrets.INF_DEPLOY_SITE }}
+      COMMIT_MSG: ${{ github.event.head_commit.message }}
+      COMMIT_HASH: ${{ github.event.head_commit.id }}
+      BUILD_NUMBER: ${{ github.run_number }}
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: artifact
+
+      - name: Run deploy script
+        run: bash deploy.sh
