@@ -839,6 +839,13 @@ public void Influx_OnMapIdRetrieved( int mapid, bool bNew )
     }
 }
 
+// After map id and runs have been fully loaded.
+public void Influx_OnPostRunLoad()
+{
+    PrintToServer( INF_CON_PRE..."Retrieving best records..." );
+    DB_InitRecords();
+}
+
 public void Influx_RequestHelpCmds()
 {
     Influx_AddHelpCommand( "manageruns", "Run menu.", true );
@@ -919,10 +926,6 @@ public void OnMapStart()
     g_iCurMapId = 0;
     
     DB_InitMap();
-    
-    
-    //LoadRuns();
-    
     
     InitColors();
 }
@@ -3055,6 +3058,8 @@ stock void SendRunLoadPre()
 
 stock void SendRunLoadPost()
 {
+    PrintToServer( INF_CON_PRE..."Finished retrieving %i runs!", g_hRuns.Length );
+
     Call_StartForward( g_hForward_OnPostRunLoad );
     Call_Finish();
 }
@@ -3208,9 +3213,8 @@ stock void LoadRuns( bool bForceType = false, bool bUseDb = false, bool bFallbac
     {
         SendRunLoadPre();
         ReadRunFile();
-        SendRunLoadPost();
-
         g_bRunsLoaded = true;
+        SendRunLoadPost();
     }
 }
 

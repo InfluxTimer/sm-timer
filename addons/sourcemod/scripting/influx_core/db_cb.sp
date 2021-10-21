@@ -56,9 +56,6 @@ public void Thrd_GetMapId( Handle db, Handle res, const char[] szError, any data
         PrintToServer( INF_CON_PRE..."Retrieved map id %i", g_iCurMapId );
         
         SendMapIdRetrieved();
-        
-        
-        DB_InitRecords();
     }
     else
     {
@@ -400,7 +397,8 @@ public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, any data 
     {
         Inf_DB_LogError( db, "getting run data" );
 
-        g_bRunsLoaded = true;
+        // Last ditch effort. Use files.
+        LoadRuns( true, false, true );
         return;
     }
     
@@ -439,10 +437,9 @@ public void Thrd_GetRuns( Handle db, Handle res, const char[] szError, any data 
         
         delete kv;
     }
-    
-    SendRunLoadPost();
 
     g_bRunsLoaded = true;
+    SendRunLoadPost();
 }
 
 /*public void Thrd_GetNumRecords( Handle db, Handle res, const char[] szError, any data )
