@@ -48,24 +48,32 @@ stock void ReadRunFile()
     char szPath[PLATFORM_MAX_PATH];
     BuildPath( Path_SM, szPath, sizeof( szPath ), INFLUX_RUNDIR );
     
-    if ( !DirExistsEx( szPath ) ) return;
-    
+    if ( !DirExistsEx( szPath ) )
+    {
+        LogError( INF_CON_PRE..."Run folder %s did not exist!", INFLUX_RUNDIR );
+        return;
+    }
     
     Format( szPath, sizeof( szPath ), "%s/%s.ini", szPath, g_szCurrentMap );
     
     
     KeyValues kv = new KeyValues( "Runs" );
-    kv.ImportFromFile( szPath );
     
-    if ( !kv.GotoFirstSubKey() )
+    // File does not exist.
+    if ( !kv.ImportFromFile( szPath ) )
     {
         delete kv;
         return;
     }
     
-    
-    
-    
+    if ( !kv.GotoFirstSubKey() )
+    {
+        LogError( INF_CON_PRE..."Failed to go to first sub-key in run file!" );
+        delete kv;
+        return;
+    }
+
+
     do
     {
         LoadRunFromKv( kv );

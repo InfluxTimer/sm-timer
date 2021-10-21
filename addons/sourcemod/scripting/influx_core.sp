@@ -2834,8 +2834,11 @@ stock int AddRun(   int runid,
                     bool bDoForward = true,
                     bool bPrint = false )
 {
-    if ( g_hRuns == null ) return -1;
-    
+    if ( g_hRuns == null )
+    {
+        LogError( INF_CON_PRE..."Unable to add run (id: %i) because runs array hasn't been initialized yet!", runid );
+        return -1;
+    }
     
     // If they didn't request a specific id, find one that doesn't exist.
     if ( runid == -1 )
@@ -2861,9 +2864,12 @@ stock int AddRun(   int runid,
         }
     }
     
-    
-    if ( runid < 1 ) return -1;
-    
+    if ( runid < 1 )
+    {
+        LogError( INF_CON_PRE..."Cannot add a run with id lower than 1! (tried: %i)", runid );
+        return -1;
+    }
+
     // That run already exists!
     if ( FindRunById( runid ) != -1 )
     {
