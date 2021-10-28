@@ -945,9 +945,14 @@ public Action Cmd_SetStageTelePos( int client, int args )
         stagenum = StringToInt( szArg );
     }
     
+    if ( stagenum == 1 )
+    {
+        Influx_PrintToChat( _, client, "Please use {MAINCLR1}sm_settelepos{CHATCLR} instead to set start zone teleport position." );
+        return Plugin_Handled;
+    }
+
     
     int runid = Influx_GetClientRunId( client );
-    
     
     int index = FindStageByNum( runid, stagenum );
     
