@@ -313,6 +313,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     
     CreateNative( "Influx_GetClientStyle", Native_GetClientStyle );
     CreateNative( "Influx_SetClientStyle", Native_SetClientStyle );
+    CreateNative( "Influx_SetClientStyleEx", Native_SetClientStyleEx );
     
     
     

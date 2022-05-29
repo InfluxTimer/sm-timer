@@ -69,6 +69,13 @@ public int Native_SetClientStyle( Handle hPlugin, int nParms )
     return SetClientStyle( client, GetNativeCell( 2 ) );
 }
 
+public int Native_SetClientStyleEx( Handle hPlugin, int nParms )
+{
+    int client = GetNativeCell( 1 );
+    
+    return SetClientStyle( client, GetNativeCell( 2 ), view_as<bool>(GetNativeCell(3)) );
+}
+
 public int Native_GetRunName( Handle hPlugin, int nParms )
 {
     int len = GetNativeCell( 3 );

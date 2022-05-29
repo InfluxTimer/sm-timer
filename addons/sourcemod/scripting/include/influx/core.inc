@@ -359,6 +359,7 @@ native bool Influx_SetClientMode( int client, int mode );
 
 native int Influx_GetClientStyle( int client );
 native bool Influx_SetClientStyle( int client, int style );
+native bool Influx_SetClientStyleEx( int client, int style, bool bTele );
 
 
 // When client's run, mode or style has changed.
