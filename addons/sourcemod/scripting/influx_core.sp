@@ -201,6 +201,7 @@ bool g_bLib_Hud_Draw;
 // MAP DATA
 char g_szCurrentMap[128];
 int g_iCurMapId;
+int g_iCurMapTier;
 bool g_bNewMapId;
 bool g_bRunsLoaded = false;
 bool g_bBestTimesCached = false;

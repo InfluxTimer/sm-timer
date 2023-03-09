@@ -230,9 +230,9 @@ stock bool DB_PerformUpdateQueries( int ver )
 stock void DB_InitMap()
 {
     decl String:szQuery[256];
-    FormatEx( szQuery, sizeof( szQuery ), "SELECT mapid FROM "...INF_TABLE_MAPS..." WHERE mapname='%s'", g_szCurrentMap );
+    FormatEx( szQuery, sizeof( szQuery ), "SELECT mapid, maptier FROM "...INF_TABLE_MAPS..." WHERE mapname='%s'", g_szCurrentMap );
     
-    SQL_TQuery( g_hDB, Thrd_GetMapId, szQuery, _, DBPrio_High );
+    SQL_TQuery( g_hDB, Thrd_GetMapIdAndTier, szQuery, _, DBPrio_High );
 }
 
 stock void FormatWhereClause( char[] sz, int len, const char[] table, int runid, int mode, int style )

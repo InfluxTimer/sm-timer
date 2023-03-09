@@ -39,11 +39,11 @@ public void Thrd_CheckVersion( Handle db, Handle res, const char[] szError, any 
     SQL_TQuery( g_hDB, Thrd_Empty, szQuery, _, DBPrio_High );
 }
 
-public void Thrd_GetMapId( Handle db, Handle res, const char[] szError, any data )
+public void Thrd_GetMapIdAndTier( Handle db, Handle res, const char[] szError, any data )
 {
     if ( res == null )
     {
-        Inf_DB_LogError( g_hDB, "getting map id" );
+        Inf_DB_LogError( g_hDB, "getting map id and tier" );
         return;
     }
     
@@ -51,9 +51,10 @@ public void Thrd_GetMapId( Handle db, Handle res, const char[] szError, any data
     if ( SQL_FetchRow( res ) )
     {
         g_iCurMapId = SQL_FetchInt( res, 0 );
+        g_iCurMapTier = SQL_FetchInt( res, 1 );
         
-        // We've retrieved the map id, send forward.
-        PrintToServer( INF_CON_PRE..."Retrieved map id %i", g_iCurMapId );
+        // We've retrieved the map id and map tier, send forward.
+        PrintToServer( INF_CON_PRE..."Retrieved map id %i, map tier %i", g_iCurMapId, g_iCurMapTier );
         
         SendMapIdRetrieved();
     }
