@@ -26,14 +26,16 @@
 #define QUERY_CREATETABLE_MAPS_MYSQL "\
     CREATE TABLE IF NOT EXISTS "...INF_TABLE_MAPS..." (\
         mapid INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,\
-        mapname VARCHAR(127) NOT NULL UNIQUE)\
+        mapname VARCHAR(127) NOT NULL UNIQUE,\
+        maptier INT DEFAULT 0)\
     "
 
 
 #define QUERY_CREATETABLE_MAPS_SQLITE "\
     CREATE TABLE IF NOT EXISTS "...INF_TABLE_MAPS..." (\
         mapid INTEGER PRIMARY KEY,\
-        mapname VARCHAR(127) NOT NULL UNIQUE)\
+        mapname VARCHAR(127) NOT NULL UNIQUE,\
+        maptier INT DEFAULT 0)\
     "
 
 
