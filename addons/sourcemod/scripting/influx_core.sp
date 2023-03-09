@@ -559,6 +559,8 @@ public void OnPluginStart()
     
     RegConsoleCmd( "sm_deleteruns", Cmd_Admin_DeleteRun );
     RegConsoleCmd( "sm_deleterun", Cmd_Admin_DeleteRun );
+
+    RegConsoleCmd( "sm_settier", Cmd_Admin_SetTier);
     
     
 #if defined TEST_MODESTYLES

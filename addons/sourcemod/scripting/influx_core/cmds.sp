@@ -175,6 +175,30 @@ public Action Cmd_Admin_DeleteRun( int client, int args )
     return Plugin_Handled;
 }
 
+public Action Cmd_Admin_SetTier( int client, int args )
+{
+    if ( !CanUserRemoveRecords( client ) ) return Plugin_Handled;
+    
+    if ( !args )
+    {
+        Influx_PrintToChat( _, client, "Please enter a valid number.\nUsage: !settier <maptier>" );
+        
+        return Plugin_Handled;
+    }
+    
+    
+    char szArg[6], szQuery[192];
+    GetCmdArgString( szArg, sizeof( szArg ) );
+    
+    g_iCurMapTier = StringToInt( szArg );
+    
+    FormatEx( szQuery, sizeof(szQuery), "UPDATE "...INF_TABLE_MAPS..." SET maptier = %i WHERE mapid = %i", g_iCurMapId, g_iCurMapTier );
+
+    SQL_TQuery( Influx_GetDB(), Thrd_SetMapTier, szQuery, GetClientUserId( client ), DBPrio_High );
+    
+    return Plugin_Handled;
+}
+
 public Action Cmd_TestColor( int client, int args )
 {
     if ( args )

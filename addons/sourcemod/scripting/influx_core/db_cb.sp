@@ -90,6 +90,11 @@ public void Thrd_NewMapId( Handle db, Handle res, const char[] szError, any data
     DB_InitMap();
 }
 
+public void Thrd_SetMapTier( Handle db, Handle res, const char[] szError, any data )
+{
+    DB_InitMap();
+}
+
 public void Thrd_GetClientId( Handle db, Handle res, const char[] szError, int client )
 {
     if ( (client = GetClientOfUserId( client )) < 1 || !IsClientInGame( client ) ) return;
