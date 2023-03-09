@@ -10,7 +10,7 @@ char g_szDriver[32];
 
 #define MAX_DB_NAME_LENGTH          31 * 2 + 1 // 63
 
-#define INF_DB_CURVERSION           2
+#define INF_DB_CURVERSION           3
 
 
 
@@ -212,6 +212,27 @@ stock bool DB_PerformUpdateQueries( int ver )
         
         
         PrintToServer( INF_CON_PRE..."Inserted all data from %s to new users table", szTempTable );
+        
+        
+        FormatEx( szQuery, sizeof( szQuery ), "REPLACE INTO "...INF_TABLE_DBVER..." (id,version) VALUES (0,%i)", INF_DB_CURVERSION );
+        if ( !DB_UpdateQuery( ver, szQuery ) ) return false;
+        
+        
+        PrintToServer( INF_CON_PRE..."Updated db version.", szTempTable );
+        
+        
+        return true;
+    }
+
+    if ( ver == 2 )
+    {        
+        FormatEx( szQuery, sizeof( szQuery ),
+            "ALTER TABLE "...INF_TABLE_MAPS..." ADD COLUMN maptier INT DEFAULT 0;" );
+            
+        if ( !DB_UpdateQuery( ver, szQuery ) ) return false;
+        
+        
+        PrintToServer( "Add maptier column to %s", INF_TABLE_MAPS );
         
         
         FormatEx( szQuery, sizeof( szQuery ), "REPLACE INTO "...INF_TABLE_DBVER..." (id,version) VALUES (0,%i)", INF_DB_CURVERSION );
