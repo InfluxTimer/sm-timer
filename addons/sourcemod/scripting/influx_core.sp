@@ -299,6 +299,7 @@ public APLRes AskPluginLoad2( Handle hPlugin, bool late, char[] szError, int err
     CreateNative( "Influx_IsClientCached", Native_IsClientCached );
     CreateNative( "Influx_GetClientId", Native_GetClientId );
     CreateNative( "Influx_GetCurrentMapId", Native_GetCurrentMapId );
+    CreateNative( "Influx_GetCurrentMapTier", Native_GetCurrentMapTier );
     
     CreateNative( "Influx_HasLoadedRuns", Native_HasLoadedRuns );
     CreateNative( "Influx_HasLoadedBestTimes", Native_HasLoadedBestTimes );
@@ -925,6 +926,7 @@ public void OnMapStart()
     g_bRunsLoaded = false;
     g_bBestTimesCached = false;
     g_iCurMapId = 0;
+    g_iCurMapTier = 0;
     
     DB_InitMap();
     
