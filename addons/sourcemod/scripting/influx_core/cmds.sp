@@ -192,7 +192,7 @@ public Action Cmd_Admin_SetTier( int client, int args )
     
     g_iCurMapTier = StringToInt( szArg );
     
-    FormatEx( szQuery, sizeof(szQuery), "UPDATE "...INF_TABLE_MAPS..." SET maptier = %i WHERE mapid = %i", g_iCurMapId, g_iCurMapTier );
+    FormatEx( szQuery, sizeof(szQuery), "UPDATE "...INF_TABLE_MAPS..." SET maptier = %i WHERE mapid = %i", g_iCurMapTier, g_iCurMapId );
 
     SQL_TQuery( Influx_GetDB(), Thrd_SetMapTier, szQuery, GetClientUserId( client ), DBPrio_High );
     
