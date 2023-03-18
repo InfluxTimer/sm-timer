@@ -871,6 +871,8 @@ public void Influx_RequestHelpCmds()
     Influx_AddHelpCommand( "run", "Display run selector menu." );
     Influx_AddHelpCommand( "style", "Display style selector menu." );
     Influx_AddHelpCommand( "mode", "Display mode selector menu." );
+
+    Influx_AddHelpCommand( "settier <num>", "Set current map\'s tier." );
 }
 
 public void Influx_OnPrintRecordInfo( int client, Handle dbres, ArrayList itemlist, Menu menu, int uid, int mapid, int runid, int mode, int style )
