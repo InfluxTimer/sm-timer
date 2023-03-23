@@ -62,9 +62,15 @@ public int Hndlr_FastForward( Menu menu, MenuAction action, int client, int inde
     char szInfo[32];
     if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
 
-
-    int seconds = StringToInt(szInfo);
-    g_nCurRec[g_iReplayBot] += RoundFloat( g_flTickrate * seconds );
+    if ( szInfo[0] == '+' || szInfo[0] == '-' )
+    {
+        int seconds = StringToInt(szInfo);
+        g_nCurRec[g_iReplayBot] += RoundFloat( g_flTickrate * seconds );
+    }
+    else
+    {
+        Influx_PrintToChat( _, client, "Current Playback Progress: %ds | %ds", RoundFloat( g_nCurRec[g_iReplayBot] / g_flTickrate ), RoundFloat( g_hReplay.Length / g_flTickrate ) );
+    }
 
 
     FakeClientCommand( client, "sm_fastforward" );

@@ -111,6 +111,8 @@ public Action Cmd_FastForward( int client, int args )
     menu.AddItem( "-20s", "-20s" );
     menu.AddItem( "-60s", "-60s" );
 
+    menu.AddItem( "progress", "Show Playback Progress" );
+
 
     menu.Display( client, MENU_TIME_FOREVER );
     
