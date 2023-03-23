@@ -51,6 +51,27 @@ public int Hndlr_Replay( Menu menu, MenuAction action, int client, int index )
     return 0;
 }
 
+public int Hndlr_FastForward( Menu menu, MenuAction action, int client, int index )
+{
+    MENU_HANDLE( menu, action );
+
+
+    if ( !CanChangeReplay( client ) ) return 0;
+
+
+    char szInfo[32];
+    if ( !GetMenuItem( menu, index, szInfo, sizeof( szInfo ) ) ) return 0;
+
+
+    int seconds = StringToInt(szInfo);
+    g_nCurRec[g_iReplayBot] += RoundFloat( g_flTickrate * seconds );
+
+
+    FakeClientCommand( client, "sm_fastforward" );
+
+    return 0;
+}
+
 public int Hndlr_DeleteRecording( Menu oldmenu, MenuAction action, int client, int index )
 {
     MENU_HANDLE( oldmenu, action )

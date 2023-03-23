@@ -93,6 +93,34 @@ public Action Cmd_Replay( int client, int args )
     return Plugin_Handled;
 }
 
+public Action Cmd_FastForward( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !CanChangeReplay( client ) ) return Plugin_Handled;
+
+
+
+    Menu menu = new Menu( Hndlr_FastForward );
+    menu.SetTitle( "Replay FastForward\n" );
+
+    menu.AddItem( "+5s", "+5s" );
+    menu.AddItem( "+10s", "+10s" );
+    menu.AddItem( "+20s", "+20s" );
+    menu.AddItem( "+30s", "+30s" );
+    menu.AddItem( "+60s", "+60s" );
+    menu.AddItem( "-5s", "-5s" );
+    menu.AddItem( "-10s", "-10s" );
+    menu.AddItem( "-20s", "-20s" );
+    menu.AddItem( "-30s", "-30s" );
+    menu.AddItem( "-60s", "-60s" );
+
+
+    menu.Display( client, MENU_TIME_FOREVER );
+    
+    return Plugin_Handled;
+}
+
 public Action Cmd_DeleteRecordings( int client, int args )
 {
     if ( !client ) return Plugin_Handled;

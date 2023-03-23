@@ -199,6 +199,9 @@ public void OnPluginStart()
     // CMDS
     RegConsoleCmd( "sm_replay", Cmd_Replay );
     RegConsoleCmd( "sm_myreplay", Cmd_MyReplay );
+    RegConsoleCmd( "sm_fastforward", Cmd_FastForward );
+    RegConsoleCmd( "sm_jumpreplay", Cmd_FastForward );
+    RegConsoleCmd( "sm_fastreplay", Cmd_FastForward );
     //RegConsoleCmd( "sm_test_replay", Cmd_Test_Replay );
     
     RegConsoleCmd( "sm_deleterecording", Cmd_DeleteRecordings );
