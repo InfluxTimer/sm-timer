@@ -53,7 +53,7 @@ public int Hndlr_Replay( Menu menu, MenuAction action, int client, int index )
 
 public int Hndlr_FastForward( Menu menu, MenuAction action, int client, int index )
 {
-    MENU_HANDLE( menu, action );
+    MENU_HANDLE( menu, action )
 
 
     if ( !CanChangeReplay( client ) ) return 0;
