@@ -337,6 +337,7 @@ public void Influx_OnRequestHelpCmds()
 {
     Influx_AddHelpCommand( "replay", "Open replay menu." );
     Influx_AddHelpCommand( "myreplay", "Play your own recording." );
+    Influx_AddHelpCommand( "fastforward", "Fastforward current playback." );
     Influx_AddHelpCommand( "deleterecording", "Delete recordings.", true );
 }
 

@@ -105,14 +105,10 @@ public Action Cmd_FastForward( int client, int args )
     menu.SetTitle( "Replay FastForward\n" );
 
     menu.AddItem( "+5s", "+5s" );
-    menu.AddItem( "+10s", "+10s" );
     menu.AddItem( "+20s", "+20s" );
-    menu.AddItem( "+30s", "+30s" );
     menu.AddItem( "+60s", "+60s" );
     menu.AddItem( "-5s", "-5s" );
-    menu.AddItem( "-10s", "-10s" );
     menu.AddItem( "-20s", "-20s" );
-    menu.AddItem( "-30s", "-30s" );
     menu.AddItem( "-60s", "-60s" );
 
 
