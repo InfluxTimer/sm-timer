@@ -23,7 +23,7 @@ public Action T_DrawBuildBeams( Handle hTimer, int client )
     p1[2] += 1.0;
     
     
-    if ( g_ConVar_CrosshairBuild.BoolValue )
+    if ( g_BCursorTracing[client] )
     {
         HandleTraceDist( client );
         GetEyeTrace( client, p7 );
@@ -110,7 +110,7 @@ public Action T_DrawBuildStart( Handle hTimer, int client )
     
 
     decl Float:pos[3];
-    if ( g_ConVar_CrosshairBuild.BoolValue )
+    if ( g_BCursorTracing[client] )
     {
         HandleTraceDist( client );
         

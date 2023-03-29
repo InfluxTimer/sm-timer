@@ -57,6 +57,7 @@ float g_vecBuildingStart[INF_MAXPLAYERS][3];
 //int g_iBuildingZoneId[INF_MAXPLAYERS];
 //int g_iBuildingRunId[INF_MAXPLAYERS];
 int g_nBuildingGridSize[INF_MAXPLAYERS];
+bool g_BCursorTracing[INF_MAXPLAYERS];
 char g_szBuildingName[INF_MAXPLAYERS][MAX_ZONE_NAME];
 bool g_bShowSprite[INF_MAXPLAYERS];
 float g_flBuildDist[INF_MAXPLAYERS];
@@ -84,7 +85,7 @@ ConVar g_ConVar_MinSize;
 ConVar g_ConVar_HeightGrace;
 ConVar g_ConVar_DefZoneHeight;
 
-ConVar g_ConVar_CrosshairBuild;
+//ConVar g_ConVar_CrosshairBuild;
 ConVar g_ConVar_SpriteSize;
 
 
@@ -236,7 +237,7 @@ public void OnPluginStart()
     g_ConVar_HeightGrace = CreateConVar( "influx_zones_heightgrace", "4", "If zone height is smaller than this, use default zone height. 0 = disable", FCVAR_NOTIFY, true, 0.0 );
     g_ConVar_DefZoneHeight = CreateConVar( "influx_zones_defzoneheight", "128", "Default zone height to use.", FCVAR_NOTIFY, true, 0.0 );
     
-    g_ConVar_CrosshairBuild = CreateConVar( "influx_zones_crosshairbuild", "1", "Use crosshair to build instead of your position.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+    //g_ConVar_CrosshairBuild = CreateConVar( "influx_zones_crosshairbuild", "1", "Use crosshair to build instead of your position.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
     g_ConVar_SpriteSize = CreateConVar( "influx_zones_buildspritesize", "0.2", "Size of the sprite when lining the start of the zone.", FCVAR_NOTIFY, true, 0.0 );
     
     
@@ -361,6 +362,7 @@ public void OnClientPutInServer( int client )
 {
     g_iBuildingType[client] = ZONETYPE_INVALID;
     g_nBuildingGridSize[client] = 8;
+    g_BCursorTracing[client] = false;
     g_szBuildingName[client][0] = '\0';
     g_bShowSprite[client] = false;
     g_flBuildDist[client] = BUILD_DEF_DIST;
@@ -466,7 +468,7 @@ stock bool StartToBuild( int client, ZoneType_t zonetype, const char[] name = ""
     
     float pos[3];
     
-    if ( g_ConVar_CrosshairBuild.BoolValue )
+    if ( g_BCursorTracing[client] )
     {
         GetEyeTrace( client, pos );
     }

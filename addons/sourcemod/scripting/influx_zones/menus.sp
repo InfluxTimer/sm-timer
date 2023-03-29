@@ -91,8 +91,13 @@ public Action Cmd_ZoneMain( int client, int args )
     
     
     char szGrid[24];
-    FormatEx( szGrid, sizeof( szGrid ), "Grid Size: %i\n ", g_nBuildingGridSize[client] );
+    FormatEx( szGrid, sizeof( szGrid ), "Grid Size: %i", g_nBuildingGridSize[client] );
     menu.AddItem( "grid", szGrid );
+
+    
+    char szCursorTracing[24];
+    FormatEx( szCursorTracing, sizeof( szCursorTracing ), "Cursor Tracing: %s\n ", g_BCursorTracing[client] ? "Using" : "Unuse" );
+    menu.AddItem( "trace", szCursorTracing );
     
     
     menu.AddItem( "sm_zonesettings", "Zone Settings",   ( !bBuilding && bHaveZones )        ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
@@ -200,7 +205,7 @@ public Action Cmd_EndZone( int client, int args )
         mins = g_vecBuildingStart[client];
         
         
-        if ( g_ConVar_CrosshairBuild.BoolValue )
+        if ( g_BCursorTracing[client] )
         {
             GetEyeTrace( client, maxs );
         }

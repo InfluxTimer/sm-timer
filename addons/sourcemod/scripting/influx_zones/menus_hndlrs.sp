@@ -23,6 +23,12 @@ public int Hndlr_ZoneMain( Menu menu, MenuAction action, int client, int index )
         
         Inf_OpenZoneMenu( client );
     }
+    else if ( StrEqual( szInfo, "trace" ) )
+    {
+        g_BCursorTracing[client] = !g_BCursorTracing[client];
+        
+        Inf_OpenZoneMenu( client );
+    }
     else
     {
         FakeClientCommand( client, szInfo );
