@@ -31,6 +31,7 @@ jobs:
           git clone "https://github.com/TotallyMehis/sm-builder" ~/sm-builder
           cd ~/sm-builder
           pip install --user -r requirements.txt
+          pip install -U Jinja2
           python setup.py install --prefix=~/.local
 
       - name: Generate autoversion.inc
