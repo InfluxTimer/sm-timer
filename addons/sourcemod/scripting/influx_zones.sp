@@ -362,7 +362,7 @@ public void OnClientPutInServer( int client )
 {
     g_iBuildingType[client] = ZONETYPE_INVALID;
     g_nBuildingGridSize[client] = 8;
-    g_BCursorTracing[client] = false;
+    g_BCursorTracing[client] = true;
     g_szBuildingName[client][0] = '\0';
     g_bShowSprite[client] = false;
     g_flBuildDist[client] = BUILD_DEF_DIST;
