@@ -10,6 +10,7 @@
 #undef REQUIRE_PLUGIN
 #include <influx/help>
 #include <influx/zones_checkpoint>
+#include <influx/pause>
 
 
 //#define DEBUG
@@ -619,6 +620,8 @@ public void E_StartTouchPost_Stage( int ent, int activator )
     if ( !IS_ENT_PLAYER( activator ) ) return;
     
     if ( !IsPlayerAlive( activator ) ) return;
+
+    if ( Influx_IsClientPaused( activator ) ) return;
     
     
     int zoneid = Inf_GetZoneProp( ent );
@@ -665,6 +668,8 @@ public void E_EndTouchPost_Stage( int ent, int activator )
     
     if ( !IsPlayerAlive( activator ) ) return;
     
+    if ( Influx_IsClientPaused( activator ) ) return;
+
     
     int zoneid = Inf_GetZoneProp( ent );
     

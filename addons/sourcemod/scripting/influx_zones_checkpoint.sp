@@ -12,6 +12,7 @@
 #include <adminmenu>
 #include <influx/recordsmenu>
 #include <influx/help>
+#include <influx/pause>
 
 
 // Uncomment this to test out SQL performance on map start.
@@ -740,6 +741,8 @@ public void E_StartTouchPost_CP( int ent, int activator )
     if ( !IS_ENT_PLAYER( activator ) ) return;
     
     if ( !IsPlayerAlive( activator ) ) return;
+
+    if ( Influx_IsClientPaused( activator ) ) return;
     
     
     int zoneid = Inf_GetZoneProp( ent );
