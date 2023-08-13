@@ -83,7 +83,6 @@ pluginlist = MyPluginList([
     MyPlugin('influx_config'),
     MyPlugin('influx_core', 'core',
              files=[
-                 'addons/sourcemod/configs/admin_overrides_influx_example.cfg',
                  'addons/sourcemod/configs/influx_mode_overrides.cfg',
                  'addons/sourcemod/configs/influx_mode_overrides_example.cfg',
                  'addons/sourcemod/configs/influx_style_overrides.cfg',
