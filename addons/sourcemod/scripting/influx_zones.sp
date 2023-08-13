@@ -201,8 +201,8 @@ public void OnPluginStart()
     
     
     // PRIVILEGE CMDS
-    RegAdminCmd( INF_PRIVCOM_CONFZONES, Cmd_Empty, ADMFLAG_ROOT );
-    RegAdminCmd( INF_PRIVCOM_SAVEZONES, Cmd_Empty, ADMFLAG_ROOT );
+    RegAdminCmd( INF_PRIVCOM_CONFZONES, Cmd_Empty, ADMFLAG_GENERIC );
+    RegAdminCmd( INF_PRIVCOM_SAVEZONES, Cmd_Empty, ADMFLAG_GENERIC );
     
     
     // CMDS
@@ -801,12 +801,12 @@ stock int FindZoneById( int zoneid )
 
 stock bool CanUserModifyZones( int client )
 {
-    return CheckCommandAccess( client, INF_PRIVCOM_CONFZONES, ADMFLAG_ROOT );
+    return CheckCommandAccess( client, INF_PRIVCOM_CONFZONES, ADMFLAG_GENERIC );
 }
 
 stock bool CanUserSaveZones( int client )
 {
-    return CheckCommandAccess( client, INF_PRIVCOM_SAVEZONES, ADMFLAG_ROOT );
+    return CheckCommandAccess( client, INF_PRIVCOM_SAVEZONES, ADMFLAG_GENERIC );
 }
 
 stock void SetShowBuild( int client, bool show = true )
