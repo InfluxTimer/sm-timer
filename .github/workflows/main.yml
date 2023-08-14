@@ -48,24 +48,3 @@ jobs:
             builds/
             deploy.sh
             remove_autoversion.py
-
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push' # Only deploy on push
-    env:
-      INF_DEPLOY_KEY: ${{ secrets.INF_DEPLOY_KEY }}
-      INF_DEPLOY_SITE: ${{ secrets.INF_DEPLOY_SITE }}
-      COMMIT_MSG: ${{ github.event.head_commit.message }}
-      COMMIT_HASH: ${{ github.event.head_commit.id }}
-      BUILD_NUMBER: ${{ github.run_number }}
-
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: artifact
-
-      - name: Run deploy script
-        run: bash deploy.sh
