@@ -112,6 +112,9 @@ public void OnPluginStart()
     RegConsoleCmd( "sm_addcp", Cmd_AddCP );
     RegConsoleCmd( "sm_lastcreatedcp", Cmd_LastCreatedCP );
     RegConsoleCmd( "sm_lastusedcp", Cmd_LastUsedCP );
+    RegConsoleCmd( "sm_lastusedpreviouscp", Cmd_LastUsedPreviousCP );
+    RegConsoleCmd( "sm_lastusedprecp", Cmd_LastUsedPreviousCP );
+    RegConsoleCmd( "sm_lastusednextcp", Cmd_LastUsedNextCP );
     RegConsoleCmd( "sm_pracsettings", Cmd_CPSettings );
     RegConsoleCmd( "sm_cpsettings", Cmd_CPSettings );
     
@@ -219,6 +222,38 @@ public Action Cmd_LastUsedCP( int client, int args )
     
     
     TeleportClientToLastUsedCP( client );
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_LastUsedPreviousCP( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !g_bPractising[client] )
+    {
+        Influx_PrintToChat( _, client, "%T", "INF_MUSTBEPRACTISING", client );
+        return Plugin_Handled;
+    }
+    
+    
+    TeleportClientToLastUsedPreviousCP( client );
+    
+    return Plugin_Handled;
+}
+
+public Action Cmd_LastUsedNextCP( int client, int args )
+{
+    if ( !client ) return Plugin_Handled;
+    
+    if ( !g_bPractising[client] )
+    {
+        Influx_PrintToChat( _, client, "%T", "INF_MUSTBEPRACTISING", client );
+        return Plugin_Handled;
+    }
+    
+    
+    TeleportClientToLastUsedNextCP( client );
     
     return Plugin_Handled;
 }
@@ -448,6 +483,37 @@ stock bool TeleportClientToLastUsedCP( int client )
     if( g_iLastUsed[client] == -1 ) return false;
 
     int index = g_iLastUsed[client];
+    
+    if ( g_hPrac[client].Get( index, view_as<int>( PRAC_ID ) ) > 0 )
+    {
+        return TeleportClientToCP( client, index );
+    }
+    
+    return false;
+}
+
+stock bool TeleportClientToLastUsedPreviousCP( int client )
+{
+    if( g_iLastUsed[client]  < 1 ) return false;
+
+    int index = g_iLastUsed[client] - 1;
+    
+    if ( g_hPrac[client].Get( index, view_as<int>( PRAC_ID ) ) > 0 )
+    {
+        return TeleportClientToCP( client, index );
+    }
+    
+    return false;
+}
+
+stock bool TeleportClientToLastUsedNextCP( int client )
+{
+    int index;
+
+    if( g_iLastUsed[client] == g_iCurIndex[client] - 1 )
+        index = g_iCurIndex[client] - 1;
+    else
+        index = g_iLastUsed[client] + 1;
     
     if ( g_hPrac[client].Get( index, view_as<int>( PRAC_ID ) ) > 0 )
     {
