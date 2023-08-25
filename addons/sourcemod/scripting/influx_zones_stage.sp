@@ -1106,6 +1106,7 @@ public Action Cmd_Back( int client, int args )
     if ( Influx_GetClientState( client ) != STATE_RUNNING )
     {
         Influx_PrintToChat( _, client, "%T", "INF_MUSTBERUNNING", client );
+        FakeClientCommand( client, "sm_r" );
         return Plugin_Handled;
     }
     
