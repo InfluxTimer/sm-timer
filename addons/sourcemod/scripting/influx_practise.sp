@@ -289,6 +289,8 @@ public Action Cmd_CPMenu( int client, int args )
     
     menu.AddItem( "-3", "Last created (sm_lastcreatedcp)" );
     menu.AddItem( "-2", "Last used (sm_lastusedcp)", ( g_iLastUsed[client] != -1 ) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
+    menu.AddItem( "-4", "Previous used (sm_lastusedprecp)", ( g_iLastUsed[client] != -1 ) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
+    menu.AddItem( "-5", "Next used (sm_lastusednextcp)", ( g_iLastUsed[client] != -1 ) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED );
     menu.AddItem( "-1", "Add CP (sm_addcp)\n " );
     menu.AddItem( "0", "Settings\n " );
     
@@ -343,6 +345,14 @@ public int Hndlr_CP( Menu menu, MenuAction action, int client, int menuindex )
     
     switch ( id )
     {
+        case -5 :
+        {
+            TeleportClientToLastUsedNextCP( client );
+        }
+        case -4 :
+        {
+            TeleportClientToLastUsedPreviousCP( client );
+        }
         case -3 :
         {
             TeleportClientToLastCreatedCP( client );
@@ -508,6 +518,8 @@ stock bool TeleportClientToLastUsedPreviousCP( int client )
 
 stock bool TeleportClientToLastUsedNextCP( int client )
 {
+    if( g_iLastUsed[client] == -1 ) return false;
+
     int index;
 
     if( g_iLastUsed[client] == g_iCurIndex[client] - 1 )
