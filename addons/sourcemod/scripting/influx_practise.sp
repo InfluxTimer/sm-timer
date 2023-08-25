@@ -445,6 +445,8 @@ public int Hndlr_Settings( Menu menu, MenuAction action, int client, int index )
 
 stock bool TeleportClientToLastUsedCP( int client )
 {
+    if( g_iLastUsed[client] == -1 ) return false;
+
     int index = g_iLastUsed[client];
     
     if ( g_hPrac[client].Get( index, view_as<int>( PRAC_ID ) ) > 0 )
