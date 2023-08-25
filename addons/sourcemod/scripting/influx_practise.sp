@@ -180,7 +180,7 @@ public Action Cmd_Practise( int client, int args )
     {
         if(StartPractising( client ))
         {
-        FakeClientCommand( client, "sm_pracmenu" );
+            FakeClientCommand( client, "sm_pracmenu" );
         }
     }
     else
@@ -577,7 +577,11 @@ stock bool StartPractising( int client )
     {
         return false;
     }
-    
+
+    if ( g_bLib_Pause && Influx_GetClientState( client ) == STATE_RUNNING &&  !Influx_IsClientPaused( client ) )
+    {
+        Influx_PauseClientRun( client );
+    }
     
     g_bPractising[client] = true;
     
