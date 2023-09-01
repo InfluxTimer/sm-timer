@@ -2,9 +2,9 @@ name: CI/CD
 
 on:
   push:
-    branches: [ master, dev ]
+    branches: [ master, dev, 66tick-new ]
   pull_request:
-    branches: [ master, dev ]
+    branches: [ master, dev, 66tick-new ]
   
   workflow_dispatch:
 
