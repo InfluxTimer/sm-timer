@@ -466,7 +466,7 @@ public void Influx_OnClientStyleChangePost( int client, int style, int laststyle
 {
     if ( style == STYLE_TAS )
     {
-        SetClientCheats( client, true );
+        //SetClientCheats( client, true );
         
         
         OpenMenu( client );
@@ -503,7 +503,7 @@ public void OnClientPutInServer( int client )
     }
     else
     {
-        SetClientCheats( client, false );
+        //SetClientCheats( client, false );
     }
     
     
@@ -516,8 +516,8 @@ public Action T_MotdFix( Handle hTimer, int client )
 {
     if ( (client = GetClientOfUserId( client )) > 0 && IsClientInGame( client ) )
     {
-        if ( Influx_GetClientStyle( client ) != STYLE_TAS || g_flTimescale[client] == 1.0 )
-            SetClientCheats( client, false );
+        //if ( Influx_GetClientStyle( client ) != STYLE_TAS || g_flTimescale[client] == 1.0 )
+        //    SetClientCheats( client, false );
     }
 }
 
@@ -1111,18 +1111,18 @@ stock void ChangeAimlock( int client )
     }
 }
 
-stock void SetClientCheats( int client, bool bAllow )
-{
-    if ( IsFakeClient( client ) ) return;
-    
-    
-    if ( !bAllow )
-    {
-        SetTimescale( client, 1.0 );
-    }
-    
-    Inf_SendConVarValueBool( client, g_ConVar_Cheats, bAllow );
-}
+//stock void SetClientCheats( int client, bool bAllow )
+//{
+//    if ( IsFakeClient( client ) ) return;
+//    
+//    
+//    if ( !bAllow )
+//    {
+//        SetTimescale( client, 1.0 );
+//    }
+//    
+//    Inf_SendConVarValueBool( client, g_ConVar_Cheats, bAllow );
+//}
 
 stock bool CanAdvanceFrame( int client )
 {
@@ -1303,7 +1303,7 @@ stock void DisableTas( int client )
     UnfreezeClient( client );
     
     
-    SetClientCheats( client, false );
+    //SetClientCheats( client, false );
 }
 
 public void UnhookThinksCb( int userid ) // Can't unhook inside hook
