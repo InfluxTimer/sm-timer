@@ -169,7 +169,7 @@ ConVar g_ConVar_MOTDFix;
 #if !defined USE_LAGGEDMOVEMENTVALUE
 ConVar g_ConVar_Timescale;
 #endif
-ConVar g_ConVar_Cheats;
+//ConVar g_ConVar_Cheats;
 
 
 // LIBRARIES
@@ -198,10 +198,10 @@ public void OnPluginStart()
     }
 #endif
     
-    if ( (g_ConVar_Cheats = FindConVar( "sv_cheats" )) == null )
-    {
-        SetFailState( INF_CON_PRE..."Couldn't find handle for sv_cheats!" );
-    }
+    //if ( (g_ConVar_Cheats = FindConVar( "sv_cheats" )) == null )
+    //{
+    //    SetFailState( INF_CON_PRE..."Couldn't find handle for sv_cheats!" );
+    //}
     
     
 #if !defined USE_LAGGEDMOVEMENTVALUE && !defined USE_SERVER_TIMESCALE
